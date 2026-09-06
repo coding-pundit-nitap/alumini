@@ -1,4 +1,4 @@
-# InstaHire - Production-Grade Next.js 16 Starter
+# NextJs - Production-Grade Next.js 16 Starter
 
 A robust, enterprise-ready template built with **Next.js 16**, **React 19**, **TypeScript**, **Tailwind CSS v4**, **shadcn/ui**, **Vitest**, and **Playwright**.
 

@@ -6,11 +6,11 @@ export interface NavItem {
 }
 
 export const siteConfig = {
-  name: "InstaHire",
+  name: "NextJs",
   description:
     "Production-grade Next.js starter with TypeScript, Tailwind CSS, Vitest, React Testing Library, and Playwright.",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  ogImage: "https://og-image.vercel.app/InstaHire.png",
+  ogImage: "https://og-image.vercel.app/NextJs.png",
   mainNav: [
     {
       title: "Home",
