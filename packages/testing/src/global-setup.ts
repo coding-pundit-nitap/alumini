@@ -116,3 +116,13 @@ export async function provideTemplateDatabase(
     }
   };
 }
+
+// Duplicated from test-database.ts (declaration merging, not a conflict): this file also calls
+// `project.provide` on the same key, and a program that only pulls in THIS file (e.g. another
+// package's tsc run over workspace source, importing only "@nitap/testing/global-setup") needs the
+// augmentation here too.
+declare module "vitest" {
+  export interface ProvidedContext {
+    templateDatabaseUrl: string;
+  }
+}
