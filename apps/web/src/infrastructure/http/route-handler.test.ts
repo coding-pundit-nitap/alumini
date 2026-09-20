@@ -5,7 +5,7 @@ import {
   setMetrics,
   type Metrics,
 } from "@/infrastructure/observability";
-import { noopMetrics } from "@/infrastructure/observability/metrics";
+import { noopMetrics } from "@nitap/observability";
 import {
   AuthorizationError,
   NotFoundError,

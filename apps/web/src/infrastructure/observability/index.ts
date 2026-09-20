@@ -1,16 +1,18 @@
+import { createLogger } from "@nitap/observability";
+
 import { env } from "@/config/env";
 
-import { createLogger } from "./logger";
-
-export { getMetrics, setMetrics } from "./metrics";
-export type { Metrics, MetricLabels } from "./metrics";
 export {
+  getMetrics,
+  noopMetrics,
+  setMetrics,
   getRequestContext,
   runWithRequestContext,
   setRequestUser,
-} from "./request-context";
-export { REQUEST_ID_HEADER, resolveRequestId } from "./request-id";
-export type { Logger } from "./logger";
+  REQUEST_ID_HEADER,
+  resolveRequestId,
+} from "@nitap/observability";
+export type { Logger, Metrics, MetricLabels } from "@nitap/observability";
 
 // `env` is typed as possibly partial (validation failure throws on the server), so default NODE_ENV here.
 const nodeEnv = env.NODE_ENV ?? "development";

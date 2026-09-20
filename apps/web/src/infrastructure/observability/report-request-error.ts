@@ -1,6 +1,10 @@
+import {
+  REQUEST_ID_HEADER,
+  resolveRequestId,
+  runWithRequestContext,
+} from "@nitap/observability";
+
 import { logger } from "./index";
-import { REQUEST_ID_HEADER, resolveRequestId } from "./request-id";
-import { runWithRequestContext } from "./request-context";
 
 type RequestInfo = {
   path: string;

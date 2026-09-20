@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 import {
   REQUEST_ID_HEADER,
   resolveRequestId,
-} from "@/infrastructure/observability/request-id";
+} from "@nitap/observability/request-id";
 import { isPublicPath, safeNextPath } from "@/lib/route-access";
 
 /**

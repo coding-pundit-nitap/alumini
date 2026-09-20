@@ -1,5 +1,5 @@
-import { redact } from "./redact";
-import { getRequestContext } from "./request-context";
+import { redact } from "./redact.ts";
+import { getRequestContext } from "./request-context.ts";
 
 /**
  * Structured JSON logger (reliability §6). One object per line to stdout/stderr; the runtime ships it.

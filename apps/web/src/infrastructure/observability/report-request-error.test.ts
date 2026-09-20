@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { logger } from "./index";
-import { getRequestContext } from "./request-context";
+import { getRequestContext } from "@nitap/observability";
 import { reportRequestError } from "./report-request-error";
 
 const context = {

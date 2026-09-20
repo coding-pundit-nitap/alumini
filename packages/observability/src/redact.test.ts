@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { REDACTED, redact } from "./redact";
+import { REDACTED, redact } from "./redact.ts";
 
 describe("redact (reliability §6.4)", () => {
   it("masks every secret-bearing key in a fixture, at any depth", () => {
@@ -41,7 +41,7 @@ describe("redact (reliability §6.4)", () => {
     expect(result.password).toBe(REDACTED);
     expect(result["set-cookie"]).toBe(REDACTED);
     expect(
-      (result.nested as { deeper: { safe: string }[] }).deeper[0].safe
+      (result.nested as { deeper: { safe: string }[] }).deeper[0]?.safe
     ).toBe("ok");
   });
 

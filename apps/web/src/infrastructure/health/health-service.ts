@@ -1,4 +1,4 @@
-import { getMetrics } from "@/infrastructure/observability/metrics";
+import { getMetrics } from "@nitap/observability";
 
 /**
  * Liveness and readiness (reliability §4.1).

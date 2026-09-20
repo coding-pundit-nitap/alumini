@@ -3,7 +3,7 @@ import {
   getRequestContext,
   runWithRequestContext,
   setRequestUser,
-} from "./request-context";
+} from "./request-context.ts";
 
 describe("request context", () => {
   it("is empty outside a request", () => {

@@ -6,7 +6,7 @@ import {
   setMetrics,
   type Metrics,
 } from "@/infrastructure/observability";
-import { noopMetrics } from "@/infrastructure/observability/metrics";
+import { noopMetrics } from "@nitap/observability";
 
 import type { Actor } from "../domain/actor";
 import { PERMISSIONS } from "../domain/permission";

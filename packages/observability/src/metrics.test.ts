@@ -1,5 +1,10 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { getMetrics, noopMetrics, setMetrics, type Metrics } from "./metrics";
+import {
+  getMetrics,
+  noopMetrics,
+  setMetrics,
+  type Metrics,
+} from "./metrics.ts";
 
 describe("Metrics port (decision D10)", () => {
   afterEach(() => setMetrics(noopMetrics));

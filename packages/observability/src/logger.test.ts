@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { createLogger } from "./logger";
-import { runWithRequestContext, setRequestUser } from "./request-context";
-import { UnexpectedError } from "@/lib/errors";
+import { createLogger } from "./logger.ts";
+import { runWithRequestContext, setRequestUser } from "./request-context.ts";
 
 function setup(options: Partial<Parameters<typeof createLogger>[0]> = {}) {
   const lines: { stream: "out" | "err"; entry: Record<string, unknown> }[] = [];
@@ -25,7 +24,7 @@ describe("logger (reliability §6.1)", () => {
     logger.info("connection.request.created", { metadata: { count: 1 } });
 
     expect(lines).toHaveLength(1);
-    expect(lines[0].entry).toEqual({
+    expect(lines[0]?.entry).toEqual({
       timestamp: "2026-09-20T12:00:00.000Z",
       level: "info",
       service: "web",
@@ -43,9 +42,9 @@ describe("logger (reliability §6.1)", () => {
       setRequestUser("user-1");
       logger.info("a.b.d");
     });
-    expect(lines[0].entry).toMatchObject({ request_id: "req-aaaaaaaa" });
-    expect(lines[0].entry).not.toHaveProperty("user_id");
-    expect(lines[1].entry).toMatchObject({
+    expect(lines[0]?.entry).toMatchObject({ request_id: "req-aaaaaaaa" });
+    expect(lines[0]?.entry).not.toHaveProperty("user_id");
+    expect(lines[1]?.entry).toMatchObject({
       request_id: "req-aaaaaaaa",
       user_id: "user-1",
     });
@@ -82,14 +81,23 @@ describe("logger (reliability §6.1)", () => {
   });
 
   it("serialises errors without losing the class or code", () => {
+    // A local stand-in for an application error: a named subclass with its own `code` property.
+    class CodedError extends Error {
+      readonly code: string;
+      constructor(message: string, code: string) {
+        super(message);
+        this.name = "CodedError";
+        this.code = code;
+      }
+    }
     const { logger, lines } = setup();
     logger.error("http.request.failed", {
-      error: new UnexpectedError("boom"),
+      error: new CodedError("boom", "SOME_CODE"),
     });
-    expect(lines[0].entry.error).toMatchObject({
-      name: "UnexpectedError",
+    expect(lines[0]?.entry.error).toMatchObject({
+      name: "CodedError",
       message: "boom",
-      code: "INTERNAL_ERROR",
+      code: "SOME_CODE",
     });
   });
 
@@ -103,7 +111,7 @@ describe("logger (reliability §6.1)", () => {
       },
       error: Object.assign(new Error("x"), { token: "tok" }),
     });
-    const json = JSON.stringify(lines[0].entry);
+    const json = JSON.stringify(lines[0]?.entry);
     expect(json).not.toMatch(/hunter2|s=1|tok"/);
     expect(json).toContain("email_hash");
   });
@@ -112,7 +120,7 @@ describe("logger (reliability §6.1)", () => {
     const { logger, lines } = setup();
     logger.info("a.b.c", { metadata: { input: 'x\n{"level":"fatal"}' } });
     expect(lines).toHaveLength(1);
-    expect(lines[0].entry.level).toBe("info");
+    expect(lines[0]?.entry.level).toBe("info");
   });
 
   it("never throws, even for unserialisable metadata", () => {

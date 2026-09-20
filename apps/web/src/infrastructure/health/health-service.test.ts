@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import {
-  noopMetrics,
-  setMetrics,
-} from "@/infrastructure/observability/metrics";
+import { noopMetrics, setMetrics } from "@nitap/observability";
 import { createHealthService } from "./health-service";
 
 const up = () => Promise.resolve();
