@@ -38,6 +38,7 @@ model User {
   updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
   sessions      Session[]
   accounts      Account[]
+  profile       Profile?
 
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
@@ -102,13 +103,14 @@ enum DegreeLevel {
 }
 
 model Department {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code      String   @unique
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code      String    @unique
   name      String
-  shortName String   @map("short_name")
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  shortName String    @map("short_name")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  profiles  Profile[]
 
   @@map("department")
 }
@@ -121,6 +123,7 @@ model Degree {
   isActive  Boolean     @default(true) @map("is_active")
   createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  profiles  Profile[]
 
   @@map("degree")
 }
@@ -133,4 +136,37 @@ model Chapter {
   updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("chapter")
+}
+
+enum ProfileVisibility {
+  PUBLIC
+  MEMBERS_ONLY
+  CONNECTIONS_ONLY
+  PRIVATE
+}
+
+model Profile {
+  userId    String   @id @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName  String   @map("full_name")
+  headline  String?
+  bio       String?
+  // Nullable: faculty, staff and pending accounts may have no institutional record.
+  // Alumni-completeness (FR-PROFILE-004) is an application rule, enforced in Phase 3 — not here.
+  departmentId   String?           @map("department_id") @db.Uuid
+  department     Department?       @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  degreeId       String?           @map("degree_id") @db.Uuid
+  degree         Degree?           @relation(fields: [degreeId], references: [id], onDelete: Restrict)
+  // Static CHECK (2010-2100), never date-dependent — see ck_profile_graduation_year in this migration's SQL.
+  graduationYear Int?              @map("graduation_year")
+  location       String?
+  photoUrl       String?           @map("photo_url")
+  visibility     ProfileVisibility @default(MEMBERS_ONLY)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([departmentId, graduationYear])
+  @@index([degreeId])
+  @@index([graduationYear])
+  @@map("profile")
 }
