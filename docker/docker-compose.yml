@@ -44,5 +44,44 @@ services:
       timeout: 3s
       retries: 10
 
+  # Queue Redis (ADR-007 §4): a job queue must never lose keys, so this instance must NOT evict and must
+  # persist. It is a different instance from the cache Redis above on purpose.
+  queue-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+      [
+        "redis-server",
+        "--maxmemory-policy",
+        "noeviction",
+        "--appendonly",
+        "yes",
+        "--appendfsync",
+        "everysec",
+      ]
+    ports:
+      - "${QUEUE_REDIS_PORT:-6380}:6379"
+    volumes:
+      - queue-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Development mailbox: accepts any mail over SMTP and shows it at http://localhost:8025. Mail never leaves it.
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   postgres-data:
+  queue-redis-data:
