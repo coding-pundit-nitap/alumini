@@ -9,6 +9,7 @@ import {
   NotFoundError,
   RateLimitedError,
   UnexpectedError,
+  TransactionRetryExhaustedError,
   ValidationError,
   logLevelFor,
   toApiError,
@@ -23,6 +24,7 @@ describe("error taxonomy (TDS §16.1)", () => {
     [new ConflictError("CONNECTION_EXISTS"), 409, "CONNECTION_EXISTS"],
     [new RateLimitedError(30), 429, "RATE_LIMITED"],
     [new DependencyUnavailableError(), 503, "SERVICE_UNAVAILABLE"],
+    [new TransactionRetryExhaustedError(), 503, "TRANSACTION_RETRY_EXHAUSTED"],
     [new UnexpectedError(), 500, "INTERNAL_ERROR"],
   ])("%o maps to %i %s", (error, status, code) => {
     expect(error).toBeInstanceOf(AppError);
@@ -49,6 +51,19 @@ describe("error taxonomy (TDS §16.1)", () => {
     expect(
       JSON.stringify(toApiError(error, "req-12345678").body)
     ).not.toContain("10.0.0.5");
+  });
+});
+
+describe("TransactionRetryExhaustedError (spec D-e)", () => {
+  it("is distinct from DependencyUnavailableError, keeps its cause, and logs at warn", () => {
+    const cause = new Error(
+      "could not serialize access due to concurrent update"
+    );
+    const error = new TransactionRetryExhaustedError({ cause });
+    expect(error).not.toBeInstanceOf(DependencyUnavailableError);
+    expect(error.kind).toBe("transaction_conflict");
+    expect(error.cause).toBe(cause);
+    expect(logLevelFor(error)).toBe("warn");
   });
 });
 

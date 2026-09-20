@@ -75,6 +75,11 @@ export const ERROR_CATALOG: Record<
     status: 503,
     message: "The service is temporarily unavailable. Please try again.",
   },
+  TRANSACTION_RETRY_EXHAUSTED: {
+    status: 503,
+    message:
+      "The operation could not complete because of a conflicting update. Please try again.",
+  },
 };
 
 export type ErrorKind =
@@ -85,6 +90,7 @@ export type ErrorKind =
   | "conflict"
   | "rate_limited"
   | "dependency_unavailable"
+  | "transaction_conflict"
   | "unexpected";
 
 /** One entry per failing field (API spec §1.5). */
@@ -191,6 +197,18 @@ export class DependencyUnavailableError extends AppError {
   }
 }
 
+/**
+ * A serialization failure or deadlock that survived TransactionRunner's bounded retry (TDS §17.5).
+ * Deliberately not a DependencyUnavailableError: this is contention between concurrent requests,
+ * not an unreachable dependency, and the two page differently.
+ */
+export class TransactionRetryExhaustedError extends AppError {
+  readonly kind = "transaction_conflict";
+  constructor(options: ErrorOptions = {}) {
+    super(503, "TRANSACTION_RETRY_EXHAUSTED", options);
+  }
+}
+
 /** A bug or unknown failure. The message is for logs; the client always gets the generic one. */
 export class UnexpectedError extends AppError {
   readonly kind = "unexpected";
@@ -253,6 +271,7 @@ export function logLevelFor(error: unknown): "info" | "warn" | "error" {
       return "info";
     case "authorization":
     case "rate_limited":
+    case "transaction_conflict":
       return "warn";
     default:
       return "error";
