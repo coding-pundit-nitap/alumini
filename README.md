@@ -38,6 +38,8 @@ Run from the repository root. Deterministic tasks are cached by Turborepo.
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `pnpm dev` / `build` / `start`                                | Run, build, serve the web app (depends on the generated Prisma client)              |
 | `pnpm lint` / `typecheck` / `test`                            | ESLint, `tsc --noEmit`, Vitest unit and component tests across packages             |
+| `pnpm arch`                                                   | dependency-cruiser: cycles, module DAG, deep imports, workspace direction           |
+| `pnpm test:integration`                                       | Vitest `integration` and `contract` projects (need `pnpm docker:up` and `.env`)     |
 | `pnpm test:e2e`                                               | Playwright (first run: `pnpm --filter @nitap/web exec playwright install chromium`) |
 | `pnpm format` / `format:check`                                | Prettier                                                                            |
 | `pnpm db:generate` / `db:migrate` / `db:deploy` / `db:studio` | Prisma (run from `database/`, reads the root `.env`)                                |

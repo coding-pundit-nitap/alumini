@@ -1,0 +1,56 @@
+/** Conventional Commits with module/area scopes (strategy §17.2). */
+export default {
+  extends: ["@commitlint/config-conventional"],
+  rules: {
+    "type-enum": [
+      2,
+      "always",
+      [
+        "feat",
+        "fix",
+        "refactor",
+        "test",
+        "docs",
+        "chore",
+        "perf",
+        "build",
+        "ci",
+        "revert",
+      ],
+    ],
+    "scope-enum": [
+      2,
+      "always",
+      [
+        // repo areas
+        "web",
+        "ui",
+        "db",
+        "ci",
+        "docs",
+        "deps",
+        "docker",
+        "config",
+        "auth",
+        "prisma",
+        "observability",
+        "worker",
+        // business modules
+        "identity",
+        "profiles",
+        "directory",
+        "connections",
+        "mentorship",
+        "jobs",
+        "events",
+        "messaging",
+        "community",
+        "notifications",
+        "admin",
+        "search",
+        "uploads",
+      ],
+    ],
+    "subject-case": [0],
+  },
+};

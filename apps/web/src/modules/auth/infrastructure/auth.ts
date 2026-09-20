@@ -4,9 +4,10 @@ import { APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 
 import { env } from "@/config/env";
-import { sendEmail } from "@/lib/email";
-import { prisma } from "@/lib/prisma";
-import { redisRateLimitStorage } from "@/lib/rate-limit-storage";
+import { logger } from "@/infrastructure/observability";
+import { sendEmail } from "@/infrastructure/email/send-email";
+import { prisma } from "@/infrastructure/database/client";
+import { redisRateLimitStorage } from "@/infrastructure/redis/rate-limit-storage";
 
 /**
  * Authentication only (who you are, is the session valid). Authorization - roles, permissions,
@@ -19,11 +20,8 @@ const baseURL = env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL;
 /** Log-and-continue: never await email delivery in a request (avoids timing-based account enumeration). */
 function sendInBackground(email: Parameters<typeof sendEmail>[0]) {
   void sendEmail(email).catch((error: unknown) => {
-    console.error("[auth] failed to send email", {
-      to: email.to,
-      subject: email.subject,
-      error,
-    });
+    // No recipient address in the log line (reliability §6.4: identifiers and outcomes, not emails).
+    logger.error("auth.email.send_failed", { error });
   });
 }
 

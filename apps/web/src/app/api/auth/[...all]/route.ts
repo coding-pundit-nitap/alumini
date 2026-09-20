@@ -1,6 +1,6 @@
 import { toNextJsHandler } from "better-auth/next-js";
 
-import { auth } from "@/lib/auth";
+import { auth } from "@/modules/auth";
 
 // Better Auth owns everything under /api/auth/*. It is deliberately outside /api/v1
 // (docs/api/api-specification.md §4).

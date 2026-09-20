@@ -1,7 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { healthService } from "@/services/health.service";
+import { fetcher } from "@/lib/fetcher";
+
+export interface HealthData {
+  status: "ok";
+}
 
 export const healthQueryKeys = {
   all: ["health"] as const,
@@ -10,7 +14,7 @@ export const healthQueryKeys = {
 export function useHealthQuery() {
   return useQuery({
     queryKey: healthQueryKeys.all,
-    queryFn: () => healthService.getHealth(),
+    queryFn: () => fetcher<HealthData>("/health/live"),
     staleTime: 30 * 1000,
   });
 }

@@ -9,9 +9,12 @@
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "typecheck": "turbo run typecheck",
+    "arch": "turbo run arch && pnpm arch:workspace",
+    "arch:workspace": "depcruise packages database --config .dependency-cruiser.cjs",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch --filter=@nitap/web",
     "test:coverage": "turbo run test:coverage",
+    "test:integration": "turbo run test:integration",
     "test:e2e": "turbo run test:e2e",
     "test:e2e:ui": "turbo run test:e2e:ui",
     "format": "prettier --write .",
@@ -25,11 +28,18 @@
     "docker:down": "docker compose --env-file .env -f docker/docker-compose.yml down"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "dependency-cruiser": "^18.3.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.5.1",
     "prettier": "^3.9.8",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.11.2"
   },
-  "packageManager": "pnpm@12.3.4+sha512.961aa41fb077da3a04a441d9f8e15ebc0c96da8ef710b2eb67bf9ee7cb0610eabd48f1fd85f51cffe73846785fa0f87c56a3a872a1d893f8446741b5cce45457"
+  "packageManager": "pnpm@12.3.4+sha512.961aa41fb077da3a04a441d9f8e15ebc0c96da8ef710b2eb67bf9ee7cb0610eabd48f1fd85f51cffe73846785fa0f87c56a3a872a1d893f8446741b5cce45457",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=12"
+  }
 }

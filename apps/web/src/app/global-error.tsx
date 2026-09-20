@@ -23,6 +23,11 @@ export default function GlobalError({
           <p className="mt-2 text-sm text-slate-500">
             A fatal error occurred in the root layout.
           </p>
+          {error.digest && (
+            <p className="mt-2 font-mono text-xs text-slate-500">
+              Reference: {error.digest}. Quote this if you contact support.
+            </p>
+          )}
           <button
             onClick={() => reset()}
             className="mt-6 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"

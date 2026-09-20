@@ -5,14 +5,22 @@ const serverEnvSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
   // Optional at validation time so builds and tests that never touch the database still work;
-  // src/lib/prisma.ts throws if it is missing when a client is actually created.
+  // src/infrastructure/database/client.ts throws if it is missing when a client is actually created.
   DATABASE_URL: z.string().min(1).optional(),
   // Better Auth reads BETTER_AUTH_SECRET itself and refuses to run in production without it.
   // Optional here so builds and tests that never touch auth still work.
   BETTER_AUTH_SECRET: z.string().min(32).optional(),
   BETTER_AUTH_URL: z.string().url().optional(),
-  // Cache / rate-limit Redis. Optional for the same reason; src/lib/redis.ts throws if it is missing when used.
+  // Cache / rate-limit Redis. Optional for the same reason; src/infrastructure/redis/client.ts throws if it is missing when used.
   REDIS_URL: z.string().min(1).optional(),
+  // Log threshold (reliability §6.3). Defaults: info, and silent under test.
+  LOG_LEVEL: z
+    .enum(["debug", "info", "warn", "error", "fatal", "silent"])
+    .optional(),
+  // Bearer token that lets monitoring see the `checks` detail of /health/ready in production.
+  HEALTH_CHECK_TOKEN: z.string().min(16).optional(),
+  // Build/commit identifier stamped on every log line. Set by the deploy pipeline.
+  APP_VERSION: z.string().min(1).optional(),
 });
 
 const clientEnvSchema = z.object({

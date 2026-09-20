@@ -23,7 +23,7 @@ test.describe("Home Page", () => {
     await expect(
       page.getByText("Live Server State (TanStack Query)")
     ).toBeVisible();
-    await expect(page.getByText("GET /api/health")).toBeVisible();
+    await expect(page.getByText("GET /health/live")).toBeVisible();
 
     // Click Refetch Query button
     const refetchButton = page.getByRole("button", { name: /refetch query/i });

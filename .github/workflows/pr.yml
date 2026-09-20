@@ -1,0 +1,179 @@
+# Pull-request pipeline (docs/architecture/development-and-testing-strategy.md §18.1).
+# Jobs are scheduled by cost: static checks and the fast security gates run in parallel, unit tests follow
+# static, and the slow stages (integration, build, E2E) start only on code that already passes them.
+# Every job reproduces a local command: pnpm lint | typecheck | arch | test | test:integration | build | test:e2e.
+name: PR
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Superseded runs on a branch are cancelled; main runs are never cancelled (§18.4 rule 3).
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+env:
+  CI: "true"
+  # Placeholders for jobs that never connect; Prisma and env validation only need the variables to exist.
+  DATABASE_URL: postgresql://alumini:alumini@localhost:5432/alumini
+  REDIS_URL: redis://localhost:6379
+  BETTER_AUTH_SECRET: ci-only-secret-not-used-outside-github-actions-0000
+  BETTER_AUTH_URL: http://localhost:3000
+
+jobs:
+  static:
+    name: Static (format, types, lint, architecture)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm arch
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Organisation-owned repositories need a GITLEAKS_LICENSE secret for this action.
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  dependency-audit:
+    name: Dependency audit (high and critical)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Blocking by design (§18.2). Findings are fixed, or accepted explicitly with a reason in
+      # pnpm-workspace.yaml (auditConfig) so the exception is reviewed like code.
+      - run: pnpm audit --audit-level high
+
+  unit:
+    name: Unit and component tests
+    needs: static
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+  integration:
+    name: Integration and contract tests
+    needs: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: alumini
+          POSTGRES_PASSWORD: alumini
+          POSTGRES_DB: alumini
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U alumini" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Every migration must apply to an empty database.
+      - run: pnpm db:deploy
+      - run: pnpm test:integration
+
+  build:
+    name: Build
+    needs: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+  e2e:
+    name: E2E smoke
+    needs: [integration, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: alumini
+          POSTGRES_PASSWORD: alumini
+          POSTGRES_DB: alumini
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U alumini" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:deploy
+      - run: pnpm --filter @nitap/web exec playwright install --with-deps chromium
+      # Runs against `next dev` for now; it moves to the built images with the Docker pipeline (Phase 15).
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7

@@ -1,6 +1,5 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalDependencies": [".env"],
   "globalPassThroughEnv": [
     "CI",
     "DATABASE_URL",
@@ -8,9 +7,13 @@
     "REDIS_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
+    "HEALTH_CHECK_TOKEN",
+    "LOG_LEVEL",
+    "APP_VERSION",
     "PLAYWRIGHT_TEST_BASE_URL"
   ],
   "tasks": {
+    "transit": { "dependsOn": ["^transit"] },
     "db:generate": {
       "inputs": ["prisma/schema.prisma", "prisma.config.ts"],
       "outputs": ["generated/**"]
@@ -18,18 +21,24 @@
     "build": {
       "dependsOn": ["^build", "^db:generate"],
       "env": ["NEXT_PUBLIC_*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.env"],
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
     },
-    "lint": {},
-    "lint:fix": { "cache": false },
-    "typecheck": { "dependsOn": ["^db:generate"] },
-    "test": { "dependsOn": ["^db:generate"] },
+    "lint": { "dependsOn": ["transit"] },
+    "lint:fix": { "dependsOn": ["transit"], "cache": false },
+    "arch": { "dependsOn": ["transit"] },
+    "typecheck": { "dependsOn": ["transit", "^db:generate"] },
+    "test": { "dependsOn": ["transit", "^db:generate"] },
     "test:coverage": {
-      "dependsOn": ["^db:generate"],
+      "dependsOn": ["transit", "^db:generate"],
       "outputs": ["coverage/**"]
     },
     "test:watch": { "cache": false, "persistent": true },
-    "test:e2e": { "dependsOn": ["^db:generate"], "cache": false },
+    "test:integration": {
+      "dependsOn": ["transit", "^db:generate"],
+      "cache": false
+    },
+    "test:e2e": { "dependsOn": ["transit", "^db:generate"], "cache": false },
     "test:e2e:ui": { "cache": false, "persistent": true },
     "dev": {
       "dependsOn": ["^db:generate"],

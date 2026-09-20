@@ -8,3 +8,8 @@ coverage
 playwright-report
 test-results
 database/generated
+.turbo
+*.tsbuildinfo
+next-env.d.ts
+.husky/_
+blob-report

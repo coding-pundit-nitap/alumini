@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { cache } from "react";
 
-import { auth } from "@/lib/auth";
+import { auth } from "./auth";
 
 /**
  * The only way server code obtains the current user/session (Data Access Layer).

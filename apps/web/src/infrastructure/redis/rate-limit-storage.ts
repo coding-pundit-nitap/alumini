@@ -1,6 +1,7 @@
 import type { BetterAuthOptions } from "better-auth";
 
-import { getRedis } from "@/lib/redis";
+import { getRedis } from "@/infrastructure/redis/client";
+import { logger } from "@/infrastructure/observability";
 
 type RateLimitStorage = NonNullable<
   NonNullable<BetterAuthOptions["rateLimit"]>["customStorage"]
@@ -73,10 +74,10 @@ export const redisRateLimitStorage: RateLimitStorage = {
         ? { allowed: true, retryAfter: null }
         : { allowed: false, retryAfter: Math.max(1, retryAfter) };
     } catch (error) {
-      console.error(
-        "[rate-limit] Redis unavailable, using in-memory fallback:",
-        (error as Error).message
-      );
+      logger.warn("ratelimit.redis.unavailable_fallback", {
+        error,
+        metadata: { fallback: "in-memory" },
+      });
       return consumeInMemory(key, rule);
     }
   },

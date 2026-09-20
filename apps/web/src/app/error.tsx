@@ -15,7 +15,8 @@ export default function Error({
   const router = useRouter();
 
   useEffect(() => {
-    // Log error to an error reporting service
+    // Server-side failures are already logged by instrumentation.ts (with this digest). This only
+    // reaches the browser console until a client error tracker exists (Phase 13).
     console.error("Application runtime error:", error);
   }, [error]);
 
@@ -29,8 +30,13 @@ export default function Error({
           Something went wrong!
         </h2>
         <p className="text-muted-foreground mt-2 text-sm">
-          {error.message || "An unexpected error occurred. Please try again."}
+          An unexpected error occurred. Please try again.
         </p>
+        {error.digest && (
+          <p className="text-muted-foreground mt-2 font-mono text-xs">
+            Reference: {error.digest}. Quote this if you contact support.
+          </p>
+        )}
         <div className="mt-6 flex gap-4">
           <Button onClick={() => reset()} variant="default">
             Try again

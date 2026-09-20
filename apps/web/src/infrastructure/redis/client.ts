@@ -1,6 +1,7 @@
 import Redis from "ioredis";
 
 import { env } from "@/config/env";
+import { logger } from "@/infrastructure/observability";
 
 // This is the CACHE / rate-limit Redis: keys here may be evicted (allkeys-lru), so nothing in it may
 // be unrecoverable. The job queue needs a separate Redis with noeviction (docs/adr/ADR-007).
@@ -28,7 +29,9 @@ function createRedis() {
     const now = Date.now();
     if (now - (globalForRedis.redisLastErrorLog ?? 0) > 30_000) {
       globalForRedis.redisLastErrorLog = now;
-      console.error("[redis] connection error:", error.message);
+      logger.warn("redis.connection.error", {
+        metadata: { message: error.message },
+      });
     }
   });
 

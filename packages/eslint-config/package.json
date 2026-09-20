@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.mjs"
+    ".": "./index.mjs",
+    "./boundaries": "./boundaries.mjs"
   },
   "dependencies": {
     "eslint": "^9.39.5",

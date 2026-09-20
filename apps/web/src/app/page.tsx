@@ -217,14 +217,12 @@ export default function Home() {
                     </span>
                     <Badge
                       variant={
-                        healthData?.data?.status === "healthy"
-                          ? "success"
-                          : "secondary"
+                        healthData?.status === "ok" ? "success" : "secondary"
                       }
                     >
                       {isHealthLoading
                         ? "Loading..."
-                        : healthData?.data?.status || "Ready"}
+                        : healthData?.status || "Ready"}
                     </Badge>
                   </CardTitle>
                   <CardDescription>
@@ -240,7 +238,7 @@ export default function Home() {
                           Health Check Endpoint
                         </p>
                         <p className="text-foreground mt-0.5 font-mono text-sm">
-                          GET /api/health
+                          GET /health/live
                         </p>
                       </div>
                       <Button

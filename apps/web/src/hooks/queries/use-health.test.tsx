@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useHealthQuery } from "./use-health";
-import { healthService } from "@/services/health.service";
 import React from "react";
 
 const createWrapper = () => {
@@ -26,21 +25,10 @@ describe("useHealthQuery", () => {
     vi.restoreAllMocks();
   });
 
-  it("fetches and returns health API payload successfully", async () => {
-    const mockData = {
-      success: true,
-      data: {
-        status: "healthy" as const,
-        uptime: 120,
-        environment: "test",
-      },
-      meta: {
-        timestamp: "2026-09-01T20:00:00.000Z",
-        version: "1.0.0",
-      },
-    };
-
-    vi.spyOn(healthService, "getHealth").mockResolvedValueOnce(mockData);
+  it("fetches liveness from /health/live", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(Response.json({ status: "ok" }));
 
     const { result } = renderHook(() => useHealthQuery(), {
       wrapper: createWrapper(),
@@ -50,7 +38,7 @@ describe("useHealthQuery", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data).toEqual(mockData);
-    expect(result.current.data?.data?.status).toBe("healthy");
+    expect(fetchMock.mock.calls[0][0]).toBe("/health/live");
+    expect(result.current.data).toEqual({ status: "ok" });
   });
 });
