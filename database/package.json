@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./seed": "./prisma/seed.ts"
   },
   "scripts": {
     "postinstall": "prisma generate",
@@ -12,10 +13,12 @@
     "db:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
     "db:studio": "prisma studio",
+    "db:seed": "node --experimental-strip-types prisma/seed.ts",
     "test": "pnpm --filter @nitap/web exec vitest run --project unit prisma/seed-data",
     "test:watch": "pnpm --filter @nitap/web exec vitest --project unit prisma/seed-data"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0"
   },
   "devDependencies": {

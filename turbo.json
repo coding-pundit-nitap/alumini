@@ -14,6 +14,7 @@
   ],
   "tasks": {
     "transit": { "dependsOn": ["^transit"] },
+    "db:seed": { "cache": false },
     "db:generate": {
       "inputs": ["prisma/schema.prisma", "prisma.config.ts"],
       "outputs": ["generated/**"]

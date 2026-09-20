@@ -248,6 +248,9 @@ importers:
 
   database:
     dependencies:
+      '@prisma/adapter-pg':
+        specifier: 7.10.0
+        version: 7.10.0
       '@prisma/client':
         specifier: 7.10.0
         version: 7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(magicast@0.5.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(typescript@6.0.3)

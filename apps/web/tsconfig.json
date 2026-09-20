@@ -1,6 +1,9 @@
 {
   "extends": "@nitap/typescript-config/nextjs.json",
   "compilerOptions": {
+    // @nitap/database is run by Node's native type stripping, which needs explicit `.ts` import
+    // extensions; tsc only allows them when nothing is emitted (noEmit is on in the base config).
+    "allowImportingTsExtensions": true,
     "paths": {
       "@/*": ["./src/*"]
     }

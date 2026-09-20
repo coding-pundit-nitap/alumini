@@ -1,4 +1,4 @@
-import { PERMISSIONS, type Permission } from "./permissions";
+import { PERMISSIONS, type Permission } from "./permissions.ts";
 
 export const ROLE_NAMES = [
   "STUDENT",

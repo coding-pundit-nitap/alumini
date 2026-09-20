@@ -15,7 +15,8 @@
     "test:watch": "vitest --project unit --project dom",
     "test:coverage": "vitest run --project unit --project dom --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "db:seed:admin": "node --experimental-strip-types scripts/seed-dev-admin.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "1.7.5",

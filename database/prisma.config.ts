@@ -16,6 +16,9 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    // Reference data and RBAC only; the dev admin needs Better Auth's hashing, so it is seeded
+    // separately by `pnpm db:seed` from the repo root.
+    seed: "node --experimental-strip-types prisma/seed.ts",
   },
   datasource: {
     url: isGenerate
