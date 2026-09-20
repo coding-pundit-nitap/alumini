@@ -1,0 +1,31 @@
+{
+  "name": "@nitap/testing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./global-setup": "./src/global-setup.ts"
+  },
+  "scripts": {
+    "lint": "eslint --max-warnings=0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nitap/database": "workspace:*",
+    "@prisma/adapter-pg": "7.10.0",
+    "ioredis": "6.0.0",
+    "pg": "^8.23.0",
+    "smtp-server": "^3.19.13",
+    "vitest": "^5.0.1"
+  },
+  "devDependencies": {
+    "@nitap/eslint-config": "workspace:*",
+    "@nitap/typescript-config": "workspace:*",
+    "@types/node": "^26.6.2",
+    "@types/pg": "^8.23.1",
+    "@types/smtp-server": "^3.5.13",
+    "eslint": "^9.39.5",
+    "typescript": "^6.0.3"
+  }
+}

@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@nitap/eslint-config": "workspace:*",
+    "@nitap/testing": "workspace:*",
     "@nitap/typescript-config": "workspace:*",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
