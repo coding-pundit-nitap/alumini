@@ -1,0 +1,30 @@
+{
+  "name": "@nitap/queue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --project unit",
+    "test:integration": "vitest run --project integration"
+  },
+  "dependencies": {
+    "@nitap/jobs": "workspace:*",
+    "@nitap/observability": "workspace:*",
+    "bullmq": "6.3.8",
+    "ioredis": "6.0.0"
+  },
+  "devDependencies": {
+    "@nitap/eslint-config": "workspace:*",
+    "@nitap/testing": "workspace:*",
+    "@nitap/typescript-config": "workspace:*",
+    "@types/node": "^26.6.2",
+    "eslint": "^10.11.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}
