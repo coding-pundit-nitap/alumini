@@ -300,13 +300,13 @@ describe("everywhere else", () => {
   it("carves out one exception: auth's session adapter reads the Next.js request", async () => {
     expect(
       await violations(
-        "src/modules/auth/infrastructure/session.ts",
+        "src/modules/auth/infrastructure/actor.ts",
         `import { headers } from "next/headers";\nexport { headers };`
       )
     ).toHaveLength(0);
     expect(
       await violations(
-        "src/modules/auth/infrastructure/session.ts",
+        "src/modules/auth/infrastructure/actor.ts",
         `import { PrismaClient } from "@nitap/database";\nexport { PrismaClient };`
       )
     ).toHaveLength(0);

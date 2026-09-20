@@ -177,9 +177,9 @@ export const layerRules = [
     ),
   },
   {
-    // The one sanctioned exception: Better Auth's Next.js integration and the request-scoped session
-    // read (`next/headers`, React `cache`) are framework code by nature. Revisit when `getActor()` lands
-    // in Phase 2, when the framework-facing part can move behind a port.
+    // The one sanctioned exception: Better Auth's Next.js integration and the request-scoped identity read
+    // (`next/headers`, React `cache` in getActor()) are framework code by nature. Keep it confined to
+    // src/modules/auth/infrastructure; the rules in domain/ and application/ stay framework-free.
     name: "boundaries/auth-infrastructure-exception",
     files: ["src/modules/auth/infrastructure/**"],
     rules: restrict(designSystem, components, anyModule, anyPresentation),
