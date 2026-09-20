@@ -39,6 +39,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
+  // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
   @@unique([email])
   @@map("user")
 }
