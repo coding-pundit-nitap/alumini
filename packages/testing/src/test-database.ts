@@ -3,6 +3,15 @@ import { randomUUID } from "node:crypto";
 import { Client } from "pg";
 import { inject } from "vitest";
 
+// Declared here, not in global-setup.ts: this is where `inject` is actually called, and a program that
+// only pulls in this file (e.g. another package's tsc run over workspace source) still sees the
+// augmentation. Duplicating it in global-setup.ts would conflict.
+declare module "vitest" {
+  export interface ProvidedContext {
+    templateDatabaseUrl: string;
+  }
+}
+
 import { PrismaClient } from "@nitap/database";
 import { PrismaPg } from "@prisma/adapter-pg";
 

@@ -1,9 +1,4 @@
-import config from "@nitap/eslint-config";
+import config from "@nitap/eslint-config/next-js";
 
-const eslintConfig = [
-  ...config,
-  // Node libraries have no Next.js pages directory.
-  { rules: { "@next/next/no-html-link-for-pages": "off" } },
-];
-
-export default eslintConfig;
+/** @type {import("eslint").Linter.Config} */
+export default config;

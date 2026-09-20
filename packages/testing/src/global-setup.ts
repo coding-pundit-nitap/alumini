@@ -116,9 +116,3 @@ export async function provideTemplateDatabase(
     }
   };
 }
-
-declare module "vitest" {
-  export interface ProvidedContext {
-    templateDatabaseUrl: string;
-  }
-}
