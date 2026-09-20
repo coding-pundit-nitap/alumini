@@ -17,16 +17,20 @@ Object.defineProperty(window, "matchMedia", {
       matches: false,
       media: query,
       onchange: null,
-      addEventListener: vi.fn((type: string, listener: (event: MediaQueryListEvent) => void) => {
-        if (type === "change") {
-          listeners.add(listener);
+      addEventListener: vi.fn(
+        (type: string, listener: (event: MediaQueryListEvent) => void) => {
+          if (type === "change") {
+            listeners.add(listener);
+          }
         }
-      }),
-      removeEventListener: vi.fn((type: string, listener: (event: MediaQueryListEvent) => void) => {
-        if (type === "change") {
-          listeners.delete(listener);
+      ),
+      removeEventListener: vi.fn(
+        (type: string, listener: (event: MediaQueryListEvent) => void) => {
+          if (type === "change") {
+            listeners.delete(listener);
+          }
         }
-      }),
+      ),
       dispatchEvent: vi.fn((event: Event) => {
         listeners.forEach((listener) => listener(event as MediaQueryListEvent));
         return true;

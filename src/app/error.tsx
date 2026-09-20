@@ -22,13 +22,13 @@ export default function Error({
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center p-4">
       <div className="flex max-w-md flex-col items-center text-center">
-        <div className="mb-4 rounded-full bg-destructive/10 p-4 text-destructive">
+        <div className="bg-destructive/10 text-destructive mb-4 rounded-full p-4">
           <AlertTriangle className="size-10" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
+        <h2 className="text-foreground text-2xl font-bold tracking-tight">
           Something went wrong!
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-2 text-sm">
           {error.message || "An unexpected error occurred. Please try again."}
         </p>
         <div className="mt-6 flex gap-4">

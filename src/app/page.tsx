@@ -35,7 +35,12 @@ export default function Home() {
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [isCopied, setIsCopied] = React.useState(false);
 
-  const { data: healthData, isPending: isHealthLoading, isFetching: isHealthFetching, refetch: refetchHealth } = useHealthQuery();
+  const {
+    data: healthData,
+    isPending: isHealthLoading,
+    isFetching: isHealthFetching,
+    refetch: refetchHealth,
+  } = useHealthQuery();
 
   const features = [
     {
@@ -83,10 +88,34 @@ export default function Home() {
   ];
 
   const candidates = [
-    { id: 1, name: "Alex Morgan", role: "Senior Fullstack Engineer", experience: "6 yrs", tag: "React, Node" },
-    { id: 2, name: "Sarah Chen", role: "Lead Frontend Architect", experience: "8 yrs", tag: "Next.js, TypeScript" },
-    { id: 3, name: "David Kim", role: "DevOps & Cloud Engineer", experience: "5 yrs", tag: "Kubernetes, AWS" },
-    { id: 4, name: "Emily Watson", role: "Product Designer", experience: "4 yrs", tag: "Figma, UI Systems" },
+    {
+      id: 1,
+      name: "Alex Morgan",
+      role: "Senior Fullstack Engineer",
+      experience: "6 yrs",
+      tag: "React, Node",
+    },
+    {
+      id: 2,
+      name: "Sarah Chen",
+      role: "Lead Frontend Architect",
+      experience: "8 yrs",
+      tag: "Next.js, TypeScript",
+    },
+    {
+      id: 3,
+      name: "David Kim",
+      role: "DevOps & Cloud Engineer",
+      experience: "5 yrs",
+      tag: "Kubernetes, AWS",
+    },
+    {
+      id: 4,
+      name: "Emily Watson",
+      role: "Product Designer",
+      experience: "4 yrs",
+      tag: "Figma, UI Systems",
+    },
   ];
 
   const filteredCandidates = candidates.filter(
@@ -107,10 +136,10 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative w-full overflow-hidden py-20 md:py-28">
         <div className="container mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-muted/50 px-3.5 py-1.5 text-xs font-medium backdrop-blur">
+          <div className="border-border/80 bg-muted/50 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium backdrop-blur">
             <Sparkles className="size-3.5 text-amber-500" />
             <span>Production Grade Template Ready</span>
-            <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4">
+            <Badge variant="default" className="h-4 px-1.5 py-0 text-[10px]">
               v1.0.0
             </Badge>
           </div>
@@ -122,10 +151,10 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="mt-6 max-w-2xl text-base text-muted-foreground sm:text-lg">
+          <p className="text-muted-foreground mt-6 max-w-2xl text-base sm:text-lg">
             A production-ready foundation with strict TypeScript, clean folder
-            architecture, TanStack Query v5, shadcn/ui components, Vitest unit testing, Playwright
-            E2E, and automated CI pipelines.
+            architecture, TanStack Query v5, shadcn/ui components, Vitest unit
+            testing, Playwright E2E, and automated CI pipelines.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -150,22 +179,25 @@ export default function Home() {
       </section>
 
       {/* Interactive Demo Section */}
-      <section id="demo" className="w-full bg-muted/40 py-16">
+      <section id="demo" className="bg-muted/40 w-full py-16">
         <div className="container mx-auto max-w-5xl px-4">
           <div className="mb-8 text-center">
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Interactive Component & State Demo
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Demonstrating TanStack Query, shadcn/ui components, and custom hooks.
+            <p className="text-muted-foreground mt-2 text-sm">
+              Demonstrating TanStack Query, shadcn/ui components, and custom
+              hooks.
             </p>
           </div>
 
           <Tabs defaultValue="query" className="w-full">
-            <div className="flex justify-center mb-6">
+            <div className="mb-6 flex justify-center">
               <TabsList>
                 <TabsTrigger value="query">TanStack Query Demo</TabsTrigger>
-                <TabsTrigger value="candidates">Candidate Search Demo</TabsTrigger>
+                <TabsTrigger value="candidates">
+                  Candidate Search Demo
+                </TabsTrigger>
                 <TabsTrigger value="architecture">Directory Specs</TabsTrigger>
               </TabsList>
             </div>
@@ -173,27 +205,36 @@ export default function Home() {
             <TabsContent value="query">
               <Card className="shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between text-lg">
                     <span className="flex items-center gap-2">
                       <Database className="size-5 text-cyan-600" />
                       <span>Live Server State (TanStack Query)</span>
                     </span>
-                    <Badge variant={healthData?.data?.status === "healthy" ? "success" : "secondary"}>
-                      {isHealthLoading ? "Loading..." : healthData?.data?.status || "Ready"}
+                    <Badge
+                      variant={
+                        healthData?.data?.status === "healthy"
+                          ? "success"
+                          : "secondary"
+                      }
+                    >
+                      {isHealthLoading
+                        ? "Loading..."
+                        : healthData?.data?.status || "Ready"}
                     </Badge>
                   </CardTitle>
                   <CardDescription>
-                    Demonstrating automatic caching, query invalidation, and background state synchronization.
+                    Demonstrating automatic caching, query invalidation, and
+                    background state synchronization.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-lg border border-border bg-card p-4">
+                  <div className="border-border bg-card rounded-lg border p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                           Health Check Endpoint
                         </p>
-                        <p className="text-sm font-mono text-foreground mt-0.5">
+                        <p className="text-foreground mt-0.5 font-mono text-sm">
                           GET /api/health
                         </p>
                       </div>
@@ -204,23 +245,27 @@ export default function Home() {
                         disabled={isHealthFetching}
                         className="gap-2"
                       >
-                        <RefreshCw className={`size-3.5 ${isHealthFetching ? "animate-spin text-primary" : ""}`} />
-                        <span>{isHealthFetching ? "Fetching..." : "Refetch Query"}</span>
+                        <RefreshCw
+                          className={`size-3.5 ${isHealthFetching ? "text-primary animate-spin" : ""}`}
+                        />
+                        <span>
+                          {isHealthFetching ? "Fetching..." : "Refetch Query"}
+                        </span>
                       </Button>
                     </div>
 
-                    <div className="mt-4 rounded-md bg-muted p-3 font-mono text-xs text-muted-foreground">
+                    <div className="bg-muted text-muted-foreground mt-4 rounded-md p-3 font-mono text-xs">
                       {isHealthLoading ? (
                         <p>Querying server endpoint...</p>
                       ) : (
-                        <pre className="overflow-x-auto text-foreground">
+                        <pre className="text-foreground overflow-x-auto">
                           {JSON.stringify(healthData, null, 2)}
                         </pre>
                       )}
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-between border-t border-border/40 pt-4 text-xs text-muted-foreground">
+                <CardFooter className="border-border/40 text-muted-foreground flex justify-between border-t pt-4 text-xs">
                   <span>Query Cache: Stale Time (30s) • GC Time (5m)</span>
                   <span>React Query Devtools Enabled</span>
                 </CardFooter>
@@ -230,17 +275,18 @@ export default function Home() {
             <TabsContent value="candidates">
               <Card className="shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between text-lg">
                     <span>Talent Pool Explorer</span>
                     <Badge variant="outline">Live Hook Demo</Badge>
                   </CardTitle>
                   <CardDescription>
-                    Search across candidates in real-time with debounced input filtering.
+                    Search across candidates in real-time with debounced input
+                    filtering.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="relative">
-                    <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                    <Search className="text-muted-foreground absolute top-3 left-3 size-4" />
                     <Input
                       placeholder="Search by candidate name, role, or technology..."
                       className="pl-9"
@@ -250,8 +296,11 @@ export default function Home() {
                   </div>
 
                   {debouncedSearch && (
-                    <div className="text-xs text-muted-foreground">
-                      Debounced Query: <span className="font-semibold text-foreground">&quot;{debouncedSearch}&quot;</span>
+                    <div className="text-muted-foreground text-xs">
+                      Debounced Query:{" "}
+                      <span className="text-foreground font-semibold">
+                        &quot;{debouncedSearch}&quot;
+                      </span>
                     </div>
                   )}
 
@@ -260,7 +309,7 @@ export default function Home() {
                       filteredCandidates.map((candidate) => (
                         <div
                           key={candidate.id}
-                          className="flex items-center justify-between rounded-lg border border-border p-3.5 transition-colors hover:bg-muted/50"
+                          className="border-border hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3.5 transition-colors"
                         >
                           <div className="flex items-center gap-3">
                             <Avatar>
@@ -269,10 +318,10 @@ export default function Home() {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-sm leading-none">
+                              <p className="text-sm leading-none font-medium">
                                 {candidate.name}
                               </p>
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <p className="text-muted-foreground mt-1 text-xs">
                                 {candidate.role}
                               </p>
                             </div>
@@ -283,14 +332,18 @@ export default function Home() {
                         </div>
                       ))
                     ) : (
-                      <div className="col-span-2 py-8 text-center text-sm text-muted-foreground">
-                        No candidates found matching &quot;{debouncedSearch}&quot;
+                      <div className="text-muted-foreground col-span-2 py-8 text-center text-sm">
+                        No candidates found matching &quot;{debouncedSearch}
+                        &quot;
                       </div>
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-between border-t border-border/40 pt-4 text-xs text-muted-foreground">
-                  <span>Showing {filteredCandidates.length} of {candidates.length} candidates</span>
+                <CardFooter className="border-border/40 text-muted-foreground flex justify-between border-t pt-4 text-xs">
+                  <span>
+                    Showing {filteredCandidates.length} of {candidates.length}{" "}
+                    candidates
+                  </span>
                   <span>Tested with Vitest & React Testing Library</span>
                 </CardFooter>
               </Card>
@@ -299,21 +352,60 @@ export default function Home() {
             <TabsContent value="architecture">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Scalable Architecture Overview</CardTitle>
+                  <CardTitle className="text-lg">
+                    Scalable Architecture Overview
+                  </CardTitle>
                   <CardDescription>
-                    Modular separation of concerns structured under <code>src/</code>.
+                    Modular separation of concerns structured under{" "}
+                    <code>src/</code>.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="font-mono text-xs leading-relaxed space-y-2 text-muted-foreground">
-                  <p><strong className="text-foreground">src/app/</strong>: App Router layouts, routes, loading, error, and health check API.</p>
-                  <p><strong className="text-foreground">src/providers/</strong>: TanStack Query Provider with ReactQueryDevtools and SSR hydration.</p>
-                  <p><strong className="text-foreground">src/components/ui/</strong>: shadcn/ui design tokens and primitives.</p>
-                  <p><strong className="text-foreground">src/components/common/</strong>: Shared layout elements (Header, Footer, Nav).</p>
-                  <p><strong className="text-foreground">src/config/</strong>: Type-safe Zod schema environment validation & site metadata.</p>
-                  <p><strong className="text-foreground">src/hooks/queries/</strong>: Typed TanStack Query hooks.</p>
-                  <p><strong className="text-foreground">src/services/</strong>: Business logic & API request definitions.</p>
-                  <p><strong className="text-foreground">src/lib/</strong>: Core utilities (`cn`, `fetcher`, `query-client`).</p>
-                  <p><strong className="text-foreground">tests/ & e2e/</strong>: Vitest unit test suite and Playwright multi-browser E2E suite.</p>
+                <CardContent className="text-muted-foreground space-y-2 font-mono text-xs leading-relaxed">
+                  <p>
+                    <strong className="text-foreground">src/app/</strong>: App
+                    Router layouts, routes, loading, error, and health check
+                    API.
+                  </p>
+                  <p>
+                    <strong className="text-foreground">src/providers/</strong>:
+                    TanStack Query Provider with ReactQueryDevtools and SSR
+                    hydration.
+                  </p>
+                  <p>
+                    <strong className="text-foreground">
+                      src/components/ui/
+                    </strong>
+                    : shadcn/ui design tokens and primitives.
+                  </p>
+                  <p>
+                    <strong className="text-foreground">
+                      src/components/common/
+                    </strong>
+                    : Shared layout elements (Header, Footer, Nav).
+                  </p>
+                  <p>
+                    <strong className="text-foreground">src/config/</strong>:
+                    Type-safe Zod schema environment validation & site metadata.
+                  </p>
+                  <p>
+                    <strong className="text-foreground">
+                      src/hooks/queries/
+                    </strong>
+                    : Typed TanStack Query hooks.
+                  </p>
+                  <p>
+                    <strong className="text-foreground">src/services/</strong>:
+                    Business logic & API request definitions.
+                  </p>
+                  <p>
+                    <strong className="text-foreground">src/lib/</strong>: Core
+                    utilities (`cn`, `fetcher`, `query-client`).
+                  </p>
+                  <p>
+                    <strong className="text-foreground">tests/ & e2e/</strong>:
+                    Vitest unit test suite and Playwright multi-browser E2E
+                    suite.
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -324,12 +416,13 @@ export default function Home() {
       {/* Features Grid */}
       <section id="features" className="w-full py-20">
         <div className="container mx-auto max-w-6xl px-4">
-          <div className="text-center mb-14">
+          <div className="mb-14 text-center">
             <h2 className="text-3xl font-bold tracking-tight">
               Engineered for Production Excellence
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground max-w-xl mx-auto">
-              Everything required to scale an enterprise-level Next.js web application from day one.
+            <p className="text-muted-foreground mx-auto mt-2 max-w-xl text-sm">
+              Everything required to scale an enterprise-level Next.js web
+              application from day one.
             </p>
           </div>
 
@@ -337,14 +430,14 @@ export default function Home() {
             {features.map((feature, idx) => (
               <Card key={idx} className="transition-all hover:shadow-md">
                 <CardHeader>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="mb-2 flex items-center justify-between">
                     {feature.icon}
                     <Badge variant="outline">{feature.badge}</Badge>
                   </div>
                   <CardTitle className="text-lg">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>

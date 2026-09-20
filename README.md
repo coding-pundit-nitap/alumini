@@ -77,10 +77,12 @@ insta_hire_zetwork/
 ## 🛠️ Getting Started
 
 ### 1. Prerequisites
+
 - **Node.js**: `v20+` (v22 recommended)
 - **Package Manager**: `pnpm` (v10 recommended)
 
 ### 2. Installation
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -91,40 +93,44 @@ pnpm install
 ```
 
 ### 3. Environment Setup
+
 ```bash
 cp .env.example .env.local
 ```
 
 ### 4. Run Development Server
+
 ```bash
 pnpm run dev
 ```
+
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ---
 
 ## 🧪 Available Scripts & Testing
 
-| Command | Description |
-| :--- | :--- |
-| `pnpm run dev` | Start development server with Turbopack |
-| `pnpm run build` | Create optimized production build |
-| `pnpm run start` | Start production server |
-| `pnpm run typecheck` | Run TypeScript compiler validation (`tsc --noEmit`) |
-| `pnpm run lint` | Run ESLint checks |
-| `pnpm run lint:fix` | Automatically fix ESLint warnings |
-| `pnpm run format` | Format code using Prettier with Tailwind class ordering |
-| `pnpm run test` | Run Unit & Component tests with Vitest |
-| `pnpm run test:watch` | Run Vitest in interactive watch mode |
-| `pnpm run test:coverage` | Generate code coverage report |
-| `pnpm run test:e2e` | Run Playwright End-to-End test suite |
-| `pnpm run test:e2e:ui` | Open interactive Playwright Test UI |
+| Command                  | Description                                             |
+| :----------------------- | :------------------------------------------------------ |
+| `pnpm run dev`           | Start development server with Turbopack                 |
+| `pnpm run build`         | Create optimized production build                       |
+| `pnpm run start`         | Start production server                                 |
+| `pnpm run typecheck`     | Run TypeScript compiler validation (`tsc --noEmit`)     |
+| `pnpm run lint`          | Run ESLint checks                                       |
+| `pnpm run lint:fix`      | Automatically fix ESLint warnings                       |
+| `pnpm run format`        | Format code using Prettier with Tailwind class ordering |
+| `pnpm run test`          | Run Unit & Component tests with Vitest                  |
+| `pnpm run test:watch`    | Run Vitest in interactive watch mode                    |
+| `pnpm run test:coverage` | Generate code coverage report                           |
+| `pnpm run test:e2e`      | Run Playwright End-to-End test suite                    |
+| `pnpm run test:e2e:ui`   | Open interactive Playwright Test UI                     |
 
 ---
 
 ## 🔒 Quality & CI Pipeline
 
 Every pull request and push to main runs our GitHub Actions workflow:
+
 1. **ESLint**: Static analysis & lint rules
 2. **TypeScript**: Strict typecheck
 3. **Vitest**: Unit & Component tests

@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 const serverEnvSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
   // Optional at validation time so builds and tests that never touch the database still work;
   // src/lib/prisma.ts throws if it is missing when a client is actually created.
   DATABASE_URL: z.string().min(1).optional(),
@@ -25,7 +27,10 @@ function validateEnv() {
 
   const parsedServer = serverEnvSchema.safeParse(process.env);
   if (!parsedServer.success && isServer) {
-    console.error("❌ Invalid server environment variables:", parsedServer.error.flatten().fieldErrors);
+    console.error(
+      "❌ Invalid server environment variables:",
+      parsedServer.error.flatten().fieldErrors
+    );
     throw new Error("Invalid server environment variables");
   }
 
@@ -34,7 +39,10 @@ function validateEnv() {
   });
 
   if (!parsedClient.success) {
-    console.error("❌ Invalid client environment variables:", parsedClient.error.flatten().fieldErrors);
+    console.error(
+      "❌ Invalid client environment variables:",
+      parsedClient.error.flatten().fieldErrors
+    );
     throw new Error("Invalid client environment variables");
   }
 
