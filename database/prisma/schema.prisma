@@ -40,6 +40,11 @@ model User {
   accounts      Account[]
   profile       Profile?
 
+  userRoles              UserRole[]        @relation("UserRoleSubject")
+  roleGrantsIssued       UserRole[]        @relation("UserRoleGrantor")
+  permissionGrants       PermissionGrant[] @relation("PermissionGrantSubject")
+  permissionGrantsIssued PermissionGrant[] @relation("PermissionGrantGrantor")
+
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
   @@unique([email])
@@ -135,7 +140,74 @@ model Chapter {
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
+  permissionGrants PermissionGrant[]
+
   @@map("chapter")
+}
+
+model Role {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@map("role")
+}
+
+model UserRole {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  user          User     @relation("UserRoleSubject", fields: [userId], references: [id], onDelete: Cascade)
+  roleId        String   @map("role_id") @db.Uuid
+  role          Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  grantedBy     String   @map("granted_by") @db.Uuid
+  grantedByUser User     @relation("UserRoleGrantor", fields: [grantedBy], references: [id], onDelete: Restrict)
+  grantedAt     DateTime @default(now()) @map("granted_at") @db.Timestamptz(3)
+
+  @@unique([userId, roleId], map: "uq_user_role")
+  @@map("user_role")
+}
+
+model RolePermission {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  // Validated against the code-side registry (database/prisma/seed-data/permissions.ts), not by
+  // PostgreSQL — see the "Role / UserRole / RolePermission / PermissionGrant" note in domain-model.md.
+  permission String
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([roleId, permission], map: "uq_role_permission")
+  @@map("role_permission")
+}
+
+enum PermissionScope {
+  GLOBAL
+  CHAPTER
+}
+
+model PermissionGrant {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String          @map("user_id") @db.Uuid
+  user          User            @relation("PermissionGrantSubject", fields: [userId], references: [id], onDelete: Cascade)
+  permission    String
+  scopeType     PermissionScope @map("scope_type")
+  chapterId     String?         @map("chapter_id") @db.Uuid
+  chapter       Chapter?        @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  grantedBy     String          @map("granted_by") @db.Uuid
+  grantedByUser User            @relation("PermissionGrantGrantor", fields: [grantedBy], references: [id], onDelete: Restrict)
+  grantedAt     DateTime        @default(now()) @map("granted_at") @db.Timestamptz(3)
+  expiresAt     DateTime?       @map("expires_at") @db.Timestamptz(3)
+
+  // Declared here (unlike ck_grant_scope, a CHECK, which Prisma's schema-vs-db diff ignores
+  // entirely) because Prisma's diff DOES compare plain multi-column unique indexes against
+  // schema.prisma and will propose dropping one it can't find declared. The `NULLS NOT DISTINCT`
+  // modifier itself still can't be expressed here — it lives only in this migration's hand-written
+  // SQL (migrations/20260920172545_rbac) — but the name and columns must match to avoid drift.
+  @@unique([userId, permission, scopeType, chapterId], map: "uq_permission_grant")
+  @@map("permission_grant")
 }
 
 enum ProfileVisibility {
