@@ -1,0 +1,35 @@
+{
+  "name": "@nitap/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=../../.env src/index.ts",
+    "start": "node --env-file-if-exists=../../.env src/index.ts",
+    "cli": "node --env-file-if-exists=../../.env src/cli.ts",
+    "lint": "eslint --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "arch": "depcruise src tests --config ../../.dependency-cruiser.cjs --ts-config tsconfig.json",
+    "test": "vitest run --project unit",
+    "test:integration": "vitest run --project integration"
+  },
+  "dependencies": {
+    "@nitap/database": "workspace:*",
+    "@nitap/email": "workspace:*",
+    "@nitap/jobs": "workspace:*",
+    "@nitap/observability": "workspace:*",
+    "@nitap/queue": "workspace:*",
+    "@prisma/adapter-pg": "7.10.0",
+    "ioredis": "6.0.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@nitap/eslint-config": "workspace:*",
+    "@nitap/testing": "workspace:*",
+    "@nitap/typescript-config": "workspace:*",
+    "@types/node": "^26.6.2",
+    "eslint": "^10.11.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}
