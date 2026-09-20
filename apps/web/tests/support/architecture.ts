@@ -105,3 +105,26 @@ export function checkStructure(srcRoot: string): string[] {
 
   return violations;
 }
+
+/**
+ * RBAC §11: handlers, pages and use cases declare permissions, never role names. A role name inside a
+ * quoted string in application source is a role check in disguise. Test files are ignored; the seed
+ * and the RBAC tests legitimately name roles and live outside `src/`.
+ */
+export function checkNoRoleNames(
+  srcRoot: string,
+  roleNames: readonly string[]
+): string[] {
+  const pattern = new RegExp(`["'\`](${roleNames.join("|")})["'\`]`);
+  const violations: string[] = [];
+  for (const file of walk(srcRoot).files) {
+    if (!SOURCE_FILE.test(file) || TEST_FILE.test(file)) continue;
+    const match = pattern.exec(fs.readFileSync(file, "utf8"));
+    if (match) {
+      violations.push(
+        `${rel(srcRoot, file)} names the role "${match[1]}"; check a permission with authorize() instead (rbac-permission-matrix.md §11)`
+      );
+    }
+  }
+  return violations;
+}
