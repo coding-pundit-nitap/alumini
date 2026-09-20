@@ -1,0 +1,28 @@
+{
+  "name": "@nitap/email",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "check-types": "tsc --noEmit --skipLibCheck",
+    "test": "vitest run",
+    "lint:fix": "eslint --fix"
+  },
+  "dependencies": {
+    "nodemailer": "^10.0.10"
+  },
+  "devDependencies": {
+    "@nitap/eslint-config": "workspace:*",
+    "@nitap/testing": "workspace:*",
+    "@nitap/typescript-config": "workspace:*",
+    "@types/node": "^26.6.2",
+    "eslint": "^10.11.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}
