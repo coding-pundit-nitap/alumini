@@ -1,0 +1,321 @@
+import { DelayedError, UnrecoverableError, Worker } from "bullmq";
+import type { Job } from "bullmq";
+import { Redis } from "ioredis";
+
+import {
+  DeferJobError,
+  PermanentJobError,
+  QUEUES,
+  computeBackoffMs,
+} from "@nitap/jobs";
+import type { JobDefinition, QueueName } from "@nitap/jobs";
+import { runWithRequestContext } from "@nitap/observability";
+import type { Logger, Metrics } from "@nitap/observability";
+
+import { TimeoutError } from "./timeout.ts";
+
+/** What a processor gets besides its validated payload. */
+export type JobContext = {
+  jobId: string;
+  /** 1-based attempt number. */
+  attempt: number;
+  /** Correlation id of the request that wrote the event, or null for scheduled jobs. */
+  requestId: string | null;
+  /** Aborted when the job timeout elapses; a cooperative processor should stop. */
+  signal: AbortSignal;
+  logger: Logger;
+};
+
+export type JobProcessor<TPayload> = (
+  payload: TPayload,
+  context: JobContext
+) => Promise<void>;
+
+export type RegisteredJob<TPayload = unknown> = {
+  definition: JobDefinition<string, TPayload>;
+  process: JobProcessor<TPayload>;
+};
+
+/** Pairs a definition with its processor so the payload type flows from one to the other. */
+export function registerJob<TPayload>(
+  definition: JobDefinition<string, TPayload>,
+  process: JobProcessor<TPayload>
+): RegisteredJob {
+  return { definition, process } as unknown as RegisteredJob;
+}
+
+export type RunnableJob = Pick<
+  Job,
+  "id" | "name" | "data" | "attemptsMade" | "moveToDelayed"
+>;
+
+type Envelope = {
+  eventId?: string;
+  requestId?: string | null;
+  payload?: unknown;
+};
+
+export type ExecuteDeps = {
+  registry: ReadonlyMap<string, RegisteredJob>;
+  logger: Logger;
+  metrics: Metrics;
+  /** How long to hold back a payload of a newer version than this worker knows. */
+  unknownVersionDelayMs: number;
+  now?: () => number;
+};
+
+/**
+ * Everything that happens to one job (TDS §12.4), independent of BullMQ's Worker so it is unit-testable:
+ * validate, defer unknown versions, restore the request context, enforce the timeout, and translate
+ * errors into BullMQ's retry / fail / delay semantics. Processors must not put personal data in error
+ * messages: the message is logged.
+ */
+export async function executeJob(
+  deps: ExecuteDeps,
+  job: RunnableJob,
+  token?: string
+): Promise<void> {
+  const now = deps.now ?? Date.now;
+  const { logger, metrics } = deps;
+
+  const registered = deps.registry.get(job.name);
+  if (!registered) {
+    throw new UnrecoverableError(
+      `No processor registered for job "${job.name}"`
+    );
+  }
+  const { definition, process } = registered;
+  const labels = { queue: definition.queue, job: definition.name };
+  const envelope = (job.data ?? {}) as Envelope;
+  const requestId = envelope.requestId ?? null;
+  const jobId = String(job.id ?? "unknown");
+  const attempt = job.attemptsMade + 1;
+  const isLastAttempt = attempt >= definition.retry.attempts;
+
+  const dead = (reason: string) => {
+    logger.error("job.dead", {
+      metadata: { job: definition.name, jobId, attempts: attempt, reason },
+    });
+    metrics.increment("jobs_dead_total", labels);
+    metrics.increment("jobs_processed_total", { ...labels, outcome: "failed" });
+  };
+  const defer = async (delayMs: number, reason: string): Promise<never> => {
+    logger.warn("job.deferred", {
+      metadata: { job: definition.name, jobId, reason },
+    });
+    await job.moveToDelayed(now() + delayMs, token);
+    throw new DelayedError();
+  };
+
+  const parsed = definition.schema.safeParse(envelope.payload);
+  if (!parsed.success) {
+    const version = (envelope.payload as { v?: unknown } | null | undefined)?.v;
+    if (typeof version === "number" && version > definition.version) {
+      return defer(
+        deps.unknownVersionDelayMs,
+        "payload version is newer than this worker"
+      );
+    }
+    const problems = parsed.error.issues
+      .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+      .join("; ");
+    dead(`invalid payload: ${problems}`);
+    throw new UnrecoverableError(
+      `Invalid payload for ${definition.name}: ${problems}`
+    );
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), definition.timeoutMs);
+  const timedOut = new Promise<never>((_, reject) => {
+    controller.signal.addEventListener(
+      "abort",
+      () =>
+        reject(
+          new TimeoutError(
+            `${definition.name} exceeded ${definition.timeoutMs} ms`
+          )
+        ),
+      { once: true }
+    );
+  });
+  const started = performance.now();
+
+  try {
+    await runWithRequestContext(
+      { requestId: requestId ?? `job-${jobId}` },
+      () =>
+        Promise.race([
+          process(parsed.data, {
+            jobId,
+            attempt,
+            requestId,
+            signal: controller.signal,
+            logger,
+          }),
+          timedOut,
+        ])
+    );
+    metrics.increment("jobs_processed_total", {
+      ...labels,
+      outcome: "completed",
+    });
+  } catch (error) {
+    if (error instanceof DeferJobError) {
+      return defer(error.delayMs, error.message);
+    }
+    if (error instanceof PermanentJobError) {
+      dead(error.message);
+      throw new UnrecoverableError(error.message);
+    }
+    if (isLastAttempt) {
+      dead(error instanceof Error ? error.message : "unknown error");
+    } else {
+      logger.warn("job.retry", {
+        error,
+        metadata: { job: definition.name, jobId, attempt },
+      });
+      metrics.increment("jobs_processed_total", {
+        ...labels,
+        outcome: "retry",
+      });
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    metrics.observe(
+      "job_duration_seconds",
+      (performance.now() - started) / 1000,
+      labels
+    );
+  }
+}
+
+export type QueueOverride = {
+  concurrency?: number;
+  /** BullMQ limiter: at most `max` jobs per `durationMs`, across all workers of this queue. */
+  rateLimit?: { max: number; durationMs: number };
+};
+
+export type WorkerRuntimeOptions = {
+  redisUrl: string;
+  prefix?: string;
+  jobs: readonly RegisteredJob[];
+  logger: Logger;
+  metrics: Metrics;
+  queueOverrides?: Partial<Record<QueueName, QueueOverride>>;
+  /** Default 60 s. */
+  unknownVersionDelayMs?: number;
+};
+
+export type WorkerRuntime = {
+  start(): Promise<void>;
+  /** Stops taking jobs, lets in-flight ones finish for up to `timeoutMs` (default 30 s), then forces. */
+  close(options?: { timeoutMs?: number }): Promise<void>;
+  health(): { running: boolean; draining: boolean };
+};
+
+export function createWorkerRuntime(
+  options: WorkerRuntimeOptions
+): WorkerRuntime {
+  const { logger, metrics } = options;
+  const registry = new Map(
+    options.jobs.map((job) => [job.definition.name, job])
+  );
+  if (registry.size !== options.jobs.length) {
+    throw new Error("A job is registered more than once");
+  }
+  const queueNames = [
+    ...new Set(options.jobs.map((job) => job.definition.queue)),
+  ];
+
+  let connection: Redis | null = null;
+  let workers: Worker[] = [];
+  let running = false;
+  let draining = false;
+
+  const deps: ExecuteDeps = {
+    registry,
+    logger,
+    metrics,
+    unknownVersionDelayMs: options.unknownVersionDelayMs ?? 60_000,
+  };
+
+  return {
+    async start() {
+      if (running) return;
+      connection = new Redis(options.redisUrl, { maxRetriesPerRequest: null });
+      connection.on("error", (error) =>
+        logger.error("queue.redis.error", { error })
+      );
+      workers = queueNames.map((name) => {
+        const override = options.queueOverrides?.[name];
+        const worker = new Worker(
+          name,
+          (job, token) => executeJob(deps, job, token),
+          {
+            connection: connection as Redis,
+            prefix: options.prefix,
+            concurrency: override?.concurrency ?? QUEUES[name].concurrency,
+            limiter: override?.rateLimit
+              ? {
+                  max: override.rateLimit.max,
+                  duration: override.rateLimit.durationMs,
+                }
+              : undefined,
+            settings: {
+              backoffStrategy: (attemptsMade, _type, _error, failed) => {
+                const definition = registry.get(failed?.name ?? "")?.definition;
+                return definition
+                  ? computeBackoffMs(definition.retry, attemptsMade)
+                  : 60_000;
+              },
+            },
+          }
+        );
+        worker.on("error", (error) =>
+          logger.error("queue.worker.error", { error })
+        );
+        return worker;
+      });
+      await Promise.all(workers.map((worker) => worker.waitUntilReady()));
+      running = true;
+    },
+
+    async close({ timeoutMs = 30_000 } = {}) {
+      draining = true;
+      // BullMQ memoizes close(): once `worker.close()` (non-forced) is in flight, a later
+      // `worker.close(true)` on the SAME worker just returns that same promise and ignores `force`
+      // (confirmed against bullmq 6.3.8's source). So there is no second, "make it forceful now" call;
+      // the only real lever is the shared connection. `allSettled` means we never need to await this
+      // again, so a job that never returns cannot leave an unhandled rejection behind.
+      const graceful = Promise.allSettled(
+        workers.map((worker) => worker.close())
+      );
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const expired = new Promise<boolean>((resolve) => {
+        timer = setTimeout(() => resolve(false), timeoutMs);
+      });
+      const finished = await Promise.race([graceful.then(() => true), expired]);
+      clearTimeout(timer);
+      if (!finished) {
+        logger.warn("queue.worker.force_close", { metadata: { timeoutMs } });
+      }
+      workers = [];
+      running = false;
+      const closing = connection;
+      connection = null;
+      if (closing) {
+        if (finished) {
+          await closing.quit().catch(() => closing.disconnect());
+        } else {
+          // Disconnecting (not quit(), which waits for replies) is what actually unblocks a stuck
+          // close: the job's lock then expires and it is recovered as stalled (TDS §12.2).
+          closing.disconnect();
+        }
+      }
+    },
+
+    health: () => ({ running, draining }),
+  };
+}
