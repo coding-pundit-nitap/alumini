@@ -2,6 +2,9 @@ import { z } from "zod";
 
 const serverEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  // Optional at validation time so builds and tests that never touch the database still work;
+  // src/lib/prisma.ts throws if it is missing when a client is actually created.
+  DATABASE_URL: z.string().min(1).optional(),
 });
 
 const clientEnvSchema = z.object({

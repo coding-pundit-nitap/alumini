@@ -15,6 +15,9 @@
 /blob-report
 /playwright/.cache
 
+# Generated Prisma client (run `pnpm db:generate`)
+/src/generated
+
 # Next.js & Build Outputs
 /.next/
 /out/
@@ -54,3 +57,4 @@ Thumbs.db
 
 # Vercel & Deployment
 .vercel
+src/generated

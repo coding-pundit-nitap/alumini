@@ -1,0 +1,12 @@
+// Prisma ORM 7. Models are added per docs/domain-model.md; the Better Auth
+// tables (user, session, account, verification) are generated with
+// `npx auth@latest generate` once auth is scaffolded (docs/architecture/ADR-002).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
