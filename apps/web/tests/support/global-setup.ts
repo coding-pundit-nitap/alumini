@@ -16,6 +16,19 @@ import type { TestProject } from "vitest/node";
 
 const TEMPLATE_SUFFIX = "_template";
 
+// Safety rail (strategy §6.3): this setup creates and force-drops databases, so it only ever runs
+// against a local PostgreSQL. `postgres` is the compose service name.
+const ALLOWED_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "postgres"]);
+
+function assertLocalDatabase(databaseUrl: string) {
+  const { hostname } = new URL(databaseUrl);
+  if (!ALLOWED_HOSTS.has(hostname)) {
+    throw new Error(
+      `Refusing to run integration tests against database host "${hostname}": they create and drop databases. Allowed hosts: ${[...ALLOWED_HOSTS].join(", ")}.`
+    );
+  }
+}
+
 function toTemplateUrl(databaseUrl: string): {
   adminUrl: string;
   templateUrl: string;
@@ -49,6 +62,7 @@ export default async function setup(project: TestProject) {
   }
 
   const databaseUrl = process.env.DATABASE_URL!;
+  assertLocalDatabase(databaseUrl);
   const { adminUrl, templateUrl, templateName } = toTemplateUrl(databaseUrl);
 
   const { Client } = await import("pg");
