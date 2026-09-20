@@ -27,8 +27,9 @@ const ALLOWED_FOLDERS = [
   /^components\/common$/,
 ];
 
+// `@nitap/database/permissions` is pure data (the permission registry) and may be imported anywhere.
 const PRISMA_IMPORT =
-  /from\s+["'](@nitap\/database(\/[^"']*)?|@prisma\/[^"']+)["']/;
+  /from\s+["'](@nitap\/database(?!\/permissions["'])(\/[^"']*)?|@prisma\/[^"']+)["']/;
 const PRISMA_HOMES = [/^infrastructure\//, /^modules\/[^/]+\/infrastructure\//];
 const SOURCE_FILE = /\.(ts|tsx)$/;
 const TEST_FILE = /\.(test|spec)\.(ts|tsx)$/;

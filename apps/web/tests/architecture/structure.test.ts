@@ -97,4 +97,19 @@ describe("the checker can fail", () => {
     });
     expect(checkStructure(root)).toEqual([]);
   });
+
+  it("allows the pure permission registry outside infrastructure and nothing else from @nitap/database", () => {
+    const root = fixture({
+      "modules/jobs/index.ts": "export {};",
+      "modules/jobs/domain/permission.ts":
+        'export { PERMISSIONS } from "@nitap/database/permissions";',
+      "modules/jobs/domain/leak.ts":
+        'export { runSeed } from "@nitap/database/seed";',
+    });
+    const found = checkStructure(root);
+    expect(found).toContainEqual(
+      expect.stringContaining("modules/jobs/domain/leak.ts imports Prisma")
+    );
+    expect(found.filter((v) => v.includes("imports Prisma"))).toHaveLength(1);
+  });
 });

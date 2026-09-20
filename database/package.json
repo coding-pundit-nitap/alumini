@@ -4,6 +4,8 @@
   "private": true,
   "exports": {
     ".": "./index.ts",
+    "./permissions": "./prisma/seed-data/permissions.ts",
+    "./role-permissions": "./prisma/seed-data/role-permissions.ts",
     "./seed": "./prisma/seed.ts"
   },
   "scripts": {

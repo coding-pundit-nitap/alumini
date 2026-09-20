@@ -312,3 +312,33 @@ describe("everywhere else", () => {
     ).toHaveLength(0);
   });
 });
+
+describe("permission registry carve-out (@nitap/database/permissions)", () => {
+  it("is importable from the domain layer: it is pure data", async () => {
+    expect(
+      await violations(
+        DOMAIN,
+        'import { PERMISSIONS } from "@nitap/database/permissions";\nexport { PERMISSIONS };'
+      )
+    ).toEqual([]);
+  });
+
+  it("is importable from the application layer", async () => {
+    expect(
+      await violations(
+        APPLICATION,
+        'import { PERMISSIONS } from "@nitap/database/permissions";\nexport { PERMISSIONS };'
+      )
+    ).toEqual([]);
+  });
+
+  it.each([
+    ["@nitap/database"],
+    ["@nitap/database/seed"],
+    ["@nitap/database/role-permissions"],
+  ])("still bans %s in the domain layer", async (specifier) => {
+    expect(
+      await violations(DOMAIN, `import x from "${specifier}";\nexport { x };`)
+    ).not.toHaveLength(0);
+  });
+});

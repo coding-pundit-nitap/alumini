@@ -9,8 +9,13 @@
 
 const infrastructureSdks = {
   group: [
-    "@nitap/database",
+    // The bare "@nitap/database" is banned through `databaseRoot` below (`paths`, exact match): as a
+    // gitignore-style pattern it would also cover every subpath and defeat the negation.
     "@nitap/database/*",
+    // The permission registry is pure data shared with the seed (rbac-permission-matrix.md §3). It is the
+    // one @nitap/database subpath the domain and application layers may import. Order matters: the
+    // negation must come after the pattern it re-allows.
+    "!@nitap/database/permissions",
     "@prisma/*",
     "ioredis",
     "bullmq",
@@ -18,6 +23,12 @@ const infrastructureSdks = {
     "fastify",
     "express",
   ],
+  message:
+    "Prisma, Redis, queues and provider SDKs belong to infrastructure/ (strategy §2.3).",
+};
+
+const databaseRoot = {
+  name: "@nitap/database",
   message:
     "Prisma, Redis, queues and provider SDKs belong to infrastructure/ (strategy §2.3).",
 };
@@ -71,7 +82,14 @@ const components = {
 };
 
 const restrict = (...patterns) => ({
-  "no-restricted-imports": ["error", { patterns }],
+  "no-restricted-imports": [
+    "error",
+    {
+      patterns,
+      // Every layer that bans the infrastructure SDKs also bans the bare "@nitap/database".
+      paths: patterns.includes(infrastructureSdks) ? [databaseRoot] : [],
+    },
+  ],
 });
 
 const browserGlobals = [
