@@ -101,7 +101,7 @@ describe("toApiError", () => {
     );
     expect(status).toBe(404);
     expect(body).toEqual({
-      error: { code: "NOT_FOUND", message: ERROR_CATALOG.NOT_FOUND.message },
+      error: { code: "NOT_FOUND", message: ERROR_CATALOG.NOT_FOUND?.message },
       requestId: "6f1c2c3e-aaaa-bbbb-cccc-1234567890ab",
     });
   });
@@ -137,7 +137,7 @@ describe("toApiError", () => {
 
   it("does not expose the message of an UnexpectedError", () => {
     const { body } = toApiError(new UnexpectedError("secret detail"), "r");
-    expect(body.error.message).toBe(ERROR_CATALOG.INTERNAL_ERROR.message);
+    expect(body.error.message).toBe(ERROR_CATALOG.INTERNAL_ERROR?.message);
   });
 });
 

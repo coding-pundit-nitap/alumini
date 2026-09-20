@@ -87,7 +87,7 @@ describe("routeHandler", () => {
     })(request());
     expect(info).toHaveBeenCalledTimes(1);
     expect(JSON.stringify(info.mock.calls[0])).not.toContain("secret");
-    expect(info.mock.calls[0][1]?.metadata).toMatchObject({
+    expect(info.mock.calls[0]?.[1]?.metadata).toMatchObject({
       status: 400,
       code: "VALIDATION_FAILED",
       path: "/x",
@@ -102,7 +102,7 @@ describe("routeHandler", () => {
       throw new Error("boom");
     })(request());
     expect(error).toHaveBeenCalledTimes(1);
-    expect(error.mock.calls[0][1]?.error).toBeInstanceOf(Error);
+    expect(error.mock.calls[0]?.[1]?.error).toBeInstanceOf(Error);
   });
 
   it("does not log a successful request above debug", async () => {

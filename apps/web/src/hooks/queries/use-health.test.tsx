@@ -38,7 +38,7 @@ describe("useHealthQuery", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(fetchMock.mock.calls[0][0]).toBe("/health/live");
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("/health/live");
     expect(result.current.data).toEqual({ status: "ok" });
   });
 });

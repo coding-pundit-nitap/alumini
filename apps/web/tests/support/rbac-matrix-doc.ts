@@ -35,7 +35,9 @@ export function readRoleMatrixFromDoc(): Record<RoleName, ReadonlySet<string>> {
   for (const line of doc.slice(start, end).split("\n")) {
     const row = line.match(/^\| `([a-z_.]+)`\s*\|(.*)\|\s*$/);
     if (!row) continue;
-    const [, permission, rest] = row;
+    const permission = row[1];
+    const rest = row[2];
+    if (permission === undefined || rest === undefined) continue;
     const cells = rest.split("|").map((cell) => cell.trim());
     // cells[0] is the Guest column; the seeded roles follow in ROLE_NAMES order.
     ROLE_NAMES.forEach((role, index) => {

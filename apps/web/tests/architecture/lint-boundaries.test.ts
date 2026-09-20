@@ -17,6 +17,8 @@ async function violations(filePath: string, code: string) {
   const [result] = await eslint.lintText(code, {
     filePath: path.join(cwd, filePath),
   });
+  // Fail loudly: a missing result would make every "no violations" assertion pass for the wrong reason.
+  if (!result) throw new Error(`ESLint returned no result for ${filePath}`);
   return result.messages
     .filter(
       (m) =>

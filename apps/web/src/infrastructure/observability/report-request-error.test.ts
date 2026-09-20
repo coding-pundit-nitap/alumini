@@ -33,7 +33,7 @@ describe("reportRequestError (TDS §16.4 rule 6)", () => {
     );
 
     expect(error).toHaveBeenCalledTimes(1);
-    const [event, data] = error.mock.calls[0];
+    const [event, data] = error.mock.calls[0] ?? [];
     expect(event).toBe("http.request.unhandled_error");
     expect(data?.error).toBe(failure);
     expect(data?.metadata).toEqual({
