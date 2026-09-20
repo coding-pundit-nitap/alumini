@@ -1,4 +1,11 @@
 {
-  "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+  "apps/web/**/*.{ts,tsx}": [
+    "pnpm --filter @nitap/web exec eslint --fix",
+    "prettier --write"
+  ],
+  "packages/ui/**/*.{ts,tsx}": [
+    "pnpm --filter @nitap/ui exec eslint --fix",
+    "prettier --write"
+  ],
   "*.{json,md,css}": ["prettier --write"]
 }

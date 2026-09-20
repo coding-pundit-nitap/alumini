@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalDependencies": [".env"],
+  "globalPassThroughEnv": [
+    "CI",
+    "DATABASE_URL",
+    "MIGRATE_DATABASE_URL",
+    "REDIS_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "PLAYWRIGHT_TEST_BASE_URL"
+  ],
+  "tasks": {
+    "db:generate": {
+      "inputs": ["prisma/schema.prisma", "prisma.config.ts"],
+      "outputs": ["generated/**"]
+    },
+    "build": {
+      "dependsOn": ["^build", "^db:generate"],
+      "env": ["NEXT_PUBLIC_*"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "lint": {},
+    "lint:fix": { "cache": false },
+    "typecheck": { "dependsOn": ["^db:generate"] },
+    "test": { "dependsOn": ["^db:generate"] },
+    "test:coverage": {
+      "dependsOn": ["^db:generate"],
+      "outputs": ["coverage/**"]
+    },
+    "test:watch": { "cache": false, "persistent": true },
+    "test:e2e": { "dependsOn": ["^db:generate"], "cache": false },
+    "test:e2e:ui": { "cache": false, "persistent": true },
+    "dev": {
+      "dependsOn": ["^db:generate"],
+      "cache": false,
+      "persistent": true
+    },
+    "start": { "dependsOn": ["build"], "cache": false, "persistent": true }
+  }
+}

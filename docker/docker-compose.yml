@@ -1,0 +1,48 @@
+# Local development services. Production topology is described in docs/architecture/system-architecture.md.
+# Run from the repo root: `pnpm docker:up`. `name` is fixed so the project (and its named volumes) does not
+# depend on this file's directory: moving the file here would otherwise have orphaned the existing data volume.
+name: alumini
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: alumini
+      POSTGRES_PASSWORD: alumini
+      POSTGRES_DB: alumini
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alumini"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Cache / rate-limit Redis: evicts under memory pressure, holds nothing unrecoverable.
+  # The job queue (ADR-007) will need a SEPARATE Redis with maxmemory-policy noeviction and AOF.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command:
+      [
+        "redis-server",
+        "--maxmemory",
+        "128mb",
+        "--maxmemory-policy",
+        "allkeys-lru",
+        "--save",
+        "",
+      ]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:

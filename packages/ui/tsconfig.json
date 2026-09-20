@@ -1,0 +1,5 @@
+{
+  "extends": "@nitap/typescript-config/react-library.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "*.mts"],
+  "exclude": ["node_modules"]
+}
