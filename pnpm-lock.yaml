@@ -254,6 +254,9 @@ importers:
 
   database:
     dependencies:
+      '@nitap/jobs':
+        specifier: workspace:*
+        version: link:../packages/jobs
       '@prisma/adapter-pg':
         specifier: 7.10.0
         version: 7.10.0
