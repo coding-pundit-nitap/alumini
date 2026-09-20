@@ -242,3 +242,19 @@ model Profile {
   @@index([graduationYear])
   @@map("profile")
 }
+
+/// Transactional outbox (ADR-007). Written in the same transaction as a state change; a relay in the
+/// worker publishes unpublished rows to the queue. A row that can never be published is quarantined
+/// (failed_at / failure_reason). The partial indexes and CHECK constraints live in the migration SQL.
+model OutboxEvent {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type          String
+  payload       Json
+  requestId     String?   @map("request_id")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  publishedAt   DateTime? @map("published_at") @db.Timestamptz(3)
+  failedAt      DateTime? @map("failed_at") @db.Timestamptz(3)
+  failureReason String?   @map("failure_reason")
+
+  @@map("outbox_event")
+}
