@@ -17,5 +17,19 @@ services:
       timeout: 3s
       retries: 10
 
+  # Cache / rate-limit Redis: evicts under memory pressure, holds nothing unrecoverable.
+  # The job queue (ADR-005) will need a SEPARATE Redis with maxmemory-policy noeviction and AOF.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru", "--save", ""]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   postgres-data:

@@ -1,6 +1,12 @@
-// Prisma ORM 7. Models are added per docs/domain-model.md; the Better Auth
-// tables (user, session, account, verification) are generated with
-// `npx auth@latest generate` once auth is scaffolded (docs/architecture/ADR-002).
+// Prisma ORM 7. Models are added per docs/domain-model.md.
+//
+// user / session / account / verification are Better Auth's tables
+// (docs/architecture/ADR-002-authentication.md). They were generated with
+//   npx auth@latest generate --config src/lib/auth.ts --output prisma/schema.prisma
+// (rate limiting is stored in Redis, so the generator's rate_limit table is intentionally not kept)
+// and then adapted: snake_case columns via @map, timestamptz, and a real enum for account_state.
+// Better Auth talks to them through the Prisma client, so @map is transparent to it. Re-run the
+// generator on every Better Auth upgrade and diff the result against this file.
 
 generator client {
   provider = "prisma-client"
@@ -9,4 +15,80 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum AccountState {
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+  DEACTIVATED
+}
+
+model User {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String
+  emailVerified Boolean      @default(false) @map("email_verified")
+  image         String?
+  // Set only by the server (verification workflow, admin actions); never client-settable.
+  accountState  AccountState @default(PENDING) @map("account_state")
+  deactivatedAt DateTime?    @map("deactivated_at") @db.Timestamptz(3)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token     String
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id") @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(3)
+  scope                 String?
+  // Password hash, credential provider only.
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([identifier])
+  @@map("verification")
 }
