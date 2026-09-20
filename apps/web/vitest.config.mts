@@ -22,7 +22,16 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "node",
-          include: ["src/**/*.test.ts", "tests/architecture/**/*.test.ts"],
+          include: [
+            "src/**/*.test.ts",
+            "tests/architecture/**/*.test.ts",
+            // @nitap/database's own vitest install can't be resolved in this environment's
+            // sandboxed pnpm (vitest requires the `vite` peer, and pnpm's release-age policy
+            // blocks materializing a fresh peer-qualified variant for that package alone — see
+            // database/package.json's `test` script comment). Run its pure, DB-free unit tests
+            // through this already-working install instead; `database/` still owns the files.
+            "../../database/prisma/seed-data/**/*.test.ts",
+          ],
           exclude: [
             "node_modules",
             ".next/**",

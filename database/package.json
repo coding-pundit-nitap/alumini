@@ -11,12 +11,15 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test": "pnpm --filter @nitap/web exec vitest run --project unit prisma/seed-data",
+    "test:watch": "pnpm --filter @nitap/web exec vitest --project unit prisma/seed-data"
   },
   "dependencies": {
     "@prisma/client": "7.10.0"
   },
   "devDependencies": {
+    "@types/node": "^26.6.2",
     "dotenv": "^18.0.1",
     "prisma": "7.10.0"
   }
