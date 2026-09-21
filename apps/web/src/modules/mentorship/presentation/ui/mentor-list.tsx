@@ -60,6 +60,12 @@ function Row({
               ))}
             </ul>
           ) : null}
+          {mentor.spotsLeft > 0 ? (
+            <p className="text-sm">
+              {mentor.spotsLeft} {mentor.spotsLeft === 1 ? "spot" : "spots"}{" "}
+              left
+            </p>
+          ) : null}
           {mentor.availability ? (
             <p className="text-muted-foreground text-sm">
               {mentor.availability}

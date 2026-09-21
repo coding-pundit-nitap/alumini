@@ -27,6 +27,21 @@ describe("MentorList", () => {
     expect(screen.getByText("No mentors match yet.")).toBeInTheDocument();
   });
 
+  it("shows how many spots are left, singular for one, nothing when full", () => {
+    render(
+      <MentorList
+        items={[
+          mentor({ userId: "a", spotsLeft: 1 }),
+          mentor({ userId: "b", spotsLeft: 3 }),
+          mentor({ userId: "c", spotsLeft: 0 }),
+        ]}
+      />
+    );
+    expect(screen.getByText("1 spot left")).toBeInTheDocument();
+    expect(screen.getByText("3 spots left")).toBeInTheDocument();
+    expect(screen.getAllByText(/spots? left/)).toHaveLength(2);
+  });
+
   it("renders name, expertise, topics as chips and availability", () => {
     render(<MentorList items={[mentor()]} />);
     expect(screen.getByRole("link", { name: "Asha Rao" })).toHaveAttribute(
