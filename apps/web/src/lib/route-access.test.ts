@@ -14,6 +14,7 @@ describe("isPublicPath", () => {
     "/health",
     "/api/auth/sign-in/email",
     "/api/v1/jobs",
+    "/members/0b8f6f4e-8f7e-4c2a-9f57-3a2a1f6d5c11",
     "/robots.txt",
     "/images/logo.svg",
   ])("treats %s as public", (pathname) => {
@@ -22,6 +23,7 @@ describe("isPublicPath", () => {
 
   it.each([
     "/alumni",
+    "/membership",
     "/alumni/123",
     "/admin",
     "/loginx",
