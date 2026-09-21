@@ -14,6 +14,18 @@ export const ROLE_NAMES = [
 
 export type RoleName = (typeof ROLE_NAMES)[number];
 
+/**
+ * Roles reachable through self-service onboarding: an institutional email (Phase 2C) or, later, an
+ * approved verification request (2D). The institutional-email policy may name only these, so an admin
+ * role can never be configured through an email domain.
+ */
+export const ONBOARDING_ROLE_NAMES = [
+  "STUDENT",
+  "ALUMNI",
+  "FACULTY",
+  "STAFF",
+] as const satisfies readonly RoleName[];
+
 const P = PERMISSIONS;
 
 /** Member baseline shared by every role that is a member (rbac-permission-matrix.md §2). */
