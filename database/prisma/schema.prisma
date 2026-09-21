@@ -48,6 +48,7 @@ model User {
   verificationRequests  VerificationRequest[] @relation("VerificationSubject")
   verificationsReviewed VerificationRequest[] @relation("VerificationReviewer")
   auditEntries          AuditLog[]            @relation("AuditActor")
+  uploads               Upload[]
 
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
@@ -238,7 +239,10 @@ model Profile {
   // Static CHECK (2010-2100), never date-dependent — see ck_profile_graduation_year in this migration's SQL.
   graduationYear       Int?               @map("graduation_year")
   location             String?
-  photoUrl             String?            @map("photo_url")
+  // The photo follows the core visibility level (spec 3C F-5): no fifth override column. Points at a
+  // READY upload; ownership and purpose are checked by the use case, never assumed from this column alone.
+  photoUploadId        String?            @unique @map("photo_upload_id") @db.Uuid
+  photoUpload          Upload?            @relation(fields: [photoUploadId], references: [id], onDelete: SetNull)
   visibility           ProfileVisibility  @default(MEMBERS_ONLY)
   // Per-section overrides (spec 3A). NULL inherits `visibility`; never looser than it. The CHECKs are in
   // the profile_privacy migration's SQL (ck_profile_*_visibility); Postgres compares enums by declaration order.
@@ -266,6 +270,39 @@ enum ProfileLinkType {
   TWITTER
   WEBSITE
   OTHER
+}
+
+enum UploadPurpose {
+  PROFILE_PHOTO
+}
+
+enum UploadStatus {
+  PENDING_UPLOAD
+  PENDING_SCAN
+  READY
+  REJECTED
+}
+
+/// A file the user owns, tracked from presign through scan (spec 3C). `objectKey` starts under
+/// uploads/pending/ and, once READY, is rewritten to the scanned derivative's key (avatars/<userId>/...);
+/// the CHECKs tying the prefix to status live in this migration's SQL.
+model Upload {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId      String        @map("owner_id") @db.Uuid
+  owner        User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  purpose      UploadPurpose
+  objectKey    String        @map("object_key")
+  mime         String
+  size         Int
+  status       UploadStatus  @default(PENDING_UPLOAD)
+  rejectReason String?       @map("reject_reason")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  profile Profile?
+
+  @@index([ownerId, status])
+  @@map("upload")
 }
 
 /// Work history (spec 3B). CHECKs (dates, is_current <=> no end date, lengths) are in the profile_details migration.

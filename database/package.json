@@ -7,6 +7,7 @@
     ".": "./index.ts",
     "./outbox": "./outbox/index.ts",
     "./audit": "./audit/index.ts",
+    "./uploads": "./uploads/index.ts",
     "./permissions": "./prisma/seed-data/permissions.ts",
     "./role-permissions": "./prisma/seed-data/role-permissions.ts",
     "./seed": "./prisma/seed.ts"
