@@ -61,6 +61,9 @@ export default async function ProfilePage() {
         <Link href="/connections" className="underline">
           Your connections
         </Link>
+        <Link href="/messages" className="underline">
+          Messages
+        </Link>
         <Link href="/mentorship" className="underline">
           Mentorship
         </Link>

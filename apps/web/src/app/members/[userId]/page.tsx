@@ -6,8 +6,10 @@ import { getProfileForViewer } from "@/composition/users";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import { ConnectionButton } from "@/modules/connections";
+import { MessageButton } from "@/modules/messaging";
 import { ProfileCard } from "@/modules/users";
 
+import { startConversationAction } from "@/app/messages/actions";
 import {
   blockUserAction,
   removeConnectionAction,
@@ -48,14 +50,20 @@ export default async function MemberPage({
     <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-12">
       <ProfileCard view={view} />
       {status ? (
-        <ConnectionButton
-          targetUserId={userId}
-          status={status}
-          requestAction={requestConnectionAction}
-          respondAction={respondToConnectionAction}
-          removeAction={removeConnectionAction}
-          blockAction={blockUserAction}
-        />
+        <div className="flex flex-wrap items-start gap-3">
+          <ConnectionButton
+            targetUserId={userId}
+            status={status}
+            requestAction={requestConnectionAction}
+            respondAction={respondToConnectionAction}
+            removeAction={removeConnectionAction}
+            blockAction={blockUserAction}
+          />
+          <MessageButton
+            recipientId={userId}
+            startAction={startConversationAction}
+          />
+        </div>
       ) : null}
     </div>
   );
