@@ -11,6 +11,7 @@
 // Anything not listed is forbidden. Extend this in the same PR that adds a module or an edge.
 const MODULE_DEPENDENCIES = {
   auth: [],
+  users: ["auth"],
 };
 
 const moduleDagRules = Object.entries(MODULE_DEPENDENCIES).map(
