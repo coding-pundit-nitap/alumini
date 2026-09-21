@@ -11,3 +11,5 @@ export type {
   MentorProfileRecord,
 } from "./application/mentor-ports";
 export type { MentorPage } from "./application/list-mentors";
+export { MentorList } from "./presentation/ui/mentor-list";
+export { MentorSettingsForm } from "./presentation/ui/mentor-settings-form";
