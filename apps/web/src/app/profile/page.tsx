@@ -39,6 +39,9 @@ export default async function ProfilePage() {
         and cannot be edited here.
       </p>
       <nav className="flex gap-4 text-sm">
+        <Link href="/profile/details" className="underline">
+          Experience, education, skills & links
+        </Link>
         <Link href="/profile/privacy" className="underline">
           Privacy settings
         </Link>

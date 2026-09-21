@@ -37,10 +37,22 @@ export type {
   SkillItem,
 } from "./domain/profile-items";
 export type { Visibility, VisibilitySettings } from "./domain/visibility";
+export { parseItemId } from "./presentation/api/parse-form";
 export {
   parsePrivacyForm,
   parseProfileForm,
 } from "./presentation/api/profile-forms";
+export {
+  parseEducationForm,
+  parseExperienceForm,
+  parseLinkForm,
+  parseSkillForm,
+} from "./presentation/api/profile-item-forms";
+export { DetailItemRow } from "./presentation/ui/detail-item-row";
+export { EducationForm } from "./presentation/ui/education-form";
+export { ExperienceForm } from "./presentation/ui/experience-form";
+export { LinkForm } from "./presentation/ui/link-form";
 export { PrivacyForm } from "./presentation/ui/privacy-form";
 export { ProfileCard } from "./presentation/ui/profile-card";
 export { ProfileForm } from "./presentation/ui/profile-form";
+export { SkillForm } from "./presentation/ui/skill-form";
