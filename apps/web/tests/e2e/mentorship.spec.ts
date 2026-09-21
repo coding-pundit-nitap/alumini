@@ -53,6 +53,7 @@ const row = (page: Page, text: string) =>
 test("J-07 a student asks an alumnus to mentor them; the alumnus accepts, starts and completes", async ({
   browser,
 }) => {
+  test.setTimeout(90_000); // three sign-ups, an evidence review and a dozen page loads
   const reviewer = await coordinator(browser);
   const mentor = await alumnus(browser, reviewer);
   const first = await student(browser);
@@ -78,6 +79,8 @@ test("J-07 a student asks an alumnus to mentor them; the alumnus accepts, starts
     await card.getByRole("button", { name: "Request mentorship" }).click();
     await page.getByLabel("Message").fill(message);
     await page.getByRole("button", { name: "Send request" }).click();
+    // The dialog closes only once the Server Action has succeeded; navigating earlier would abort it.
+    await expect(page.getByRole("dialog")).toBeHidden();
     await page.goto("/mentorship?tab=my-requests");
     await expect(row(page, message).getByText("Requested")).toBeVisible();
   };
