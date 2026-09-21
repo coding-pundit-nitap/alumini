@@ -85,9 +85,13 @@ test("J-05 a member adds, edits and removes experience, education, skills and li
   await expect(viewer.getByText(/Senior Engineer/)).toBeVisible();
   await expect(viewer.getByText("Education")).toBeVisible();
   await expect(viewer.getByText("Skills")).toBeVisible();
-  await expect(viewer.getByText("TypeScript")).toBeVisible();
+  await expect(
+    viewer.getByRole("article").getByText("TypeScript")
+  ).toBeVisible();
   await expect(viewer.getByText("Links")).toBeVisible();
-  const link = viewer.getByRole("link", { name: /github\.com\/asha/ });
+  const link = viewer
+    .getByRole("article")
+    .getByRole("link", { name: /github\.com\/asha/ });
   await expect(link).toHaveAttribute("rel", /nofollow/);
 
   // Hide experience: skills disappear with it (same section), education and links remain.
