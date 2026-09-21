@@ -12,6 +12,7 @@ import {
 import {
   fieldErrors,
   formError,
+  useReturnToListOnSavedEdit,
   type ItemAction,
   type ItemActionResult,
 } from "./detail-form-support";
@@ -41,6 +42,7 @@ export function LinkForm({
     FormData
   >((_previous, formData) => action(formData), null);
   const errors = fieldErrors(result);
+  useReturnToListOnSavedEdit("links", id, result);
 
   return (
     <form action={submit} className="flex flex-wrap items-end gap-2">

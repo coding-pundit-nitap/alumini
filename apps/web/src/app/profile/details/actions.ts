@@ -1,5 +1,7 @@
 "use server";
 
+import { refresh } from "next/cache";
+
 import {
   educationUseCases,
   experienceUseCases,
@@ -21,6 +23,11 @@ import {
  * 12 thin Server Actions, one add/update/remove per detail collection (spec 3B). Every one takes the
  * caller from the session, reads only its own named fields (the item schema, or just `id`), and lets the
  * use case authorize and enforce the cap/uniqueness/ownership. No action reads a user id from the form.
+ *
+ * `refresh()` re-renders the current route's Server Components after a successful mutation, so the list
+ * on /profile/details reflects the change without a full navigation (this Next.js version does not
+ * re-render automatically; server-actions.md: "an action that does none of [updateTag/revalidatePath/
+ * refresh] carries only its return value, and the current route is not re-rendered").
  */
 
 export async function addExperienceAction(
@@ -28,7 +35,12 @@ export async function addExperienceAction(
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
     const input = parseExperienceForm(formData);
-    return experienceUseCases.add({ actor: await getActor(), input });
+    const item = await experienceUseCases.add({
+      actor: await getActor(),
+      input,
+    });
+    refresh();
+    return item;
   });
 }
 export async function updateExperienceAction(
@@ -37,11 +49,13 @@ export async function updateExperienceAction(
   return runAction(async () => {
     const itemId = parseItemId(formData);
     const input = parseExperienceForm(formData);
-    return experienceUseCases.update({
+    const item = await experienceUseCases.update({
       actor: await getActor(),
       itemId,
       input,
     });
+    refresh();
+    return item;
   });
 }
 export async function removeExperienceAction(
@@ -49,7 +63,8 @@ export async function removeExperienceAction(
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
     const itemId = parseItemId(formData);
-    return experienceUseCases.remove({ actor: await getActor(), itemId });
+    await experienceUseCases.remove({ actor: await getActor(), itemId });
+    refresh();
   });
 }
 
@@ -58,7 +73,12 @@ export async function addEducationAction(
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
     const input = parseEducationForm(formData);
-    return educationUseCases.add({ actor: await getActor(), input });
+    const item = await educationUseCases.add({
+      actor: await getActor(),
+      input,
+    });
+    refresh();
+    return item;
   });
 }
 export async function updateEducationAction(
@@ -67,7 +87,13 @@ export async function updateEducationAction(
   return runAction(async () => {
     const itemId = parseItemId(formData);
     const input = parseEducationForm(formData);
-    return educationUseCases.update({ actor: await getActor(), itemId, input });
+    const item = await educationUseCases.update({
+      actor: await getActor(),
+      itemId,
+      input,
+    });
+    refresh();
+    return item;
   });
 }
 export async function removeEducationAction(
@@ -75,7 +101,8 @@ export async function removeEducationAction(
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
     const itemId = parseItemId(formData);
-    return educationUseCases.remove({ actor: await getActor(), itemId });
+    await educationUseCases.remove({ actor: await getActor(), itemId });
+    refresh();
   });
 }
 
@@ -84,7 +111,9 @@ export async function addSkillAction(
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
     const input = parseSkillForm(formData);
-    return skillUseCases.add({ actor: await getActor(), input });
+    const item = await skillUseCases.add({ actor: await getActor(), input });
+    refresh();
+    return item;
   });
 }
 export async function updateSkillAction(
@@ -93,7 +122,13 @@ export async function updateSkillAction(
   return runAction(async () => {
     const itemId = parseItemId(formData);
     const input = parseSkillForm(formData);
-    return skillUseCases.update({ actor: await getActor(), itemId, input });
+    const item = await skillUseCases.update({
+      actor: await getActor(),
+      itemId,
+      input,
+    });
+    refresh();
+    return item;
   });
 }
 export async function removeSkillAction(
@@ -101,7 +136,8 @@ export async function removeSkillAction(
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
     const itemId = parseItemId(formData);
-    return skillUseCases.remove({ actor: await getActor(), itemId });
+    await skillUseCases.remove({ actor: await getActor(), itemId });
+    refresh();
   });
 }
 
@@ -110,7 +146,9 @@ export async function addLinkAction(
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
     const input = parseLinkForm(formData);
-    return linkUseCases.add({ actor: await getActor(), input });
+    const item = await linkUseCases.add({ actor: await getActor(), input });
+    refresh();
+    return item;
   });
 }
 export async function updateLinkAction(
@@ -119,7 +157,13 @@ export async function updateLinkAction(
   return runAction(async () => {
     const itemId = parseItemId(formData);
     const input = parseLinkForm(formData);
-    return linkUseCases.update({ actor: await getActor(), itemId, input });
+    const item = await linkUseCases.update({
+      actor: await getActor(),
+      itemId,
+      input,
+    });
+    refresh();
+    return item;
   });
 }
 export async function removeLinkAction(
@@ -127,6 +171,7 @@ export async function removeLinkAction(
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
     const itemId = parseItemId(formData);
-    return linkUseCases.remove({ actor: await getActor(), itemId });
+    await linkUseCases.remove({ actor: await getActor(), itemId });
+    refresh();
   });
 }

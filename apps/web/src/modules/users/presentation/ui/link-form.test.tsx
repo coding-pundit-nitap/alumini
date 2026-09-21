@@ -9,6 +9,10 @@ import {
 import { LinkForm } from "./link-form";
 import type { ItemAction } from "./detail-form-support";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
+}));
+
 describe("LinkForm", () => {
   it("submits the type and url", async () => {
     const action = vi.fn<ItemAction>(async () => ({

@@ -9,6 +9,10 @@ import {
 import { SkillForm } from "./skill-form";
 import type { ItemAction } from "./detail-form-support";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
+}));
+
 describe("SkillForm", () => {
   it("submits the skill field and clears it after a successful add", async () => {
     const action = vi.fn<ItemAction>(async () => ({

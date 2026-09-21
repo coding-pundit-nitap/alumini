@@ -8,6 +8,7 @@ import type { EducationInput } from "../../domain/profile-items";
 import {
   fieldErrors,
   formError,
+  useReturnToListOnSavedEdit,
   type ItemAction,
   type ItemActionResult,
 } from "./detail-form-support";
@@ -29,6 +30,7 @@ export function EducationForm({
     FormData
   >((_previous, formData) => action(formData), null);
   const errors = fieldErrors(result);
+  useReturnToListOnSavedEdit("education", id, result);
 
   return (
     <form action={submit} className="space-y-3">

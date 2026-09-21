@@ -8,6 +8,7 @@ import type { ExperienceInput } from "../../domain/profile-items";
 import {
   fieldErrors,
   formError,
+  useReturnToListOnSavedEdit,
   type ItemAction,
   type ItemActionResult,
 } from "./detail-form-support";
@@ -39,6 +40,7 @@ export function ExperienceForm({
     FormData
   >((_previous, formData) => action(formData), null);
   const errors = fieldErrors(result);
+  useReturnToListOnSavedEdit("experience", id, result);
 
   return (
     <form action={submit} className="space-y-3">

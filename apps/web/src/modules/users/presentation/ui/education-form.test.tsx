@@ -9,6 +9,10 @@ import {
 import { EducationForm } from "./education-form";
 import type { ItemAction } from "./detail-form-support";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
+}));
+
 describe("EducationForm", () => {
   it("submits institution, qualification and years", async () => {
     const action = vi.fn<ItemAction>(async () => ({

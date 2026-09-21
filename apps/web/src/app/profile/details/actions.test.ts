@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   headers: new Headers({ "x-request-id": "req-1" }),
+  refresh: vi.fn(),
   getActor: vi.fn(),
   parseExperience: vi.fn(),
   parseEducation: vi.fn(),
@@ -14,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   link: { add: vi.fn(), update: vi.fn(), remove: vi.fn() },
 }));
 vi.mock("next/headers", () => ({ headers: async () => mocks.headers }));
+vi.mock("next/cache", () => ({ refresh: mocks.refresh }));
 vi.mock("@/modules/auth", () => ({ getActor: mocks.getActor }));
 vi.mock("@/modules/users", () => ({
   parseExperienceForm: mocks.parseExperience,
@@ -68,6 +70,7 @@ const skillInput = { skill: "TypeScript" };
 const linkInput = { type: "GITHUB", url: "https://github.com/asha" };
 
 beforeEach(() => {
+  mocks.refresh.mockReset();
   mocks.getActor.mockReset().mockResolvedValue(actor);
   mocks.parseExperience.mockReset().mockReturnValue(experienceInput);
   mocks.parseEducation.mockReset().mockReturnValue(educationInput);
@@ -133,9 +136,11 @@ describe.each([
     expect(result).toEqual({ ok: true, data: { id: itemId } });
     expect(parse).toHaveBeenCalledWith(form);
     expect(useCase.add).toHaveBeenCalledWith({ actor, input });
+    // The list on /profile/details must reflect the new item without a full navigation.
+    expect(mocks.refresh).toHaveBeenCalledOnce();
   });
 
-  it("add: returns per-field errors and never calls the use case for invalid input", async () => {
+  it("add: returns per-field errors, never calls the use case, and never refreshes", async () => {
     parse.mockImplementation(() => {
       throw new ValidationError({
         details: [{ field: "x", code: "INVALID", message: "Bad." }],
@@ -147,17 +152,19 @@ describe.each([
       error: { fields: { x: "Bad." } },
     });
     expect(useCase.add).not.toHaveBeenCalled();
+    expect(mocks.refresh).not.toHaveBeenCalled();
   });
 
-  it("add: surfaces a denial from the use case", async () => {
+  it("add: surfaces a denial from the use case and never refreshes", async () => {
     useCase.add.mockRejectedValue(new AuthorizationError());
     expect(await add(new FormData())).toMatchObject({
       ok: false,
       error: { code: "PERMISSION_DENIED" },
     });
+    expect(mocks.refresh).not.toHaveBeenCalled();
   });
 
-  it("update: parses the id and the fields, and calls the use case with both", async () => {
+  it("update: parses the id and the fields, calls the use case with both, and refreshes", async () => {
     const form = new FormData();
     const result = await update(form);
 
@@ -167,14 +174,16 @@ describe.each([
       itemId,
       input,
     });
+    expect(mocks.refresh).toHaveBeenCalledOnce();
   });
 
-  it("remove: parses only the id and calls the use case", async () => {
+  it("remove: parses only the id, calls the use case, and refreshes", async () => {
     const form = new FormData();
     const result = await remove(form);
 
     expect(result).toEqual({ ok: true, data: undefined });
     expect(useCase.remove).toHaveBeenCalledWith({ actor, itemId });
     expect(parse).not.toHaveBeenCalled();
+    expect(mocks.refresh).toHaveBeenCalledOnce();
   });
 });

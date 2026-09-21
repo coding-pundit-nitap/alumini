@@ -9,6 +9,13 @@ import {
 import { ExperienceForm } from "./experience-form";
 import type { ItemAction } from "./detail-form-support";
 
+const router = vi.hoisted(() => ({
+  replace: vi.fn(),
+  push: vi.fn(),
+  refresh: vi.fn(),
+}));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
+
 describe("ExperienceForm", () => {
   it("submits company, designation, dates and is-current, with no id (add mode)", async () => {
     const action = vi.fn<ItemAction>(async () => ({
@@ -67,6 +74,47 @@ describe("ExperienceForm", () => {
     expect(action.mock.calls[0]![0].get("id")).toBe(
       "11111111-1111-4111-8111-111111111111"
     );
+  });
+
+  it("edit mode: a successful save leaves the ?edit= URL, returning to the plain list", async () => {
+    router.replace.mockClear();
+    const action = vi.fn<ItemAction>(async () => ({
+      ok: true,
+      data: undefined,
+    }));
+    const user = userEvent.setup();
+    render(
+      <ExperienceForm
+        action={action}
+        id="11111111-1111-4111-8111-111111111111"
+        defaults={{
+          company: "Acme",
+          industry: null,
+          designation: "Engineer",
+          startDate: "2020-01-01",
+          endDate: null,
+          isCurrent: true,
+        }}
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /save/i }));
+    await waitFor(() =>
+      expect(router.replace).toHaveBeenCalledWith("/profile/details#experience")
+    );
+  });
+
+  it("add mode: a successful add never navigates away", async () => {
+    router.replace.mockClear();
+    const action = vi.fn<ItemAction>(async () => ({
+      ok: true,
+      data: undefined,
+    }));
+    const user = userEvent.setup();
+    render(<ExperienceForm action={action} />);
+    await user.type(screen.getByLabelText("Company"), "Acme");
+    await user.click(screen.getByRole("button", { name: /add/i }));
+    await waitFor(() => expect(action).toHaveBeenCalledOnce());
+    expect(router.replace).not.toHaveBeenCalled();
   });
 
   it("shows the field error the action returns", async () => {

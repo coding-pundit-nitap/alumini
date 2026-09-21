@@ -8,6 +8,7 @@ import type { SkillInput } from "../../domain/profile-items";
 import {
   fieldErrors,
   formError,
+  useReturnToListOnSavedEdit,
   type ItemAction,
   type ItemActionResult,
 } from "./detail-form-support";
@@ -30,6 +31,7 @@ export function SkillForm({
     FormData
   >((_previous, formData) => action(formData), null);
   const errors = fieldErrors(result);
+  useReturnToListOnSavedEdit("skills", id, result);
 
   useEffect(() => {
     if (!id && result?.ok && inputRef.current) inputRef.current.value = "";
