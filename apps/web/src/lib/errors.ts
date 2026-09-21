@@ -320,6 +320,9 @@ export function toApiError(
     appError.retryAfterSeconds !== undefined
   ) {
     headers["Retry-After"] = String(appError.retryAfterSeconds);
+  } else if (appError.code === "REQUEST_IN_PROGRESS") {
+    // API spec §1.6: the first request with this Idempotency-Key is still running.
+    headers["Retry-After"] = "1";
   }
 
   return {

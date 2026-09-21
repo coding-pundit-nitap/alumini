@@ -50,6 +50,7 @@ model User {
   auditEntries          AuditLog[]            @relation("AuditActor")
   uploads               Upload[]
 
+  idempotencyKeys IdempotencyKey[]
   connectionsAsA       Connection[] @relation("ConnectionUserA")
   connectionsAsB       Connection[] @relation("ConnectionUserB")
   connectionsRequested Connection[] @relation("ConnectionRequester")
@@ -475,4 +476,27 @@ model Connection {
   @@index([userAId, state], map: "ix_connection_user_a")
   @@index([userBId, state], map: "ix_connection_user_b")
   @@map("connection")
+}
+
+enum IdempotencyState {
+  IN_PROGRESS
+  DONE
+}
+
+/// `Idempotency-Key` bookkeeping (API spec §1.6): scoped per user, 24 h retention (swept daily). A claim
+/// commits on its own, outside the business transaction. The DONE/response pairing CHECK lives in the
+/// migration SQL: see migrations/*_idempotency_key.
+model IdempotencyKey {
+  userId      String           @map("user_id") @db.Uuid
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key         String           @map("idem_key")
+  requestHash String           @map("request_hash")
+  state       IdempotencyState @default(IN_PROGRESS)
+  /// `{ status, body, headers }` of the stored response; set exactly when state is DONE.
+  response    Json?
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([userId, key], map: "pk_idempotency_key")
+  @@index([createdAt], map: "ix_idempotency_created")
+  @@map("idempotency_key")
 }

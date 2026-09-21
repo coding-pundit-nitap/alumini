@@ -156,3 +156,15 @@ describe("logLevelFor (TDS §16.1)", () => {
     expect(logLevelFor(error)).toBe(level);
   });
 });
+
+describe("REQUEST_IN_PROGRESS", () => {
+  it("is a 409 with Retry-After, as the idempotency spec requires", () => {
+    const { status, headers, body } = toApiError(
+      new ConflictError("REQUEST_IN_PROGRESS"),
+      "r1"
+    );
+    expect(status).toBe(409);
+    expect(headers["Retry-After"]).toBe("1");
+    expect(body.error.code).toBe("REQUEST_IN_PROGRESS");
+  });
+});

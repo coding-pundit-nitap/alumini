@@ -17,6 +17,11 @@ describe("registry", () => {
     expect(isOutboxEventType("nope")).toBe(false);
   });
 
+  it("idempotency.sweep is a scheduled job, not an outbox event", () => {
+    expect(JOBS["idempotency.sweep"].queue).toBe("scheduled");
+    expect(isOutboxEventType("idempotency.sweep")).toBe(false);
+  });
+
   it("upload.scan is an outbox event (the web app writes it); upload.sweep is scheduled only", () => {
     expect(isOutboxEventType("upload.scan")).toBe(true);
     expect(JOBS["upload.sweep"].queue).toBe("scheduled");

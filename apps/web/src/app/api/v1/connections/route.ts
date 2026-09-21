@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { listConnections, requestConnection } from "@/composition/connections";
 import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
+import { respondIdempotently } from "@/infrastructure/idempotency";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
@@ -24,26 +25,39 @@ const invalid = (error: z.ZodError) =>
     })),
   });
 
-/** POST /api/v1/connections — send a request (API spec §6.1). */
+/** POST /api/v1/connections — send a request (API spec §6.1). Honours `Idempotency-Key` (§1.6). */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
-  const body = await request.json().catch(() => {
-    throw new ValidationError({ code: "MALFORMED_REQUEST" });
-  });
-  const parsed = createBody.safeParse(body);
-  if (!parsed.success) throw invalid(parsed.error);
+  const rawBody = await request.text();
+  const actor = await getActor();
 
-  const { connectionId } = await requestConnection({
-    actor: await getActor(),
-    recipientId: parsed.data.recipientId,
+  return respondIdempotently(request, {
+    userId: actor?.userId ?? null,
+    rawBody,
+    execute: async () => {
+      const body = (() => {
+        try {
+          return JSON.parse(rawBody) as unknown;
+        } catch {
+          throw new ValidationError({ code: "MALFORMED_REQUEST" });
+        }
+      })();
+      const parsed = createBody.safeParse(body);
+      if (!parsed.success) throw invalid(parsed.error);
+
+      const { connectionId } = await requestConnection({
+        actor,
+        recipientId: parsed.data.recipientId,
+      });
+      return {
+        status: 201,
+        body: {
+          data: { id: connectionId, state: "PENDING", direction: "OUTGOING" },
+        },
+        headers: { Location: `/api/v1/connections/${connectionId}` },
+      };
+    },
   });
-  return Response.json(
-    { data: { id: connectionId, state: "PENDING", direction: "OUTGOING" } },
-    {
-      status: 201,
-      headers: { Location: `/api/v1/connections/${connectionId}` },
-    }
-  );
 });
 
 /** GET /api/v1/connections — the caller's own list (API spec §6.3). */

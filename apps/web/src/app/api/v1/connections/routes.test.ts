@@ -13,6 +13,22 @@ vi.mock("@/config/env", () => ({
 }));
 vi.mock("@/modules/auth", () => ({ getActor: mocks.getActor }));
 vi.mock("@/composition/connections", () => mocks);
+// The key-handling itself is tested in infrastructure/idempotency; here the work simply runs.
+vi.mock("@/infrastructure/idempotency", () => ({
+  respondIdempotently: async (
+    _request: Request,
+    args: {
+      execute: () => Promise<{
+        status: number;
+        body: unknown;
+        headers: Record<string, string>;
+      }>;
+    }
+  ) => {
+    const r = await args.execute();
+    return Response.json(r.body, { status: r.status, headers: r.headers });
+  },
+}));
 
 import { AuthenticationError, NotFoundError } from "@/lib/errors";
 

@@ -1,5 +1,6 @@
 import type { PayloadOf } from "./define-job.ts";
 import { connectionAccepted, connectionRequested } from "./connection.ts";
+import { idempotencySweep } from "./idempotency.ts";
 import { emailSend } from "./email.ts";
 import { outboxPrune } from "./scheduled.ts";
 import { uploadScan, uploadSweep } from "./upload.ts";
@@ -17,6 +18,7 @@ export const JOBS = {
   ...OUTBOX_EVENTS,
   "outbox.prune": outboxPrune,
   "upload.sweep": uploadSweep,
+  "idempotency.sweep": idempotencySweep,
 } as const;
 
 export type OutboxEventType = keyof typeof OUTBOX_EVENTS;

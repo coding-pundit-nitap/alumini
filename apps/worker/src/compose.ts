@@ -2,12 +2,14 @@ import { Redis } from "ioredis";
 
 import type { PrismaClient } from "@nitap/database";
 import { createOutboxStore } from "@nitap/database/outbox";
+import { createIdempotencyStore } from "@nitap/database/idempotency";
 import { createUploadStore } from "@nitap/database/uploads";
 import { createSmtpEmailPort } from "@nitap/email";
 import {
   connectionAccepted,
   connectionRequested,
   emailSend,
+  idempotencySweep,
   outboxPrune,
   uploadScan,
   uploadSweep,
@@ -29,6 +31,7 @@ import type { StoragePort } from "@nitap/storage";
 
 import type { Readiness } from "./health.ts";
 import { createConnectionEventProcessor } from "./processors/connection-event.ts";
+import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
 import { createUploadScanProcessor } from "./processors/upload-scan.ts";
@@ -96,6 +99,7 @@ export function composeWorker(
 
   const store = createOutboxStore(prisma);
   const uploads = createUploadStore();
+  const idempotency = createIdempotencyStore();
   const email = createSmtpEmailPort({
     url: config.smtpUrl,
     from: config.emailFrom,
@@ -157,6 +161,12 @@ export function composeWorker(
         })
       ),
       registerJob(
+        idempotencySweep,
+        createIdempotencySweepProcessor({
+          sweep: (before, limit) => idempotency.sweep(prisma, before, limit),
+        })
+      ),
+      registerJob(
         uploadSweep,
         createUploadSweepProcessor({
           store: {
@@ -187,6 +197,11 @@ export function composeWorker(
       // Fixed id: every worker upserts the same schedule, so N workers never multiply it.
       await rawQueue.upsertSchedule(outboxPrune, {
         id: "outbox-prune",
+        everyMs: DAY_MS,
+        payload: { v: 1 },
+      });
+      await rawQueue.upsertSchedule(idempotencySweep, {
+        id: "idempotency-sweep",
         everyMs: DAY_MS,
         payload: { v: 1 },
       });
