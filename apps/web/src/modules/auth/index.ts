@@ -5,3 +5,4 @@ export { authorize, can } from "./infrastructure/authorization";
 export { PERMISSIONS } from "./domain/permission";
 export type { Permission } from "./domain/permission";
 export type { AccountState, Actor, Resource } from "./domain/actor";
+export { assertEmailPolicyValid } from "./infrastructure/email-policy-config";

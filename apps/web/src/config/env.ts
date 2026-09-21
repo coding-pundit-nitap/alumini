@@ -21,6 +21,9 @@ const serverEnvSchema = z.object({
   HEALTH_CHECK_TOKEN: z.string().min(16).optional(),
   // Build/commit identifier stamped on every log line. Set by the deploy pipeline.
   APP_VERSION: z.string().min(1).optional(),
+  // JSON map of recognised institutional email domains → { role, autoVerify }. Parsed and validated by
+  // modules/auth (email-policy-config.ts) at server start; unset means no domain is institutional.
+  INSTITUTIONAL_EMAIL_POLICY: z.string().optional(),
 });
 
 const clientEnvSchema = z.object({
