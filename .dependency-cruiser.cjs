@@ -28,6 +28,10 @@ const moduleDagRules = Object.entries(MODULE_DEPENDENCIES).map(
   })
 );
 
+// From inside apps/worker, its own `src/` is indistinguishable from web's by path, and the worker is
+// the one place allowed to use the queue and email packages, so web-only rules are skipped there.
+const runningInWorker = /[\\/]apps[\\/]worker$/.test(process.cwd());
+
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
   forbidden: [
@@ -74,6 +78,63 @@ module.exports = {
       to: { path: "^apps/" },
     },
     ...moduleDagRules,
+
+    // Phase 2B (spec §3.1, ADR-018). Each rule is proven to fail by a temporary violating file (plan Task 12
+    // step 5). The web/worker boundary is also enforced by checkNoQueueImports (apps/web) and
+    // checkNoWebImports (apps/worker), which run without dependency-cruiser.
+    {
+      name: "queue-stays-generic",
+      comment:
+        "@nitap/queue knows nothing about email or the database; contracts live in @nitap/jobs (spec 2B §3.1).",
+      severity: "error",
+      from: { path: "^packages/queue/src/", pathNot: "\\.test\\.ts$" },
+      to: { path: "(^|/)(packages/email|database)/" },
+    },
+    {
+      name: "jobs-is-a-leaf-contract",
+      comment:
+        "@nitap/jobs is pure contract (types, schemas, backoff math); it imports no other workspace.",
+      severity: "error",
+      from: { path: "^packages/jobs/src/" },
+      to: {
+        path: "(^|/)(packages/(queue|email|observability|testing)|database|apps)/",
+      },
+    },
+    {
+      name: "email-is-provider-only",
+      comment:
+        "@nitap/email is the provider adapter and templates; it imports no other workspace.",
+      severity: "error",
+      from: { path: "^packages/email/src/", pathNot: "\\.test\\.ts$" },
+      to: { path: "(^|/)(packages/(queue|jobs)|database|apps)/" },
+    },
+    ...(runningInWorker
+      ? []
+      : [
+          {
+            name: "web-never-touches-the-queue",
+            comment:
+              "The web app only writes outbox events; the queue and email adapters belong to the worker.",
+            severity: "error",
+            from: { path: "^(?:apps/web/)?src/" },
+            to: { path: "(^|/)packages/(queue|email)/" },
+          },
+        ]),
+    {
+      name: "web-and-worker-never-import-each-other",
+      comment:
+        "Two deployables, one repository: they share packages, not code (ADR-018).",
+      severity: "error",
+      from: { path: "^(?:apps/web/)?(src|tests)/" },
+      to: { path: "^((\\.\\./)+|apps/)worker/" },
+    },
+    {
+      name: "worker-never-imports-web",
+      comment: "The worker must not depend on the Next.js app (ADR-018).",
+      severity: "error",
+      from: { path: "^(?:apps/worker/)?(src|tests)/" },
+      to: { path: "^((\\.\\./)+|apps/)web/" },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },

@@ -15,7 +15,12 @@ loadEnvConfig(
 
 const nextConfig: NextConfig = {
   // Workspace packages ship TypeScript source; Next compiles them.
-  transpilePackages: ["@nitap/ui", "@nitap/database", "@nitap/observability"],
+  transpilePackages: [
+    "@nitap/ui",
+    "@nitap/database",
+    "@nitap/observability",
+    "@nitap/jobs",
+  ],
 };
 
 export default nextConfig;

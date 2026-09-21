@@ -85,3 +85,30 @@ describe("redact (reliability §6.4)", () => {
     expect(JSON.stringify(result)).not.toContain("abc");
   });
 });
+
+describe("email job payloads (2B)", () => {
+  it("masks the recipient and the token-bearing links but keeps the harmless fields", () => {
+    const masked = redact({
+      to: "person@example.test",
+      template: "verify-email",
+      params: {
+        verificationUrl: "https://alumni.example/verify?t=abc",
+        resetUrl: "https://alumni.example/reset?t=abc",
+        expiresInMinutes: 60,
+      },
+    }) as Record<string, unknown>;
+
+    expect(masked.to).toBe("[REDACTED]");
+    expect(masked.template).toBe("verify-email");
+    const params = masked.params as Record<string, unknown>;
+    expect(params.verificationUrl).toBe("[REDACTED]");
+    expect(params.resetUrl).toBe("[REDACTED]");
+    expect(params.expiresInMinutes).toBe(60);
+  });
+
+  it.each([["recipient"], ["email"]])("masks a `%s` field", (key) => {
+    expect(
+      (redact({ [key]: "person@example.test" }) as Record<string, unknown>)[key]
+    ).toBe("[REDACTED]");
+  });
+});

@@ -128,3 +128,49 @@ export function checkNoRoleNames(
   }
   return violations;
 }
+
+const QUEUE_IMPORT =
+  /from\s+["'](bullmq|nodemailer|@nitap\/queue|@nitap\/email)["']/;
+
+/**
+ * The web app only produces outbox events; the queue, the relay and every provider live in the worker
+ * (spec 2B §3.1). Test files are ignored. The cache Redis client (`ioredis`) is unrelated and allowed.
+ *
+ * This is a hand-written substitute for the dependency-cruiser rule of the same name below: with the
+ * workspace on TypeScript 7, dependency-cruiser@18.3.1 (which requires TypeScript <7) parses 0 files
+ * and enforces nothing (TASK.md, 2026-09-21). This checker is the one that actually runs.
+ */
+export function checkNoQueueImports(srcRoot: string): string[] {
+  const violations: string[] = [];
+  for (const file of walk(srcRoot).files) {
+    if (!SOURCE_FILE.test(file) || TEST_FILE.test(file)) continue;
+    const match = QUEUE_IMPORT.exec(fs.readFileSync(file, "utf8"));
+    if (match) {
+      violations.push(
+        `${rel(srcRoot, file)} imports ${match[1]}; the web app must not use the queue or SMTP (write an outbox event instead)`
+      );
+    }
+  }
+  return violations;
+}
+
+const WORKER_IMPORT = /from\s+["'](?:\.\.\/)+(?:apps\/)?worker\//;
+
+/**
+ * The web app must not depend on the worker either (ADR-018): they share packages, not code. Test
+ * files are ignored. A hand-written substitute for dependency-cruiser's
+ * `web-and-worker-never-import-each-other` rule, currently inert (see checkNoQueueImports above).
+ */
+export function checkNoWorkerImports(srcRoot: string): string[] {
+  const violations: string[] = [];
+  for (const file of walk(srcRoot).files) {
+    if (!SOURCE_FILE.test(file) || TEST_FILE.test(file)) continue;
+    const match = WORKER_IMPORT.exec(fs.readFileSync(file, "utf8"));
+    if (match) {
+      violations.push(
+        `${rel(srcRoot, file)} imports from apps/worker (${match[0].trim()})`
+      );
+    }
+  }
+  return violations;
+}

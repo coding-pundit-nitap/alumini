@@ -8,7 +8,7 @@ const MAX_DEPTH = 8;
 
 // Compared against the lower-cased key with `-`/`_` removed, so `set-cookie`, `api_key` and `apiKey` all match.
 const SENSITIVE_KEY =
-  /(password|passwd|token|secret|authorization|cookie|apikey|credential|privatekey)|^(body|requestbody|messagebody)$|(reset|verification|verify|magic|invite)(link|url)$/;
+  /(password|passwd|token|secret|authorization|cookie|apikey|credential|privatekey)|^(body|requestbody|messagebody)$|(reset|verification|verify|magic|invite)(link|url)$|^(to|recipient|recipients|email)$/;
 
 function isSensitiveKey(key: string) {
   return SENSITIVE_KEY.test(key.toLowerCase().replace(/[-_]/g, ""));
