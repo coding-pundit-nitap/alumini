@@ -20,6 +20,7 @@ const rec = (userId: string): ProfileRecord => ({
   department: null,
   degree: null,
   graduationYear: null,
+  photoUploadId: null,
   experience: [],
   education: [],
   skills: [],

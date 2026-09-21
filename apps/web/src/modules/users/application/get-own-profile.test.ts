@@ -16,6 +16,7 @@ const record: ProfileRecord = {
   department: null,
   degree: null,
   graduationYear: null,
+  photoUploadId: null,
   experience: [],
   education: [],
   skills: [],

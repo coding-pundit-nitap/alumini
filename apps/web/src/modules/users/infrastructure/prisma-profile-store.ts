@@ -49,6 +49,7 @@ export function createPrismaProfileStore(prisma: PrismaClient): ProfileStore {
         department: row.department?.name ?? null,
         degree: row.degree?.name ?? null,
         graduationYear: row.graduationYear,
+        photoUploadId: row.photoUploadId,
         experience: row.experience.map((e) => ({
           id: e.id,
           company: e.company,
@@ -102,6 +103,14 @@ export function createPrismaProfileStore(prisma: PrismaClient): ProfileStore {
           experienceVisibility: settings.experience,
           educationVisibility: settings.education,
         },
+      });
+      return result.count === 1;
+    },
+
+    async setPhoto(userId, photoUploadId) {
+      const result = await prisma.profile.updateMany({
+        where: { userId },
+        data: { photoUploadId },
       });
       return result.count === 1;
     },

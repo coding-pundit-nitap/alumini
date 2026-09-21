@@ -23,6 +23,7 @@ const profile = (over: Partial<ProfileRecord> = {}): ProfileRecord => ({
   department: "Computer Science",
   degree: "B.Tech",
   graduationYear: 2019,
+  photoUploadId: null,
   experience: [
     {
       id: "e1",
@@ -228,5 +229,31 @@ describe("projectProfile: the detail sections", () => {
         expect.arrayContaining(["experience", "education", "skills", "links"])
       );
     }
+  });
+});
+
+describe("projectProfile: the photo", () => {
+  it("gives a stable app path, never a raw storage URL, when a photo is set", () => {
+    const view = projectProfile(
+      profile({ photoUploadId: "photo-1" }),
+      "member"
+    )!;
+    expect(view.photoUrl).toBe("/api/photos/u1");
+  });
+
+  it("omits photoUrl entirely when no photo is set", () => {
+    const view = projectProfile(profile({ photoUploadId: null }), "member")!;
+    expect("photoUrl" in view).toBe(false);
+  });
+
+  it("follows the core level: a guest sees the photo of a PUBLIC profile", () => {
+    const view = projectProfile(
+      profile({
+        photoUploadId: "photo-1",
+        settings: settings({ visibility: "PUBLIC" }),
+      }),
+      "guest"
+    )!;
+    expect(view.photoUrl).toBe("/api/photos/u1");
   });
 });

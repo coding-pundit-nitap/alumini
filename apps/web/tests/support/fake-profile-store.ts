@@ -21,6 +21,12 @@ export function createFakeProfileStore(initial: ProfileRecord[]) {
       record.settings = { ...settings };
       return true;
     },
+    async setPhoto(userId, photoUploadId) {
+      const record = records.get(userId);
+      if (!record) return false;
+      record.photoUploadId = photoUploadId;
+      return true;
+    },
   };
   return { store, records };
 }

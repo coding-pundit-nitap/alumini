@@ -14,6 +14,7 @@ import {
   createProfileAudit,
   createUpdateOwnPrivacy,
   createUpdateOwnProfile,
+  createUpdateProfilePhoto,
   educationClockProblems,
   experienceClockProblems,
   noConnectionsLookup,
@@ -37,6 +38,11 @@ export const getProfileForViewer = createGetProfileForViewer({
 });
 
 export const updateOwnProfile = createUpdateOwnProfile({ store, authorize });
+// Called only from the uploads module's setProfilePhoto, after it verifies ownership and READY status.
+export const updateProfilePhoto = createUpdateProfilePhoto({
+  store,
+  authorize,
+});
 export const updateOwnPrivacy = createUpdateOwnPrivacy({ store, authorize });
 
 // The four detail collections (spec 3B): one shared use-case factory, four explicit Prisma stores.

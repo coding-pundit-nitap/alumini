@@ -30,6 +30,8 @@ export type ProfileRecord = {
   department: string | null;
   degree: string | null;
   graduationYear: number | null;
+  /** Set once a READY upload is attached (spec 3C); the domain never sees a storage key, only presence. */
+  photoUploadId: string | null;
   experience: ExperienceItem[];
   education: EducationItem[];
   skills: SkillItem[];
@@ -42,6 +44,9 @@ export type ProfileView = {
   userId: string;
   fullName: string;
   headline: string | null;
+  /** Always the stable app path `/api/photos/<userId>` (spec 3C F-5), never a raw storage URL: the route
+   * re-checks visibility and issues a fresh presigned GET on every read. */
+  photoUrl?: string;
   location?: string | null;
   bio?: string | null;
   institution?: {
@@ -71,6 +76,10 @@ export function projectProfile(
     fullName: profile.fullName,
     headline: profile.headline,
   };
+  // The photo follows the core level (spec 3C F-5): the same viewers who see the name see it too.
+  if (profile.photoUploadId !== null) {
+    view.photoUrl = `/api/photos/${profile.userId}`;
+  }
   if (canView(effectiveLevel(settings, "location"), viewer)) {
     view.location = profile.location;
   }

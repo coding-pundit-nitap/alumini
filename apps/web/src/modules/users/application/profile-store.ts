@@ -7,4 +7,6 @@ export interface ProfileStore {
   /** False when the user has no profile row. Institutional fields are not part of this port on purpose. */
   updateCore(userId: string, core: ProfileCoreInput): Promise<boolean>;
   updatePrivacy(userId: string, settings: VisibilitySettings): Promise<boolean>;
+  /** Narrow on purpose (spec 3C): only ever sets this one column, never touches name/headline/bio/location. */
+  setPhoto(userId: string, photoUploadId: string | null): Promise<boolean>;
 }

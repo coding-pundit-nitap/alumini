@@ -3,6 +3,7 @@ export { createGetOwnProfile } from "./application/get-own-profile";
 export { createGetProfileForViewer } from "./application/get-profile-for-viewer";
 export { createUpdateOwnPrivacy } from "./application/update-own-privacy";
 export { createUpdateOwnProfile } from "./application/update-own-profile";
+export { createUpdateProfilePhoto } from "./application/update-profile-photo";
 export { createCollectionUseCases } from "./application/collection-use-cases";
 export { createPrismaEducationCollection } from "./infrastructure/prisma-education-collection";
 export { createPrismaExperienceCollection } from "./infrastructure/prisma-experience-collection";
