@@ -2,10 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { listConnections } from "@/composition/connections";
 import { getConversation, listMessages } from "@/composition/messaging";
+import {
+  addParticipantAction,
+  removeParticipantAction,
+} from "@/app/messages/actions";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
-import { Thread } from "@/modules/messaging";
+import { GroupMembers, Thread } from "@/modules/messaging";
 
 export const metadata: Metadata = { title: "Conversation" };
 
@@ -47,12 +52,30 @@ export default async function ConversationPage({
       .join(", ") ||
       "Conversation");
 
+  const candidates =
+    detail.isGroup && detail.createdById === actor.userId
+      ? (
+          await listConnections({ actor, state: "ACCEPTED", limit: 50 })
+        ).data.map((c) => c.user)
+      : [];
+
   return (
     <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-12">
       <Link href="/messages" className="text-primary text-sm underline">
         All messages
       </Link>
       <h1 className="text-2xl font-semibold">{title}</h1>
+      {detail.isGroup ? (
+        <GroupMembers
+          conversationId={conversationId}
+          viewerId={actor.userId}
+          createdById={detail.createdById}
+          people={detail.participants}
+          candidates={candidates}
+          addAction={addParticipantAction}
+          removeAction={removeParticipantAction}
+        />
+      ) : null}
       <Thread
         conversationId={conversationId}
         viewerId={actor.userId}

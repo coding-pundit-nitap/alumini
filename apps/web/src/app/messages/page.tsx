@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { listConversations } from "@/composition/messaging";
@@ -31,6 +32,12 @@ export default async function MessagesPage({
   return (
     <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-12">
       <h1 className="text-2xl font-semibold">Messages</h1>
+      <Link
+        href="/messages/new-group"
+        className="text-primary text-sm underline"
+      >
+        New group
+      </Link>
       <ConversationList
         conversations={page.data}
         viewerId={actor.userId}

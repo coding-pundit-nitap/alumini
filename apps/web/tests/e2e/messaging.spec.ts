@@ -64,10 +64,15 @@ test("J-10 members message each other, see unread counts, report and block", asy
     await ravi.goto("/messages");
     await expect(ravi.getByLabel("1 unread")).toBeVisible({ timeout: 2000 });
   }).toPass({ timeout: 30_000 });
-  await ravi.locator('main a[href^="/messages/"]').first().click();
+  await ravi
+    .locator('main a[href^="/messages/"]:not([href="/messages/new-group"])')
+    .first()
+    .click();
   await expect(ravi.getByText("Hello Ravi, nice to meet you")).toBeVisible();
-  await ravi.goto("/messages");
-  await expect(ravi.getByLabel("1 unread")).toHaveCount(0);
+  await expect(async () => {
+    await ravi.goto("/messages"); // the read marker posts asynchronously
+    await expect(ravi.getByLabel("1 unread")).toHaveCount(0, { timeout: 2000 });
+  }).toPass({ timeout: 20_000 });
 
   // Ravi replies while Asha has the thread open: it arrives without a reload (SSE, or the 30 s backfill).
   await ravi.goto(threadUrl);
@@ -104,4 +109,67 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await expect(asha.getByText("You have blocked this member")).toBeVisible();
   await ravi.goto(threadUrl);
   await expect(ravi.getByText("Page Not Found (404)")).toBeVisible();
+});
+
+test("J-11 a member starts a group from their connections and manages it", async ({
+  browser,
+}) => {
+  const asha = await member(browser);
+  const ravi = await member(browser);
+  const meera = await member(browser);
+  for (const m of [asha, ravi, meera]) await setLevel(m, "Verified members");
+  const [raviPath, meeraPath] = [
+    await profilePath(ravi),
+    await profilePath(meera),
+  ];
+  for (const [other, path] of [
+    [ravi, raviPath],
+    [meera, meeraPath],
+  ] as const) {
+    await asha.goto(path);
+    await asha.getByRole("button", { name: "Connect" }).click();
+    await expect(asha.getByText("Request sent")).toBeVisible();
+    await other.goto("/connections?tab=incoming");
+    await other.getByRole("button", { name: "Accept" }).click();
+    await expect(other.getByRole("button", { name: "Accept" })).toHaveCount(0);
+  }
+
+  await asha.goto("/messages/new-group");
+  await asha.getByLabel("Group name (optional)").fill("Batch reunion");
+  await asha.locator('input[type="checkbox"]').nth(0).check();
+  await asha.locator('input[type="checkbox"]').nth(1).check();
+  await asha.getByRole("button", { name: "Create group" }).click();
+  await expect(asha).toHaveURL(/\/messages\/[0-9a-f-]{36}$/);
+  await expect(
+    asha.getByRole("heading", { name: "Batch reunion" })
+  ).toBeVisible();
+  const groupUrl = asha.url();
+  // Retry: a click before hydration is lost.
+  await expect(async () => {
+    await asha
+      .getByRole("textbox", { name: "Message" })
+      .fill("Welcome to the group");
+    await asha.getByRole("button", { name: "Send" }).click();
+    await expect(asha.getByText("Welcome to the group")).toBeVisible({
+      timeout: 3000,
+    });
+  }).toPass({ timeout: 20_000 });
+
+  await expect(async () => {
+    await ravi.goto(groupUrl);
+    await expect(ravi.getByText("Welcome to the group")).toBeVisible({
+      timeout: 3000,
+    });
+  }).toPass({ timeout: 20_000 });
+  await expect(ravi.getByRole("button", { name: "Leave group" })).toBeVisible();
+  await expect(ravi.getByLabel("Add member")).toHaveCount(0);
+
+  await ravi.getByRole("button", { name: "Leave group" }).click();
+  await expect(ravi).toHaveURL(/\/messages$/);
+  await ravi.goto(groupUrl);
+  await expect(ravi.getByText("Page Not Found (404)")).toBeVisible();
+  await asha.reload();
+  await expect(asha.getByRole("button", { name: "Leave group" })).toHaveCount(
+    0
+  );
 });
