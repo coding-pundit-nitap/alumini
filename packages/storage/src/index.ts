@@ -9,3 +9,4 @@ export type {
   StoragePort,
 } from "./port.ts";
 export { createFakeStoragePort } from "./fake.ts";
+export { createS3StoragePort } from "./s3.ts";

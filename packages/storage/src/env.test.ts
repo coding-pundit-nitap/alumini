@@ -24,7 +24,7 @@ describe("loadStorageEnv", () => {
   });
 
   it("defaults forcePathStyle to false when absent", () => {
-    const rest = { ...valid };
+    const rest: Partial<typeof valid> = { ...valid };
     delete rest.S3_FORCE_PATH_STYLE;
     expect(loadStorageEnv(rest).forcePathStyle).toBe(false);
   });

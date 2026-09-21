@@ -117,7 +117,7 @@ importers:
         version: 21.2.3
       dependency-cruiser:
         specifier: ^18.3.1
-        version: 18.3.1
+        version: 18.4.0
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -488,10 +488,13 @@ importers:
   packages/storage:
     dependencies:
       '@aws-sdk/client-s3':
-        specifier: ^3.700.0
+        specifier: ^3.1136.0
+        version: 3.1136.0
+      '@aws-sdk/s3-presigned-post':
+        specifier: ^3.1136.0
         version: 3.1136.0
       '@aws-sdk/s3-request-presigner':
-        specifier: ^3.700.0
+        specifier: ^3.1136.0
         version: 3.1136.0
       zod:
         specifier: ^4.6.5
@@ -635,8 +638,8 @@ packages:
     resolution: {integrity: sha512-IxddtGnnoidVSO6O/aiTueptbTThHvi2qGHu9/AWuD1J7i86Ox+jl+Y5SXcDH1RixzQlP2cjH/PjnlImZiAurQ==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@asamuzakjp/dom-selector@9.2.0':
-    resolution: {integrity: sha512-qKvLetaSd/OTWif9JT0eu1SHBg3H7Nvp9SoMwMxqT5tmYyrxea/P1A5pIfGbnIJlOtm3yVeqw+ORxDOkjN1aEw==}
+  '@asamuzakjp/dom-selector@9.2.1':
+    resolution: {integrity: sha512-NT4s3yZLjovPpliRpTvdsdzyPjqRqiCZj9MxnarBihbaY5MbAG7DWAJcrLlhmC7xKTNCXsTELcqB8YsqpLnUFQ==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
   '@aws-sdk/checksums@3.1001.0':
@@ -689,6 +692,10 @@ packages:
 
   '@aws-sdk/nested-clients@3.997.45':
     resolution: {integrity: sha512-mooq9Q+jLa18VoM7HouczmslZU60iiB0aKc/Ztnq/luIL1ud0z4DnYprLR/ZO1gp331S9tJctM1HZr7u6YKBXQ==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/s3-presigned-post@3.1136.0':
+    resolution: {integrity: sha512-UsZY+Qmx1yZSaDT93AQeU1LeP72J1pi8B++5s2KmnzPWUveG7J/haRt0ORomgFoiVWh/q3l3mFiKIvOMdrgb4Q==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/s3-request-presigner@3.1136.0':
@@ -3119,8 +3126,8 @@ packages:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
     engines: {node: '>= 0.8'}
 
-  dependency-cruiser@18.3.1:
-    resolution: {integrity: sha512-NUGjObRSbUJTo9FFQixtTfV/3ozbtpivPKJoWP5g7JbKdFjBrQ4TsbmpcOrUcErK+q9n2l+Y4ZS2xVjGGtzm8g==}
+  dependency-cruiser@18.4.0:
+    resolution: {integrity: sha512-LLBYQ2XYmOCMG+liUWI2ReRYnnFXIbnzvCGHTohXAViSkawXr3T35fF/FV2cxpmB661pfkJ3ZXn95jhcEQ9GqA==}
     engines: {node: ^22||^24||>=26}
     hasBin: true
 
@@ -4884,8 +4891,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  systeminformation@5.33.12:
-    resolution: {integrity: sha512-7x1LtTPaopmrXUJmnxW6I98YIDihwiZEETD+hzI9X/GGIghcz8r38vlZ+TAqwQTOhPuZPB1xn/AJ2GPzvn9JfQ==}
+  systeminformation@5.33.13:
+    resolution: {integrity: sha512-GtyakkchTQKymM1WeAB652zi3rM1q00RKdc+jZe9KGstuc/mWUwAnQGN/RE5gVYvHIR8xYOUIUD9irVKDtA0wA==}
     engines: {node: '>=10.0.0'}
     os: [darwin, linux, win32, freebsd, openbsd, netbsd, sunos, android]
     hasBin: true
@@ -5302,7 +5309,7 @@ snapshots:
       '@csstools/css-tokenizer': 4.0.1
       lru-cache: 11.5.3
 
-  '@asamuzakjp/dom-selector@9.2.0':
+  '@asamuzakjp/dom-selector@9.2.1':
     dependencies:
       bidi-js: 1.1.0
       css-tree: 3.2.1
@@ -5443,6 +5450,16 @@ snapshots:
       '@smithy/core': 3.34.1
       '@smithy/fetch-http-handler': 5.8.0
       '@smithy/node-http-handler': 4.12.1
+      '@smithy/types': 4.18.0
+      tslib: 2.8.1
+
+  '@aws-sdk/s3-presigned-post@3.1136.0':
+    dependencies:
+      '@aws-sdk/client-s3': 3.1136.0
+      '@aws-sdk/core': 3.978.0
+      '@aws-sdk/types': 3.974.5
+      '@smithy/core': 3.34.1
+      '@smithy/signature-v4': 5.7.3
       '@smithy/types': 4.18.0
       tslib: 2.8.1
 
@@ -6139,7 +6156,7 @@ snapshots:
       object-treeify: 1.1.33
       open: 8.4.2
       picomatch: 4.0.7
-      systeminformation: 5.33.12
+      systeminformation: 5.33.13
       undici: 7.29.1
       which: 4.0.0
       yocto-spinner: 1.2.2
@@ -7780,7 +7797,7 @@ snapshots:
 
   depd@2.0.0: {}
 
-  dependency-cruiser@18.3.1:
+  dependency-cruiser@18.4.0:
     dependencies:
       acorn: 8.18.0
       acorn-jsx: 5.3.2(acorn@8.18.0)
@@ -8435,7 +8452,7 @@ snapshots:
   jsdom@30.1.0(@noble/hashes@2.4.0):
     dependencies:
       '@asamuzakjp/css-color': 7.0.0
-      '@asamuzakjp/dom-selector': 9.2.0
+      '@asamuzakjp/dom-selector': 9.2.1
       '@bramus/specificity': 2.4.2
       '@csstools/css-syntax-patches-for-csstree': 1.1.14(css-tree@3.2.1)
       '@exodus/bytes': 1.15.1(@noble/hashes@2.4.0)
@@ -9450,7 +9467,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  systeminformation@5.33.12: {}
+  systeminformation@5.33.13: {}
 
   tailwind-merge@3.7.0: {}
 
