@@ -73,6 +73,14 @@ export const ERROR_CATALOG: Record<
     status: 409,
     message: "This account can no longer be reviewed.",
   },
+  PROFILE_LIMIT_REACHED: {
+    status: 409,
+    message: "You have reached the limit for this section.",
+  },
+  PROFILE_ITEM_EXISTS: {
+    status: 409,
+    message: "That already exists on your profile.",
+  },
   REQUEST_IN_PROGRESS: {
     status: 409,
     message: "A request with this idempotency key is still being processed.",

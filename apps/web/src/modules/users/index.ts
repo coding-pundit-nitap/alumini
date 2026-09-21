@@ -3,10 +3,39 @@ export { createGetOwnProfile } from "./application/get-own-profile";
 export { createGetProfileForViewer } from "./application/get-profile-for-viewer";
 export { createUpdateOwnPrivacy } from "./application/update-own-privacy";
 export { createUpdateOwnProfile } from "./application/update-own-profile";
+export { createCollectionUseCases } from "./application/collection-use-cases";
+export { createPrismaEducationCollection } from "./infrastructure/prisma-education-collection";
+export { createPrismaExperienceCollection } from "./infrastructure/prisma-experience-collection";
+export { createPrismaLinkCollection } from "./infrastructure/prisma-link-collection";
 export { createPrismaProfileStore } from "./infrastructure/prisma-profile-store";
+export { createPrismaSkillCollection } from "./infrastructure/prisma-skill-collection";
 export { createProfileAudit } from "./infrastructure/profile-audit";
 export { noConnectionsLookup } from "./infrastructure/no-connections-lookup";
 export type { ProfileRecord, ProfileView } from "./domain/profile";
+export {
+  EDUCATION_FIELDS,
+  educationClockProblems,
+  educationSchema,
+  EXPERIENCE_FIELDS,
+  experienceClockProblems,
+  experienceSchema,
+  LINK_FIELDS,
+  LINK_TYPES,
+  linkSchema,
+  SKILL_FIELDS,
+  skillSchema,
+} from "./domain/profile-items";
+export type {
+  EducationInput,
+  EducationItem,
+  ExperienceInput,
+  ExperienceItem,
+  LinkInput,
+  LinkItem,
+  LinkType,
+  SkillInput,
+  SkillItem,
+} from "./domain/profile-items";
 export type { Visibility, VisibilitySettings } from "./domain/visibility";
 export {
   parsePrivacyForm,
