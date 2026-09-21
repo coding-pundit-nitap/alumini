@@ -19,7 +19,7 @@ import { updateProfilePhoto } from "./users";
  * worker-only, ADR-018).
  */
 const store = createPrismaUploadStore({ runner: transactionRunner, outbox });
-const storage = createS3StoragePort(loadStorageEnv(process.env));
+export const storage = createS3StoragePort(loadStorageEnv(process.env));
 
 export const presignUpload = createPresignUpload({ store, authorize, storage });
 export const completeUpload = createCompleteUpload({

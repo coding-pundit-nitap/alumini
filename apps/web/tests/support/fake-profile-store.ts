@@ -27,6 +27,11 @@ export function createFakeProfileStore(initial: ProfileRecord[]) {
       record.photoUploadId = photoUploadId;
       return true;
     },
+    async findPhotoKey(userId) {
+      const record = records.get(userId);
+      if (!record?.photoUploadId) return null;
+      return `avatars/${userId}/${record.photoUploadId}.webp`;
+    },
   };
   return { store, records };
 }

@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@nitap/database";
+import { avatarKey } from "@nitap/storage";
 
 import type { ProfileStore } from "../application/profile-store";
 import type { ProfileRecord } from "../domain/profile";
@@ -113,6 +114,20 @@ export function createPrismaProfileStore(prisma: PrismaClient): ProfileStore {
         data: { photoUploadId },
       });
       return result.count === 1;
+    },
+
+    async findPhotoKey(userId) {
+      const row = await prisma.profile.findUnique({
+        where: { userId },
+        select: {
+          photoUploadId: true,
+          photoUpload: { select: { status: true } },
+        },
+      });
+      if (!row?.photoUploadId || row.photoUpload?.status !== "READY") {
+        return null;
+      }
+      return avatarKey(userId, row.photoUploadId);
     },
   };
 }

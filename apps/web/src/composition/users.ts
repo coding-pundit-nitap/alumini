@@ -6,6 +6,7 @@ import {
   createCollectionUseCases,
   createGetOwnProfile,
   createGetProfileForViewer,
+  createGetProfilePhotoKey,
   createPrismaEducationCollection,
   createPrismaExperienceCollection,
   createPrismaLinkCollection,
@@ -32,6 +33,14 @@ export const getProfileForViewer = createGetProfileForViewer({
   store,
   connections: noConnectionsLookup,
   audit: createProfileAudit({ runner: transactionRunner, audit }),
+  can,
+  reportError: (error) =>
+    logger.warn("profile.connection_lookup_failed", { error }),
+});
+
+export const getProfilePhotoKey = createGetProfilePhotoKey({
+  store,
+  connections: noConnectionsLookup,
   can,
   reportError: (error) =>
     logger.warn("profile.connection_lookup_failed", { error }),

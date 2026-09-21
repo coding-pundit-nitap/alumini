@@ -1,12 +1,10 @@
-import { PERMISSIONS } from "@nitap/database/permissions";
-
 import { NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
 
 import { projectProfile, type ProfileView } from "../domain/profile";
-import type { Viewer } from "../domain/visibility";
 import type { Can } from "./authz";
-import type { ConnectionLookup, Relation } from "./connection-lookup";
+import { classifyViewer } from "./classify-viewer";
+import type { ConnectionLookup } from "./connection-lookup";
 import type { ProfileAudit } from "./profile-audit";
 import type { ProfileStore } from "./profile-store";
 
@@ -23,32 +21,7 @@ export function createGetProfileForViewer(deps: {
   can: Can;
   reportError?: (error: unknown) => void;
 }) {
-  async function relationTo(
-    viewerId: string,
-    ownerId: string
-  ): Promise<Relation> {
-    try {
-      return await deps.connections.relation(viewerId, ownerId);
-    } catch (error) {
-      // Fail closed: without an answer the viewer is a plain member, never a connection.
-      deps.reportError?.(error);
-      return "none";
-    }
-  }
-
-  async function classify(
-    actor: Actor | null,
-    ownerId: string
-  ): Promise<Viewer> {
-    if (!actor) return "guest";
-    if (actor.userId === ownerId) return "owner";
-    if (actor.accountState !== "VERIFIED") return "unverified";
-    if (deps.can(actor, PERMISSIONS.PROFILE_READ_ANY)) return "privileged";
-    const relation = await relationTo(actor.userId, ownerId);
-    if (relation === "blocked") return "blocked";
-    if (!deps.can(actor, PERMISSIONS.PROFILE_READ)) return "unverified";
-    return relation === "connected" ? "connected" : "member";
-  }
+  const classify = classifyViewer(deps);
 
   return async function getProfileForViewer(args: {
     actor: Actor | null;

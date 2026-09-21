@@ -9,4 +9,6 @@ export interface ProfileStore {
   updatePrivacy(userId: string, settings: VisibilitySettings): Promise<boolean>;
   /** Narrow on purpose (spec 3C): only ever sets this one column, never touches name/headline/bio/location. */
   setPhoto(userId: string, photoUploadId: string | null): Promise<boolean>;
+  /** The attached photo's current storage key, (null if none, or the upload is not READY). */
+  findPhotoKey(userId: string): Promise<string | null>;
 }

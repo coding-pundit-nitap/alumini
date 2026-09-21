@@ -31,6 +31,12 @@ env:
   DEV_COORDINATOR_EMAIL: coordinator@nitap.example
   DEV_COORDINATOR_PASSWORD: ci-coordinator-password-1234
   MAILPIT_URL: http://localhost:8025
+  S3_ENDPOINT: http://localhost:9000
+  S3_REGION: us-east-1
+  S3_BUCKET: alumini-uploads
+  S3_ACCESS_KEY_ID: alumini-storage
+  S3_SECRET_ACCESS_KEY: alumini-storage-secret
+  S3_FORCE_PATH_STYLE: "true"
 
 jobs:
   static:
@@ -138,6 +144,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Every migration must apply to an empty database.
+      # MinIO cannot be a `services:` entry (no command override there), so start it directly and make the bucket.
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=$S3_ACCESS_KEY_ID -e MINIO_ROOT_PASSWORD=$S3_SECRET_ACCESS_KEY \
+            quay.io/minio/minio server /data
+          docker run --rm --network host --entrypoint sh quay.io/minio/mc -c \
+            "until mc alias set local $S3_ENDPOINT $S3_ACCESS_KEY_ID $S3_SECRET_ACCESS_KEY; do sleep 1; done && mc mb --ignore-existing local/$S3_BUCKET"
       - run: pnpm db:deploy
       - run: pnpm test:integration
 
@@ -198,6 +212,14 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # MinIO cannot be a `services:` entry (no command override there), so start it directly and make the bucket.
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=$S3_ACCESS_KEY_ID -e MINIO_ROOT_PASSWORD=$S3_SECRET_ACCESS_KEY \
+            quay.io/minio/minio server /data
+          docker run --rm --network host --entrypoint sh quay.io/minio/mc -c \
+            "until mc alias set local $S3_ENDPOINT $S3_ACCESS_KEY_ID $S3_SECRET_ACCESS_KEY; do sleep 1; done && mc mb --ignore-existing local/$S3_BUCKET"
       - run: pnpm db:deploy
       # Sign-up assigns roles, which the seed creates.
       - run: pnpm --filter @nitap/database db:seed
