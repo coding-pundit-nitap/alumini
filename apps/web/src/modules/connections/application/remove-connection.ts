@@ -3,9 +3,13 @@ import { PERMISSIONS } from "@nitap/database/permissions";
 import { ConflictError, NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
 
-import { decideRemove, type RemoveOutcome } from "../domain/connection";
+import {
+  decideRemove,
+  otherParty,
+  type RemoveOutcome,
+} from "../domain/connection";
 import type { Authorize } from "./authz";
-import type { ConnectionStore } from "./connection-store";
+import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { refuse } from "./refusal";
 
 /**
@@ -16,6 +20,7 @@ import { refuse } from "./refusal";
 export function createRemoveConnection(deps: {
   store: ConnectionStore;
   authorize: Authorize;
+  observe?: ConnectionObserver;
 }) {
   return async function removeConnection(args: {
     actor: Actor | null;
@@ -23,7 +28,7 @@ export function createRemoveConnection(deps: {
   }): Promise<{ outcome: RemoveOutcome }> {
     const caller = deps.authorize(args.actor, PERMISSIONS.CONNECTION_MANAGE);
 
-    return deps.store.transaction(async (tx) => {
+    const result = await deps.store.transaction(async (tx) => {
       const row = await tx.findById(args.connectionId);
       if (!row) throw new NotFoundError();
 
@@ -33,8 +38,18 @@ export function createRemoveConnection(deps: {
       if (!(await tx.remove(row.id, row.state))) {
         throw new ConflictError("INVALID_STATE_TRANSITION");
       }
+      if (decision.outcome === "unblocked") {
+        await tx.audit({
+          action: "connection.unblocked",
+          actorId: caller.userId,
+          targetUserId: otherParty(row, caller.userId),
+          connectionId: row.id,
+        });
+      }
       return { outcome: decision.outcome };
     });
+    deps.observe?.(result.outcome, args.connectionId);
+    return result;
   };
 }
 

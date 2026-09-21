@@ -35,7 +35,31 @@ export type ConnectionTx = {
   /** Guarded like `update`. False when the row had already changed. */
   remove(id: string, from: ConnectionState): Promise<boolean>;
   enqueue(event: ConnectionEvent): Promise<void>;
+  /** Writes the audit row in the same transaction (SRS §22). Ids only. */
+  audit(entry: ConnectionAuditEntry): Promise<void>;
 };
+
+/** Block and unblock leave a trace: a moderator may need to know who blocked whom, and when. */
+export type ConnectionAuditEntry = {
+  action: "connection.blocked" | "connection.unblocked";
+  actorId: string;
+  targetUserId: string;
+  connectionId: string;
+};
+
+/** One committed outcome, for logs and metrics. Called after the transaction, never inside it. */
+export type ConnectionOutcome =
+  | "requested"
+  | "accepted"
+  | "rejected"
+  | "cancelled"
+  | "removed"
+  | "blocked"
+  | "unblocked";
+export type ConnectionObserver = (
+  outcome: ConnectionOutcome,
+  connectionId: string
+) => void;
 
 export type ConnectionStore = {
   transaction<T>(work: (tx: ConnectionTx) => Promise<T>): Promise<T>;

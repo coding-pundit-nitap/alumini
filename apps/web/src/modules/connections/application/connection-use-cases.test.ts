@@ -488,3 +488,96 @@ describe("listConnections and getConnectionStatus", () => {
     });
   });
 });
+
+describe("audit and observation", () => {
+  it("block records connection.blocked in the same transaction, once, naming the target", async () => {
+    const { block, audits } = setup();
+    const { connectionId } = await block({ actor: actor(B), targetUserId: A });
+    expect(audits()).toEqual([
+      {
+        action: "connection.blocked",
+        actorId: B,
+        targetUserId: A,
+        connectionId,
+      },
+    ]);
+  });
+
+  it("blocking twice records nothing the second time", async () => {
+    const { block, audits } = setup();
+    await block({ actor: actor(B), targetUserId: A });
+    await block({ actor: actor(B), targetUserId: A });
+    expect(audits()).toHaveLength(1);
+  });
+
+  it("unblocking records connection.unblocked; cancelling or removing records no audit", async () => {
+    const blocked = setup([
+      row({ state: "BLOCKED", blockedById: A, respondedAt: now }),
+    ]);
+    await blocked.remove({ actor: actor(A), connectionId: "c1" });
+    expect(blocked.audits()).toEqual([
+      {
+        action: "connection.unblocked",
+        actorId: A,
+        targetUserId: B,
+        connectionId: "c1",
+      },
+    ]);
+    const cancelled = setup([row()]);
+    await cancelled.remove({ actor: actor(A), connectionId: "c1" });
+    expect(cancelled.audits()).toEqual([]);
+  });
+
+  it("a failing audit write rolls the block back", async () => {
+    const { block, rows, audits } = setup([row()], { failAudit: true });
+    await expect(block({ actor: actor(B), targetUserId: A })).rejects.toThrow(
+      "audit down"
+    );
+    expect(rows()[0]?.state).toBe("PENDING");
+    expect(audits()).toEqual([]);
+  });
+
+  it("reports each committed outcome once, after the commit, and nothing on a refusal", async () => {
+    const observe = vi.fn();
+    const fake = createFakeConnectionStore();
+    const deps = { store: fake.store, authorize, observe };
+    const request = createRequestConnection({
+      ...deps,
+      rateLimiter: allowAll,
+      now: clock,
+    });
+    const respond = createRespondToConnection({ ...deps, now: clock });
+    const remove = createRemoveConnection(deps);
+    const block = createBlockUser({ ...deps, now: clock });
+
+    const { connectionId } = await request({ actor: actor(A), recipientId: B });
+    await respond({ actor: actor(B), connectionId, decision: "ACCEPT" });
+    await remove({ actor: actor(A), connectionId });
+    await block({ actor: actor(A), targetUserId: B });
+    await block({ actor: actor(A), targetUserId: B }); // idempotent: not reported again
+    await request({ actor: actor(A), recipientId: B }).catch(() => {}); // refused: not reported
+
+    expect(observe.mock.calls.map((c) => c[0])).toEqual([
+      "requested",
+      "accepted",
+      "removed",
+      "blocked",
+    ]);
+    expect(observe).toHaveBeenCalledWith("requested", connectionId);
+  });
+
+  it("does not report an outcome whose transaction rolled back", async () => {
+    const observe = vi.fn();
+    const fake = createFakeConnectionStore([], { failEnqueue: true });
+    const request = createRequestConnection({
+      store: fake.store,
+      authorize,
+      rateLimiter: allowAll,
+      observe,
+    });
+    await expect(
+      request({ actor: actor(A), recipientId: B })
+    ).rejects.toThrow();
+    expect(observe).not.toHaveBeenCalled();
+  });
+});

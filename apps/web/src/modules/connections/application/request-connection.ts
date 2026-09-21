@@ -5,7 +5,7 @@ import type { Actor } from "@/modules/auth";
 
 import { canonicalPair, decideRequest } from "../domain/connection";
 import type { Authorize } from "./authz";
-import type { ConnectionStore } from "./connection-store";
+import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { cannotConnectSelf, refuse } from "./refusal";
 
 /** `connections.create`: 20 requests an hour per member, the brake on mass invitations (API spec §6.1). */
@@ -29,6 +29,7 @@ export function createRequestConnection(deps: {
   store: ConnectionStore;
   authorize: Authorize;
   rateLimiter: RateLimiter;
+  observe?: ConnectionObserver;
   now?: () => Date;
 }) {
   const now = deps.now ?? (() => new Date());
@@ -58,7 +59,7 @@ export function createRequestConnection(deps: {
       },
     });
 
-    return deps.store.transaction(async (tx) => {
+    const result = await deps.store.transaction(async (tx) => {
       // Not a verified member reads the same as no such member.
       if ((await tx.accountState(recipientId)) !== "VERIFIED") {
         throw new NotFoundError();
@@ -96,6 +97,8 @@ export function createRequestConnection(deps: {
       }
       throw new ConflictError("CONNECTION_EXISTS");
     });
+    deps.observe?.("requested", result.connectionId);
+    return result;
   };
 }
 

@@ -25,6 +25,7 @@ export default defineConfig({
           include: [
             "src/**/*.test.ts",
             "tests/architecture/**/*.test.ts",
+            "tests/security/**/*.test.ts",
             // @nitap/database's own vitest install can't be resolved in this environment's
             // sandboxed pnpm (vitest requires the `vite` peer, and pnpm's release-age policy
             // blocks materializing a fresh peer-qualified variant for that package alone — see

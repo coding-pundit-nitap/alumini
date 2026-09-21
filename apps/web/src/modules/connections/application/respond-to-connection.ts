@@ -5,7 +5,7 @@ import type { Actor } from "@/modules/auth";
 
 import { decideRespond, otherParty } from "../domain/connection";
 import type { Authorize } from "./authz";
-import type { ConnectionStore } from "./connection-store";
+import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { refuse } from "./refusal";
 
 /**
@@ -16,6 +16,7 @@ import { refuse } from "./refusal";
 export function createRespondToConnection(deps: {
   store: ConnectionStore;
   authorize: Authorize;
+  observe?: ConnectionObserver;
   now?: () => Date;
 }) {
   const now = deps.now ?? (() => new Date());
@@ -28,7 +29,7 @@ export function createRespondToConnection(deps: {
     const caller = deps.authorize(args.actor, PERMISSIONS.CONNECTION_MANAGE);
     const to = args.decision === "ACCEPT" ? "ACCEPTED" : "REJECTED";
 
-    return deps.store.transaction(async (tx) => {
+    await deps.store.transaction(async (tx) => {
       const row = await tx.findById(args.connectionId);
       if (!row) throw new NotFoundError();
 
@@ -49,8 +50,12 @@ export function createRespondToConnection(deps: {
           },
         });
       }
-      return { state: to };
     });
+    deps.observe?.(
+      to === "ACCEPTED" ? "accepted" : "rejected",
+      args.connectionId
+    );
+    return { state: to };
   };
 }
 

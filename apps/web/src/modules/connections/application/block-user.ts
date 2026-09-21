@@ -5,7 +5,11 @@ import type { Actor } from "@/modules/auth";
 
 import { canonicalPair, decideBlock } from "../domain/connection";
 import type { Authorize } from "./authz";
-import type { ConnectionStore } from "./connection-store";
+import type {
+  ConnectionObserver,
+  ConnectionStore,
+  ConnectionTx,
+} from "./connection-store";
 import { cannotConnectSelf, refuse } from "./refusal";
 
 /**
@@ -16,6 +20,7 @@ import { cannotConnectSelf, refuse } from "./refusal";
 export function createBlockUser(deps: {
   store: ConnectionStore;
   authorize: Authorize;
+  observe?: ConnectionObserver;
   now?: () => Date;
 }) {
   const now = deps.now ?? (() => new Date());
@@ -28,8 +33,20 @@ export function createBlockUser(deps: {
     const targetId = args.targetUserId.toLowerCase();
     if (targetId === caller.userId.toLowerCase()) throw cannotConnectSelf();
     const pair = canonicalPair(caller.userId, targetId);
+    const recorded = async (tx: ConnectionTx, connectionId: string) => {
+      changed = true;
+      await tx.audit({
+        action: "connection.blocked",
+        actorId: caller.userId,
+        targetUserId: targetId,
+        connectionId,
+      });
+      return { connectionId };
+    };
 
-    return deps.store.transaction(async (tx) => {
+    let changed = false;
+    const result = await deps.store.transaction(async (tx) => {
+      changed = false;
       if ((await tx.accountState(targetId)) === null) throw new NotFoundError();
 
       let existing = await tx.findByPair(pair.userAId, pair.userBId);
@@ -42,7 +59,7 @@ export function createBlockUser(deps: {
 
         if (decision.action === "create") {
           const created = await tx.insert({ ...pair, ...decision.patch });
-          if (created) return { connectionId: created.id };
+          if (created) return await recorded(tx, created.id);
           existing = await tx.findByPair(pair.userAId, pair.userBId);
           continue;
         }
@@ -51,10 +68,12 @@ export function createBlockUser(deps: {
           ? await tx.update(existing.id, existing.state, decision.patch)
           : null;
         if (!updated) throw new ConflictError("INVALID_STATE_TRANSITION");
-        return { connectionId: updated.id };
+        return await recorded(tx, updated.id);
       }
       throw new ConflictError("INVALID_STATE_TRANSITION");
     });
+    if (changed) deps.observe?.("blocked", result.connectionId);
+    return result;
   };
 }
 

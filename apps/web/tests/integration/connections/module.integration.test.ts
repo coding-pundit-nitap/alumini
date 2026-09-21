@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import { createTestDatabase, type TestDatabase } from "@nitap/testing";
@@ -48,6 +49,7 @@ describe("connections module against real PostgreSQL", () => {
     const store = createPrismaConnectionStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
     const queries = createPrismaConnectionQueries(db.prisma);
     return {
@@ -248,6 +250,34 @@ describe("connections module against real PostgreSQL", () => {
       "NOT_FOUND"
     );
     await remove({ actor: actor(x), connectionId });
+    // Block and unblock leave append-only audit rows: ids only, target is the other member.
+    expect(
+      await db.prisma.auditLog.findMany({
+        orderBy: { createdAt: "asc" },
+        select: {
+          action: true,
+          actorId: true,
+          targetType: true,
+          targetId: true,
+          metadata: true,
+        },
+      })
+    ).toEqual([
+      {
+        action: "connection.blocked",
+        actorId: x,
+        targetType: "user",
+        targetId: y,
+        metadata: { connectionId },
+      },
+      {
+        action: "connection.unblocked",
+        actorId: x,
+        targetType: "user",
+        targetId: y,
+        metadata: { connectionId },
+      },
+    ]);
     expect(await queries.relation(x, y)).toBe("none");
     expect(await code(request({ actor: actor(y), recipientId: x }))).toBe("ok");
   });

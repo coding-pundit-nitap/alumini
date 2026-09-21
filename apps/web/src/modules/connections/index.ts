@@ -11,5 +11,9 @@ export { ConnectionButton } from "./presentation/ui/connection-button";
 export { ConnectionList } from "./presentation/ui/connection-list";
 export type { ConnectionTab } from "./presentation/ui/connection-list";
 export type { ConnectionPage } from "./application/list-connections";
-export type { ListedConnection } from "./application/connection-store";
+export type {
+  ConnectionObserver,
+  ConnectionOutcome,
+  ListedConnection,
+} from "./application/connection-store";
 export type { ConnectionStatus } from "./domain/connection";

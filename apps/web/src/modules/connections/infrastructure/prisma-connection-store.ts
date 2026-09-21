@@ -1,4 +1,5 @@
 import type { Prisma } from "@nitap/database";
+import type { AuditWriter } from "@nitap/database/audit";
 import type { OutboxWriter } from "@nitap/database/outbox";
 
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
@@ -29,6 +30,7 @@ const toRow = (row: {
 export function createPrismaConnectionStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;
+  audit: AuditWriter;
 }): ConnectionStore {
   const forClient = (db: Prisma.TransactionClient): ConnectionTx => ({
     async findByPair(userAId, userBId) {
@@ -84,6 +86,16 @@ export function createPrismaConnectionStore(deps: {
 
     async enqueue(event) {
       await deps.outbox.add(db, event);
+    },
+
+    async audit(entry) {
+      await deps.audit.record(db, {
+        actorId: entry.actorId,
+        action: entry.action,
+        targetType: "user",
+        targetId: entry.targetUserId,
+        metadata: { connectionId: entry.connectionId },
+      });
     },
   });
 

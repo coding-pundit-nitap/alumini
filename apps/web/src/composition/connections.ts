@@ -1,4 +1,6 @@
+import { audit } from "@/infrastructure/audit";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
+import { getMetrics, logger } from "@/infrastructure/observability";
 import { outbox } from "@/infrastructure/outbox";
 import { redisRateLimitStorage } from "@/infrastructure/redis/rate-limit-storage";
 import { authorize } from "@/modules/auth";
@@ -11,6 +13,7 @@ import {
   createRemoveConnection,
   createRequestConnection,
   createRespondToConnection,
+  type ConnectionObserver,
 } from "@/modules/connections";
 
 /**
@@ -21,7 +24,13 @@ import {
 const store = createPrismaConnectionStore({
   runner: transactionRunner,
   outbox,
+  audit,
 });
+/** One log line and one counter per committed outcome (ids only: never a name or address). */
+const observe: ConnectionObserver = (outcome, connectionId) => {
+  logger.info(`connection.${outcome}`, { metadata: { connectionId } });
+  getMetrics().increment("connections_total", { outcome });
+};
 const queries = createPrismaConnectionQueries(prisma);
 
 export const connectionLookup = { relation: queries.relation };
@@ -30,13 +39,19 @@ export const requestConnection = createRequestConnection({
   store,
   authorize,
   rateLimiter: redisRateLimitStorage,
+  observe,
 });
 export const respondToConnection = createRespondToConnection({
   store,
   authorize,
+  observe,
 });
-export const removeConnection = createRemoveConnection({ store, authorize });
-export const blockUser = createBlockUser({ store, authorize });
+export const removeConnection = createRemoveConnection({
+  store,
+  authorize,
+  observe,
+});
+export const blockUser = createBlockUser({ store, authorize, observe });
 export const listConnections = createListConnections({ queries, authorize });
 export const getConnectionStatus = createGetConnectionStatus({
   queries,

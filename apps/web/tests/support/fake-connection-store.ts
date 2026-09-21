@@ -1,4 +1,5 @@
 import type {
+  ConnectionAuditEntry,
   ConnectionEvent,
   ConnectionQueries,
   ConnectionStore,
@@ -18,11 +19,13 @@ export function createFakeConnectionStore(
     accountStates?: Record<string, string>;
     beforeInsert?: (rows: Map<string, ConnectionRow>) => void;
     failEnqueue?: boolean;
+    failAudit?: boolean;
   } = {}
 ) {
   let state = {
     rows: new Map(seed.map((r) => [r.id, { ...r }])),
     events: [] as ConnectionEvent[],
+    audits: [] as ConnectionAuditEntry[],
   };
   let sequence = 0;
   const states = options.accountStates ?? {};
@@ -76,6 +79,10 @@ export function createFakeConnectionStore(
       if (options.failEnqueue) throw new Error("outbox down");
       state.events.push(event);
     },
+    async audit(entry) {
+      if (options.failAudit) throw new Error("audit down");
+      state.audits.push(entry);
+    },
   };
 
   const store: ConnectionStore = {
@@ -83,6 +90,7 @@ export function createFakeConnectionStore(
       const before = {
         rows: new Map([...state.rows].map(([k, v]) => [k, { ...v }])),
         events: [...state.events],
+        audits: [...state.audits],
       };
       try {
         return await work(tx);
@@ -139,5 +147,6 @@ export function createFakeConnectionStore(
     queries,
     rows: () => [...state.rows.values()],
     events: () => state.events,
+    audits: () => state.audits,
   };
 }
