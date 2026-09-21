@@ -29,3 +29,19 @@ export function parseForm<S extends z.ZodType>(
   }
   return parsed.data;
 }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The item id a Server Action's `update`/`remove` acts on. Ownership is enforced by the store, not here. */
+export function parseItemId(formData: FormData): string {
+  const value = formData.get("id");
+  const id = typeof value === "string" ? value : "";
+  if (!UUID.test(id)) {
+    throw new ValidationError({
+      details: [
+        { field: "id", code: "INVALID", message: "That item was not found." },
+      ],
+    });
+  }
+  return id;
+}
