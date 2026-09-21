@@ -5,8 +5,15 @@ import { redirect } from "next/navigation";
 import { getOwnProfile } from "@/composition/users";
 import { getActor } from "@/modules/auth";
 import { ProfileForm } from "@/modules/users";
+import { PhotoUpload } from "@/modules/uploads";
 
 import { updateProfileAction } from "./actions";
+import {
+  completePhotoUploadAction,
+  getUploadStatusAction,
+  presignPhotoUploadAction,
+  setProfilePhotoAction,
+} from "./photo-actions";
 
 export const metadata: Metadata = { title: "Your profile" };
 
@@ -25,6 +32,15 @@ export default async function ProfilePage() {
   return (
     <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-12">
       <h1 className="text-2xl font-semibold">Your profile</h1>
+      <PhotoUpload
+        photoUrl={
+          profile.photoUploadId ? `/api/photos/${profile.userId}` : null
+        }
+        presignAction={presignPhotoUploadAction}
+        completeAction={completePhotoUploadAction}
+        statusAction={getUploadStatusAction}
+        setPhotoAction={setProfilePhotoAction}
+      />
       <ProfileForm
         action={updateProfileAction}
         defaults={{

@@ -125,4 +125,30 @@ describe("ProfileCard", () => {
     );
     expect(screen.queryByText("Skills")).toBeNull();
   });
+
+  it("renders the photo when photoUrl is present", () => {
+    render(
+      <ProfileCard
+        view={{
+          userId: "u",
+          fullName: "Asha Rao",
+          headline: null,
+          photoUrl: "/api/photos/u",
+        }}
+      />
+    );
+    expect(screen.getByRole("img", { name: /asha rao/i })).toHaveAttribute(
+      "src",
+      "/api/photos/u"
+    );
+  });
+
+  it("omits the photo entirely when photoUrl is absent", () => {
+    render(
+      <ProfileCard
+        view={{ userId: "u", fullName: "Asha Rao", headline: null }}
+      />
+    );
+    expect(screen.queryByRole("img")).toBeNull();
+  });
 });

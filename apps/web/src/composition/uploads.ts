@@ -5,6 +5,7 @@ import { outbox } from "@/infrastructure/outbox";
 import { authorize } from "@/modules/auth";
 import {
   createCompleteUpload,
+  createGetUploadStatus,
   createPresignUpload,
   createPrismaUploadStore,
   createSetProfilePhoto,
@@ -31,3 +32,4 @@ export const setProfilePhoto = createSetProfilePhoto({
   authorize,
   updateProfilePhoto,
 });
+export const getUploadStatus = createGetUploadStatus({ store, authorize });

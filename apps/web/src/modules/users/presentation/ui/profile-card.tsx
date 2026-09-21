@@ -38,6 +38,14 @@ export function ProfileCard({ view }: { view: ProfileView }) {
   return (
     <article className="border-border space-y-6 rounded-lg border p-6">
       <header className="space-y-1">
+        {view.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a presigned, auth-checked route; not a static asset.
+          <img
+            src={view.photoUrl}
+            alt={view.fullName}
+            className="mb-2 size-20 rounded-full object-cover"
+          />
+        ) : null}
         <h1 className="text-2xl font-semibold">{view.fullName}</h1>
         {view.headline ? (
           <p className="text-muted-foreground">{view.headline}</p>
