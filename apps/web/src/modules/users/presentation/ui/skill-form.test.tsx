@@ -42,4 +42,25 @@ describe("SkillForm", () => {
       await screen.findByText("You have reached the limit for this section.")
     ).toBeInTheDocument();
   });
+
+  it("edit mode: prefills the skill, labels the button Save, and sends the item id", async () => {
+    const action = vi.fn<ItemAction>(async () => ({
+      ok: true,
+      data: undefined,
+    }));
+    const user = userEvent.setup();
+    render(
+      <SkillForm
+        action={action}
+        id="11111111-1111-4111-8111-111111111111"
+        defaults={{ skill: "TypeScript" }}
+      />
+    );
+    expect(screen.getByLabelText("Skill")).toHaveValue("TypeScript");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(action).toHaveBeenCalledOnce());
+    expect(action.mock.calls[0]![0].get("id")).toBe(
+      "11111111-1111-4111-8111-111111111111"
+    );
+  });
 });

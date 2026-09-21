@@ -4,7 +4,11 @@ import { Button } from "@nitap/ui/components/button";
 import { Input } from "@nitap/ui/components/input";
 import { useActionState } from "react";
 
-import { LINK_TYPES, type LinkType } from "../../domain/profile-items";
+import {
+  LINK_TYPES,
+  type LinkInput,
+  type LinkType,
+} from "../../domain/profile-items";
 import {
   fieldErrors,
   formError,
@@ -20,8 +24,16 @@ const TYPE_LABEL: Record<LinkType, string> = {
   OTHER: "Other",
 };
 
-/** Adds a social or web link; https only, checked server-side (spec 3B). */
-export function LinkForm({ action }: { action: ItemAction }) {
+/** Adds a social or web link (https only, checked server-side), or (with `id`/`defaults`) edits one. */
+export function LinkForm({
+  action,
+  id,
+  defaults,
+}: {
+  action: ItemAction;
+  id?: string;
+  defaults?: LinkInput;
+}) {
   const [result, submit, pending] = useActionState<
     ItemActionResult | null,
     FormData
@@ -30,6 +42,7 @@ export function LinkForm({ action }: { action: ItemAction }) {
 
   return (
     <form action={submit} className="flex flex-wrap items-end gap-2">
+      {id ? <input type="hidden" name="id" value={id} /> : null}
       <div className="space-y-1.5">
         <label htmlFor="link-type" className="text-sm font-medium">
           Type
@@ -37,7 +50,7 @@ export function LinkForm({ action }: { action: ItemAction }) {
         <select
           id="link-type"
           name="type"
-          defaultValue="WEBSITE"
+          defaultValue={defaults?.type ?? "WEBSITE"}
           className="border-input bg-background h-8 rounded-lg border px-2.5 text-sm"
         >
           {LINK_TYPES.map((type) => (
@@ -55,6 +68,7 @@ export function LinkForm({ action }: { action: ItemAction }) {
           id="link-url"
           name="url"
           placeholder="https://…"
+          defaultValue={defaults?.url}
           maxLength={2048}
         />
         {errors.url ? (
@@ -64,7 +78,7 @@ export function LinkForm({ action }: { action: ItemAction }) {
         ) : null}
       </div>
       <Button type="submit" disabled={pending}>
-        {pending ? "Adding…" : "Add"}
+        {pending ? "Saving…" : id ? "Save" : "Add"}
       </Button>
       {formError(result) ? (
         <p role="alert" className="text-destructive w-full text-sm">

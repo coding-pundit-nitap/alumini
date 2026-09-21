@@ -27,4 +27,26 @@ describe("LinkForm", () => {
     expect(sent.get("type")).toBe("GITHUB");
     expect(sent.get("url")).toBe("https://github.com/asha");
   });
+
+  it("edit mode: prefills the type and url, labels the button Save, and sends the item id", async () => {
+    const action = vi.fn<ItemAction>(async () => ({
+      ok: true,
+      data: undefined,
+    }));
+    const user = userEvent.setup();
+    render(
+      <LinkForm
+        action={action}
+        id="11111111-1111-4111-8111-111111111111"
+        defaults={{ type: "GITHUB", url: "https://github.com/asha" }}
+      />
+    );
+    expect(screen.getByLabelText("Type")).toHaveValue("GITHUB");
+    expect(screen.getByLabelText("URL")).toHaveValue("https://github.com/asha");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(action).toHaveBeenCalledOnce());
+    expect(action.mock.calls[0]![0].get("id")).toBe(
+      "11111111-1111-4111-8111-111111111111"
+    );
+  });
 });
