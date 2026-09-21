@@ -2,7 +2,7 @@
 export { auth } from "./infrastructure/auth";
 export { getActor } from "./infrastructure/actor";
 export { authorize, can } from "./infrastructure/authorization";
-export { PERMISSIONS } from "./domain/permission";
+export { PERMISSIONS, SELF_SERVICE_PERMISSIONS } from "./domain/permission";
 export type { Permission } from "./domain/permission";
 export type { AccountState, Actor, Resource } from "./domain/actor";
 export { assertEmailPolicyValid } from "./infrastructure/email-policy-config";

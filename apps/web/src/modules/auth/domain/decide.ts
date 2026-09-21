@@ -1,5 +1,9 @@
-import type { Actor, Grant, Resource } from "./actor";
-import { PERMISSIONS, type Permission } from "./permission";
+import type { AccountState, Actor, Grant, Resource } from "./actor";
+import {
+  PERMISSIONS,
+  SELF_SERVICE_PERMISSIONS,
+  type Permission,
+} from "./permission";
 
 export type DenyReason =
   "ACCOUNT_STATE" | "NO_GRANT" | "SCOPE_MISMATCH" | "SELF_DECISION";
@@ -31,6 +35,19 @@ const separationOfDuties: Guardrail = ({ actor, permission, resource }) =>
 // with role.assign / permission.grant, each with its own failing test first.
 const GUARDRAILS: readonly Guardrail[] = [separationOfDuties];
 
+/**
+ * What an account may do BECAUSE of its state, without any grant (RBAC §7). Everything else is denied
+ * before grants are considered. Only self-service permissions belong here.
+ */
+const STATE_ALLOWANCES: Readonly<
+  Record<Exclude<AccountState, "VERIFIED">, readonly Permission[]>
+> = {
+  PENDING: [SELF_SERVICE_PERMISSIONS.VERIFICATION_REQUEST],
+  REJECTED: [SELF_SERVICE_PERMISSIONS.VERIFICATION_REQUEST],
+  SUSPENDED: [],
+  DEACTIVATED: [],
+};
+
 const isLive = (grant: Grant, now: Date) =>
   grant.expiresAt === null || grant.expiresAt > now;
 
@@ -45,9 +62,12 @@ export function decide({
   resource = {},
   now,
 }: DecideInput): Decision {
-  // 1. Account-state gate (RBAC §7). Explicit, not inferred from empty grants.
+  // 1. Account-state gate (RBAC §7). Explicit, not inferred from empty grants. A non-VERIFIED account
+  //    may use only what its state allows; grants are never consulted for it.
   if (actor.accountState !== "VERIFIED") {
-    return { allow: false, reason: "ACCOUNT_STATE" };
+    return STATE_ALLOWANCES[actor.accountState].includes(permission)
+      ? { allow: true }
+      : { allow: false, reason: "ACCOUNT_STATE" };
   }
 
   // 2. Grant match (RBAC §5): GLOBAL, else CHAPTER for the resource's chapter.
