@@ -26,6 +26,7 @@
     "db:deploy": "pnpm --filter @nitap/database db:deploy",
     "db:studio": "pnpm --filter @nitap/database db:studio",
     "db:seed": "pnpm --filter @nitap/database db:seed && pnpm --filter @nitap/web db:seed:admin",
+    "admin:bootstrap": "pnpm --filter @nitap/web admin:bootstrap",
     "worker:dev": "turbo run dev --filter=@nitap/worker",
     "worker:cli": "pnpm --filter @nitap/worker cli",
     "worker:prune": "turbo prune @nitap/worker --docker",

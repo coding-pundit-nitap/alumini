@@ -2,7 +2,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../generated/prisma/client.ts";
 import { DEGREES, DEPARTMENTS } from "./seed-data/reference-data.ts";
-import { ROLE_NAMES, ROLE_PERMISSIONS } from "./seed-data/role-permissions.ts";
+import {
+  ROLE_NAMES,
+  ROLE_PERMISSIONS,
+  type RoleName,
+} from "./seed-data/role-permissions.ts";
 
 export type DevAdmin = {
   email: string;
@@ -70,23 +74,31 @@ export async function runSeed(prisma: PrismaClient): Promise<void> {
   }
 }
 
+export type SeedUser = {
+  email: string;
+  name: string;
+  roleName: RoleName;
+  /** Already hashed by the caller (Better Auth's hashPassword); this package never sees plaintext. */
+  passwordHash: string;
+};
+
 /**
- * Development-only super admin. Requires runSeed to have created the SUPER_ADMIN role.
- * The password hash comes from the caller: hashing lives with Better Auth in apps/web, so this
- * package needs no dependency on it, and the caller decides whether the environment allows it.
+ * A verified user with a credential, a profile and one role, granted by the user themselves (the
+ * bootstrap convention: nobody exists yet to grant it). Idempotent, and never overwrites an existing
+ * password hash. Requires runSeed to have created the roles.
  */
-export async function seedDevAdmin(
+export async function seedAdminUser(
   prisma: PrismaClient,
-  admin: DevAdmin
+  seedUser: SeedUser
 ): Promise<void> {
-  const superAdminRole = await prisma.role.findUniqueOrThrow({
-    where: { name: "SUPER_ADMIN" },
+  const role = await prisma.role.findUniqueOrThrow({
+    where: { name: seedUser.roleName },
   });
   const user = await prisma.user.upsert({
-    where: { email: admin.email },
+    where: { email: seedUser.email },
     create: {
-      name: "Dev Super Admin",
-      email: admin.email,
+      name: seedUser.name,
+      email: seedUser.email,
       emailVerified: true,
       accountState: "VERIFIED",
     },
@@ -100,15 +112,79 @@ export async function seedDevAdmin(
       providerId: "credential",
       accountId: user.id,
       userId: user.id,
-      password: admin.passwordHash,
+      password: seedUser.passwordHash,
     },
     // Never overwrite an existing hash on re-seed.
     update: {},
   });
-  await prisma.userRole.upsert({
-    where: { userId_roleId: { userId: user.id, roleId: superAdminRole.id } },
-    create: { userId: user.id, roleId: superAdminRole.id, grantedBy: user.id },
+  await prisma.profile.upsert({
+    where: { userId: user.id },
+    create: { userId: user.id, fullName: seedUser.name },
     update: {},
+  });
+  await prisma.userRole.upsert({
+    where: { userId_roleId: { userId: user.id, roleId: role.id } },
+    create: { userId: user.id, roleId: role.id, grantedBy: user.id },
+    update: {},
+  });
+}
+
+/**
+ * Development-only super admin. The password hash comes from the caller: hashing lives with Better
+ * Auth in apps/web, so this package needs no dependency on it, and the caller decides whether the
+ * environment allows it.
+ */
+export async function seedDevAdmin(
+  prisma: PrismaClient,
+  admin: DevAdmin
+): Promise<void> {
+  await seedAdminUser(prisma, {
+    email: admin.email,
+    name: "Dev Super Admin",
+    roleName: "SUPER_ADMIN",
+    passwordHash: admin.passwordHash,
+  });
+}
+
+/** Development-only alumni coordinator: the reviewer for verification requests in local runs and E2E. */
+export async function seedDevCoordinator(
+  prisma: PrismaClient,
+  admin: DevAdmin
+): Promise<void> {
+  await seedAdminUser(prisma, {
+    email: admin.email,
+    name: "Dev Coordinator",
+    roleName: "ALUMNI_COORDINATOR",
+    passwordHash: admin.passwordHash,
+  });
+}
+
+/** A super admin already exists, so bootstrapping another is refused. */
+export class BootstrapRefusedError extends Error {
+  constructor() {
+    super("A super admin already exists; refusing to create another.");
+    this.name = "BootstrapRefusedError";
+  }
+}
+
+/**
+ * Creates the FIRST super admin of an environment, in any environment. Refuses when one exists, so it
+ * cannot be used to mint a second. (Two operators running it at the very same instant with different
+ * emails could both pass the check; it is a manual, one-time operation.)
+ */
+export async function bootstrapSuperAdmin(
+  prisma: PrismaClient,
+  admin: DevAdmin & { name?: string }
+): Promise<void> {
+  const existing = await prisma.userRole.count({
+    where: { role: { name: "SUPER_ADMIN" } },
+  });
+  if (existing > 0) throw new BootstrapRefusedError();
+  await seedAdminUser(prisma, {
+    email: admin.email,
+    name: admin.name ?? "Super Admin",
+    roleName: "SUPER_ADMIN",
+    passwordHash: admin.passwordHash,
   });
 }
 

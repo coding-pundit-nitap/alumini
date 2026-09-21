@@ -23,7 +23,12 @@
     "NODE_ENV",
     "NEXT_RUNTIME",
     "DEV_ADMIN_EMAIL",
-    "DEV_ADMIN_PASSWORD"
+    "DEV_ADMIN_PASSWORD",
+    "DEV_COORDINATOR_EMAIL",
+    "DEV_COORDINATOR_PASSWORD",
+    "BOOTSTRAP_ADMIN_EMAIL",
+    "BOOTSTRAP_ADMIN_PASSWORD",
+    "E2E_STAFF_DOMAIN"
   ],
   "tasks": {
     "transit": { "dependsOn": ["^transit"] },
