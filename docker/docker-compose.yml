@@ -69,6 +69,41 @@ services:
       timeout: 3s
       retries: 10
 
+  # Object storage for uploads (spec 3C). The official image, pulled from quay.io (Docker Hub no longer
+  # serves MinIO's images unauthenticated; bitnami/minio is also gone from Docker Hub as of Bitnami's
+  # August 2025 catalog change — only the unmaintained bitnamilegacy/minio remains, and this project does
+  # not build on that). It has no env-var bucket auto-create, so `minio-init` creates the bucket once and
+  # exits; CI cannot use this as a `services:` entry (no command override there), so the CI workflow
+  # starts it with a plain `docker run` step instead.
+  minio:
+    image: quay.io/minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: alumini-storage
+      MINIO_ROOT_PASSWORD: alumini-storage-secret
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio-init:
+    image: quay.io/minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        mc alias set local http://minio:9000 alumini-storage alumini-storage-secret &&
+        mc mb --ignore-existing local/alumini-uploads
+      "
+
   # Development mailbox: accepts any mail over SMTP and shows it at http://localhost:8025. Mail never leaves it.
   mailpit:
     image: axllent/mailpit:latest
@@ -85,3 +120,4 @@ services:
 volumes:
   postgres-data:
   queue-redis-data:
+  minio-data:
