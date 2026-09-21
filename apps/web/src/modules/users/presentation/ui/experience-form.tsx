@@ -2,7 +2,7 @@
 
 import { Button } from "@nitap/ui/components/button";
 import { Input } from "@nitap/ui/components/input";
-import { useActionState, useState } from "react";
+import { useActionState, useId, useState } from "react";
 
 import type { ExperienceInput } from "../../domain/profile-items";
 import {
@@ -30,6 +30,8 @@ export function ExperienceForm({
   id?: string;
   defaults?: ExperienceDefaults;
 }) {
+  const uid = useId();
+  const fieldId = (name: string) => `${uid}-${name}`;
   const [current, setCurrent] = useState(defaults?.isCurrent ?? false);
   const [endDate, setEndDate] = useState(defaults?.endDate ?? "");
   const [result, submit, pending] = useActionState<
@@ -42,11 +44,11 @@ export function ExperienceForm({
     <form action={submit} className="space-y-3">
       {id ? <input type="hidden" name="id" value={id} /> : null}
       <div className="space-y-1.5">
-        <label htmlFor="exp-company" className="text-sm font-medium">
+        <label htmlFor={fieldId("company")} className="text-sm font-medium">
           Company
         </label>
         <Input
-          id="exp-company"
+          id={fieldId("company")}
           name="company"
           defaultValue={defaults?.company}
           maxLength={200}
@@ -58,11 +60,11 @@ export function ExperienceForm({
         ) : null}
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="exp-designation" className="text-sm font-medium">
+        <label htmlFor={fieldId("designation")} className="text-sm font-medium">
           Role
         </label>
         <Input
-          id="exp-designation"
+          id={fieldId("designation")}
           name="designation"
           defaultValue={defaults?.designation}
           maxLength={200}
@@ -74,11 +76,11 @@ export function ExperienceForm({
         ) : null}
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="exp-industry" className="text-sm font-medium">
+        <label htmlFor={fieldId("industry")} className="text-sm font-medium">
           Industry (optional)
         </label>
         <Input
-          id="exp-industry"
+          id={fieldId("industry")}
           name="industry"
           defaultValue={defaults?.industry ?? ""}
           maxLength={160}
@@ -91,11 +93,11 @@ export function ExperienceForm({
       </div>
       <div className="flex gap-3">
         <div className="flex-1 space-y-1.5">
-          <label htmlFor="exp-start" className="text-sm font-medium">
+          <label htmlFor={fieldId("start")} className="text-sm font-medium">
             Start date
           </label>
           <Input
-            id="exp-start"
+            id={fieldId("start")}
             name="startDate"
             type="date"
             defaultValue={defaults?.startDate}
@@ -107,11 +109,11 @@ export function ExperienceForm({
           ) : null}
         </div>
         <div className="flex-1 space-y-1.5">
-          <label htmlFor="exp-end" className="text-sm font-medium">
+          <label htmlFor={fieldId("end")} className="text-sm font-medium">
             End date
           </label>
           <Input
-            id="exp-end"
+            id={fieldId("end")}
             name="endDate"
             type="date"
             value={endDate}
@@ -125,9 +127,12 @@ export function ExperienceForm({
           ) : null}
         </div>
       </div>
-      <label htmlFor="exp-current" className="flex items-center gap-2 text-sm">
+      <label
+        htmlFor={fieldId("current")}
+        className="flex items-center gap-2 text-sm"
+      >
         <input
-          id="exp-current"
+          id={fieldId("current")}
           type="checkbox"
           name="isCurrent"
           checked={current}

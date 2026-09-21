@@ -2,7 +2,7 @@
 
 import { Button } from "@nitap/ui/components/button";
 import { Input } from "@nitap/ui/components/input";
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 
 import type { EducationInput } from "../../domain/profile-items";
 import {
@@ -22,6 +22,8 @@ export function EducationForm({
   id?: string;
   defaults?: EducationInput;
 }) {
+  const uid = useId();
+  const fieldId = (name: string) => `${uid}-${name}`;
   const [result, submit, pending] = useActionState<
     ItemActionResult | null,
     FormData
@@ -32,11 +34,11 @@ export function EducationForm({
     <form action={submit} className="space-y-3">
       {id ? <input type="hidden" name="id" value={id} /> : null}
       <div className="space-y-1.5">
-        <label htmlFor="edu-institution" className="text-sm font-medium">
+        <label htmlFor={fieldId("institution")} className="text-sm font-medium">
           Institution
         </label>
         <Input
-          id="edu-institution"
+          id={fieldId("institution")}
           name="institution"
           defaultValue={defaults?.institution}
           maxLength={300}
@@ -48,11 +50,14 @@ export function EducationForm({
         ) : null}
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="edu-qualification" className="text-sm font-medium">
+        <label
+          htmlFor={fieldId("qualification")}
+          className="text-sm font-medium"
+        >
           Qualification
         </label>
         <Input
-          id="edu-qualification"
+          id={fieldId("qualification")}
           name="qualification"
           defaultValue={defaults?.qualification}
           maxLength={200}
@@ -64,11 +69,11 @@ export function EducationForm({
         ) : null}
       </div>
       <div className="space-y-1.5">
-        <label htmlFor="edu-field" className="text-sm font-medium">
+        <label htmlFor={fieldId("field")} className="text-sm font-medium">
           Field of study (optional)
         </label>
         <Input
-          id="edu-field"
+          id={fieldId("field")}
           name="fieldOfStudy"
           defaultValue={defaults?.fieldOfStudy ?? ""}
           maxLength={200}
@@ -81,11 +86,11 @@ export function EducationForm({
       </div>
       <div className="flex gap-3">
         <div className="flex-1 space-y-1.5">
-          <label htmlFor="edu-start" className="text-sm font-medium">
+          <label htmlFor={fieldId("start")} className="text-sm font-medium">
             Start year
           </label>
           <Input
-            id="edu-start"
+            id={fieldId("start")}
             name="startYear"
             inputMode="numeric"
             defaultValue={defaults?.startYear}
@@ -97,11 +102,11 @@ export function EducationForm({
           ) : null}
         </div>
         <div className="flex-1 space-y-1.5">
-          <label htmlFor="edu-end" className="text-sm font-medium">
+          <label htmlFor={fieldId("end")} className="text-sm font-medium">
             End year (leave empty if ongoing)
           </label>
           <Input
-            id="edu-end"
+            id={fieldId("end")}
             name="endYear"
             inputMode="numeric"
             defaultValue={defaults?.endYear ?? ""}

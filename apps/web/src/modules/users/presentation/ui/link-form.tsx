@@ -2,7 +2,7 @@
 
 import { Button } from "@nitap/ui/components/button";
 import { Input } from "@nitap/ui/components/input";
-import { useActionState } from "react";
+import { useActionState, useId } from "react";
 
 import {
   LINK_TYPES,
@@ -34,6 +34,8 @@ export function LinkForm({
   id?: string;
   defaults?: LinkInput;
 }) {
+  const uid = useId();
+  const fieldId = (name: string) => `${uid}-${name}`;
   const [result, submit, pending] = useActionState<
     ItemActionResult | null,
     FormData
@@ -44,11 +46,11 @@ export function LinkForm({
     <form action={submit} className="flex flex-wrap items-end gap-2">
       {id ? <input type="hidden" name="id" value={id} /> : null}
       <div className="space-y-1.5">
-        <label htmlFor="link-type" className="text-sm font-medium">
+        <label htmlFor={fieldId("type")} className="text-sm font-medium">
           Type
         </label>
         <select
-          id="link-type"
+          id={fieldId("type")}
           name="type"
           defaultValue={defaults?.type ?? "WEBSITE"}
           className="border-input bg-background h-8 rounded-lg border px-2.5 text-sm"
@@ -61,11 +63,11 @@ export function LinkForm({
         </select>
       </div>
       <div className="min-w-64 flex-1 space-y-1.5">
-        <label htmlFor="link-url" className="text-sm font-medium">
+        <label htmlFor={fieldId("url")} className="text-sm font-medium">
           URL
         </label>
         <Input
-          id="link-url"
+          id={fieldId("url")}
           name="url"
           placeholder="https://…"
           defaultValue={defaults?.url}

@@ -2,7 +2,7 @@
 
 import { Button } from "@nitap/ui/components/button";
 import { Input } from "@nitap/ui/components/input";
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useId, useRef } from "react";
 
 import type { SkillInput } from "../../domain/profile-items";
 import {
@@ -22,6 +22,8 @@ export function SkillForm({
   id?: string;
   defaults?: SkillInput;
 }) {
+  const uid = useId();
+  const fieldId = `${uid}-skill`;
   const inputRef = useRef<HTMLInputElement>(null);
   const [result, submit, pending] = useActionState<
     ItemActionResult | null,
@@ -37,11 +39,11 @@ export function SkillForm({
     <form action={submit} className="flex flex-wrap items-end gap-2">
       {id ? <input type="hidden" name="id" value={id} /> : null}
       <div className="space-y-1.5">
-        <label htmlFor="skill-add" className="text-sm font-medium">
+        <label htmlFor={fieldId} className="text-sm font-medium">
           {id ? "Skill" : "Add a skill"}
         </label>
         <Input
-          id="skill-add"
+          id={fieldId}
           name="skill"
           ref={inputRef}
           defaultValue={defaults?.skill}
