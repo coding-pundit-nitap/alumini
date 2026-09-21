@@ -3,6 +3,7 @@ import { connectionAccepted, connectionRequested } from "./connection.ts";
 import { idempotencySweep } from "./idempotency.ts";
 import { emailSend } from "./email.ts";
 import { mentorshipJobs } from "./mentorship.ts";
+import { messageSent } from "./message.ts";
 import { outboxPrune } from "./scheduled.ts";
 import { uploadScan, uploadSweep } from "./upload.ts";
 
@@ -12,6 +13,7 @@ export const OUTBOX_EVENTS = {
   "connection.requested": connectionRequested,
   "connection.accepted": connectionAccepted,
   "upload.scan": uploadScan,
+  "message.sent": messageSent,
   ...mentorshipJobs,
 } as const;
 
