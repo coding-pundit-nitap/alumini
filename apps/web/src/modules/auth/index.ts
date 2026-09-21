@@ -14,3 +14,16 @@ export { ForgotPasswordForm } from "./presentation/ui/forgot-password-form";
 export { ResetPasswordForm } from "./presentation/ui/reset-password-form";
 export { accountStatusCopy } from "./presentation/ui/account-status-copy";
 export { SignOutButton } from "./presentation/ui/sign-out-button";
+export {
+  decideVerificationRequest,
+  getOwnVerification,
+  listPendingVerificationRequests,
+  submitVerificationRequest,
+} from "./infrastructure/composition";
+export type { OwnVerification } from "./application/get-own-verification";
+export type { PendingPage } from "./application/list-pending-verification-requests";
+export type { PendingVerification } from "./application/verification-store";
+export type {
+  VerificationDecision,
+  VerificationTrack,
+} from "./domain/verification-request";
