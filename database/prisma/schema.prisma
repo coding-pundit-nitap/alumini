@@ -45,6 +45,10 @@ model User {
   permissionGrants       PermissionGrant[] @relation("PermissionGrantSubject")
   permissionGrantsIssued PermissionGrant[] @relation("PermissionGrantGrantor")
 
+  verificationRequests  VerificationRequest[] @relation("VerificationSubject")
+  verificationsReviewed VerificationRequest[] @relation("VerificationReviewer")
+  auditEntries          AuditLog[]            @relation("AuditActor")
+
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
   @@unique([email])
@@ -108,27 +112,29 @@ enum DegreeLevel {
 }
 
 model Department {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code      String    @unique
-  name      String
-  shortName String    @map("short_name")
-  isActive  Boolean   @default(true) @map("is_active")
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
-  profiles  Profile[]
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                 String                @unique
+  name                 String
+  shortName            String                @map("short_name")
+  isActive             Boolean               @default(true) @map("is_active")
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  profiles             Profile[]
+  verificationRequests VerificationRequest[]
 
   @@map("department")
 }
 
 model Degree {
-  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  code      String      @unique
-  name      String
-  level     DegreeLevel
-  isActive  Boolean     @default(true) @map("is_active")
-  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
-  profiles  Profile[]
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                 String                @unique
+  name                 String
+  level                DegreeLevel
+  isActive             Boolean               @default(true) @map("is_active")
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  profiles             Profile[]
+  verificationRequests VerificationRequest[]
 
   @@map("degree")
 }
@@ -171,9 +177,9 @@ model UserRole {
 }
 
 model RolePermission {
-  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  roleId String @map("role_id") @db.Uuid
-  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roleId     String   @map("role_id") @db.Uuid
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
   // Validated against the code-side registry (database/prisma/seed-data/permissions.ts), not by
   // PostgreSQL — see the "Role / UserRole / RolePermission / PermissionGrant" note in domain-model.md.
   permission String
@@ -218,11 +224,11 @@ enum ProfileVisibility {
 }
 
 model Profile {
-  userId    String   @id @map("user_id") @db.Uuid
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName  String   @map("full_name")
-  headline  String?
-  bio       String?
+  userId         String            @id @map("user_id") @db.Uuid
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName       String            @map("full_name")
+  headline       String?
+  bio            String?
   // Nullable: faculty, staff and pending accounts may have no institutional record.
   // Alumni-completeness (FR-PROFILE-004) is an application rule, enforced in Phase 3 — not here.
   departmentId   String?           @map("department_id") @db.Uuid
@@ -257,4 +263,63 @@ model OutboxEvent {
   failureReason String?   @map("failure_reason")
 
   @@map("outbox_event")
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CrossCheckResult {
+  NOT_CHECKED
+  MATCH
+  MISMATCH
+}
+
+/// Alumni verification evidence and its human decision (FR-AUTH-003/003a). There is no auto-approved
+/// status by design. The partial unique index, CHECK constraints and the reviewer rule live in the
+/// migration SQL (Prisma's schema language cannot express them): see migrations/*_verification_and_audit.
+model VerificationRequest {
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String             @map("user_id") @db.Uuid
+  user           User               @relation("VerificationSubject", fields: [userId], references: [id], onDelete: Cascade)
+  rollNumber     String             @map("roll_number")
+  departmentId   String             @map("department_id") @db.Uuid
+  department     Department         @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  degreeId       String             @map("degree_id") @db.Uuid
+  degree         Degree             @relation(fields: [degreeId], references: [id], onDelete: Restrict)
+  graduationYear Int                @map("graduation_year")
+  supportingInfo String?            @map("supporting_info")
+  status         VerificationStatus @default(PENDING)
+  crossCheck     CrossCheckResult   @default(NOT_CHECKED) @map("cross_check")
+  reviewedBy     String?            @map("reviewed_by") @db.Uuid
+  reviewer       User?              @relation("VerificationReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+  reviewedAt     DateTime?          @map("reviewed_at") @db.Timestamptz(3)
+  reviewNote     String?            @map("review_note")
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([status, createdAt, id], map: "ix_verification_queue")
+  @@index([userId, createdAt], map: "ix_verification_user_history")
+  @@map("verification_request")
+}
+
+/// Append-only record of sensitive operations (SRS §22). A trigger in the migration rejects UPDATE,
+/// DELETE and TRUNCATE. `target_id` is polymorphic (no foreign key). Metadata holds identifiers and
+/// outcomes, never free text or an email address.
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId    String   @map("actor_id") @db.Uuid
+  actor      User     @relation("AuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+  action     String
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id") @db.Uuid
+  metadata   Json     @default("{}")
+  requestId  String?  @map("request_id")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([targetType, targetId, createdAt], map: "ix_audit_target")
+  @@index([actorId, createdAt], map: "ix_audit_actor")
+  @@index([action, createdAt], map: "ix_audit_action")
+  @@map("audit_log")
 }
