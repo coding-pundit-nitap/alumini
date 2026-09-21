@@ -10,6 +10,7 @@ import { createAuthEmailSender } from "../application/auth-emails";
 import { createDecideVerificationRequest } from "../application/decide-verification-request";
 import { createGetOwnVerification } from "../application/get-own-verification";
 import { createListPendingVerificationRequests } from "../application/list-pending-verification-requests";
+import { createListVerificationOptions } from "../application/list-verification-options";
 import { createProvisionMember } from "../application/provision-member";
 import { createSubmitVerificationRequest } from "../application/submit-verification-request";
 import { authorize } from "./authorization";
@@ -67,4 +68,9 @@ export const getOwnVerification = createGetOwnVerification({
   store: verificationStore,
   authorize,
   policy: getEmailPolicy,
+});
+
+export const listVerificationOptions = createListVerificationOptions({
+  store: verificationStore,
+  authorize,
 });

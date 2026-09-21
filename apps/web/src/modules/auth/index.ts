@@ -18,6 +18,7 @@ export {
   decideVerificationRequest,
   getOwnVerification,
   listPendingVerificationRequests,
+  listVerificationOptions,
   submitVerificationRequest,
 } from "./infrastructure/composition";
 export type { OwnVerification } from "./application/get-own-verification";
@@ -27,3 +28,14 @@ export type {
   VerificationDecision,
   VerificationTrack,
 } from "./domain/verification-request";
+export { OnboardingPanel } from "./presentation/ui/onboarding-panel";
+export { EvidenceForm } from "./presentation/ui/evidence-form";
+export type { ReferenceOption } from "./application/verification-store";
+// The Server Actions in app/ read forms through these (app/ may reach a module only through its index).
+export { validate } from "./presentation/api/schemas";
+export {
+  DECISION_FIELDS,
+  decisionSchema,
+  EVIDENCE_FIELDS,
+  evidenceSchema,
+} from "./presentation/api/verification-schemas";

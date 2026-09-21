@@ -145,6 +145,22 @@ export function createPrismaVerificationStore(deps: Deps): VerificationStore {
   return {
     transaction: (work) => deps.runner.run((tx) => work(createTx(tx, deps))),
 
+    async listReferenceOptions() {
+      const [departments, degrees] = await Promise.all([
+        deps.prisma.department.findMany({
+          where: { isActive: true },
+          orderBy: { name: "asc" },
+          select: { id: true, name: true },
+        }),
+        deps.prisma.degree.findMany({
+          where: { isActive: true },
+          orderBy: { name: "asc" },
+          select: { id: true, name: true },
+        }),
+      ]);
+      return { departments, degrees };
+    },
+
     async listPending({ after, limit }) {
       const rows = await deps.prisma.verificationRequest.findMany({
         where: {

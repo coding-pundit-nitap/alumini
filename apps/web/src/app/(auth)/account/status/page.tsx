@@ -1,4 +1,6 @@
+import { buttonVariants } from "@nitap/ui/components/button";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import {
@@ -19,6 +21,11 @@ export default async function AccountStatusPage() {
 
   return (
     <AuthCard title={copy.title} description={copy.body}>
+      {actor.accountState === "PENDING" || actor.accountState === "REJECTED" ? (
+        <Link href="/onboarding" className={buttonVariants()}>
+          Verify your affiliation
+        </Link>
+      ) : null}
       <SignOutButton />
     </AuthCard>
   );

@@ -90,10 +90,16 @@ export type VerificationTx = {
   enqueueEmail(payload: EmailSendPayload): Promise<void>;
   recordAudit(entry: AuditRecord): Promise<void>;
 };
+export type ReferenceOption = { id: string; name: string };
+
 export type VerificationStore = {
   transaction<T>(work: (tx: VerificationTx) => Promise<T>): Promise<T>;
   listPending(input: {
     after: { createdAt: Date; id: string } | null;
     limit: number;
   }): Promise<PendingVerification[]>;
+  listReferenceOptions(): Promise<{
+    departments: ReferenceOption[];
+    degrees: ReferenceOption[];
+  }>;
 };

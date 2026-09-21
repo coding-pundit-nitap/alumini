@@ -132,6 +132,12 @@ export function createFakeVerificationStore(
   };
 
   const store: VerificationStore = {
+    async listReferenceOptions() {
+      return {
+        departments: [{ id: "dept-1", name: "Computer Science" }],
+        degrees: [{ id: "deg-1", name: "B.Tech" }],
+      };
+    },
     async transaction(work) {
       counters.transactions += 1;
       const before = structuredClone(state);
