@@ -1,0 +1,74 @@
+import { PERMISSIONS } from "@nitap/database/permissions";
+
+import { NotFoundError } from "@/lib/errors";
+import type { Actor } from "@/modules/auth";
+
+import { projectProfile, type ProfileView } from "../domain/profile";
+import type { Viewer } from "../domain/visibility";
+import type { Can } from "./authz";
+import type { ConnectionLookup, Relation } from "./connection-lookup";
+import type { ProfileAudit } from "./profile-audit";
+import type { ProfileStore } from "./profile-store";
+
+/**
+ * What one viewer may see of one profile. The profile is loaded, the viewer is classified, and the pure
+ * `projectProfile` decides; a null projection is a 404, so a profile's existence is not leaked
+ * (RBAC §6 rule 6). A privileged read (`profile.read_any`) is audited BEFORE anything is returned: an
+ * unaudited privileged read must not happen (spec 3A §4).
+ */
+export function createGetProfileForViewer(deps: {
+  store: ProfileStore;
+  connections: ConnectionLookup;
+  audit: ProfileAudit;
+  can: Can;
+  reportError?: (error: unknown) => void;
+}) {
+  async function relationTo(
+    viewerId: string,
+    ownerId: string
+  ): Promise<Relation> {
+    try {
+      return await deps.connections.relation(viewerId, ownerId);
+    } catch (error) {
+      // Fail closed: without an answer the viewer is a plain member, never a connection.
+      deps.reportError?.(error);
+      return "none";
+    }
+  }
+
+  async function classify(
+    actor: Actor | null,
+    ownerId: string
+  ): Promise<Viewer> {
+    if (!actor) return "guest";
+    if (actor.userId === ownerId) return "owner";
+    if (actor.accountState !== "VERIFIED") return "unverified";
+    if (deps.can(actor, PERMISSIONS.PROFILE_READ_ANY)) return "privileged";
+    const relation = await relationTo(actor.userId, ownerId);
+    if (relation === "blocked") return "blocked";
+    if (!deps.can(actor, PERMISSIONS.PROFILE_READ)) return "unverified";
+    return relation === "connected" ? "connected" : "member";
+  }
+
+  return async function getProfileForViewer(args: {
+    actor: Actor | null;
+    targetUserId: string;
+  }): Promise<ProfileView> {
+    const profile = await deps.store.find(args.targetUserId);
+    if (!profile) throw new NotFoundError();
+
+    const viewer = await classify(args.actor, args.targetUserId);
+    const view = projectProfile(profile, viewer);
+    if (!view) throw new NotFoundError();
+
+    if (viewer === "privileged" && args.actor) {
+      await deps.audit.recordPrivilegedRead({
+        actorId: args.actor.userId,
+        targetUserId: args.targetUserId,
+      });
+    }
+    return view;
+  };
+}
+
+export type GetProfileForViewer = ReturnType<typeof createGetProfileForViewer>;
