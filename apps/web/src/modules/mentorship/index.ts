@@ -30,3 +30,5 @@ export type { MentorshipAction, MentorshipState } from "./domain/mentorship";
 export { MentorList } from "./presentation/ui/mentor-list";
 export { MentorSettingsForm } from "./presentation/ui/mentor-settings-form";
 export { RequestDialog } from "./presentation/ui/request-dialog";
+export { MentorshipList } from "./presentation/ui/mentorship-list";
+export type { MentorshipTab } from "./presentation/ui/mentorship-list";

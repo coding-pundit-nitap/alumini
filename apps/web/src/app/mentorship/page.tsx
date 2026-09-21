@@ -3,21 +3,48 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getMentorProfile, listMentors } from "@/composition/mentorship";
+import {
+  getMentorProfile,
+  listMentors,
+  listMentorships,
+} from "@/composition/mentorship";
 import { getOwnProfile } from "@/composition/users";
 import { AppError } from "@/lib/errors";
 import { can, getActor, type Actor } from "@/modules/auth";
 import {
   MentorList,
   MentorSettingsForm,
+  MentorshipList,
   RequestDialog,
+  type MentorshipState,
+  type MentorshipTab,
 } from "@/modules/mentorship";
 
-import { requestMentorshipAction, saveMentorProfileAction } from "./actions";
+import {
+  requestMentorshipAction,
+  saveMentorProfileAction,
+  transitionMentorshipAction,
+} from "./actions";
 
 export const metadata: Metadata = { title: "Mentorship" };
 
-type Tab = "find" | "settings";
+const LABELS: Record<MentorshipTab, string> = {
+  find: "Find a mentor",
+  "my-requests": "My requests",
+  requests: "Requests",
+  mentees: "My mentees",
+  settings: "Your mentor settings",
+};
+
+/** What each list tab asks `listMentorships` for. */
+const QUERY: Record<
+  "my-requests" | "requests" | "mentees",
+  { role: "mentor" | "mentee"; states?: MentorshipState[] }
+> = {
+  "my-requests": { role: "mentee" },
+  requests: { role: "mentor", states: ["REQUESTED"] },
+  mentees: { role: "mentor", states: ["ACCEPTED", "ACTIVE"] },
+};
 
 export default async function MentorshipPage({
   searchParams,
@@ -35,44 +62,42 @@ export default async function MentorshipPage({
   if (!actor) redirect("/login?next=%2Fmentorship");
 
   const mayOptIn = can(actor, PERMISSIONS.MENTOR_OPT_IN);
-  const tab: Tab = rawTab === "settings" && mayOptIn ? "settings" : "find";
+  const tabs: MentorshipTab[] = [];
+  if (can(actor, PERMISSIONS.MENTORSHIP_REQUEST)) tabs.push("my-requests");
+  if (can(actor, PERMISSIONS.MENTORSHIP_RESPOND))
+    tabs.push("requests", "mentees");
+  if (can(actor, PERMISSIONS.MENTOR_SEARCH)) tabs.unshift("find");
+  if (mayOptIn) tabs.push("settings");
+  const tab = tabs.find((t) => t === rawTab) ?? tabs[0] ?? "find";
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-12">
       <h1 className="text-2xl font-semibold">Mentorship</h1>
       <nav aria-label="Mentorship" className="flex flex-wrap gap-4 text-sm">
-        <Link
-          href="/mentorship?tab=find"
-          aria-current={tab === "find" ? "page" : undefined}
-          className={
-            tab === "find" ? "font-semibold underline" : "text-muted-foreground"
-          }
-        >
-          Find a mentor
-        </Link>
-        {mayOptIn ? (
+        {tabs.map((t) => (
           <Link
-            href="/mentorship?tab=settings"
-            aria-current={tab === "settings" ? "page" : undefined}
+            key={t}
+            href={`/mentorship?tab=${t}`}
+            aria-current={t === tab ? "page" : undefined}
             className={
-              tab === "settings"
-                ? "font-semibold underline"
-                : "text-muted-foreground"
+              t === tab ? "font-semibold underline" : "text-muted-foreground"
             }
           >
-            Your mentor settings
+            {LABELS[t]}
           </Link>
-        ) : null}
+        ))}
       </nav>
       {tab === "settings" ? (
         <SettingsTab actor={actor} />
-      ) : (
+      ) : tab === "find" ? (
         <FindTab
           actor={actor}
           topic={topic}
           company={company}
           cursor={cursor}
         />
+      ) : (
+        <ListTab actor={actor} tab={tab} cursor={cursor} />
       )}
     </div>
   );
@@ -180,6 +205,47 @@ async function FindTab({
       {page.page.nextCursor ? (
         <Link
           href={`/mentorship?${next.toString()}&cursor=${encodeURIComponent(page.page.nextCursor)}`}
+          className="text-primary block text-center text-sm underline"
+        >
+          Next page
+        </Link>
+      ) : null}
+    </>
+  );
+}
+
+async function ListTab({
+  actor,
+  tab,
+  cursor,
+}: {
+  actor: Actor;
+  tab: keyof typeof QUERY;
+  cursor?: string;
+}) {
+  let page;
+  try {
+    page = await listMentorships({ actor, ...QUERY[tab], cursor });
+  } catch (error) {
+    if (error instanceof AppError && error.status === 403) {
+      redirect("/account/status");
+    }
+    if (error instanceof AppError && error.code === "INVALID_CURSOR") {
+      redirect(`/mentorship?tab=${tab}`);
+    }
+    throw error;
+  }
+
+  return (
+    <>
+      <MentorshipList
+        items={page.data}
+        tab={tab}
+        transitionAction={transitionMentorshipAction}
+      />
+      {page.page.nextCursor ? (
+        <Link
+          href={`/mentorship?tab=${tab}&cursor=${encodeURIComponent(page.page.nextCursor)}`}
           className="text-primary block text-center text-sm underline"
         >
           Next page
