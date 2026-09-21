@@ -7,6 +7,7 @@
     "dev": "node --watch --env-file-if-exists=../../.env src/index.ts",
     "start": "node --env-file-if-exists=../../.env src/index.ts",
     "cli": "node --env-file-if-exists=../../.env src/cli.ts",
+    "smoke": "node --env-file-if-exists=../../.env scripts/smoke-email.ts",
     "lint": "eslint --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "arch": "depcruise src tests --config ../../.dependency-cruiser.cjs --ts-config tsconfig.json",
