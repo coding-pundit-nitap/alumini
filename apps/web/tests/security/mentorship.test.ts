@@ -18,7 +18,9 @@ import { createFakeMentorshipStore } from "../support/fake-mentorship-store";
 import { createRequestMentorship } from "@/modules/mentorship/application/request-mentorship";
 import { createTransitionMentorship } from "@/modules/mentorship/application/transition-mentorship";
 import { createSaveMentorProfile } from "@/modules/mentorship/application/save-mentor-profile";
+import { createListMentorships } from "@/modules/mentorship/application/list-mentorships";
 import { createListMentors } from "@/modules/mentorship/application/list-mentors";
+import type { MentorshipQueries } from "@/modules/mentorship/application/mentorship-store";
 import type {
   MentorProfileRecord,
   MentorProfileStore,
@@ -290,5 +292,53 @@ describe("transitionMentorship: real authorizer", () => {
         })
       )
     ).toBe(200);
+  });
+});
+
+describe("listMentorships: real authorizer", () => {
+  const build = () => {
+    const list = vi.fn<MentorshipQueries["list"]>(async () => []);
+    return {
+      list,
+      run: createListMentorships({ queries: { list }, authorize }),
+    };
+  };
+
+  it("no session is a 401", async () => {
+    const { run, list } = build();
+    expect(await status(run({ actor: null, role: "mentee" }))).toBe(401);
+    expect(list).not.toHaveBeenCalled();
+  });
+
+  it("a mentor list needs mentorship.respond: STUDENT is a 403, ALUMNI is ok", async () => {
+    const { run, list } = build();
+    const student = actor(MENTEE, { grants: grantsFor("STUDENT") });
+    expect(await status(run({ actor: student, role: "mentor" }))).toBe(403);
+    const alumnus = actor(MENTOR, { grants: grantsFor("ALUMNI") });
+    expect(await status(run({ actor: alumnus, role: "mentor" }))).toBe(200);
+    expect(list).toHaveBeenCalledWith(
+      MENTOR,
+      expect.objectContaining({ role: "mentor" })
+    );
+  });
+
+  it("a mentee list needs mentorship.request: ALUMNI is a 403, unverified STUDENT is a 403", async () => {
+    const { run } = build();
+    const alumnus = actor(MENTOR, { grants: grantsFor("ALUMNI") });
+    expect(await status(run({ actor: alumnus, role: "mentee" }))).toBe(403);
+    const pending = actor(MENTEE, {
+      accountState: "PENDING",
+      grants: grantsFor("STUDENT"),
+    });
+    expect(await status(run({ actor: pending, role: "mentee" }))).toBe(403);
+  });
+
+  it("only ever asks for the caller's own id", async () => {
+    const { run, list } = build();
+    await run({
+      actor: actor(MENTEE, { grants: grantsFor("STUDENT") }),
+      role: "mentee",
+    });
+    expect(list.mock.calls[0]![0]).toBe(MENTEE);
   });
 });

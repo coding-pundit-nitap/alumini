@@ -1,11 +1,12 @@
 import { z } from "zod";
 
-import { requestMentorship } from "@/composition/mentorship";
+import { listMentorships, requestMentorship } from "@/composition/mentorship";
 import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { respondIdempotently } from "@/infrastructure/idempotency";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { MENTORSHIP_STATES } from "@/modules/mentorship";
 
 // Only the envelope is parsed here; the use case validates `message` and `topic` (and rejects extras).
 const envelope = z.object({ mentorId: z.uuid() }).passthrough();
@@ -50,5 +51,43 @@ export const POST = routeHandler(async (request) => {
         headers: { Location: `/api/v1/mentorships/${mentorshipId}` },
       };
     },
+  });
+});
+
+const listQuery = z.object({
+  role: z.enum(["mentor", "mentee"]),
+  state: z.array(z.enum(MENTORSHIP_STATES)).optional(),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+  cursor: z.string().max(200).optional(),
+});
+
+/** GET /api/v1/mentorships?role=&state=&limit=&cursor= — the caller's own list; `state` repeats. */
+export const GET = routeHandler(async (request) => {
+  const params = new URL(request.url).searchParams;
+  const parsed = listQuery.safeParse({
+    role: params.get("role") ?? undefined,
+    state: params.has("state") ? params.getAll("state") : undefined,
+    limit: params.get("limit") ?? undefined,
+    cursor: params.get("cursor") ?? undefined,
+  });
+  if (!parsed.success) {
+    throw new ValidationError({
+      details: parsed.error.issues.map((issue) => ({
+        field: issue.path.join(".") || "(query)",
+        code: "INVALID",
+        message: issue.message,
+      })),
+    });
+  }
+  const { role, state, limit, cursor } = parsed.data;
+  const result = await listMentorships({
+    actor: await getActor(),
+    role,
+    states: state,
+    limit,
+    cursor,
+  });
+  return Response.json(result, {
+    headers: { "Cache-Control": "private, no-store" },
   });
 });

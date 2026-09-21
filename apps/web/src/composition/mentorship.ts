@@ -6,8 +6,10 @@ import { authorize } from "@/modules/auth";
 import {
   createGetMentorProfile,
   createListMentors,
+  createListMentorships,
   createPrismaMentorProfileStore,
   createPrismaMentorQueries,
+  createPrismaMentorshipQueries,
   createPrismaMentorshipStore,
   createRequestMentorship,
   createSaveMentorProfile,
@@ -46,4 +48,9 @@ export const transitionMentorship = createTransitionMentorship({
   store,
   authorize,
   observe,
+});
+
+export const listMentorships = createListMentorships({
+  queries: createPrismaMentorshipQueries(prisma),
+  authorize,
 });

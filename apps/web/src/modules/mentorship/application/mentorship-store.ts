@@ -65,3 +65,30 @@ export type MentorshipObserver = (
   outcome: MentorshipOutcome,
   mentorshipId: string
 ) => void;
+
+/** One row of the caller's own list. The counterparty is name and photo only; `message` is for the two participants. */
+export type ListedMentorship = {
+  id: string;
+  state: MentorshipState;
+  counterparty: { id: string; fullName: string; hasPhoto: boolean };
+  topic: string | null;
+  message: string;
+  responseNote: string | null;
+  requestedAt: Date;
+  respondedAt: Date | null;
+  startedAt: Date | null;
+  endedAt: Date | null;
+};
+
+export type MentorshipQueries = {
+  /** Only rows where `userId` is the mentor (`role: "mentor"`) or the mentee (`role: "mentee"`), newest request first. */
+  list(
+    userId: string,
+    filter: {
+      role: "mentor" | "mentee";
+      states?: MentorshipState[];
+      limit: number;
+      after?: { key: string; id: string };
+    }
+  ): Promise<ListedMentorship[]>;
+};

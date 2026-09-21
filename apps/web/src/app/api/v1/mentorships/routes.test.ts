@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getActor: vi.fn(),
   requestMentorship: vi.fn(),
+  listMentorships: vi.fn(),
   transitionMentorship: vi.fn(),
 }));
 vi.mock("@/config/env", () => ({
@@ -30,7 +31,7 @@ vi.mock("@/infrastructure/idempotency", () => ({
 import { AuthenticationError, NotFoundError } from "@/lib/errors";
 
 import { PATCH } from "./[id]/route";
-import { POST } from "./route";
+import { GET, POST } from "./route";
 
 const id = "11111111-1111-4111-8111-111111111111";
 const mentor = "22222222-2222-4222-8222-222222222222";
@@ -52,6 +53,7 @@ beforeEach(() => {
   mocks.getActor.mockResolvedValue({ userId: "u1" });
   mocks.requestMentorship.mockResolvedValue({ mentorshipId: id });
   mocks.transitionMentorship.mockResolvedValue({ state: "ACCEPTED" });
+  mocks.listMentorships.mockResolvedValue({ data: [], page: {} });
 });
 
 describe("POST /api/v1/mentorships", () => {
@@ -160,5 +162,38 @@ describe("PATCH /api/v1/mentorships/:id", () => {
     expect(
       (await PATCH(json("PATCH", { action: "accept" }), ctx(id))).status
     ).toBe(404);
+  });
+});
+
+describe("GET /api/v1/mentorships", () => {
+  const get = (query: string) =>
+    GET(new Request(`https://alumni.example.test/api/v1/mentorships?${query}`));
+
+  it("passes role, repeated states, limit and cursor; the response is no-store", async () => {
+    const res = await get(
+      "role=mentor&state=ACCEPTED&state=ACTIVE&limit=5&cursor=abc"
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
+    expect(mocks.listMentorships).toHaveBeenCalledWith({
+      actor: { userId: "u1" },
+      role: "mentor",
+      states: ["ACCEPTED", "ACTIVE"],
+      limit: 5,
+      cursor: "abc",
+    });
+  });
+
+  it.each(["", "role=admin", "role=mentor&state=NOPE", "role=mentee&limit=0"])(
+    "refuses the query %j with 400",
+    async (query) => {
+      expect((await get(query)).status).toBe(400);
+      expect(mocks.listMentorships).not.toHaveBeenCalled();
+    }
+  );
+
+  it("maps a signed-out caller to 401", async () => {
+    mocks.listMentorships.mockRejectedValue(new AuthenticationError());
+    expect((await get("role=mentee")).status).toBe(401);
   });
 });
