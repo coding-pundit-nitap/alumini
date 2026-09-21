@@ -1,0 +1,41 @@
+import type { ListCursor } from "../domain/cursor";
+import type { MentorProfileInput } from "../domain/mentor-profile";
+
+export type MentorProfileRecord = MentorProfileInput & { userId: string };
+
+/** A mentor as a student sees them: profile fields the viewer may already see, plus the mentor's own offer. */
+export type MentorCard = {
+  userId: string;
+  fullName: string;
+  headline: string | null;
+  department: string | null;
+  currentCompany: string | null;
+  hasPhoto: boolean;
+  expertise: string;
+  topics: string[];
+  availability: string;
+  preferredContactMethod: MentorProfileInput["preferredContactMethod"];
+  /** Lower-cased name: the keyset cursor's sort key. Never sent to clients. */
+  sortKey: string;
+};
+
+export type MentorFilter = {
+  topic?: string;
+  department?: string;
+  company?: string;
+  limit: number;
+  after?: ListCursor;
+};
+
+export type MentorQueries = {
+  /** Active, visible mentors for this viewer (spec M-2, M-8), by name then id. */
+  list(viewerId: string, filter: MentorFilter): Promise<MentorCard[]>;
+  findProfile(userId: string): Promise<MentorProfileRecord | null>;
+};
+
+export type MentorProfileStore = {
+  upsert(
+    userId: string,
+    input: MentorProfileInput
+  ): Promise<MentorProfileRecord>;
+};
