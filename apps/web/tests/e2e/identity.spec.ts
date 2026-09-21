@@ -1,42 +1,20 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
+import {
+  confirmEmail,
+  PASSWORD,
+  register,
+  signIn,
+  unique,
+} from "./support/accounts";
 import { countEmails, linkIn, waitForEmail } from "./support/mailpit";
 
-const PASSWORD = "correct-horse-battery";
 const NEW_PASSWORD = "a-brand-new-passphrase";
 const INSTITUTIONAL_DOMAIN =
   process.env.E2E_INSTITUTIONAL_DOMAIN ?? "nitap.ac.in";
 
-const unique = (domain: string) =>
-  `e2e-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@${domain}`;
-
-async function register(page: Page, email: string) {
-  await page.goto("/register");
-  await page.getByLabel("Full name").fill("E2E Person");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(/\/register\/check-email/);
-}
-
-async function confirmEmail(page: Page, email: string) {
-  const mail = await waitForEmail(email, { subject: /verify your email/i });
-  await page.goto(linkIn(mail.text));
-  await expect(page).toHaveURL(/\/verify-email\?status=confirmed/);
-  await expect(
-    page.getByText("Email confirmed", { exact: true })
-  ).toBeVisible();
-}
-
-async function signIn(page: Page, email: string, password = PASSWORD) {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
-}
-
 test.describe("identity flows", () => {
-  test("an external address registers, confirms, signs in and waits on the status page", async ({
+  test("an external address registers, confirms, signs in and lands on onboarding", async ({
     page,
   }) => {
     const email = unique("example.test");
@@ -46,9 +24,9 @@ test.describe("identity flows", () => {
     await confirmEmail(page, email);
     await signIn(page, email);
 
-    await expect(page).toHaveURL(/\/account\/status/);
+    await expect(page).toHaveURL(/\/onboarding/);
     await expect(
-      page.getByText("Your account is awaiting verification")
+      page.getByText("Verify your affiliation").first()
     ).toBeVisible();
 
     await page.getByRole("button", { name: "Sign out" }).click();
@@ -95,7 +73,7 @@ test.describe("identity flows", () => {
     ).toBeVisible();
 
     await signIn(page, email, NEW_PASSWORD);
-    await expect(page).toHaveURL(/\/account\/status/);
+    await expect(page).toHaveURL(/\/onboarding/);
 
     await page.goto(link);
     await expect(page.getByText("This link is not valid")).toBeVisible();

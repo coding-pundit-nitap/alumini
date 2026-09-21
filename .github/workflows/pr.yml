@@ -27,7 +27,9 @@ env:
   QUEUE_REDIS_URL: redis://localhost:6380
   SMTP_URL: smtp://localhost:1025
   EMAIL_FROM: NITAP <no-reply@alumni.test>
-  INSTITUTIONAL_EMAIL_POLICY: '{"nitap.ac.in":{"role":"STUDENT","autoVerify":true}}'
+  INSTITUTIONAL_EMAIL_POLICY: '{"nitap.ac.in":{"role":"STUDENT","autoVerify":true},"staff.nitap.ac.in":{"role":"STAFF","autoVerify":false}}'
+  DEV_COORDINATOR_EMAIL: coordinator@nitap.example
+  DEV_COORDINATOR_PASSWORD: ci-coordinator-password-1234
   MAILPIT_URL: http://localhost:8025
 
 jobs:
@@ -199,6 +201,8 @@ jobs:
       - run: pnpm db:deploy
       # Sign-up assigns roles, which the seed creates.
       - run: pnpm --filter @nitap/database db:seed
+      # The verification journeys sign in as a seeded alumni coordinator.
+      - run: pnpm --filter @nitap/web db:seed:admin
       - run: pnpm --filter @nitap/web exec playwright install --with-deps chromium
       # Runs against `next dev` for now; it moves to the built images with the Docker pipeline (Phase 15).
       - run: pnpm test:e2e

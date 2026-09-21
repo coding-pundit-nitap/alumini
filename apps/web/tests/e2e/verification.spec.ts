@@ -1,0 +1,174 @@
+import { expect, test, type Browser, type Page } from "@playwright/test";
+
+import { confirmEmail, register, signIn, unique } from "./support/accounts";
+import { waitForEmail } from "./support/mailpit";
+
+const COORDINATOR_EMAIL = process.env.DEV_COORDINATOR_EMAIL;
+const COORDINATOR_PASSWORD = process.env.DEV_COORDINATOR_PASSWORD;
+const STAFF_DOMAIN = process.env.E2E_STAFF_DOMAIN ?? "staff.nitap.ac.in";
+const BASE_URL =
+  process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000";
+
+test.beforeAll(() => {
+  // Fail loudly rather than skip: a silently skipped journey is a journey nobody notices missing.
+  if (!COORDINATOR_EMAIL || !COORDINATOR_PASSWORD) {
+    throw new Error(
+      "DEV_COORDINATOR_EMAIL and DEV_COORDINATOR_PASSWORD must be set (source .env) and seeded with `pnpm db:seed`."
+    );
+  }
+});
+
+/** A distinct client address per test, so the per-IP submission limit never spans runs. */
+const clientIp = () =>
+  `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
+
+const rollNumber = () => `E2E-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+
+async function submitEvidence(page: Page, roll: string) {
+  await expect(page).toHaveURL(/\/onboarding/);
+  await page.getByLabel(/roll/i).fill(roll);
+  await page.getByLabel("Department").selectOption({ index: 1 });
+  await page.getByLabel("Degree").selectOption({ index: 1 });
+  await page.getByLabel("Graduation year").selectOption("2019");
+  await page.getByRole("button", { name: "Submit for review" }).click();
+  await expect(page.getByText("Your request is in review")).toBeVisible();
+}
+
+/** A second, independent browser session for the reviewer. */
+async function coordinator(browser: Browser): Promise<Page> {
+  const context = await browser.newContext({
+    baseURL: BASE_URL,
+    extraHTTPHeaders: { "x-forwarded-for": clientIp() },
+  });
+  const page = await context.newPage();
+  await signIn(page, COORDINATOR_EMAIL!, COORDINATOR_PASSWORD!);
+  await expect(page).toHaveURL(/\/$/);
+  return page;
+}
+
+async function decide(
+  reviewer: Page,
+  roll: string,
+  decision: "Approve" | "Reject",
+  note?: string
+) {
+  await reviewer.goto("/admin/verification");
+  const row = reviewer.getByTestId(`request-${roll}`);
+  await expect(row).toBeVisible();
+  if (note) await row.getByLabel(/note/i).fill(note);
+  await row.getByRole("button", { name: decision }).click();
+  await expect(row).toBeHidden();
+}
+
+async function newApplicant(page: Page, domain = "example.test") {
+  await page.context().setExtraHTTPHeaders({ "x-forwarded-for": clientIp() });
+  const email = unique(domain);
+  await register(page, email);
+  await confirmEmail(page, email);
+  await signIn(page, email);
+  return email;
+}
+
+test.describe("alumni verification (J-03)", () => {
+  test("a submitted request is approved by a coordinator and the applicant becomes verified", async ({
+    page,
+    browser,
+  }) => {
+    const email = await newApplicant(page);
+    const roll = rollNumber();
+    await submitEvidence(page, roll);
+
+    const reviewer = await coordinator(browser);
+    await decide(reviewer, roll, "Approve");
+
+    await page.goto("/onboarding");
+    await expect(page).toHaveURL(/\/$/); // verified accounts are sent home
+    const mail = await waitForEmail(email, { subject: /account is verified/i });
+    expect(mail.text).not.toMatch(/https?:\/\//);
+  });
+
+  test("a rejection shows the reviewer's note and the applicant can submit again", async ({
+    page,
+    browser,
+  }) => {
+    const email = await newApplicant(page);
+    const roll = rollNumber();
+    await submitEvidence(page, roll);
+
+    const reviewer = await coordinator(browser);
+    await decide(reviewer, roll, "Reject", "Roll number not found.");
+
+    await page.goto("/onboarding");
+    await expect(page.getByText("Your request was not approved")).toBeVisible();
+    await expect(page.getByText("Roll number not found.")).toBeVisible();
+    await waitForEmail(email, {
+      subject: /update on your nitap alumni network verification/i,
+    });
+
+    await submitEvidence(page, rollNumber());
+  });
+
+  test("three rejections lock the account: contact the alumni office, no form", async ({
+    page,
+    browser,
+  }) => {
+    await newApplicant(page);
+    const reviewer = await coordinator(browser);
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const roll = rollNumber();
+      await page.goto("/onboarding");
+      await submitEvidence(page, roll);
+      await decide(
+        reviewer,
+        roll,
+        "Reject",
+        `Attempt ${attempt + 1} not found.`
+      );
+    }
+
+    await page.goto("/onboarding");
+    await expect(
+      page.getByText("Please contact the alumni office")
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Submit for review" })
+    ).toHaveCount(0);
+  });
+
+  test("a staff-domain account waits for the institute and gets no evidence form", async ({
+    page,
+  }) => {
+    await newApplicant(page, STAFF_DOMAIN);
+
+    await expect(page).toHaveURL(/\/onboarding/);
+    await expect(
+      page.getByText("Awaiting confirmation by the institute")
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Submit for review" })
+    ).toHaveCount(0);
+  });
+
+  test("the review queue does not exist for an applicant, and needs a session", async ({
+    page,
+    browser,
+  }) => {
+    await newApplicant(page);
+    // Wait for sign-in to finish: navigating away mid-sign-in would leave no session and land on /login.
+    await expect(page).toHaveURL(/\/onboarding/);
+
+    // The applicant gets the not-found page and never the queue. The HTTP status is 200, not 404: the root
+    // loading.tsx makes every dynamic route stream, so the status line is sent before notFound() throws
+    // (Next.js docs, "Calling notFound() after streaming has started"). A real 404 needs the check
+    // before streaming, and the only pre-stream hook, proxy.ts, must never authorize (ADR-005, TDS §7).
+    await page.goto("/admin/verification");
+    await expect(page.getByText("Page Not Found (404)")).toBeVisible();
+    await expect(page.getByText("Verification requests")).toHaveCount(0);
+
+    const anonymous = await browser.newContext({ baseURL: BASE_URL });
+    const visitor = await anonymous.newPage();
+    await visitor.goto("/admin/verification");
+    await expect(visitor).toHaveURL(/\/login\?next=%2Fadmin%2Fverification/);
+  });
+});
