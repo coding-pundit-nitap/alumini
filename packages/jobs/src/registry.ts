@@ -1,12 +1,20 @@
 import type { PayloadOf } from "./define-job.ts";
 import { emailSend } from "./email.ts";
 import { outboxPrune } from "./scheduled.ts";
+import { uploadScan, uploadSweep } from "./upload.ts";
 
 /** Jobs a use case can request by writing an outbox event. In 2B an event type maps 1:1 to a job. */
-export const OUTBOX_EVENTS = { "email.send": emailSend } as const;
+export const OUTBOX_EVENTS = {
+  "email.send": emailSend,
+  "upload.scan": uploadScan,
+} as const;
 
 /** Every job the worker knows, including scheduled ones that no outbox event produces. */
-export const JOBS = { ...OUTBOX_EVENTS, "outbox.prune": outboxPrune } as const;
+export const JOBS = {
+  ...OUTBOX_EVENTS,
+  "outbox.prune": outboxPrune,
+  "upload.sweep": uploadSweep,
+} as const;
 
 export type OutboxEventType = keyof typeof OUTBOX_EVENTS;
 

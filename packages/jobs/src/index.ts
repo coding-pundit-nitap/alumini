@@ -7,6 +7,13 @@ export { DeferJobError, PermanentJobError } from "./errors.ts";
 export { emailSend, emailSendPayload } from "./email.ts";
 export type { EmailSendPayload } from "./email.ts";
 export { outboxPrune } from "./scheduled.ts";
+export {
+  uploadScan,
+  uploadScanPayload,
+  uploadSweep,
+  uploadSweepPayload,
+} from "./upload.ts";
+export type { UploadScanPayload, UploadSweepPayload } from "./upload.ts";
 export { JOBS, OUTBOX_EVENTS, isOutboxEventType } from "./registry.ts";
 export type { OutboxEvent, OutboxEventType } from "./registry.ts";
 export type {

@@ -16,4 +16,10 @@ describe("registry", () => {
     expect(isOutboxEventType("email.send")).toBe(true);
     expect(isOutboxEventType("nope")).toBe(false);
   });
+
+  it("upload.scan is an outbox event (the web app writes it); upload.sweep is scheduled only", () => {
+    expect(isOutboxEventType("upload.scan")).toBe(true);
+    expect(JOBS["upload.sweep"].queue).toBe("scheduled");
+    expect(isOutboxEventType("upload.sweep")).toBe(false);
+  });
 });

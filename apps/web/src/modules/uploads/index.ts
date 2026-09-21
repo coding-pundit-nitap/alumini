@@ -8,5 +8,6 @@ export {
 export { createCompleteUpload } from "./application/complete-upload";
 export { createPresignUpload } from "./application/presign-upload";
 export { createSetProfilePhoto } from "./application/set-profile-photo";
+export { createPrismaUploadStore } from "./infrastructure/prisma-upload-store";
 export type { CompleteUploadResult } from "./application/complete-upload";
 export type { PresignUploadResult } from "./application/presign-upload";
