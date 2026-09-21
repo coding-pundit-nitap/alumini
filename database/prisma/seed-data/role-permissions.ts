@@ -26,6 +26,13 @@ export const ONBOARDING_ROLE_NAMES = [
   "STAFF",
 ] as const satisfies readonly RoleName[];
 
+/**
+ * The role an approved alumni verification request grants (FR-AUTH-003a). Named here, not in
+ * apps/web/src, because application code names permissions, never roles (RBAC §11): the web
+ * composition root imports this constant and injects it into the use case.
+ */
+export const VERIFIED_ALUMNI_ROLE = "ALUMNI" as const satisfies RoleName;
+
 const P = PERMISSIONS;
 
 /** Member baseline shared by every role that is a member (rbac-permission-matrix.md §2). */
