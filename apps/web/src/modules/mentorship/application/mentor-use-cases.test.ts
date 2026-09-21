@@ -30,6 +30,7 @@ const card = (n: number): MentorCard => ({
   availability: "",
   preferredContactMethod: "IN_APP",
   sortKey: `mentor ${n}`,
+  spotsLeft: 3,
 });
 
 describe("saveMentorProfile", () => {
@@ -108,6 +109,25 @@ describe("listMentors", () => {
     expect(q.list).toHaveBeenCalledWith(
       "u1",
       expect.objectContaining({ topic: "rust" })
+    );
+  });
+  it("defaults hasSpots to true", async () => {
+    const q = queries([]);
+    await createListMentors({ queries: q, authorize })({ actor });
+    expect(q.list).toHaveBeenCalledWith(
+      "u1",
+      expect.objectContaining({ hasSpots: true })
+    );
+  });
+  it("passes hasSpots through when given", async () => {
+    const q = queries([]);
+    await createListMentors({ queries: q, authorize })({
+      actor,
+      hasSpots: false,
+    });
+    expect(q.list).toHaveBeenCalledWith(
+      "u1",
+      expect.objectContaining({ hasSpots: false })
     );
   });
 });

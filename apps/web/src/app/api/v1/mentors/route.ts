@@ -11,6 +11,10 @@ const query = z.object({
   company: z.string().max(100).optional(),
   limit: z.coerce.number().int().min(1).max(50).optional(),
   cursor: z.string().max(300).optional(),
+  hasSpots: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
 });
 
 /** GET /api/v1/mentors — available mentors this member may see (FR-MENTOR-003). */

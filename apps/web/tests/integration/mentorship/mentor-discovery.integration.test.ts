@@ -274,6 +274,71 @@ describe("mentor discovery against real PostgreSQL", () => {
     });
   });
 
+  describe("slots", () => {
+    it("omits a full mentor with hasSpots: true, lists with hasSpots: false, and reports spotsLeft (REQUESTED does not count)", async () => {
+      const viewer = await member("StuS1", { role: "STUDENT" });
+      const menteeA = await member("Existing Mentee", { role: "STUDENT" });
+      const menteeB = await member("Requesting Mentee", { role: "STUDENT" });
+      const mentor = await member("Full Mentor", { role: "ALUMNI" });
+      await optIn(mentor, { maxMentees: 1 });
+      await db.prisma.mentorship.create({
+        data: {
+          mentorId: mentor,
+          menteeId: menteeA,
+          state: "ACCEPTED",
+          message: "hi",
+          respondedAt: new Date(),
+        },
+      });
+      await db.prisma.mentorship.create({
+        data: {
+          mentorId: mentor,
+          menteeId: menteeB,
+          state: "REQUESTED",
+          message: "hi",
+        },
+      });
+
+      const withSpots = await queries().list(viewer, {
+        limit: 50,
+        hasSpots: true,
+      });
+      expect(withSpots.map((c) => c.userId)).not.toContain(mentor);
+
+      const withoutSpots = await queries().list(viewer, {
+        limit: 50,
+        hasSpots: false,
+      });
+      const card = withoutSpots.find((c) => c.userId === mentor);
+      expect(card).toBeDefined();
+      expect(card?.spotsLeft).toBe(0);
+    });
+
+    it("counts spotsLeft against ACCEPTED and ACTIVE only", async () => {
+      const viewer = await member("StuS2", { role: "STUDENT" });
+      const requester = await member("Requester", { role: "STUDENT" });
+      const mentor = await member("Roomy Mentor", { role: "ALUMNI" });
+      await optIn(mentor, { maxMentees: 2 });
+      await db.prisma.mentorship.create({
+        data: {
+          mentorId: mentor,
+          menteeId: requester,
+          state: "REQUESTED",
+          message: "hi",
+        },
+      });
+
+      const ids = (await queries().list(viewer, { limit: 50 })).map(
+        (c) => c.userId
+      );
+      expect(ids).toContain(mentor);
+      const card = (await queries().list(viewer, { limit: 50 })).find(
+        (c) => c.userId === mentor
+      );
+      expect(card?.spotsLeft).toBe(2);
+    });
+  });
+
   describe("paging", () => {
     it("pages through 5 mentors with limit 3, no duplicates, ordered by lower-cased name then id", async () => {
       const viewer = await member("StuP", { role: "STUDENT" });

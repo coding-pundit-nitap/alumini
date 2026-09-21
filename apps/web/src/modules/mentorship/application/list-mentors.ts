@@ -24,6 +24,7 @@ export function createListMentors(deps: {
     topic?: string;
     department?: string;
     company?: string;
+    hasSpots?: boolean;
     limit?: number;
     cursor?: string;
   }): Promise<MentorPage> {
@@ -34,6 +35,7 @@ export function createListMentors(deps: {
       topic: args.topic?.trim().toLowerCase() || undefined,
       department: args.department || undefined,
       company: args.company?.trim() || undefined,
+      hasSpots: args.hasSpots ?? true,
       limit: limit + 1,
       after: args.cursor ? decodeCursor(args.cursor) : undefined,
     });

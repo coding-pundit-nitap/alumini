@@ -17,6 +17,7 @@ const mentor = (over: Partial<Mentor> = {}): Mentor => ({
   topics: ["career switching", "system design"],
   availability: "Weeknights, 30 minutes",
   preferredContactMethod: "EMAIL",
+  spotsLeft: 2,
   ...over,
 });
 

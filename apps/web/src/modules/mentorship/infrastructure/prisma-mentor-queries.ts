@@ -50,12 +50,19 @@ export function createPrismaMentorQueries(prisma: PrismaClient): MentorQueries {
           OR (lower(p.full_name) = ${filter.after.key} AND p.user_id > ${filter.after.id}::uuid))`);
       }
 
+      if (filter.hasSpots) {
+        where.push(Prisma.sql`m.max_mentees > (SELECT count(*) FROM mentorship s
+          WHERE s.mentor_id = m.user_id AND s.state IN ('ACCEPTED', 'ACTIVE'))`);
+      }
+
       return prisma.$queryRaw<MentorCard[]>`
         SELECT p.user_id AS "userId", p.full_name AS "fullName", p.headline,
                d.name AS department, cur.company AS "currentCompany",
                (p.photo_upload_id IS NOT NULL) AS "hasPhoto",
                m.expertise, m.topics, m.availability,
                m.preferred_contact_method::text AS "preferredContactMethod",
+               GREATEST(m.max_mentees - (SELECT count(*)::int FROM mentorship s
+                 WHERE s.mentor_id = m.user_id AND s.state IN ('ACCEPTED', 'ACTIVE')), 0)::int AS "spotsLeft",
                lower(p.full_name) AS "sortKey"
         FROM mentor_profile m
         JOIN profile p ON p.user_id = m.user_id

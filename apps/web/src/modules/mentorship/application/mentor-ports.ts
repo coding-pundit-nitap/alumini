@@ -15,6 +15,8 @@ export type MentorCard = {
   topics: string[];
   availability: string;
   preferredContactMethod: MentorProfileInput["preferredContactMethod"];
+  /** `max_mentees` minus open (ACCEPTED/ACTIVE) mentorships, floored at 0. */
+  spotsLeft: number;
   /** Lower-cased name: the keyset cursor's sort key. Never sent to clients. */
   sortKey: string;
 };
@@ -23,6 +25,8 @@ export type MentorFilter = {
   topic?: string;
   department?: string;
   company?: string;
+  /** Only mentors with an open slot. Defaults to true (application layer). */
+  hasSpots?: boolean;
   limit: number;
   after?: ListCursor;
 };
