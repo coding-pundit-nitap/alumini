@@ -61,6 +61,10 @@ export function createAuth(deps: AuthDeps) {
     }),
     advanced: {
       database: { generateId: "uuid" },
+      // ADR-005: origin and CSRF checks stay ON. Stated explicitly because Better Auth's default for the
+      // origin check is `isTest()`, which would silently switch it off under NODE_ENV=test.
+      disableOriginCheck: false,
+      disableCSRFCheck: false,
     },
 
     emailAndPassword: {
