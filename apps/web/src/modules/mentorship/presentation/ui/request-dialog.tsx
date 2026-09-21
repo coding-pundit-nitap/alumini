@@ -9,7 +9,7 @@ const MESSAGE_MAX = 500;
 const FIELD_CLASS =
   "border-input bg-background w-full rounded-lg border px-2.5 py-2 text-sm";
 
-/** Ask a mentor for a mentorship (FR-MENTOR-004). A native <dialog> gives focus trapping and Escape for free. */
+/** Ask a mentor for a mentorship (FR-MENTOR-004). showModal() on a native <dialog> gives focus trapping and Escape. */
 export function RequestDialog({
   mentor,
   requestAction,
@@ -61,11 +61,13 @@ export function RequestDialog({
         </span>
       ) : null}
       {open ? (
-        <div
-          role="dialog"
-          aria-modal="true"
+        <dialog
+          ref={(el) => {
+            if (el && !el.open) el.showModal();
+          }}
+          onClose={() => setOpen(false)}
           aria-label={`Request mentorship from ${mentor.fullName}`}
-          className="bg-background mt-2 rounded-lg border p-4"
+          className="bg-background text-foreground m-auto w-full max-w-md rounded-lg border p-4 backdrop:bg-black/50"
         >
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="space-y-1 text-sm">
@@ -112,7 +114,7 @@ export function RequestDialog({
               </Button>
             </div>
           </form>
-        </div>
+        </dialog>
       ) : null}
     </>
   );
