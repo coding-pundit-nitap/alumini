@@ -18,11 +18,23 @@ type MentorConfig = {
   listable: boolean;
 };
 
+export type FakeMentorshipStoreOptions = {
+  /** Plays a competing insert (the winner of a race) right before this insert checks for an open pair. */
+  beforeInsert?: (rows: Map<string, MentorshipRow>) => void;
+  /** Plays a competing update (e.g. a concurrent cancel) right before this update's guard check. */
+  beforeUpdate?: (rows: Map<string, MentorshipRow>) => void;
+  failEnqueue?: boolean;
+};
+
 /**
  * In-memory MentorshipStore for unit tests. A transaction that throws restores the previous state, so
- * "the row and its event commit together" is testable without a database.
+ * "the row and its event commit together" is testable without a database. `beforeInsert` lets a test play
+ * the competing request that wins the unique pair first; `beforeUpdate` lets it play a competing transition.
  */
-export function createFakeMentorshipStore(seed: MentorshipRow[] = []) {
+export function createFakeMentorshipStore(
+  seed: MentorshipRow[] = [],
+  options: FakeMentorshipStoreOptions = {}
+) {
   let state = {
     rows: new Map(seed.map((r) => [r.id, { ...r }])),
     events: [] as MentorshipEvent[],
@@ -31,6 +43,9 @@ export function createFakeMentorshipStore(seed: MentorshipRow[] = []) {
   const users = new Set<string>();
   const blocks = new Set<string>();
   let sequence = seed.length;
+
+  // Rows a competing transaction committed while ours ran: rolling ours back must not erase them.
+  const external = new Map<string, MentorshipRow>();
 
   const blockKey = (a: string, b: string) => [a, b].sort().join("|");
 
@@ -75,6 +90,11 @@ export function createFakeMentorshipStore(seed: MentorshipRow[] = []) {
       return blocks.has(blockKey(a, b));
     },
     async insert(input: NewMentorship) {
+      const known = new Set(state.rows.keys());
+      options.beforeInsert?.(state.rows);
+      for (const [id, row] of state.rows) {
+        if (!known.has(id)) external.set(id, { ...row });
+      }
       if (openRowFor(input.mentorId, input.menteeId)) return null;
       sequence += 1;
       const row: MentorshipRow = {
@@ -94,12 +114,14 @@ export function createFakeMentorshipStore(seed: MentorshipRow[] = []) {
       return { ...row };
     },
     async update(id, from, patch) {
+      options.beforeUpdate?.(state.rows);
       const row = state.rows.get(id);
       if (!row || row.state !== from) return null;
       Object.assign(row, patch);
       return { ...row };
     },
     async enqueue(event) {
+      if (options.failEnqueue) throw new Error("outbox down");
       state.events.push(event);
     },
   };
@@ -114,6 +136,7 @@ export function createFakeMentorshipStore(seed: MentorshipRow[] = []) {
         return await work(tx);
       } catch (error) {
         state = before;
+        for (const [id, row] of external) state.rows.set(id, { ...row });
         throw error;
       }
     },

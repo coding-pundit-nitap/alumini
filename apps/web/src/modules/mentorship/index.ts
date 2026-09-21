@@ -2,6 +2,11 @@
 export { createGetMentorProfile } from "./application/get-mentor-profile";
 export { createListMentors } from "./application/list-mentors";
 export { createSaveMentorProfile } from "./application/save-mentor-profile";
+export {
+  createRequestMentorship,
+  REQUEST_RATE,
+} from "./application/request-mentorship";
+export { createTransitionMentorship } from "./application/transition-mentorship";
 export { createPrismaMentorProfileStore } from "./infrastructure/prisma-mentor-profile-store";
 export { createPrismaMentorQueries } from "./infrastructure/prisma-mentor-queries";
 export { CONTACT_METHODS, mentorProfileInput } from "./domain/mentor-profile";
