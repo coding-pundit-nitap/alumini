@@ -55,6 +55,7 @@ model User {
   connectionsAsB       Connection[] @relation("ConnectionUserB")
   connectionsRequested Connection[] @relation("ConnectionRequester")
   connectionsBlocked   Connection[] @relation("ConnectionBlocker")
+  mentorProfile        MentorProfile?
 
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
@@ -476,6 +477,32 @@ model Connection {
   @@index([userAId, state], map: "ix_connection_user_a")
   @@index([userBId, state], map: "ix_connection_user_b")
   @@map("connection")
+}
+
+enum MentorContactMethod {
+  IN_APP
+  EMAIL
+  VIDEO_CALL
+  PHONE
+}
+
+/// FR-MENTOR-001/002. One opt-in row per user; "active mentor" is defined by the application (spec M-2).
+/// Length/range CHECKs live in the migration SQL (ck_mentor_*).
+model MentorProfile {
+  userId                 String              @id @map("user_id") @db.Uuid
+  user                   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expertise              String
+  topics                 String[]            @default([])
+  availability           String              @default("")
+  preferredContactMethod MentorContactMethod @default(IN_APP) @map("preferred_contact_method")
+  maxMentees             Int                 @default(3) @map("max_mentees")
+  accepting              Boolean             @default(true)
+  createdAt              DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([topics], type: Gin, map: "ix_mentor_profile_topics")
+  @@index([accepting], map: "ix_mentor_profile_accepting")
+  @@map("mentor_profile")
 }
 
 enum IdempotencyState {
