@@ -86,6 +86,34 @@ export const ERROR_CATALOG: Record<
     status: 409,
     message: "You have blocked this member. Unblock them to connect.",
   },
+  MESSAGE_BLOCKED: {
+    status: 409,
+    message: "You have blocked this member. Unblock them to message them.",
+  },
+  GROUP_FULL: {
+    status: 409,
+    message: "This group has reached its member limit.",
+  },
+  NOT_GROUP_ADMIN: {
+    status: 403,
+    message: "Only the person who created this group can do that.",
+  },
+  PARTICIPANT_UNAVAILABLE: {
+    status: 409,
+    message: "That member cannot be added to this conversation.",
+  },
+  NOT_A_GROUP: {
+    status: 400,
+    message: "This action only applies to group conversations.",
+  },
+  CREATOR_CANNOT_LEAVE: {
+    status: 409,
+    message: "The person who created a group cannot leave it.",
+  },
+  CANNOT_MESSAGE_SELF: {
+    status: 400,
+    message: "You cannot start a conversation with yourself.",
+  },
   INVALID_STATE_TRANSITION: {
     status: 409,
     message:
