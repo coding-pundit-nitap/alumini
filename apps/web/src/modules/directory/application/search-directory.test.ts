@@ -56,7 +56,6 @@ function setup(
       if (over.deny) throw new AuthorizationError();
       return a as Actor;
     },
-    can: () => over.privileged ?? false,
     search: { searchPeople },
     rateLimiter: { consume },
   });
@@ -75,16 +74,10 @@ describe("searchDirectory", () => {
     expect(page.page).toEqual({ limit: 20, nextCursor: "next", hasMore: true });
   });
 
-  it("gives members member reach and privileged readers full reach", async () => {
-    const member = setup();
-    await member.run({ actor, query });
-    expect(member.searchPeople.mock.calls[0]![1]).toEqual({
-      userId: "u1",
-      reach: "members",
-    });
-    const admin = setup({ privileged: true });
-    await admin.run({ actor, query });
-    expect(admin.searchPeople.mock.calls[0]![1].reach).toBe("everything");
+  it("searches as the caller, with no privileged reach for anyone", async () => {
+    const { run, searchPeople } = setup({ privileged: true });
+    await run({ actor, query });
+    expect(searchPeople.mock.calls[0]![1]).toEqual({ userId: "u1" });
   });
 
   it("refuses an unauthorized caller before searching or counting", async () => {

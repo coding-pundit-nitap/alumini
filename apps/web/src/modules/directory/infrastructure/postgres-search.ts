@@ -55,20 +55,16 @@ function relevanceScore(query: DirectoryQuery): Prisma.Sql {
 export function createPostgresSearch(prisma: PrismaClient): SearchPort {
   return {
     async searchPeople(query, viewer) {
-      const everything = viewer.reach === "everything";
-      const reach = Prisma.sql`${everything ? "PRIVATE" : "MEMBERS_ONLY"}::"ProfileVisibility"`;
+      const reach = Prisma.sql`'MEMBERS_ONLY'::"ProfileVisibility"`;
       // The pair's connection row, by canonical order (uq_connection_pair serves the lookup).
       const pairWith = (alias: string, state: "ACCEPTED" | "BLOCKED") =>
         Prisma.sql`EXISTS (SELECT 1 FROM connection c
           WHERE c.user_a_id = LEAST(${viewer.userId}::uuid, ${Prisma.raw(alias)}.user_id)
             AND c.user_b_id = GREATEST(${viewer.userId}::uuid, ${Prisma.raw(alias)}.user_id)
             AND c.state = ${state}::"ConnectionState")`;
-      // A level is visible when it is within the viewer's reach, or it is CONNECTIONS_ONLY and the two are
-      // connected. Privileged readers ("everything") see all levels, as on the profile page.
+      // A level is visible when it is MEMBERS_ONLY or looser, or it is CONNECTIONS_ONLY and the two are connected.
       const visibleAt = (level: Prisma.Sql, alias: string) =>
-        everything
-          ? Prisma.sql`${level} <= ${reach}`
-          : Prisma.sql`(${level} <= ${reach} OR (${level} = 'CONNECTIONS_ONLY'::"ProfileVisibility" AND ${pairWith(alias, "ACCEPTED")}))`;
+        Prisma.sql`(${level} <= ${reach} OR (${level} = 'CONNECTIONS_ONLY'::"ProfileVisibility" AND ${pairWith(alias, "ACCEPTED")}))`;
       const sectionVisible = (column: string, alias = "p") =>
         visibleAt(
           Prisma.sql`COALESCE(${Prisma.raw(`${alias}.${column}_visibility`)}, ${Prisma.raw(`${alias}.visibility`)})`,
@@ -81,7 +77,7 @@ export function createPostgresSearch(prisma: PrismaClient): SearchPort {
         visibleAt(Prisma.sql`p.visibility`, "p"),
       ];
       // A block hides both members from each other, in either direction (RBAC §6.1).
-      if (!everything) where.push(Prisma.sql`NOT ${pairWith("p", "BLOCKED")}`);
+      where.push(Prisma.sql`NOT ${pairWith("p", "BLOCKED")}`);
 
       if (query.q) {
         const pattern = like(query.q);

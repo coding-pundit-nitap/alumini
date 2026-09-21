@@ -55,6 +55,9 @@ export default async function ProfilePage() {
         and cannot be edited here.
       </p>
       <nav className="flex flex-wrap gap-4 text-sm">
+        <Link href="/directory" className="underline">
+          Alumni directory
+        </Link>
         <Link href="/connections" className="underline">
           Your connections
         </Link>

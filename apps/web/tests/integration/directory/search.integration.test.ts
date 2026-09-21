@@ -15,8 +15,7 @@ type Level = "PUBLIC" | "MEMBERS_ONLY" | "CONNECTIONS_ONLY" | "PRIVATE";
 
 // A valid UUID that belongs to no user: the query compares it with connection.user_a_id / user_b_id.
 const VIEWER_ID = "00000000-0000-4000-8000-000000000001";
-const MEMBER: SearchViewer = { userId: VIEWER_ID, reach: "members" };
-const ADMIN: SearchViewer = { userId: VIEWER_ID, reach: "everything" };
+const MEMBER: SearchViewer = { userId: VIEWER_ID };
 
 function query(params: Record<string, string | string[]> = {}): DirectoryQuery {
   const parsed = parseDirectoryQuery(params);
@@ -241,7 +240,7 @@ describe("directory search against real PostgreSQL", () => {
         },
       });
     }
-    const as = (userId: string): SearchViewer => ({ userId, reach: "members" });
+    const as = (userId: string): SearchViewer => ({ userId });
 
     it("shows a connections-only member to an accepted connection, and to nobody else", async () => {
       const viewer = await person("Viewer Vik");
@@ -300,15 +299,6 @@ describe("directory search against real PostgreSQL", () => {
       expect(await names({}, as(blocker))).not.toContain("Blocked Bob");
       expect(await names({}, as(blocked))).not.toContain("Blocker Bea");
     });
-
-    it("leaves privileged readers ('everything') unaffected, as on the profile page", async () => {
-      const blocker = await person("Blocker Bea");
-      const blocked = await person("Blocked Bob");
-      await link(blocker, blocked, "BLOCKED", blocker);
-      expect(
-        await names({}, { userId: blocker, reach: "everything" })
-      ).toContain("Blocked Bob");
-    });
   });
 
   describe("visibility", () => {
@@ -326,14 +316,11 @@ describe("directory search against real PostgreSQL", () => {
       expect(await names({ q: "Pending Pam" })).toEqual([]);
     });
 
-    it("lets a privileged reader see everything but unverified accounts", async () => {
+    it("does not list private profiles to anyone, administrators included", async () => {
+      // Admins reach a private profile by id, which is audited; a listing would not be.
       await person("Visible Vera");
       await person("Private Pia", { visibility: "PRIVATE" });
-      await person("Pending Pam", { state: "PENDING" });
-      expect((await names({}, ADMIN)).sort()).toEqual([
-        "Private Pia",
-        "Visible Vera",
-      ]);
+      expect(await names({})).toEqual(["Visible Vera"]);
     });
 
     it("never matches on, filters by or shows a hidden section", async () => {
@@ -356,9 +343,6 @@ describe("directory search against real PostgreSQL", () => {
         currentCompany: null,
         location: null,
       });
-
-      // The owner's own privileged view (or an admin) still finds them.
-      expect(await names({ q: "secretco" }, ADMIN)).toEqual(["Hidden Hal"]);
     });
 
     it("returns no totals or counts, so a private profile cannot leak through them", async () => {

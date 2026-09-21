@@ -1,12 +1,13 @@
 import type { DirectoryQuery } from "./query.ts";
 
 /**
- * Who is searching. `reach` is decided by the caller's authorization, not by the search engine:
- * `members` sees profiles at MEMBERS_ONLY or looser; `everything` (a privileged reader) sees all.
- * The viewer's connections and blocks are NOT passed in (a member can have thousands): an adapter resolves them
- * from `userId`, so CONNECTIONS_ONLY profiles appear for connections and a blocked pair never sees each other.
+ * Who is searching. Everyone gets the same rule: PUBLIC and MEMBERS_ONLY profiles, plus CONNECTIONS_ONLY ones
+ * for their connections, and never a blocked pair. There is deliberately no privileged reach: an admin who
+ * needs a private profile opens it by id, which is audited (RBAC §12); a listing would not be.
+ * The viewer's connections and blocks are NOT passed in (a member can have thousands): an adapter resolves
+ * them from `userId`.
  */
-export type SearchViewer = { userId: string; reach: "members" | "everything" };
+export type SearchViewer = { userId: string };
 
 /** One directory row. Every optional-looking field is already null when the viewer may not see it. */
 export type PersonHit = {
