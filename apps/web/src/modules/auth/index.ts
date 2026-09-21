@@ -12,3 +12,5 @@ export { ResendVerification } from "./presentation/ui/resend-verification";
 export { LoginForm } from "./presentation/ui/login-form";
 export { ForgotPasswordForm } from "./presentation/ui/forgot-password-form";
 export { ResetPasswordForm } from "./presentation/ui/reset-password-form";
+export { accountStatusCopy } from "./presentation/ui/account-status-copy";
+export { SignOutButton } from "./presentation/ui/sign-out-button";
