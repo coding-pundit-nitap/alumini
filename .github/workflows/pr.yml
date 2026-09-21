@@ -24,6 +24,9 @@ env:
   REDIS_URL: redis://localhost:6379
   BETTER_AUTH_SECRET: ci-only-secret-not-used-outside-github-actions-0000
   BETTER_AUTH_URL: http://localhost:3000
+  QUEUE_REDIS_URL: redis://localhost:6380
+  SMTP_URL: smtp://localhost:1025
+  EMAIL_FROM: NITAP <no-reply@alumni.test>
 
 jobs:
   static:
@@ -42,6 +45,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm arch
+      - run: pnpm worker:prune:check
 
   secret-scan:
     name: Secret scan
@@ -80,13 +84,16 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # turbo --affected compares against the base branch
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      # A pull request tests what its change can affect; main always runs everything.
+      - run: ${{ github.event_name == 'pull_request' && 'pnpm turbo run test --affected' || 'pnpm test' }}
 
   integration:
     name: Integration and contract tests
@@ -107,6 +114,14 @@ jobs:
       redis:
         image: redis:7-alpine
         ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+      # GitHub service containers cannot take server flags, so this instance uses defaults; tests only
+      # need a working Redis. Production and local compose use noeviction + AOF.
+      queue-redis:
+        image: redis:7-alpine
+        ports: ["6380:6379"]
         options: >-
           --health-cmd "redis-cli ping" --health-interval 5s
           --health-timeout 3s --health-retries 10
