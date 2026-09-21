@@ -42,6 +42,20 @@ export const ERROR_CATALOG: Record<
     status: 403,
     message: "This request came from an origin that is not allowed.",
   },
+  SELF_REVIEW_FORBIDDEN: {
+    status: 403,
+    message: "You cannot review your own request.",
+  },
+  VERIFICATION_LOCKED: {
+    status: 403,
+    message:
+      "This account cannot submit another verification request. Please contact the alumni office.",
+  },
+  VERIFICATION_NOT_APPLICABLE: {
+    status: 403,
+    message:
+      "This account is confirmed by the institute and does not submit verification evidence.",
+  },
   NOT_FOUND: { status: 404, message: "The resource was not found." },
   METHOD_NOT_ALLOWED: {
     status: 405,
@@ -50,6 +64,14 @@ export const ERROR_CATALOG: Record<
   IDEMPOTENCY_KEY_REUSED: {
     status: 409,
     message: "This idempotency key was already used with a different request.",
+  },
+  VERIFICATION_REQUEST_OPEN: {
+    status: 409,
+    message: "A verification request is already awaiting review.",
+  },
+  ACCOUNT_NOT_REVIEWABLE: {
+    status: 409,
+    message: "This account can no longer be reviewed.",
   },
   REQUEST_IN_PROGRESS: {
     status: 409,
