@@ -7,7 +7,9 @@ export type EmailTemplate =
       template: "reset-password";
       params: { resetUrl: string; expiresInMinutes: number };
     }
-  | { template: "existing-account"; params: Record<string, never> };
+  | { template: "existing-account"; params: Record<string, never> }
+  | { template: "verification-approved"; params: Record<string, never> }
+  | { template: "verification-rejected"; params: Record<string, never> };
 
 const SIGNATURE = "NIT Arunachal Pradesh Alumni Network";
 
@@ -31,6 +33,16 @@ export function renderEmail(input: EmailTemplate): {
       return {
         subject: "Someone tried to register with your email",
         text: `Hello,\n\nAn account with this email address already exists. If this was you, sign in or reset your password.\n\nIf it was not you, no action is needed.\n\n${SIGNATURE}`,
+      };
+    case "verification-approved":
+      return {
+        subject: "Your NITAP Alumni Network account is verified",
+        text: `Hello,\n\nYour connection to NIT Arunachal Pradesh has been verified. Sign in to start using the network.\n\n${SIGNATURE}`,
+      };
+    case "verification-rejected":
+      return {
+        subject: "Update on your NITAP Alumni Network verification",
+        text: `Hello,\n\nWe were not able to verify your connection to NIT Arunachal Pradesh this time. Sign in to see what to do next.\n\n${SIGNATURE}`,
       };
   }
 }

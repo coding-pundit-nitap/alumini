@@ -40,3 +40,25 @@ describe("renderEmail", () => {
     expect(text).toMatch(/sign in or reset your password/i);
   });
 });
+
+describe("renderEmail: verification decisions", () => {
+  it("tells an approved member to sign in and names no link or note", () => {
+    const { subject, text } = renderEmail({
+      template: "verification-approved",
+      params: {},
+    });
+    expect(subject).toBe("Your NITAP Alumni Network account is verified");
+    expect(text).toMatch(/sign in/i);
+    expect(text).not.toMatch(/https?:\/\//);
+  });
+
+  it("tells a rejected applicant to sign in to see what to do next", () => {
+    const { subject, text } = renderEmail({
+      template: "verification-rejected",
+      params: {},
+    });
+    expect(subject).toBe("Update on your NITAP Alumni Network verification");
+    expect(text).toMatch(/sign in/i);
+    expect(text).not.toMatch(/https?:\/\//);
+  });
+});

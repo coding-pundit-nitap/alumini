@@ -41,6 +41,20 @@ export const emailSendPayload = z.discriminatedUnion("template", [
       params: z.object({}).strict(),
     })
     .strict(),
+  z
+    .object({
+      ...common,
+      template: z.literal("verification-approved"),
+      params: z.object({}).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...common,
+      template: z.literal("verification-rejected"),
+      params: z.object({}).strict(),
+    })
+    .strict(),
 ]);
 
 export type EmailSendPayload = z.infer<typeof emailSendPayload>;
