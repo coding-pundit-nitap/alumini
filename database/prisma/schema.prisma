@@ -240,6 +240,12 @@ model Profile {
   location       String?
   photoUrl       String?           @map("photo_url")
   visibility     ProfileVisibility @default(MEMBERS_ONLY)
+  // Per-section overrides (spec 3A). NULL inherits `visibility`; never looser than it. The CHECKs are in
+  // the profile_privacy migration's SQL (ck_profile_*_visibility); Postgres compares enums by declaration order.
+  contactVisibility    ProfileVisibility? @map("contact_visibility")
+  locationVisibility   ProfileVisibility? @map("location_visibility")
+  experienceVisibility ProfileVisibility? @map("experience_visibility")
+  educationVisibility  ProfileVisibility? @map("education_visibility")
   createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
 
