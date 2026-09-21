@@ -55,7 +55,7 @@ describe("PrivacyForm", () => {
     );
   });
 
-  it("also resets a now-looser contest override, independently of location", async () => {
+  it("also resets a now-looser contact override, independently of location", async () => {
     const user = userEvent.setup();
     render(
       <PrivacyForm
