@@ -113,11 +113,18 @@ function createTx(tx: Prisma.TransactionClient, deps: Deps): VerificationTx {
         where: { id: userId },
         select: { name: true },
       });
+      const before = await tx.profile.findUnique({
+        where: { userId },
+        select: { departmentId: true, degreeId: true, graduationYear: true },
+      });
       await tx.profile.upsert({
         where: { userId },
         create: { userId, fullName: user.name, ...fields },
         update: fields,
       });
+      return (
+        before ?? { departmentId: null, degreeId: null, graduationYear: null }
+      );
     },
 
     async assignRole(userId, roleName, grantedBy) {

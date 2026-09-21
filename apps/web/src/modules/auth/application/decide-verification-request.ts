@@ -78,10 +78,19 @@ export function createDecideVerificationRequest(deps: {
       if (!moved) throw new ConflictError("ACCOUNT_NOT_REVIEWABLE");
 
       if (args.decision === "APPROVED") {
-        await tx.applyInstitutionalFields(request.userId, {
+        const to = {
           departmentId: request.departmentId,
           degreeId: request.degreeId,
           graduationYear: request.graduationYear,
+        };
+        const from = await tx.applyInstitutionalFields(request.userId, to);
+        // RBAC §12: institutional changes are audited with old and new values (FR-PROFILE-004).
+        await tx.recordAudit({
+          actorId: reviewer.userId,
+          action: "profile.institutional_changed",
+          targetType: "profile",
+          targetId: request.userId,
+          metadata: { from, to },
         });
         await tx.assignRole(request.userId, deps.approvalRole, reviewer.userId);
       }

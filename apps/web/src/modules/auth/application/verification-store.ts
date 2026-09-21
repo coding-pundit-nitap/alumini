@@ -41,6 +41,11 @@ export type InstitutionalFields = {
   degreeId: string;
   graduationYear: number;
 };
+export type PreviousInstitutionalFields = {
+  departmentId: string | null;
+  degreeId: string | null;
+  graduationYear: number | null;
+};
 export type AuditRecord = {
   actorId: string;
   action: string;
@@ -78,10 +83,11 @@ export type VerificationTx = {
     from: readonly string[],
     to: string
   ): Promise<boolean>;
+  /** Returns the values it replaced, so the caller can audit old and new (RBAC §12). */
   applyInstitutionalFields(
     userId: string,
     fields: InstitutionalFields
-  ): Promise<void>;
+  ): Promise<PreviousInstitutionalFields>;
   assignRole(
     userId: string,
     roleName: string,

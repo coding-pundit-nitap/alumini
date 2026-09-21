@@ -3,8 +3,8 @@ import type { EmailSendPayload } from "@nitap/jobs";
 import type {
   AccountRecord,
   AuditRecord,
-  InstitutionalFields,
   PendingVerification,
+  PreviousInstitutionalFields,
   VerificationRequestRecord,
   VerificationStore,
   VerificationTx,
@@ -14,7 +14,7 @@ type State = {
   accounts: Map<string, AccountRecord>;
   requests: Map<string, VerificationRequestRecord>;
   roles: { userId: string; roleName: string; grantedBy: string }[];
-  profiles: Map<string, InstitutionalFields>;
+  profiles: Map<string, PreviousInstitutionalFields>;
   emails: EmailSendPayload[];
   audits: AuditRecord[];
 };
@@ -113,7 +113,13 @@ export function createFakeVerificationStore(
     applyInstitutionalFields: wrap(
       "applyInstitutionalFields",
       async (userId, fields) => {
+        const previous = state.profiles.get(userId) ?? {
+          departmentId: null,
+          degreeId: null,
+          graduationYear: null,
+        };
         state.profiles.set(userId, { ...fields });
+        return { ...previous };
       }
     ),
     assignRole: wrap("assignRole", async (userId, roleName, grantedBy) => {

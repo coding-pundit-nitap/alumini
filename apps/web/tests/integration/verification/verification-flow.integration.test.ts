@@ -169,14 +169,30 @@ describe("alumni verification against real PostgreSQL", () => {
       status: "APPROVED",
       reviewedBy: ravi.id,
     });
-    const audits = await db.prisma.auditLog.findMany();
-    expect(audits).toHaveLength(1);
-    expect(audits[0]).toMatchObject({
+    const audits = await db.prisma.auditLog.findMany({
+      orderBy: { createdAt: "asc" },
+    });
+    expect(audits.map((a) => a.action).sort()).toEqual([
+      "alumni.verified",
+      "profile.institutional_changed",
+    ]);
+    expect(audits.find((a) => a.action === "alumni.verified")).toMatchObject({
       actorId: ravi.id,
-      action: "alumni.verified",
       targetType: "user",
       targetId: asha.id,
       metadata: { requestId, crossCheck: "NOT_CHECKED" },
+    });
+    // RBAC §12 / FR-PROFILE-004: institutional changes are audited with old and new values.
+    expect(
+      audits.find((a) => a.action === "profile.institutional_changed")
+    ).toMatchObject({
+      actorId: ravi.id,
+      targetType: "profile",
+      targetId: asha.id,
+      metadata: {
+        from: { departmentId: null, degreeId: null, graduationYear: null },
+        to: { departmentId, degreeId, graduationYear: 2019 },
+      },
     });
     const emails = (await db.prisma.outboxEvent.findMany()).map(
       (e) => e.payload
@@ -286,7 +302,10 @@ describe("alumni verification against real PostgreSQL", () => {
       "already_decided",
       "decided",
     ]);
-    expect(await db.prisma.auditLog.count()).toBe(1);
+    // Exactly one decision: one row of each audit action, not two of either.
+    expect(
+      (await db.prisma.auditLog.findMany()).map((a) => a.action).sort()
+    ).toEqual(["alumni.verified", "profile.institutional_changed"]);
     expect(await db.prisma.userRole.count({ where: { userId: asha.id } })).toBe(
       1
     );

@@ -125,6 +125,20 @@ describe("decideVerificationRequest: approving", () => {
     expect(fake.audits).toEqual([
       {
         actorId: "rev",
+        action: "profile.institutional_changed",
+        targetType: "profile",
+        targetId: "u1",
+        metadata: {
+          from: { departmentId: null, degreeId: null, graduationYear: null },
+          to: {
+            departmentId: "dept-1",
+            degreeId: "deg-1",
+            graduationYear: 2019,
+          },
+        },
+      },
+      {
+        actorId: "rev",
         action: "alumni.verified",
         targetType: "user",
         targetId: "u1",
@@ -139,6 +153,33 @@ describe("decideVerificationRequest: approving", () => {
         params: {},
       },
     ]);
+  });
+
+  it("records the previous institutional values when they were already set", async () => {
+    const { fake, decide } = setup();
+    fake.profiles.set("u1", {
+      departmentId: "old-d",
+      degreeId: "old-g",
+      graduationYear: 2015,
+    });
+
+    await decide({
+      actor: reviewer(),
+      requestId: "req-1",
+      decision: "APPROVED",
+    });
+
+    expect(fake.audits[0]).toMatchObject({
+      action: "profile.institutional_changed",
+      metadata: {
+        from: {
+          departmentId: "old-d",
+          degreeId: "old-g",
+          graduationYear: 2015,
+        },
+        to: { departmentId: "dept-1", degreeId: "deg-1", graduationYear: 2019 },
+      },
+    });
   });
 
   it("also verifies an account that was REJECTED before", async () => {
@@ -300,7 +341,11 @@ describe("decideVerificationRequest: idempotence and atomicity", () => {
     });
 
     expect(again).toEqual({ outcome: "already_decided" });
-    expect(fake.audits).toHaveLength(1);
+    // One approval writes two audit rows; the second decision adds none.
+    expect(fake.audits.map((a) => a.action)).toEqual([
+      "profile.institutional_changed",
+      "alumni.verified",
+    ]);
     expect(fake.emails).toHaveLength(1);
     expect(fake.roles).toHaveLength(1);
   });
