@@ -88,7 +88,28 @@ export const ERROR_CATALOG: Record<
   },
   INVALID_STATE_TRANSITION: {
     status: 409,
-    message: "That is no longer possible: the connection has changed.",
+    message:
+      "That is no longer possible: it has changed since you loaded the page.",
+  },
+  CANNOT_MENTOR_SELF: {
+    status: 400,
+    message: "You cannot request mentorship from yourself.",
+  },
+  NOT_MENTORSHIP_MENTOR: {
+    status: 403,
+    message: "Only the mentor can do this.",
+  },
+  MENTORSHIP_REQUEST_EXISTS: {
+    status: 409,
+    message: "You already have an open mentorship or request with this mentor.",
+  },
+  MENTOR_AT_CAPACITY: {
+    status: 409,
+    message: "This mentor is not taking more mentees right now.",
+  },
+  MENTOR_NOT_AVAILABLE: {
+    status: 409,
+    message: "This mentor is not accepting requests right now.",
   },
   VERIFICATION_REQUEST_OPEN: {
     status: 409,

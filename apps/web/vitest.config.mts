@@ -32,11 +32,15 @@ export default defineConfig({
             // database/package.json's `test` script comment). Run its pure, DB-free unit tests
             // through this already-working install instead; `database/` still owns the files.
             "../../database/prisma/seed-data/**/*.test.ts",
+            // Runs a store's contract suite against an in-memory fake (no database): the suite itself
+            // (mentorship-store.contract.ts) is shared with the real store's own *.contract.test.ts
+            // under src, which the "contract" project below runs against Postgres instead.
+            "tests/support/fake-*.contract.test.ts",
           ],
           exclude: [
             "node_modules",
             ".next/**",
-            "**/*.{dom,integration,contract}.test.ts",
+            "src/**/*.{dom,integration,contract}.test.ts",
             "src/hooks/**",
             "src/components/**",
           ],
