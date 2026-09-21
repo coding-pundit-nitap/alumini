@@ -26,7 +26,7 @@ export type {
 export type { MentorPage } from "./application/list-mentors";
 export type { MentorshipPage } from "./application/list-mentorships";
 export { MENTORSHIP_STATES } from "./domain/mentorship";
-export type { MentorshipState } from "./domain/mentorship";
+export type { MentorshipAction, MentorshipState } from "./domain/mentorship";
 export { MentorList } from "./presentation/ui/mentor-list";
 export { MentorSettingsForm } from "./presentation/ui/mentor-settings-form";
 export { RequestDialog } from "./presentation/ui/request-dialog";

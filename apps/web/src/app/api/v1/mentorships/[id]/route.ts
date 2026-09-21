@@ -8,7 +8,7 @@ import { getActor } from "@/modules/auth";
 
 const patchBody = z
   .object({
-    action: z.enum(["accept", "decline", "cancel"]),
+    action: z.enum(["accept", "decline", "cancel", "start", "complete"]),
     note: z.string().optional(),
   })
   .strict();
@@ -16,7 +16,7 @@ const id = z.uuid();
 
 type Params = { params: Promise<{ id: string }> };
 
-/** PATCH /api/v1/mentorships/:id — accept, decline or cancel (FR-MENTOR-005/006). */
+/** PATCH /api/v1/mentorships/:id — accept, decline, cancel, start or complete (FR-MENTOR-005/006). */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const body = await request.json().catch(() => {

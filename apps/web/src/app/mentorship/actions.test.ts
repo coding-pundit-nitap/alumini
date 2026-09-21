@@ -87,6 +87,15 @@ describe("requestMentorshipAction", () => {
     expect(mocks.refresh).toHaveBeenCalledTimes(1);
   });
 
+  it.each(["start", "complete"] as const)("accepts %s", async (action) => {
+    expect(await transitionMentorshipAction(ID, action)).toMatchObject({
+      ok: true,
+    });
+    expect(mocks.transitionMentorship).toHaveBeenCalledWith(
+      expect.objectContaining({ action })
+    );
+  });
+
   it("refuses a malformed id without calling the use case", async () => {
     expect(
       await requestMentorshipAction("nope", { message: "hi" })
@@ -114,12 +123,21 @@ describe("transitionMentorshipAction", () => {
     expect(mocks.refresh).toHaveBeenCalledTimes(1);
   });
 
+  it.each(["start", "complete"] as const)("accepts %s", async (action) => {
+    expect(await transitionMentorshipAction(ID, action)).toMatchObject({
+      ok: true,
+    });
+    expect(mocks.transitionMentorship).toHaveBeenCalledWith(
+      expect.objectContaining({ action })
+    );
+  });
+
   it("refuses a malformed id and an unknown action", async () => {
     expect(await transitionMentorshipAction("nope", "accept")).toMatchObject({
       ok: false,
     });
     expect(
-      await transitionMentorshipAction(ID, "start" as unknown as "accept")
+      await transitionMentorshipAction(ID, "reopen" as unknown as "accept")
     ).toMatchObject({ ok: false });
     expect(mocks.transitionMentorship).not.toHaveBeenCalled();
   });

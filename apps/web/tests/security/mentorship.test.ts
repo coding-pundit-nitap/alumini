@@ -246,6 +246,57 @@ describe("transitionMentorship: real authorizer", () => {
   }
   const mentorActor = () => actor(MENTOR, { grants: grantsFor("ALUMNI") });
 
+  it.each(["start", "complete"] as const)(
+    "a STUDENT calling %s is a 403; a stranger is a 404 (IDOR)",
+    async (action) => {
+      const { transition, mentorshipId } = await requested();
+      const student = actor(MENTEE, { grants: grantsFor("STUDENT") });
+      expect(
+        await status(transition({ actor: student, mentorshipId, action }))
+      ).toBe(403);
+      const stranger = actor("00000000-0000-4000-8000-00000000000c", {
+        grants: grantsFor("ALUMNI"),
+      });
+      expect(
+        await status(transition({ actor: stranger, mentorshipId, action }))
+      ).toBe(404);
+    }
+  );
+
+  it("a note on start is a 400", async () => {
+    const { transition, mentorshipId } = await requested();
+    await transition({ actor: mentorActor(), mentorshipId, action: "accept" });
+    expect(
+      await status(
+        transition({
+          actor: mentorActor(),
+          mentorshipId,
+          action: "start",
+          note: "x",
+        })
+      )
+    ).toBe(400);
+  });
+
+  it("the mentee cannot start; complete on ACCEPTED is a 409", async () => {
+    const { transition, mentorshipId } = await requested();
+    await transition({ actor: mentorActor(), mentorshipId, action: "accept" });
+    expect(
+      await status(
+        transition({
+          actor: actor(MENTEE, { grants: grantsFor("ALUMNI") }),
+          mentorshipId,
+          action: "start",
+        })
+      )
+    ).toBe(403);
+    expect(
+      await status(
+        transition({ actor: mentorActor(), mentorshipId, action: "complete" })
+      )
+    ).toBe(409);
+  });
+
   it("a STUDENT calling accept is a 403", async () => {
     const { transition, mentorshipId } = await requested();
     expect(

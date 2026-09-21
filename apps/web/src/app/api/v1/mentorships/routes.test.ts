@@ -110,7 +110,7 @@ describe("POST /api/v1/mentorships", () => {
 });
 
 describe("PATCH /api/v1/mentorships/:id", () => {
-  it.each(["accept", "decline", "cancel"])(
+  it.each(["accept", "decline", "cancel", "start", "complete"])(
     "passes %s to the use case",
     async (action) => {
       const res = await PATCH(json("PATCH", { action }), ctx(id));
@@ -133,7 +133,7 @@ describe("PATCH /api/v1/mentorships/:id", () => {
   });
 
   it.each([
-    ["an unknown action", { action: "start" }],
+    ["an unknown action", { action: "reopen" }],
     ["an empty body", {}],
     ["an extra field", { action: "accept", state: "ACTIVE" }],
   ])("refuses %s", async (_l, body) => {

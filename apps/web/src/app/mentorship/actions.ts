@@ -11,7 +11,9 @@ import {
 import type { ActionResult } from "@/lib/action-result";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import type { MentorshipAction } from "@/modules/mentorship";
 
+const ACTIONS = ["accept", "decline", "cancel", "start", "complete"];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function parseId(field: string, value: string): string {
@@ -57,11 +59,11 @@ export async function requestMentorshipAction(
 
 export async function transitionMentorshipAction(
   mentorshipId: string,
-  action: "accept" | "decline" | "cancel",
+  action: MentorshipAction,
   note?: string
 ): Promise<ActionResult<{ state: string }>> {
   return runAction(async () => {
-    if (!["accept", "decline", "cancel"].includes(action)) {
+    if (!ACTIONS.includes(action)) {
       throw new ValidationError();
     }
     const result = await transitionMentorship({

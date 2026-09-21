@@ -293,6 +293,67 @@ describe("mentorship lifecycle against real PostgreSQL", () => {
     }
   });
 
+  it("after complete the pair may request again (history, not reuse) and the freed slot lets a refused accept succeed", async () => {
+    const { request, transition } = build();
+    const m = await mentor("Mentor Free", { maxMentees: 1 });
+    const s1 = await student("Student One");
+    const s2 = await student("Student Two");
+
+    const first = await request({
+      actor: actor(s1),
+      mentorId: m,
+      input: { message: "hi" },
+    });
+    const second = await request({
+      actor: actor(s2),
+      mentorId: m,
+      input: { message: "hi" },
+    });
+    await transition({
+      actor: actor(m),
+      mentorshipId: first.mentorshipId,
+      action: "accept",
+    });
+    await transition({
+      actor: actor(m),
+      mentorshipId: first.mentorshipId,
+      action: "start",
+    });
+    expect(
+      await code(
+        transition({
+          actor: actor(m),
+          mentorshipId: second.mentorshipId,
+          action: "accept",
+        })
+      )
+    ).toBe("MENTOR_AT_CAPACITY");
+
+    await transition({
+      actor: actor(m),
+      mentorshipId: first.mentorshipId,
+      action: "complete",
+    });
+    const again = await request({
+      actor: actor(s1),
+      mentorId: m,
+      input: { message: "more" },
+    });
+    expect(again.mentorshipId).not.toBe(first.mentorshipId);
+    expect(
+      await code(
+        transition({
+          actor: actor(m),
+          mentorshipId: second.mentorshipId,
+          action: "accept",
+        })
+      )
+    ).toBe("ok");
+    expect(await db.prisma.mentorship.count({ where: { menteeId: s1 } })).toBe(
+      2
+    );
+  });
+
   it("atomicity: a store whose outbox.add throws leaves no new row and no state change", async () => {
     const { request: requestOk } = build();
     const m = await mentor("Mentor Atomic");
