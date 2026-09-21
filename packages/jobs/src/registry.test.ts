@@ -47,4 +47,36 @@ describe("registry", () => {
       ).toBe(false);
     }
   });
+
+  it("every mentorship.* event is an outbox event, keyed by its own name, on the default queue", () => {
+    const mentorshipTypes = [
+      "mentorship.requested",
+      "mentorship.accepted",
+      "mentorship.declined",
+      "mentorship.cancelled",
+      "mentorship.started",
+      "mentorship.completed",
+    ] as const;
+    for (const type of mentorshipTypes) {
+      expect(isOutboxEventType(type)).toBe(true);
+      expect(OUTBOX_EVENTS[type].name).toBe(type);
+      expect(OUTBOX_EVENTS[type].queue).toBe("default");
+    }
+  });
+
+  it("mentorship.* payload is ids-only: an extra key or a non-uuid id fails schema.safeParse", () => {
+    const payload = {
+      v: 1,
+      mentorshipId: crypto.randomUUID(),
+      mentorId: crypto.randomUUID(),
+      menteeId: crypto.randomUUID(),
+      actorId: crypto.randomUUID(),
+    };
+    const schema = OUTBOX_EVENTS["mentorship.requested"].schema;
+    expect(schema.safeParse(payload).success).toBe(true);
+    expect(schema.safeParse({ ...payload, message: "hi" }).success).toBe(false);
+    expect(
+      schema.safeParse({ ...payload, mentorshipId: "not-a-uuid" }).success
+    ).toBe(false);
+  });
 });

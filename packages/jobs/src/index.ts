@@ -6,6 +6,8 @@ export { computeBackoffMs } from "./backoff.ts";
 export { DeferJobError, PermanentJobError } from "./errors.ts";
 export { connectionAccepted, connectionRequested } from "./connection.ts";
 export type { ConnectionEventPayload } from "./connection.ts";
+export { mentorshipJobs } from "./mentorship.ts";
+export type { MentorshipEventPayload } from "./mentorship.ts";
 export { emailSend, emailSendPayload } from "./email.ts";
 export type { EmailSendPayload } from "./email.ts";
 export { idempotencySweep, idempotencySweepPayload } from "./idempotency.ts";

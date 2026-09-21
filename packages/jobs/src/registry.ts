@@ -2,6 +2,7 @@ import type { PayloadOf } from "./define-job.ts";
 import { connectionAccepted, connectionRequested } from "./connection.ts";
 import { idempotencySweep } from "./idempotency.ts";
 import { emailSend } from "./email.ts";
+import { mentorshipJobs } from "./mentorship.ts";
 import { outboxPrune } from "./scheduled.ts";
 import { uploadScan, uploadSweep } from "./upload.ts";
 
@@ -11,6 +12,7 @@ export const OUTBOX_EVENTS = {
   "connection.requested": connectionRequested,
   "connection.accepted": connectionAccepted,
   "upload.scan": uploadScan,
+  ...mentorshipJobs,
 } as const;
 
 /** Every job the worker knows, including scheduled ones that no outbox event produces. */

@@ -10,6 +10,7 @@ import {
   connectionRequested,
   emailSend,
   idempotencySweep,
+  mentorshipJobs,
   outboxPrune,
   uploadScan,
   uploadSweep,
@@ -33,6 +34,7 @@ import type { Readiness } from "./health.ts";
 import { createConnectionEventProcessor } from "./processors/connection-event.ts";
 import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
+import { createMentorshipEventProcessor } from "./processors/mentorship-event.ts";
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
 import { createUploadScanProcessor } from "./processors/upload-scan.ts";
 import { createUploadSweepProcessor } from "./processors/upload-sweep.ts";
@@ -126,6 +128,9 @@ export function composeWorker(
       [uploadScanJob.name]: uploadScanJob,
       [connectionRequested.name]: connectionRequested,
       [connectionAccepted.name]: connectionAccepted,
+      ...Object.fromEntries(
+        Object.values(mentorshipJobs).map((job) => [job.name, job])
+      ),
     },
     logger,
     metrics,
@@ -146,6 +151,12 @@ export function composeWorker(
       registerJob(
         connectionAccepted,
         createConnectionEventProcessor("accepted")
+      ),
+      ...Object.values(mentorshipJobs).map((job) =>
+        registerJob(
+          job,
+          createMentorshipEventProcessor(job.name.slice("mentorship.".length))
+        )
       ),
       registerJob(
         uploadScanJob,
