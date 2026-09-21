@@ -9,10 +9,17 @@ export const IMAGE_OUTPUT = { size: 512, format: "webp" } as const;
 
 export type UploadPurpose = "PROFILE_PHOTO";
 
+export type UploadRuleCode =
+  "UPLOAD_TYPE_NOT_ALLOWED" | "UPLOAD_TOO_LARGE" | "UPLOAD_INVALID_SIZE";
+
+/** Carries a `code` so the application layer maps to the exact error catalogue entry, never by sniffing the message. */
 export class UploadNotAllowedError extends Error {
-  constructor(message: string) {
+  readonly code: UploadRuleCode;
+
+  constructor(code: UploadRuleCode, message: string) {
     super(message);
     this.name = "UploadNotAllowedError";
+    this.code = code;
   }
 }
 
@@ -24,14 +31,19 @@ export function assertUploadable(input: {
 }): void {
   if (!(ALLOWED_MIME as readonly string[]).includes(input.mime)) {
     throw new UploadNotAllowedError(
+      "UPLOAD_TYPE_NOT_ALLOWED",
       `Unsupported type "${input.mime}". Allowed: ${ALLOWED_MIME.join(", ")}.`
     );
   }
   if (!Number.isInteger(input.size) || input.size <= 0) {
-    throw new UploadNotAllowedError("The file size must be a positive number.");
+    throw new UploadNotAllowedError(
+      "UPLOAD_INVALID_SIZE",
+      "The file size must be a positive number."
+    );
   }
   if (input.size > MAX_UPLOAD_BYTES) {
     throw new UploadNotAllowedError(
+      "UPLOAD_TOO_LARGE",
       `The file is too large. The limit is ${MAX_UPLOAD_BYTES / (1024 * 1024)} MB.`
     );
   }

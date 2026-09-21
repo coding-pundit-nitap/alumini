@@ -6,7 +6,17 @@ import {
   IMAGE_OUTPUT,
   MAX_OPEN_UPLOADS,
   MAX_UPLOAD_BYTES,
+  UploadNotAllowedError,
 } from "./upload-rules";
+
+const codeOf = (fn: () => void): string => {
+  try {
+    fn();
+  } catch (error) {
+    if (error instanceof UploadNotAllowedError) return error.code;
+  }
+  throw new Error("expected assertUploadable to throw UploadNotAllowedError");
+};
 
 describe("assertUploadable", () => {
   const valid = {
@@ -23,21 +33,25 @@ describe("assertUploadable", () => {
     expect(() => assertUploadable({ ...valid, mime })).not.toThrow();
   });
 
-  it("rejects a disallowed type", () => {
-    expect(() =>
-      assertUploadable({ ...valid, mime: "application/pdf" })
-    ).toThrow(/type/i);
+  it("rejects a disallowed type, coded UPLOAD_TYPE_NOT_ALLOWED", () => {
+    expect(
+      codeOf(() => assertUploadable({ ...valid, mime: "application/pdf" }))
+    ).toBe("UPLOAD_TYPE_NOT_ALLOWED");
   });
 
-  it("rejects a size of zero or below", () => {
-    expect(() => assertUploadable({ ...valid, size: 0 })).toThrow(/size/i);
-    expect(() => assertUploadable({ ...valid, size: -1 })).toThrow(/size/i);
+  it("rejects a size of zero or below, coded UPLOAD_INVALID_SIZE", () => {
+    expect(codeOf(() => assertUploadable({ ...valid, size: 0 }))).toBe(
+      "UPLOAD_INVALID_SIZE"
+    );
+    expect(codeOf(() => assertUploadable({ ...valid, size: -1 }))).toBe(
+      "UPLOAD_INVALID_SIZE"
+    );
   });
 
-  it("rejects a size over the cap, and accepts exactly the cap", () => {
-    expect(() =>
-      assertUploadable({ ...valid, size: MAX_UPLOAD_BYTES + 1 })
-    ).toThrow(/too large/i);
+  it("rejects a size over the cap (coded UPLOAD_TOO_LARGE), and accepts exactly the cap", () => {
+    expect(
+      codeOf(() => assertUploadable({ ...valid, size: MAX_UPLOAD_BYTES + 1 }))
+    ).toBe("UPLOAD_TOO_LARGE");
     expect(() =>
       assertUploadable({ ...valid, size: MAX_UPLOAD_BYTES })
     ).not.toThrow();

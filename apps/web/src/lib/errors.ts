@@ -81,6 +81,27 @@ export const ERROR_CATALOG: Record<
     status: 409,
     message: "That already exists on your profile.",
   },
+  UPLOAD_TYPE_NOT_ALLOWED: {
+    status: 400,
+    message: "That file type is not allowed. Use a JPEG, PNG or WebP image.",
+  },
+  UPLOAD_TOO_LARGE: {
+    status: 400,
+    message: "The file is too large.",
+  },
+  UPLOAD_LIMIT_REACHED: {
+    status: 409,
+    message:
+      "You have too many uploads in progress. Wait for one to finish, or remove one.",
+  },
+  UPLOAD_MISMATCH: {
+    status: 400,
+    message: "The uploaded file does not match what was declared.",
+  },
+  UPLOAD_NOT_READY: {
+    status: 409,
+    message: "This upload is not ready to be used yet.",
+  },
   REQUEST_IN_PROGRESS: {
     status: 409,
     message: "A request with this idempotency key is still being processed.",
