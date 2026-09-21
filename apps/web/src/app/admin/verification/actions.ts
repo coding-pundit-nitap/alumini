@@ -2,14 +2,10 @@
 
 import { runAction } from "@/app/_actions/run-action";
 import type { ActionResult } from "@/lib/action-result";
-import { ValidationError } from "@/lib/errors";
-import { pickFields } from "@/lib/form-data";
 import {
-  DECISION_FIELDS,
   decideVerificationRequest,
-  decisionSchema,
   getActor,
-  validate,
+  parseDecisionForm,
 } from "@/modules/auth";
 
 /**
@@ -20,24 +16,12 @@ export async function decideVerificationAction(
   formData: FormData
 ): Promise<ActionResult<{ outcome: "decided" | "already_decided" }>> {
   return runAction(async () => {
-    const parsed = validate(
-      decisionSchema,
-      pickFields(formData, DECISION_FIELDS)
-    );
-    if (!parsed.ok) {
-      throw new ValidationError({
-        details: Object.entries(parsed.errors).map(([field, message]) => ({
-          field,
-          code: "INVALID",
-          message,
-        })),
-      });
-    }
+    const { requestId, decision, note } = parseDecisionForm(formData);
     return decideVerificationRequest({
       actor: await getActor(),
-      requestId: parsed.data.requestId,
-      decision: parsed.data.decision,
-      note: parsed.data.note,
+      requestId,
+      decision,
+      note,
     });
   });
 }

@@ -7,40 +7,25 @@ const mocks = vi.hoisted(() => ({
   }),
   getActor: vi.fn(),
   submit: vi.fn(),
+  parse: vi.fn(),
 }));
 vi.mock("next/headers", () => ({ headers: async () => mocks.headers }));
-// The schemas are real; only the composed use case and getActor are replaced. Relative paths: a deep
-// `@/modules/*/*` alias is forbidden by the boundary lint rule.
-vi.mock("@/modules/auth", async () => {
-  const schemas =
-    await import("../../../modules/auth/presentation/api/verification-schemas");
-  const forms = await import("../../../modules/auth/presentation/api/schemas");
-  return {
-    getActor: mocks.getActor,
-    submitVerificationRequest: mocks.submit,
-    EVIDENCE_FIELDS: schemas.EVIDENCE_FIELDS,
-    evidenceSchema: schemas.evidenceSchema,
-    validate: forms.validate,
-  };
-});
+vi.mock("@/modules/auth", () => ({
+  getActor: mocks.getActor,
+  submitVerificationRequest: mocks.submit,
+  parseEvidenceForm: mocks.parse,
+}));
 
-import { AuthorizationError } from "@/lib/errors";
+import { AuthorizationError, ValidationError } from "@/lib/errors";
 
 import { submitVerificationAction } from "./actions";
 
-const uuid = "11111111-1111-4111-8111-111111111111";
-const form = (extra: Record<string, string> = {}) => {
-  const data = new FormData();
-  const fields = {
-    rollNumber: "NITAP-2019-042",
-    departmentId: uuid,
-    degreeId: uuid,
-    graduationYear: "2019",
-    supportingInfo: "",
-    ...extra,
-  };
-  for (const [key, value] of Object.entries(fields)) data.set(key, value);
-  return data;
+const input = {
+  rollNumber: "NITAP-2019-042",
+  departmentId: "d",
+  degreeId: "g",
+  graduationYear: 2019,
+  supportingInfo: null,
 };
 
 beforeEach(() => {
@@ -48,50 +33,44 @@ beforeEach(() => {
     .mockReset()
     .mockResolvedValue({ userId: "u1", accountState: "PENDING" });
   mocks.submit.mockReset().mockResolvedValue({ requestId: "r1" });
+  mocks.parse.mockReset().mockReturnValue(input);
 });
 
 describe("submitVerificationAction", () => {
-  it("calls the use case with the caller, the client IP and the validated evidence", async () => {
-    const result = await submitVerificationAction(form());
+  it("calls the use case with the session's actor, the client IP and the parsed evidence", async () => {
+    const form = new FormData();
+
+    const result = await submitVerificationAction(form);
 
     expect(result).toEqual({ ok: true, data: { requestId: "r1" } });
+    expect(mocks.parse).toHaveBeenCalledWith(form);
     expect(mocks.submit).toHaveBeenCalledWith({
       actor: { userId: "u1", accountState: "PENDING" },
       clientIp: "203.0.113.5",
-      input: {
-        rollNumber: "NITAP-2019-042",
-        departmentId: uuid,
-        degreeId: uuid,
-        graduationYear: 2019,
-        supportingInfo: null,
-      },
+      input,
     });
   });
 
-  it("ignores a forged userId or status field: they never reach the use case", async () => {
-    await submitVerificationAction(
-      form({ userId: "someone-else", status: "APPROVED", reviewedBy: "x" })
-    );
+  it("returns per-field messages and never calls the use case for invalid input", async () => {
+    mocks.parse.mockImplementation(() => {
+      throw new ValidationError({
+        details: [
+          {
+            field: "rollNumber",
+            code: "INVALID",
+            message: "Enter your roll number.",
+          },
+        ],
+      });
+    });
 
-    const input = mocks.submit.mock.calls[0]![0].input;
-    expect(input).not.toHaveProperty("userId");
-    expect(input).not.toHaveProperty("status");
-    expect(mocks.submit.mock.calls[0]![0].actor.userId).toBe("u1");
-  });
-
-  it("returns per-field messages and does not call the use case for invalid input", async () => {
-    const result = await submitVerificationAction(
-      form({ graduationYear: "1999", rollNumber: "" })
-    );
+    const result = await submitVerificationAction(new FormData());
 
     expect(result).toMatchObject({
       ok: false,
       error: {
         code: "VALIDATION_FAILED",
-        fields: {
-          graduationYear: expect.any(String),
-          rollNumber: expect.any(String),
-        },
+        fields: { rollNumber: "Enter your roll number." },
       },
     });
     expect(mocks.submit).not.toHaveBeenCalled();
@@ -101,7 +80,7 @@ describe("submitVerificationAction", () => {
     mocks.submit.mockRejectedValue(
       new AuthorizationError({ code: "VERIFICATION_LOCKED" })
     );
-    expect(await submitVerificationAction(form())).toMatchObject({
+    expect(await submitVerificationAction(new FormData())).toMatchObject({
       ok: false,
       error: { code: "VERIFICATION_LOCKED" },
     });

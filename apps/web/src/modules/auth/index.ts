@@ -31,13 +31,10 @@ export type {
 export { OnboardingPanel } from "./presentation/ui/onboarding-panel";
 export { EvidenceForm } from "./presentation/ui/evidence-form";
 export type { ReferenceOption } from "./application/verification-store";
-// The Server Actions in app/ read forms through these (app/ may reach a module only through its index).
-export { validate } from "./presentation/api/schemas";
+// Server Actions in app/ read forms through these (app/ may reach a module only through its index).
 export {
-  DECISION_FIELDS,
-  decisionSchema,
-  EVIDENCE_FIELDS,
-  evidenceSchema,
-} from "./presentation/api/verification-schemas";
+  parseDecisionForm,
+  parseEvidenceForm,
+} from "./presentation/api/verification-forms";
 export { DecisionForm } from "./presentation/ui/decision-form";
 export { ReviewQueue } from "./presentation/ui/review-queue";

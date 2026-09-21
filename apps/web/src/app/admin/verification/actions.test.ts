@@ -4,46 +4,36 @@ const mocks = vi.hoisted(() => ({
   headers: new Headers({ "x-request-id": "req-1" }),
   getActor: vi.fn(),
   decide: vi.fn(),
+  parse: vi.fn(),
 }));
 vi.mock("next/headers", () => ({ headers: async () => mocks.headers }));
-// The schemas are real; only the composed use case and getActor are replaced. Relative paths: a deep
-// `@/modules/*/*` alias is forbidden by the boundary lint rule.
-vi.mock("@/modules/auth", async () => {
-  const schemas =
-    await import("../../../modules/auth/presentation/api/verification-schemas");
-  const forms = await import("../../../modules/auth/presentation/api/schemas");
-  return {
-    getActor: mocks.getActor,
-    decideVerificationRequest: mocks.decide,
-    DECISION_FIELDS: schemas.DECISION_FIELDS,
-    decisionSchema: schemas.decisionSchema,
-    validate: forms.validate,
-  };
-});
+vi.mock("@/modules/auth", () => ({
+  getActor: mocks.getActor,
+  decideVerificationRequest: mocks.decide,
+  parseDecisionForm: mocks.parse,
+}));
 
-import { AuthorizationError } from "@/lib/errors";
+import { AuthorizationError, ValidationError } from "@/lib/errors";
 
 import { decideVerificationAction } from "./actions";
 
 const id = "11111111-1111-4111-8111-111111111111";
-const form = (fields: Record<string, string>) => {
-  const data = new FormData();
-  for (const [key, value] of Object.entries(fields)) data.set(key, value);
-  return data;
-};
 
 beforeEach(() => {
   mocks.getActor
     .mockReset()
     .mockResolvedValue({ userId: "rev", accountState: "VERIFIED" });
   mocks.decide.mockReset().mockResolvedValue({ outcome: "decided" });
+  mocks.parse.mockReset().mockReturnValue({
+    requestId: id,
+    decision: "REJECTED",
+    note: "Not found.",
+  });
 });
 
 describe("decideVerificationAction", () => {
-  it("calls the use case with the caller and the validated decision", async () => {
-    const result = await decideVerificationAction(
-      form({ requestId: id, decision: "REJECTED", note: "Not found." })
-    );
+  it("calls the use case with the session's actor and the parsed decision, and nothing else", async () => {
+    const result = await decideVerificationAction(new FormData());
 
     expect(result).toEqual({ ok: true, data: { outcome: "decided" } });
     expect(mocks.decide).toHaveBeenCalledWith({
@@ -54,24 +44,16 @@ describe("decideVerificationAction", () => {
     });
   });
 
-  it("ignores a forged reviewer or status field", async () => {
-    await decideVerificationAction(
-      form({
-        requestId: id,
-        decision: "APPROVED",
-        reviewedBy: "someone",
-        status: "APPROVED",
-      })
-    );
-    expect(mocks.decide.mock.calls[0]![0]).not.toHaveProperty("reviewedBy");
-    expect(mocks.decide.mock.calls[0]![0].actor.userId).toBe("rev");
-  });
+  it("returns a validation failure without calling the use case (no auto-approve value exists)", async () => {
+    mocks.parse.mockImplementation(() => {
+      throw new ValidationError({
+        details: [
+          { field: "decision", code: "INVALID", message: "Invalid option" },
+        ],
+      });
+    });
 
-  it("refuses an unknown decision without calling the use case (there is no auto-approve value)", async () => {
-    const result = await decideVerificationAction(
-      form({ requestId: id, decision: "AUTO_APPROVED" })
-    );
-    expect(result).toMatchObject({
+    expect(await decideVerificationAction(new FormData())).toMatchObject({
       ok: false,
       error: { code: "VALIDATION_FAILED" },
     });
@@ -82,11 +64,7 @@ describe("decideVerificationAction", () => {
     mocks.decide.mockRejectedValue(
       new AuthorizationError({ code: "SELF_REVIEW_FORBIDDEN" })
     );
-    expect(
-      await decideVerificationAction(
-        form({ requestId: id, decision: "APPROVED" })
-      )
-    ).toMatchObject({
+    expect(await decideVerificationAction(new FormData())).toMatchObject({
       ok: false,
       error: { code: "SELF_REVIEW_FORBIDDEN" },
     });
