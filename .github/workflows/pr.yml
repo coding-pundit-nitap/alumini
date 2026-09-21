@@ -27,6 +27,8 @@ env:
   QUEUE_REDIS_URL: redis://localhost:6380
   SMTP_URL: smtp://localhost:1025
   EMAIL_FROM: NITAP <no-reply@alumni.test>
+  INSTITUTIONAL_EMAIL_POLICY: '{"nitap.ac.in":{"role":"STUDENT","autoVerify":true}}'
+  MAILPIT_URL: http://localhost:8025
 
 jobs:
   static:
@@ -174,6 +176,18 @@ jobs:
         options: >-
           --health-cmd "redis-cli ping" --health-interval 5s
           --health-timeout 3s --health-retries 10
+      queue-redis:
+        image: redis:7-alpine
+        ports: ["6380:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+      mailpit:
+        image: axllent/mailpit:latest
+        ports: ["1025:1025", "8025:8025"]
+        options: >-
+          --health-cmd "/mailpit readyz" --health-interval 5s
+          --health-timeout 3s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -183,6 +197,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:deploy
+      # Sign-up assigns roles, which the seed creates.
+      - run: pnpm --filter @nitap/database db:seed
       - run: pnpm --filter @nitap/web exec playwright install --with-deps chromium
       # Runs against `next dev` for now; it moves to the built images with the Docker pipeline (Phase 15).
       - run: pnpm test:e2e

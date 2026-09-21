@@ -20,10 +20,21 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  // The journeys need the worker too: emails go outbox → relay → worker → Mailpit. PostgreSQL, both
+  // Redis instances and Mailpit come from `pnpm docker:up` (local) or service containers (CI).
+  webServer: [
+    {
+      command: "pnpm dev",
+      url: "http://localhost:3000/health/live",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+    },
+    {
+      command: "pnpm --filter @nitap/worker dev",
+      cwd: "../..",
+      url: `http://localhost:${process.env.WORKER_HEALTH_PORT ?? "3001"}/health/live`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60000,
+    },
+  ],
 });
