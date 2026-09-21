@@ -1,4 +1,5 @@
 import { createLogger, getMetrics } from "@nitap/observability";
+import { createS3StoragePort, loadStorageEnv } from "@nitap/storage";
 
 import { composeWorker } from "./compose.ts";
 import { loadEnv } from "./env.ts";
@@ -6,6 +7,7 @@ import { startHealthServer } from "./health.ts";
 import { createPrismaClient } from "./prisma.ts";
 
 const env = loadEnv(process.env);
+const storage = createS3StoragePort(loadStorageEnv(process.env));
 const logger = createLogger({
   level: env.LOG_LEVEL ?? "info",
   service: "worker",
@@ -20,6 +22,7 @@ const worker = composeWorker({
   prisma,
   logger,
   metrics: getMetrics(),
+  storage,
   config: {
     queueRedisUrl: env.QUEUE_REDIS_URL,
     smtpUrl: env.SMTP_URL,

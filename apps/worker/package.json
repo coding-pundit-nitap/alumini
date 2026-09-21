@@ -20,8 +20,10 @@
     "@nitap/jobs": "workspace:*",
     "@nitap/observability": "workspace:*",
     "@nitap/queue": "workspace:*",
+    "@nitap/storage": "workspace:*",
     "@prisma/adapter-pg": "7.10.0",
     "ioredis": "6.0.0",
+    "sharp": "^0.35.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {

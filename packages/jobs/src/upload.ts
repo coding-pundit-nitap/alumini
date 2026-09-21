@@ -7,6 +7,13 @@ export const uploadScanPayload = z
   .strict();
 export type UploadScanPayload = z.infer<typeof uploadScanPayload>;
 
+/**
+ * The scan's fixed re-encode target (spec 3C). Lives here, not in the web app's domain or the worker,
+ * because both need it: web's upload rules describe the product decision, the worker's `upload.scan`
+ * processor produces it. One source of truth in the shared contract package.
+ */
+export const IMAGE_OUTPUT = { size: 512, format: "webp" } as const;
+
 /** Scans and re-encodes a pending upload (spec 3C). Looks the row up by id; a row already READY or
  * REJECTED is a no-op, so a re-delivered job is harmless. */
 export const uploadScan = defineJob({

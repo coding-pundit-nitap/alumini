@@ -4,6 +4,7 @@ import { createOutboxWriter } from "@nitap/database/outbox";
 import { defineJob, emailSend } from "@nitap/jobs";
 import { createQueueAdmin } from "@nitap/queue";
 import type { QueuePort } from "@nitap/queue";
+import { createFakeStoragePort } from "@nitap/storage";
 import {
   createRedisNamespace,
   createTestDatabase,
@@ -54,6 +55,7 @@ describe("outbox → relay → queue → worker → SMTP (real PostgreSQL, Redis
         prisma: db.prisma,
         logger: silentLogger(),
         metrics,
+        storage: createFakeStoragePort(),
         config: {
           queueRedisUrl: ns.url,
           queuePrefix: ns.prefix,

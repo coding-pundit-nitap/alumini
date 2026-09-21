@@ -8,6 +8,7 @@ export { emailSend, emailSendPayload } from "./email.ts";
 export type { EmailSendPayload } from "./email.ts";
 export { outboxPrune } from "./scheduled.ts";
 export {
+  IMAGE_OUTPUT,
   uploadScan,
   uploadScanPayload,
   uploadSweep,

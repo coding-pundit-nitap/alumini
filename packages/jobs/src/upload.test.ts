@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { uploadScan, uploadScanPayload, uploadSweep } from "./upload.ts";
+import {
+  IMAGE_OUTPUT,
+  uploadScan,
+  uploadScanPayload,
+  uploadSweep,
+} from "./upload.ts";
 
 describe("upload.scan", () => {
   it("accepts a valid payload", () => {
@@ -38,5 +43,11 @@ describe("upload.sweep", () => {
     expect(uploadSweep.schema.safeParse({ v: 1, extra: "x" }).success).toBe(
       false
     );
+  });
+});
+
+describe("IMAGE_OUTPUT", () => {
+  it("is a fixed 512px webp", () => {
+    expect(IMAGE_OUTPUT).toEqual({ size: 512, format: "webp" });
   });
 });

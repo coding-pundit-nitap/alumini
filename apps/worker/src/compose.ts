@@ -2,9 +2,14 @@ import { Redis } from "ioredis";
 
 import type { PrismaClient } from "@nitap/database";
 import { createOutboxStore } from "@nitap/database/outbox";
+import { createUploadStore } from "@nitap/database/uploads";
 import { createSmtpEmailPort } from "@nitap/email";
-import { emailSend, outboxPrune } from "@nitap/jobs";
-import type { EmailSendPayload, JobDefinition } from "@nitap/jobs";
+import { emailSend, outboxPrune, uploadScan, uploadSweep } from "@nitap/jobs";
+import type {
+  EmailSendPayload,
+  JobDefinition,
+  UploadScanPayload,
+} from "@nitap/jobs";
 import {
   createBullQueuePort,
   createRelay,
@@ -13,10 +18,14 @@ import {
 } from "@nitap/queue";
 import type { QueuePort, Relay, WorkerRuntime } from "@nitap/queue";
 import type { Logger, Metrics } from "@nitap/observability";
+import type { StoragePort } from "@nitap/storage";
 
 import type { Readiness } from "./health.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
+import { createUploadScanProcessor } from "./processors/upload-scan.ts";
+import { createUploadSweepProcessor } from "./processors/upload-sweep.ts";
+import { passthroughScanner } from "./scanner.ts";
 
 export type WorkerConfig = {
   queueRedisUrl: string;
@@ -30,6 +39,8 @@ export type WorkerConfig = {
 export type ComposeOverrides = {
   /** Tests use a copy of the definition with millisecond retries. */
   emailJob?: JobDefinition<string, EmailSendPayload>;
+  /** Tests use a copy of the definition with millisecond retries. */
+  uploadScanJob?: JobDefinition<string, UploadScanPayload>;
   /** Tests wrap the queue to simulate a Redis outage. */
   wrapQueue?: (queue: QueuePort) => QueuePort;
   relay?: {
@@ -66,14 +77,17 @@ export function composeWorker(
     config: WorkerConfig;
     logger: Logger;
     metrics: Metrics;
+    storage: StoragePort;
   },
   overrides: ComposeOverrides = {}
 ): ComposedWorker {
-  const { prisma, config, logger, metrics } = deps;
+  const { prisma, config, logger, metrics, storage } = deps;
   const emailJob = overrides.emailJob ?? emailSend;
+  const uploadScanJob = overrides.uploadScanJob ?? uploadScan;
   const pollIntervalMs = overrides.relay?.pollIntervalMs ?? 1_000;
 
   const store = createOutboxStore(prisma);
+  const uploads = createUploadStore();
   const email = createSmtpEmailPort({
     url: config.smtpUrl,
     from: config.emailFrom,
@@ -95,7 +109,7 @@ export function composeWorker(
   const relay = createRelay({
     store,
     queue,
-    events: { [emailJob.name]: emailJob },
+    events: { [emailJob.name]: emailJob, [uploadScanJob.name]: uploadScanJob },
     logger,
     metrics,
     ...overrides.relay,
@@ -108,6 +122,30 @@ export function composeWorker(
     jobs: [
       registerJob(emailJob, createEmailSendProcessor(email)),
       registerJob(outboxPrune, createOutboxPruneProcessor(store)),
+      registerJob(
+        uploadScanJob,
+        createUploadScanProcessor({
+          store: {
+            find: (id) => uploads.find(prisma, id),
+            markReady: (id, key) => uploads.markReady(prisma, id, key),
+            markRejected: (id, reason) =>
+              uploads.markRejected(prisma, id, reason),
+          },
+          storage,
+          scanner: passthroughScanner,
+        })
+      ),
+      registerJob(
+        uploadSweep,
+        createUploadSweepProcessor({
+          store: {
+            listExpiredPending: (before, limit) =>
+              uploads.listExpiredPending(prisma, before, limit),
+            remove: (id) => uploads.remove(prisma, id),
+          },
+          storage,
+        })
+      ),
     ],
     queueOverrides: {
       email: {
@@ -128,6 +166,11 @@ export function composeWorker(
       // Fixed id: every worker upserts the same schedule, so N workers never multiply it.
       await rawQueue.upsertSchedule(outboxPrune, {
         id: "outbox-prune",
+        everyMs: DAY_MS,
+        payload: { v: 1 },
+      });
+      await rawQueue.upsertSchedule(uploadSweep, {
+        id: "upload-sweep",
         everyMs: DAY_MS,
         payload: { v: 1 },
       });

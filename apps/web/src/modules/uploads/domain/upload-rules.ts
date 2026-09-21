@@ -1,11 +1,14 @@
+import { IMAGE_OUTPUT } from "@nitap/jobs";
+
 export const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp"] as const;
 export type AllowedMime = (typeof ALLOWED_MIME)[number];
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export const MAX_OPEN_UPLOADS = 5;
 
-/** The worker's fixed re-encode target: owned here as a product decision, not a worker implementation detail. */
-export const IMAGE_OUTPUT = { size: 512, format: "webp" } as const;
+// The worker's fixed re-encode target lives in @nitap/jobs (both web and the worker need it); re-exported
+// here so the rest of this module reads from one place.
+export { IMAGE_OUTPUT };
 
 export type UploadPurpose = "PROFILE_PHOTO";
 
