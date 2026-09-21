@@ -178,8 +178,10 @@ async function buildCases(
 async function dropConstraint(prisma: TestDatabase["prisma"], name: string) {
   const { table } = DROP[name as keyof typeof DROP] ?? {};
   if (table) {
+    // CASCADE: profile_pkey is referenced by the Phase 3B detail tables' foreign keys. This runs in a
+    // disposable per-test database, and the test only proves the violation goes through once dropped.
     await prisma.$executeRawUnsafe(
-      `ALTER TABLE "${table}" DROP CONSTRAINT IF EXISTS "${name}"`
+      `ALTER TABLE "${table}" DROP CONSTRAINT IF EXISTS "${name}" CASCADE`
     );
   }
   await prisma.$executeRawUnsafe(`DROP INDEX IF EXISTS "${name}"`);

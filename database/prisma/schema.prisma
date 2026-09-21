@@ -224,35 +224,109 @@ enum ProfileVisibility {
 }
 
 model Profile {
-  userId         String            @id @map("user_id") @db.Uuid
-  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName       String            @map("full_name")
-  headline       String?
-  bio            String?
+  userId               String             @id @map("user_id") @db.Uuid
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName             String             @map("full_name")
+  headline             String?
+  bio                  String?
   // Nullable: faculty, staff and pending accounts may have no institutional record.
   // Alumni-completeness (FR-PROFILE-004) is an application rule, enforced in Phase 3 — not here.
-  departmentId   String?           @map("department_id") @db.Uuid
-  department     Department?       @relation(fields: [departmentId], references: [id], onDelete: Restrict)
-  degreeId       String?           @map("degree_id") @db.Uuid
-  degree         Degree?           @relation(fields: [degreeId], references: [id], onDelete: Restrict)
+  departmentId         String?            @map("department_id") @db.Uuid
+  department           Department?        @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  degreeId             String?            @map("degree_id") @db.Uuid
+  degree               Degree?            @relation(fields: [degreeId], references: [id], onDelete: Restrict)
   // Static CHECK (2010-2100), never date-dependent — see ck_profile_graduation_year in this migration's SQL.
-  graduationYear Int?              @map("graduation_year")
-  location       String?
-  photoUrl       String?           @map("photo_url")
-  visibility     ProfileVisibility @default(MEMBERS_ONLY)
+  graduationYear       Int?               @map("graduation_year")
+  location             String?
+  photoUrl             String?            @map("photo_url")
+  visibility           ProfileVisibility  @default(MEMBERS_ONLY)
   // Per-section overrides (spec 3A). NULL inherits `visibility`; never looser than it. The CHECKs are in
   // the profile_privacy migration's SQL (ck_profile_*_visibility); Postgres compares enums by declaration order.
   contactVisibility    ProfileVisibility? @map("contact_visibility")
   locationVisibility   ProfileVisibility? @map("location_visibility")
   experienceVisibility ProfileVisibility? @map("experience_visibility")
   educationVisibility  ProfileVisibility? @map("education_visibility")
-  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  experience ProfileExperience[]
+  education  ProfileEducation[]
+  skills     ProfileSkill[]
+  links      ProfileLink[]
 
   @@index([departmentId, graduationYear])
   @@index([degreeId])
   @@index([graduationYear])
   @@map("profile")
+}
+
+enum ProfileLinkType {
+  LINKEDIN
+  GITHUB
+  TWITTER
+  WEBSITE
+  OTHER
+}
+
+/// Work history (spec 3B). CHECKs (dates, is_current <=> no end date, lengths) are in the profile_details migration.
+model ProfileExperience {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  profile     Profile   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  company     String
+  industry    String?
+  designation String
+  startDate   DateTime  @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
+  isCurrent   Boolean   @map("is_current")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([userId, isCurrent, startDate(sort: Desc)])
+  @@map("profile_experience")
+}
+
+/// Additional education (prior or later study). The institutional record stays on `profile` (FR-PROFILE-004).
+model ProfileEducation {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  profile       Profile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  institution   String
+  qualification String
+  fieldOfStudy  String?  @map("field_of_study")
+  startYear     Int      @map("start_year")
+  /// NULL = ongoing.
+  endYear       Int?     @map("end_year")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([userId, endYear(sort: Desc)])
+  @@map("profile_education")
+}
+
+/// Free-text skill, unique per member on lower(skill) (uq_profile_skill_user_lower, in the migration SQL).
+model ProfileSkill {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  profile   Profile  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  skill     String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("profile_skill")
+}
+
+model ProfileLink {
+  id        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String          @map("user_id") @db.Uuid
+  profile   Profile         @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  type      ProfileLinkType
+  url       String
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([userId, url], map: "uq_profile_link_user_url")
+  @@map("profile_link")
 }
 
 /// Transactional outbox (ADR-007). Written in the same transaction as a state change; a relay in the
