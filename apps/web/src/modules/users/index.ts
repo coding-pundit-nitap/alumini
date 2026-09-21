@@ -12,7 +12,6 @@ export { createPrismaLinkCollection } from "./infrastructure/prisma-link-collect
 export { createPrismaProfileStore } from "./infrastructure/prisma-profile-store";
 export { createPrismaSkillCollection } from "./infrastructure/prisma-skill-collection";
 export { createProfileAudit } from "./infrastructure/profile-audit";
-export { noConnectionsLookup } from "./infrastructure/no-connections-lookup";
 export type { ProfileRecord, ProfileView } from "./domain/profile";
 export {
   EDUCATION_FIELDS,

@@ -12,7 +12,6 @@ import { createGetProfileForViewer } from "@/modules/users/application/get-profi
 import type { ProfileAudit } from "@/modules/users/application/profile-audit";
 import { createUpdateOwnPrivacy } from "@/modules/users/application/update-own-privacy";
 import { createUpdateOwnProfile } from "@/modules/users/application/update-own-profile";
-import { noConnectionsLookup } from "@/modules/users/infrastructure/no-connections-lookup";
 import { createPrismaProfileStore } from "@/modules/users/infrastructure/prisma-profile-store";
 import { createProfileAudit } from "@/modules/users/infrastructure/profile-audit";
 
@@ -89,7 +88,7 @@ describe("users module against real PostgreSQL", () => {
       updatePrivacy: createUpdateOwnPrivacy({ store, authorize }),
       get: createGetProfileForViewer({
         store,
-        connections: noConnectionsLookup,
+        connections: { relation: async () => "none" as const },
         audit,
         can,
       }),

@@ -1,0 +1,67 @@
+import type {
+  ConnectionPatch,
+  ConnectionRow,
+  ConnectionState,
+} from "../domain/connection";
+
+/** The `connection.*` events the outbox carries (contracts in `@nitap/jobs`). Ids only. */
+export type ConnectionEvent = {
+  type: "connection.requested" | "connection.accepted";
+  payload: { v: 1; connectionId: string; actorId: string; recipientId: string };
+};
+
+export type NewConnection = ConnectionPatch & {
+  userAId: string;
+  userBId: string;
+};
+
+/**
+ * Everything a write does happens through one of these, inside ONE database transaction, so a row and its
+ * outbox event commit or roll back together (NFR-REL-002).
+ */
+export type ConnectionTx = {
+  findByPair(userAId: string, userBId: string): Promise<ConnectionRow | null>;
+  findById(id: string): Promise<ConnectionRow | null>;
+  /** The member's account state, or null when there is no such user. */
+  accountState(userId: string): Promise<string | null>;
+  /** Inserts the pair; null when the pair already exists (a concurrent request won). Never throws for that. */
+  insert(input: NewConnection): Promise<ConnectionRow | null>;
+  /** Guarded: only a row still in `from` moves. Null when it had already changed (or is gone). */
+  update(
+    id: string,
+    from: ConnectionState,
+    patch: ConnectionPatch
+  ): Promise<ConnectionRow | null>;
+  /** Guarded like `update`. False when the row had already changed. */
+  remove(id: string, from: ConnectionState): Promise<boolean>;
+  enqueue(event: ConnectionEvent): Promise<void>;
+};
+
+export type ConnectionStore = {
+  transaction<T>(work: (tx: ConnectionTx) => Promise<T>): Promise<T>;
+};
+
+export type ListedConnection = {
+  id: string;
+  state: ConnectionState;
+  /** Relative to the caller: who started it. */
+  direction: "INCOMING" | "OUTGOING";
+  user: { id: string; fullName: string; hasPhoto: boolean };
+  requestedAt: Date;
+  respondedAt: Date | null;
+};
+
+export type ListFilter = {
+  /** Never REJECTED: a rejection is not shown to the member who was rejected. */
+  state: Exclude<ConnectionState, "REJECTED">;
+  direction?: "INCOMING" | "OUTGOING";
+  limit: number;
+  after?: { requestedAt: Date; id: string };
+};
+
+/** Reads outside a transaction. */
+export type ConnectionQueries = {
+  between(viewerId: string, otherId: string): Promise<ConnectionRow | null>;
+  /** Newest first, at most `limit` rows. A BLOCKED listing holds only the caller's own blocks. */
+  list(userId: string, filter: ListFilter): Promise<ListedConnection[]>;
+};

@@ -4,6 +4,8 @@ export { defineJob } from "./define-job.ts";
 export type { JobDefinition, PayloadOf, RetryPolicy } from "./define-job.ts";
 export { computeBackoffMs } from "./backoff.ts";
 export { DeferJobError, PermanentJobError } from "./errors.ts";
+export { connectionAccepted, connectionRequested } from "./connection.ts";
+export type { ConnectionEventPayload } from "./connection.ts";
 export { emailSend, emailSendPayload } from "./email.ts";
 export type { EmailSendPayload } from "./email.ts";
 export { outboxPrune } from "./scheduled.ts";

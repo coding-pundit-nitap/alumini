@@ -55,15 +55,33 @@ function relevanceScore(query: DirectoryQuery): Prisma.Sql {
 export function createPostgresSearch(prisma: PrismaClient): SearchPort {
   return {
     async searchPeople(query, viewer) {
-      const reach = Prisma.sql`${viewer.reach === "everything" ? "PRIVATE" : "MEMBERS_ONLY"}::"ProfileVisibility"`;
-      const sectionVisible = (column: string) =>
-        Prisma.sql`COALESCE(${Prisma.raw(`p.${column}_visibility`)}, p.visibility) <= ${reach}`;
+      const everything = viewer.reach === "everything";
+      const reach = Prisma.sql`${everything ? "PRIVATE" : "MEMBERS_ONLY"}::"ProfileVisibility"`;
+      // The pair's connection row, by canonical order (uq_connection_pair serves the lookup).
+      const pairWith = (alias: string, state: "ACCEPTED" | "BLOCKED") =>
+        Prisma.sql`EXISTS (SELECT 1 FROM connection c
+          WHERE c.user_a_id = LEAST(${viewer.userId}::uuid, ${Prisma.raw(alias)}.user_id)
+            AND c.user_b_id = GREATEST(${viewer.userId}::uuid, ${Prisma.raw(alias)}.user_id)
+            AND c.state = ${state}::"ConnectionState")`;
+      // A level is visible when it is within the viewer's reach, or it is CONNECTIONS_ONLY and the two are
+      // connected. Privileged readers ("everything") see all levels, as on the profile page.
+      const visibleAt = (level: Prisma.Sql, alias: string) =>
+        everything
+          ? Prisma.sql`${level} <= ${reach}`
+          : Prisma.sql`(${level} <= ${reach} OR (${level} = 'CONNECTIONS_ONLY'::"ProfileVisibility" AND ${pairWith(alias, "ACCEPTED")}))`;
+      const sectionVisible = (column: string, alias = "p") =>
+        visibleAt(
+          Prisma.sql`COALESCE(${Prisma.raw(`${alias}.${column}_visibility`)}, ${Prisma.raw(`${alias}.visibility`)})`,
+          alias
+        );
       const experienceVisible = sectionVisible("experience");
 
       const where: Prisma.Sql[] = [
         Prisma.sql`u.account_state = 'VERIFIED'`,
-        Prisma.sql`p.visibility <= ${reach}`,
+        visibleAt(Prisma.sql`p.visibility`, "p"),
       ];
+      // A block hides both members from each other, in either direction (RBAC §6.1).
+      if (!everything) where.push(Prisma.sql`NOT ${pairWith("p", "BLOCKED")}`);
 
       if (query.q) {
         const pattern = like(query.q);
@@ -75,9 +93,9 @@ export function createPostgresSearch(prisma: PrismaClient): SearchPort {
           UNION SELECT user_id FROM profile WHERE full_name %> ${query.q}
           UNION SELECT user_id FROM profile WHERE headline ILIKE ${pattern}
           UNION SELECT e.user_id FROM profile_experience e JOIN profile pe ON pe.user_id = e.user_id
-            WHERE e.company ILIKE ${pattern} AND COALESCE(pe.experience_visibility, pe.visibility) <= ${reach}
+            WHERE e.company ILIKE ${pattern} AND ${sectionVisible("experience", "pe")}
           UNION SELECT s.user_id FROM profile_skill s JOIN profile ps ON ps.user_id = s.user_id
-            WHERE s.skill ILIKE ${pattern} AND COALESCE(ps.experience_visibility, ps.visibility) <= ${reach}
+            WHERE s.skill ILIKE ${pattern} AND ${sectionVisible("experience", "ps")}
         )`);
       }
       if (query.department.length > 0) {

@@ -1,4 +1,5 @@
 import type { PayloadOf } from "./define-job.ts";
+import { connectionAccepted, connectionRequested } from "./connection.ts";
 import { emailSend } from "./email.ts";
 import { outboxPrune } from "./scheduled.ts";
 import { uploadScan, uploadSweep } from "./upload.ts";
@@ -6,6 +7,8 @@ import { uploadScan, uploadSweep } from "./upload.ts";
 /** Jobs a use case can request by writing an outbox event. In 2B an event type maps 1:1 to a job. */
 export const OUTBOX_EVENTS = {
   "email.send": emailSend,
+  "connection.requested": connectionRequested,
+  "connection.accepted": connectionAccepted,
   "upload.scan": uploadScan,
 } as const;
 

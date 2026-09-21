@@ -2,6 +2,7 @@ import { audit } from "@/infrastructure/audit";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { logger } from "@/infrastructure/observability";
 import { authorize, can } from "@/modules/auth";
+import { connectionLookup } from "./connections";
 import {
   createCollectionUseCases,
   createGetOwnProfile,
@@ -18,7 +19,6 @@ import {
   createUpdateProfilePhoto,
   educationClockProblems,
   experienceClockProblems,
-  noConnectionsLookup,
 } from "@/modules/users";
 
 /**
@@ -31,7 +31,7 @@ export const getOwnProfile = createGetOwnProfile({ store });
 
 export const getProfileForViewer = createGetProfileForViewer({
   store,
-  connections: noConnectionsLookup,
+  connections: connectionLookup,
   audit: createProfileAudit({ runner: transactionRunner, audit }),
   can,
   reportError: (error) =>
@@ -40,7 +40,7 @@ export const getProfileForViewer = createGetProfileForViewer({
 
 export const getProfilePhotoKey = createGetProfilePhotoKey({
   store,
-  connections: noConnectionsLookup,
+  connections: connectionLookup,
   can,
   reportError: (error) =>
     logger.warn("profile.connection_lookup_failed", { error }),

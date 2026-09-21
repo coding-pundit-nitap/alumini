@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { getConnectionStatus } from "@/composition/connections";
 import { getProfileForViewer } from "@/composition/users";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { ConnectionButton } from "@/modules/connections";
 import { ProfileCard } from "@/modules/users";
+
+import {
+  blockUserAction,
+  removeConnectionAction,
+  requestConnectionAction,
+  respondToConnectionAction,
+} from "@/app/connections/actions";
 
 export const metadata: Metadata = { title: "Member profile" };
 
@@ -29,9 +38,25 @@ export default async function MemberPage({
     throw error;
   }
 
+  // Only a verified member looking at someone else gets the connect controls.
+  const status =
+    actor && actor.accountState === "VERIFIED" && actor.userId !== userId
+      ? await getConnectionStatus({ actor, otherUserId: userId })
+      : null;
+
   return (
-    <div className="mx-auto w-full max-w-xl px-4 py-12">
+    <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-12">
       <ProfileCard view={view} />
+      {status ? (
+        <ConnectionButton
+          targetUserId={userId}
+          status={status}
+          requestAction={requestConnectionAction}
+          respondAction={respondToConnectionAction}
+          removeAction={removeConnectionAction}
+          blockAction={blockUserAction}
+        />
+      ) : null}
     </div>
   );
 }

@@ -14,6 +14,7 @@ const MODULE_DEPENDENCIES = {
   users: ["auth"],
   uploads: ["auth", "users"],
   directory: ["auth"],
+  connections: ["auth"],
 };
 
 const moduleDagRules = Object.entries(MODULE_DEPENDENCIES).map(

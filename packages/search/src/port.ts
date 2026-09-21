@@ -3,7 +3,8 @@ import type { DirectoryQuery } from "./query.ts";
 /**
  * Who is searching. `reach` is decided by the caller's authorization, not by the search engine:
  * `members` sees profiles at MEMBERS_ONLY or looser; `everything` (a privileged reader) sees all.
- * Phase 5 adds the viewer's connections here so CONNECTIONS_ONLY profiles can appear for them.
+ * The viewer's connections and blocks are NOT passed in (a member can have thousands): an adapter resolves them
+ * from `userId`, so CONNECTIONS_ONLY profiles appear for connections and a blocked pair never sees each other.
  */
 export type SearchViewer = { userId: string; reach: "members" | "everything" };
 

@@ -1,0 +1,35 @@
+import { z } from "zod";
+
+import { blockUser } from "@/composition/connections";
+import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
+import { routeHandler } from "@/infrastructure/http/route-handler";
+import { ValidationError } from "@/lib/errors";
+import { getActor } from "@/modules/auth";
+
+const body = z.object({ userId: z.uuid() }).strict();
+
+/**
+ * POST /api/v1/blocks — block a member (FR-NET-004). Blocking is by member, not by connection, because it
+ * needs no prior request. Lifting it is `DELETE /api/v1/connections/:id` on the blocked row.
+ */
+export const POST = routeHandler(async (request) => {
+  assertSameOrigin(request);
+  const raw = await request.json().catch(() => {
+    throw new ValidationError({ code: "MALFORMED_REQUEST" });
+  });
+  const parsed = body.safeParse(raw);
+  if (!parsed.success) {
+    throw new ValidationError({
+      details: parsed.error.issues.map((issue) => ({
+        field: issue.path.join(".") || "(body)",
+        code: "INVALID",
+        message: issue.message,
+      })),
+    });
+  }
+  const { connectionId } = await blockUser({
+    actor: await getActor(),
+    targetUserId: parsed.data.userId,
+  });
+  return Response.json({ data: { id: connectionId, state: "BLOCKED" } });
+});

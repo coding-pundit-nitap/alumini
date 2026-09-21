@@ -54,7 +54,12 @@ export default async function DirectoryPage({
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-12">
-      <h1 className="text-2xl font-semibold">Alumni directory</h1>
+      <div className="flex items-baseline justify-between gap-4">
+        <h1 className="text-2xl font-semibold">Alumni directory</h1>
+        <Link href="/connections" className="text-primary text-sm underline">
+          Your connections
+        </Link>
+      </div>
       <DirectoryFilters
         query={parsed.ok ? parsed.query : {}}
         departments={departments}

@@ -4,7 +4,14 @@ import type { PrismaClient } from "@nitap/database";
 import { createOutboxStore } from "@nitap/database/outbox";
 import { createUploadStore } from "@nitap/database/uploads";
 import { createSmtpEmailPort } from "@nitap/email";
-import { emailSend, outboxPrune, uploadScan, uploadSweep } from "@nitap/jobs";
+import {
+  connectionAccepted,
+  connectionRequested,
+  emailSend,
+  outboxPrune,
+  uploadScan,
+  uploadSweep,
+} from "@nitap/jobs";
 import type {
   EmailSendPayload,
   JobDefinition,
@@ -21,6 +28,7 @@ import type { Logger, Metrics } from "@nitap/observability";
 import type { StoragePort } from "@nitap/storage";
 
 import type { Readiness } from "./health.ts";
+import { createConnectionEventProcessor } from "./processors/connection-event.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
 import { createUploadScanProcessor } from "./processors/upload-scan.ts";
@@ -109,7 +117,12 @@ export function composeWorker(
   const relay = createRelay({
     store,
     queue,
-    events: { [emailJob.name]: emailJob, [uploadScanJob.name]: uploadScanJob },
+    events: {
+      [emailJob.name]: emailJob,
+      [uploadScanJob.name]: uploadScanJob,
+      [connectionRequested.name]: connectionRequested,
+      [connectionAccepted.name]: connectionAccepted,
+    },
     logger,
     metrics,
     ...overrides.relay,
@@ -122,6 +135,14 @@ export function composeWorker(
     jobs: [
       registerJob(emailJob, createEmailSendProcessor(email)),
       registerJob(outboxPrune, createOutboxPruneProcessor(store)),
+      registerJob(
+        connectionRequested,
+        createConnectionEventProcessor("requested")
+      ),
+      registerJob(
+        connectionAccepted,
+        createConnectionEventProcessor("accepted")
+      ),
       registerJob(
         uploadScanJob,
         createUploadScanProcessor({

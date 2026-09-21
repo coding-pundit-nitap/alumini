@@ -13,8 +13,10 @@ import { createPostgresSearch } from "@/modules/directory/infrastructure/postgre
 
 type Level = "PUBLIC" | "MEMBERS_ONLY" | "CONNECTIONS_ONLY" | "PRIVATE";
 
-const MEMBER: SearchViewer = { userId: "viewer", reach: "members" };
-const ADMIN: SearchViewer = { userId: "viewer", reach: "everything" };
+// A valid UUID that belongs to no user: the query compares it with connection.user_a_id / user_b_id.
+const VIEWER_ID = "00000000-0000-4000-8000-000000000001";
+const MEMBER: SearchViewer = { userId: VIEWER_ID, reach: "members" };
+const ADMIN: SearchViewer = { userId: VIEWER_ID, reach: "everything" };
 
 function query(params: Record<string, string | string[]> = {}): DirectoryQuery {
   const parsed = parseDirectoryQuery(params);
@@ -216,6 +218,96 @@ describe("directory search against real PostgreSQL", () => {
     it("ranks a name match above a company match", async () => {
       await person("Acme Sharma");
       expect((await names({ q: "acme" }))[0]).toBe("Acme Sharma");
+    });
+  });
+
+  describe("connections and blocks (Phase 5)", () => {
+    /** Writes the pair's row directly, in canonical order, as the connections module would. */
+    async function link(
+      x: string,
+      y: string,
+      state: "ACCEPTED" | "PENDING" | "BLOCKED",
+      by = x
+    ) {
+      const [userAId, userBId] = [x, y].sort() as [string, string];
+      await db.prisma.connection.create({
+        data: {
+          userAId,
+          userBId,
+          requestedById: by,
+          state,
+          blockedById: state === "BLOCKED" ? by : null,
+          respondedAt: state === "PENDING" ? null : new Date(),
+        },
+      });
+    }
+    const as = (userId: string): SearchViewer => ({ userId, reach: "members" });
+
+    it("shows a connections-only member to an accepted connection, and to nobody else", async () => {
+      const viewer = await person("Viewer Vik");
+      const circle = await person("Circle Cy", {
+        visibility: "CONNECTIONS_ONLY",
+      });
+      await person("Other Olu");
+      await link(viewer, circle, "ACCEPTED");
+
+      expect(await names({ q: "Circle" }, as(viewer))).toEqual(["Circle Cy"]);
+      expect(await names({ q: "Circle" }, MEMBER)).toEqual([]);
+    });
+
+    it("does not count a pending request as a connection", async () => {
+      const viewer = await person("Viewer Vik");
+      const circle = await person("Circle Cy", {
+        visibility: "CONNECTIONS_ONLY",
+      });
+      await link(viewer, circle, "PENDING");
+      expect(await names({ q: "Circle" }, as(viewer))).toEqual([]);
+    });
+
+    it("shows a connections-only section (experience) only to connections, and never leaks it by matching", async () => {
+      const viewer = await person("Viewer Vik");
+      const asha = await person("Asha Rao", {
+        company: "Acme Robotics",
+        experienceVisibility: "CONNECTIONS_ONLY",
+      });
+      await person("Bystander Bo");
+      expect(await names({ company: "acme" }, MEMBER)).toEqual([]);
+      expect(await names({ q: "acme" }, MEMBER)).toEqual([]);
+
+      await link(viewer, asha, "ACCEPTED");
+      expect(await names({ company: "acme" }, as(viewer))).toEqual([
+        "Asha Rao",
+      ]);
+      expect(await names({ q: "acme" }, as(viewer))).toEqual(["Asha Rao"]);
+    });
+
+    it("hides a blocked pair from each other, whichever side blocked", async () => {
+      const blocker = await person("Blocker Bea");
+      const blocked = await person("Blocked Bob");
+      await person("Cara Dell");
+      await link(blocker, blocked, "BLOCKED", blocker);
+
+      expect(await names({}, as(blocker))).not.toContain("Blocked Bob");
+      expect(await names({}, as(blocked))).not.toContain("Blocker Bea");
+      expect(await names({ q: "Bob" }, as(blocker))).toEqual([]);
+      expect(await names({}, as(blocker))).toContain("Cara Dell");
+    });
+
+    it("a block wins over an earlier connection level: a public profile is still hidden", async () => {
+      const blocker = await person("Blocker Bea", { visibility: "PUBLIC" });
+      const blocked = await person("Blocked Bob", { visibility: "PUBLIC" });
+      await link(blocker, blocked, "BLOCKED", blocked);
+      expect(await names({}, as(blocker))).not.toContain("Blocked Bob");
+      expect(await names({}, as(blocked))).not.toContain("Blocker Bea");
+    });
+
+    it("leaves privileged readers ('everything') unaffected, as on the profile page", async () => {
+      const blocker = await person("Blocker Bea");
+      const blocked = await person("Blocked Bob");
+      await link(blocker, blocked, "BLOCKED", blocker);
+      expect(
+        await names({}, { userId: blocker, reach: "everything" })
+      ).toContain("Blocked Bob");
     });
   });
 

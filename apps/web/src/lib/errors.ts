@@ -56,6 +56,14 @@ export const ERROR_CATALOG: Record<
     message:
       "This account is confirmed by the institute and does not submit verification evidence.",
   },
+  CANNOT_CONNECT_SELF: {
+    status: 400,
+    message: "You cannot connect with yourself.",
+  },
+  NOT_CONNECTION_RECIPIENT: {
+    status: 403,
+    message: "Only the person who received the request can respond to it.",
+  },
   NOT_FOUND: { status: 404, message: "The resource was not found." },
   METHOD_NOT_ALLOWED: {
     status: 405,
@@ -64,6 +72,23 @@ export const ERROR_CATALOG: Record<
   IDEMPOTENCY_KEY_REUSED: {
     status: 409,
     message: "This idempotency key was already used with a different request.",
+  },
+  CONNECTION_EXISTS: {
+    status: 409,
+    message: "A connection or pending request already exists with this member.",
+  },
+  CONNECTION_COOLDOWN: {
+    status: 409,
+    message:
+      "You cannot send this member another request yet. Please try again later.",
+  },
+  USER_BLOCKED: {
+    status: 409,
+    message: "You have blocked this member. Unblock them to connect.",
+  },
+  INVALID_STATE_TRANSITION: {
+    status: 409,
+    message: "That is no longer possible: the connection has changed.",
   },
   VERIFICATION_REQUEST_OPEN: {
     status: 409,

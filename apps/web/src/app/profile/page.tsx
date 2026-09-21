@@ -54,7 +54,10 @@ export default async function ProfilePage() {
         Your department, degree and graduation year come from your verification
         and cannot be edited here.
       </p>
-      <nav className="flex gap-4 text-sm">
+      <nav className="flex flex-wrap gap-4 text-sm">
+        <Link href="/connections" className="underline">
+          Your connections
+        </Link>
         <Link href="/profile/details" className="underline">
           Experience, education, skills & links
         </Link>

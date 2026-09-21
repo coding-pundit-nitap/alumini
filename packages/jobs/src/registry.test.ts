@@ -22,4 +22,24 @@ describe("registry", () => {
     expect(JOBS["upload.sweep"].queue).toBe("scheduled");
     expect(isOutboxEventType("upload.sweep")).toBe(false);
   });
+
+  it("connection.requested and connection.accepted are outbox events with an ids-only payload", () => {
+    const payload = {
+      v: 1,
+      connectionId: crypto.randomUUID(),
+      actorId: crypto.randomUUID(),
+      recipientId: crypto.randomUUID(),
+    };
+    for (const type of [
+      "connection.requested",
+      "connection.accepted",
+    ] as const) {
+      expect(isOutboxEventType(type)).toBe(true);
+      expect(OUTBOX_EVENTS[type].schema.safeParse(payload).success).toBe(true);
+      expect(
+        OUTBOX_EVENTS[type].schema.safeParse({ ...payload, name: "Asha" })
+          .success
+      ).toBe(false);
+    }
+  });
 });

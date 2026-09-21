@@ -50,6 +50,11 @@ model User {
   auditEntries          AuditLog[]            @relation("AuditActor")
   uploads               Upload[]
 
+  connectionsAsA       Connection[] @relation("ConnectionUserA")
+  connectionsAsB       Connection[] @relation("ConnectionUserB")
+  connectionsRequested Connection[] @relation("ConnectionRequester")
+  connectionsBlocked   Connection[] @relation("ConnectionBlocker")
+
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
   @@unique([email])
@@ -439,4 +444,35 @@ model AuditLog {
   @@index([actorId, createdAt], map: "ix_audit_actor")
   @@index([action, createdAt], map: "ix_audit_action")
   @@map("audit_log")
+}
+
+enum ConnectionState {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+/// One row per unordered pair of users (FR-NET, domain-model §3). `user_a_id < user_b_id` is enforced,
+/// so the unique pair catches A→B and B→A alike; who asked is `requested_by_id`. `NONE` is "no row".
+/// A rejected pair re-requests by updating this row. The CHECKs (order, requester, blocker, responded_at)
+/// live in the migration SQL: see migrations/*_connection.
+model Connection {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userAId       String          @map("user_a_id") @db.Uuid
+  userA         User            @relation("ConnectionUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId       String          @map("user_b_id") @db.Uuid
+  userB         User            @relation("ConnectionUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  requestedById String          @map("requested_by_id") @db.Uuid
+  requestedBy   User            @relation("ConnectionRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  blockedById   String?         @map("blocked_by_id") @db.Uuid
+  blockedBy     User?           @relation("ConnectionBlocker", fields: [blockedById], references: [id], onDelete: Cascade)
+  state         ConnectionState @default(PENDING)
+  requestedAt   DateTime        @default(now()) @map("requested_at") @db.Timestamptz(3)
+  respondedAt   DateTime?       @map("responded_at") @db.Timestamptz(3)
+
+  @@unique([userAId, userBId], map: "uq_connection_pair")
+  @@index([userAId, state], map: "ix_connection_user_a")
+  @@index([userBId, state], map: "ix_connection_user_b")
+  @@map("connection")
 }
