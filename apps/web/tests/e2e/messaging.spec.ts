@@ -30,6 +30,13 @@ async function setLevel(page: Page, label: string) {
   await expect(page.getByText("Privacy settings saved.")).toBeVisible();
 }
 
+/**
+ * The posted messages, never the draft box: React mirrors a controlled textarea's value into its text
+ * content, so a bare getByText("…") matches what was merely TYPED and races ahead of the send.
+ */
+const posted = (page: Page, body: string) =>
+  page.getByRole("list", { name: "Messages" }).getByText(body);
+
 async function profilePath(page: Page): Promise<string> {
   await page.goto("/profile");
   return (await page
@@ -57,18 +64,20 @@ test("J-10 members message each other, see unread counts, report and block", asy
     .getByRole("textbox", { name: "Message" })
     .fill("Hello Ravi, nice to meet you");
   await asha.getByRole("button", { name: "Send" }).click();
-  await expect(asha.getByText("Hello Ravi, nice to meet you")).toBeVisible();
+  await expect(posted(asha, "Hello Ravi, nice to meet you")).toBeVisible({
+    timeout: 15_000,
+  });
 
   // Ravi sees it unread in his inbox, opens it, and the badge clears.
-  await expect(async () => {
-    await ravi.goto("/messages");
-    await expect(ravi.getByLabel("1 unread")).toBeVisible({ timeout: 2000 });
-  }).toPass({ timeout: 30_000 });
+  await ravi.goto("/messages");
+  await expect(ravi.getByLabel("1 unread")).toBeVisible({ timeout: 15_000 });
   await ravi
     .locator('main a[href^="/messages/"]:not([href="/messages/new-group"])')
     .first()
     .click();
-  await expect(ravi.getByText("Hello Ravi, nice to meet you")).toBeVisible();
+  await expect(posted(ravi, "Hello Ravi, nice to meet you")).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(async () => {
     await ravi.goto("/messages"); // the read marker posts asynchronously
     await expect(ravi.getByLabel("1 unread")).toHaveCount(0, { timeout: 2000 });
@@ -80,7 +89,7 @@ test("J-10 members message each other, see unread counts, report and block", asy
     .getByRole("textbox", { name: "Message" })
     .fill("Nice to meet you too");
   await ravi.getByRole("button", { name: "Send" }).click();
-  await expect(asha.getByText("Nice to meet you too")).toBeVisible({
+  await expect(posted(asha, "Nice to meet you too")).toBeVisible({
     timeout: 40_000,
   });
 
@@ -101,6 +110,8 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await asha.goto(raviPath);
   await asha.getByRole("button", { name: "Block" }).click();
   await asha.getByRole("button", { name: "Confirm block" }).click();
+  // The block is a Server Action: wait for the refreshed controls, or the send below outruns it.
+  await expect(asha.getByRole("button", { name: "Unblock" })).toBeVisible();
   await asha.goto(threadUrl);
   await asha
     .getByRole("textbox", { name: "Message" })
@@ -144,23 +155,20 @@ test("J-11 a member starts a group from their connections and manages it", async
     asha.getByRole("heading", { name: "Batch reunion" })
   ).toBeVisible();
   const groupUrl = asha.url();
-  // Retry: a click before hydration is lost.
-  await expect(async () => {
-    await asha
-      .getByRole("textbox", { name: "Message" })
-      .fill("Welcome to the group");
-    await asha.getByRole("button", { name: "Send" }).click();
-    await expect(asha.getByText("Welcome to the group")).toBeVisible({
-      timeout: 3000,
-    });
-  }).toPass({ timeout: 20_000 });
+  const send = asha.getByRole("button", { name: "Send" });
+  await expect(send).toBeEnabled();
+  await asha
+    .getByRole("textbox", { name: "Message" })
+    .fill("Welcome to the group");
+  await send.click();
+  await expect(posted(asha, "Welcome to the group")).toBeVisible({
+    timeout: 15_000,
+  });
 
-  await expect(async () => {
-    await ravi.goto(groupUrl);
-    await expect(ravi.getByText("Welcome to the group")).toBeVisible({
-      timeout: 3000,
-    });
-  }).toPass({ timeout: 20_000 });
+  await ravi.goto(groupUrl);
+  await expect(posted(ravi, "Welcome to the group")).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(ravi.getByRole("button", { name: "Leave group" })).toBeVisible();
   await expect(ravi.getByLabel("Add member")).toHaveCount(0);
 
