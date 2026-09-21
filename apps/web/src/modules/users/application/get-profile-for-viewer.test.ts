@@ -8,6 +8,7 @@ import type { ProfileRecord } from "../domain/profile";
 import type { VisibilitySettings } from "../domain/visibility";
 import type { Relation } from "./connection-lookup";
 import { createGetProfileForViewer } from "./get-profile-for-viewer";
+import type { ProfileAudit } from "./profile-audit";
 
 const settings = (
   over: Partial<VisibilitySettings> = {}
@@ -44,11 +45,13 @@ function setup(
     record?: ProfileRecord;
     relation?: Relation | Error;
     permissions?: string[];
-    audit?: { recordPrivilegedRead: ReturnType<typeof vi.fn> };
+    audit?: ProfileAudit;
   } = {}
 ) {
   const { store } = createFakeProfileStore([opts.record ?? owner()]);
-  const audit = opts.audit ?? { recordPrivilegedRead: vi.fn(async () => {}) };
+  const audit: ProfileAudit = opts.audit ?? {
+    recordPrivilegedRead: vi.fn(async () => {}),
+  };
   const reportError = vi.fn();
   const get = createGetProfileForViewer({
     store,
