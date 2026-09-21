@@ -41,6 +41,8 @@ describe("domain layer", () => {
     ["@nitap/database"],
     ["@prisma/client"],
     ["ioredis"],
+    ["better-auth"],
+    ["better-auth/api"],
     ["bullmq"],
     ["@aws-sdk/client-s3"],
     ["next/server"],
@@ -99,6 +101,8 @@ describe("application layer", () => {
   it.each([
     ["@nitap/database"],
     ["ioredis"],
+    ["better-auth"],
+    ["better-auth/api"],
     ["react"],
     ["next/headers"],
     ["@/infrastructure/redis/client"],

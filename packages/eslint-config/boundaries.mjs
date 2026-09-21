@@ -33,6 +33,12 @@ const databaseRoot = {
     "Prisma, Redis, queues and provider SDKs belong to infrastructure/ (strategy §2.3).",
 };
 
+const authLibrary = {
+  group: ["better-auth", "better-auth/*"],
+  message:
+    "Better Auth is wired only in infrastructure/ (the createAuth factory) and app/ (its route handler); the domain and use cases stay library-free (ADR-005, spec 2C D-10).",
+};
+
 const react = {
   group: ["react", "react/*", "react-dom", "react-dom/*"],
   message: "React is a presentation/ui concern.",
@@ -138,6 +144,7 @@ export const layerRules = [
     rules: {
       ...restrict(
         infrastructureSdks,
+        authLibrary,
         react,
         next,
         designSystem,
@@ -155,6 +162,7 @@ export const layerRules = [
     files: ["src/modules/*/application/**"],
     rules: restrict(
       infrastructureSdks,
+      authLibrary,
       react,
       next,
       designSystem,
