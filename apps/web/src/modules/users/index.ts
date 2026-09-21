@@ -8,3 +8,10 @@ export { createProfileAudit } from "./infrastructure/profile-audit";
 export { noConnectionsLookup } from "./infrastructure/no-connections-lookup";
 export type { ProfileRecord, ProfileView } from "./domain/profile";
 export type { Visibility, VisibilitySettings } from "./domain/visibility";
+export {
+  parsePrivacyForm,
+  parseProfileForm,
+} from "./presentation/api/profile-forms";
+export { PrivacyForm } from "./presentation/ui/privacy-form";
+export { ProfileCard } from "./presentation/ui/profile-card";
+export { ProfileForm } from "./presentation/ui/profile-form";
