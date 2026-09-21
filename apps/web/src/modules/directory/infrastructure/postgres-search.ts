@@ -8,6 +8,8 @@ import {
   type Sort,
 } from "@nitap/search";
 
+import { profileVisibilitySql } from "@/infrastructure/database/profile-visibility-sql";
+
 /** Below the default 0.6 so a one-letter typo in a name still matches; the trigram GIN index serves `<%`. */
 const TYPO_THRESHOLD = "0.45";
 
@@ -55,21 +57,9 @@ function relevanceScore(query: DirectoryQuery): Prisma.Sql {
 export function createPostgresSearch(prisma: PrismaClient): SearchPort {
   return {
     async searchPeople(query, viewer) {
-      const reach = Prisma.sql`'MEMBERS_ONLY'::"ProfileVisibility"`;
-      // The pair's connection row, by canonical order (uq_connection_pair serves the lookup).
-      const pairWith = (alias: string, state: "ACCEPTED" | "BLOCKED") =>
-        Prisma.sql`EXISTS (SELECT 1 FROM connection c
-          WHERE c.user_a_id = LEAST(${viewer.userId}::uuid, ${Prisma.raw(alias)}.user_id)
-            AND c.user_b_id = GREATEST(${viewer.userId}::uuid, ${Prisma.raw(alias)}.user_id)
-            AND c.state = ${state}::"ConnectionState")`;
-      // A level is visible when it is MEMBERS_ONLY or looser, or it is CONNECTIONS_ONLY and the two are connected.
-      const visibleAt = (level: Prisma.Sql, alias: string) =>
-        Prisma.sql`(${level} <= ${reach} OR (${level} = 'CONNECTIONS_ONLY'::"ProfileVisibility" AND ${pairWith(alias, "ACCEPTED")}))`;
-      const sectionVisible = (column: string, alias = "p") =>
-        visibleAt(
-          Prisma.sql`COALESCE(${Prisma.raw(`${alias}.${column}_visibility`)}, ${Prisma.raw(`${alias}.visibility`)})`,
-          alias
-        );
+      const { pairWith, visibleAt, sectionVisible } = profileVisibilitySql(
+        viewer.userId
+      );
       const experienceVisible = sectionVisible("experience");
 
       const where: Prisma.Sql[] = [
