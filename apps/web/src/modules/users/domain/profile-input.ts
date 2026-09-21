@@ -35,7 +35,7 @@ export function sanitiseMultiLine(value: string): string {
 
 // Lengths are counted in UTF-16 units here and in characters by the database CHECK, so this can only be
 // stricter than the database, never looser.
-const optionalText = (sanitise: (v: string) => string, max: number) =>
+export const optionalText = (sanitise: (v: string) => string, max: number) =>
   z
     .string()
     .optional()

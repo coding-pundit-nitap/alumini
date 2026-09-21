@@ -29,6 +29,10 @@ const owner = (over: Partial<ProfileRecord> = {}): ProfileRecord => ({
   department: "CSE",
   degree: "B.Tech",
   graduationYear: 2019,
+  experience: [],
+  education: [],
+  skills: [],
+  links: [],
   settings: settings(),
   ...over,
 });

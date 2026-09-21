@@ -1,9 +1,25 @@
+import type {
+  EducationItem,
+  ExperienceItem,
+  LinkItem,
+  SkillItem,
+} from "./profile-items";
 import {
   canView,
   effectiveLevel,
   type Viewer,
   type VisibilitySettings,
 } from "./visibility";
+
+/** An item as a viewer sees it: never its id. */
+type Shown<T extends { id: string }> = Omit<T, "id">;
+function shown<T extends { id: string }>(items: T[]): Shown<T>[] {
+  return items.map((item) => {
+    const { id, ...rest } = item;
+    void id;
+    return rest;
+  });
+}
 
 export type ProfileRecord = {
   userId: string;
@@ -14,6 +30,10 @@ export type ProfileRecord = {
   department: string | null;
   degree: string | null;
   graduationYear: number | null;
+  experience: ExperienceItem[];
+  education: EducationItem[];
+  skills: SkillItem[];
+  links: LinkItem[];
   settings: VisibilitySettings;
 };
 
@@ -29,6 +49,10 @@ export type ProfileView = {
     degree: string | null;
     graduationYear: number | null;
   };
+  experience?: Shown<ExperienceItem>[];
+  education?: Shown<EducationItem>[];
+  skills?: Shown<SkillItem>[];
+  links?: Shown<LinkItem>[];
 };
 
 /**
@@ -58,6 +82,17 @@ export function projectProfile(
       degree: profile.degree,
       graduationYear: profile.graduationYear,
     };
+    // Section mapping (spec 3B E-3): skills travel with experience, links with contact.
+    if (canView(effectiveLevel(settings, "experience"), viewer)) {
+      view.experience = shown(profile.experience);
+      view.skills = shown(profile.skills);
+    }
+    if (canView(effectiveLevel(settings, "education"), viewer)) {
+      view.education = shown(profile.education);
+    }
+    if (canView(effectiveLevel(settings, "contact"), viewer)) {
+      view.links = shown(profile.links);
+    }
   }
   return view;
 }
