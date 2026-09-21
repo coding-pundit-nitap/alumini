@@ -29,7 +29,10 @@ export default async function PrivacyPage() {
         action={updatePrivacyAction}
         defaults={{
           visibility: settings.visibility,
+          contact: settings.contact,
           location: settings.location,
+          experience: settings.experience,
+          education: settings.education,
         }}
       />
       <Link href="/profile" className="text-sm underline">

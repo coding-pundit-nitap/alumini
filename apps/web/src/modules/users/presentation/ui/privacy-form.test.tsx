@@ -17,12 +17,19 @@ const optionFor = (select: HTMLElement, text: RegExp) =>
 
 type Action = (formData: FormData) => Promise<ActionResult<{ saved: true }>>;
 
+const inherit = {
+  contact: null,
+  location: null,
+  experience: null,
+  education: null,
+};
+
 describe("PrivacyForm", () => {
   it("disables location options looser than the profile level", () => {
     render(
       <PrivacyForm
         action={vi.fn()}
-        defaults={{ visibility: "PRIVATE", location: null }}
+        defaults={{ visibility: "PRIVATE", ...inherit }}
       />
     );
     const location = screen.getByLabelText("Who can see your location");
@@ -36,7 +43,7 @@ describe("PrivacyForm", () => {
     render(
       <PrivacyForm
         action={vi.fn()}
-        defaults={{ visibility: "PUBLIC", location: "PUBLIC" }}
+        defaults={{ visibility: "PUBLIC", ...inherit, location: "PUBLIC" }}
       />
     );
     await user.selectOptions(
@@ -48,7 +55,41 @@ describe("PrivacyForm", () => {
     );
   });
 
-  it("submits the chosen level and override and shows a saved message", async () => {
+  it("also resets a now-looser contest override, independently of location", async () => {
+    const user = userEvent.setup();
+    render(
+      <PrivacyForm
+        action={vi.fn()}
+        defaults={{
+          visibility: "PUBLIC",
+          ...inherit,
+          contact: "MEMBERS_ONLY",
+          location: "PRIVATE",
+        }}
+      />
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Who can see your profile"),
+      "MEMBERS_ONLY"
+    );
+    // location (PRIVATE) is still allowed at MEMBERS_ONLY; contact (MEMBERS_ONLY) is unaffected.
+    expect(screen.getByLabelText("Who can see your location")).toHaveValue(
+      "PRIVATE"
+    );
+    expect(
+      screen.getByLabelText("Who can see your contact details")
+    ).toHaveValue("MEMBERS_ONLY");
+
+    await user.selectOptions(
+      screen.getByLabelText("Who can see your profile"),
+      "PRIVATE"
+    );
+    expect(
+      screen.getByLabelText("Who can see your contact details")
+    ).toHaveValue("INHERIT");
+  });
+
+  it("submits the level and all four overrides, and shows a saved message", async () => {
     const action = vi.fn<Action>(async () => ({
       ok: true,
       data: { saved: true },
@@ -57,12 +98,16 @@ describe("PrivacyForm", () => {
     render(
       <PrivacyForm
         action={action}
-        defaults={{ visibility: "MEMBERS_ONLY", location: null }}
+        defaults={{ visibility: "MEMBERS_ONLY", ...inherit }}
       />
     );
     await user.selectOptions(
       screen.getByLabelText("Who can see your location"),
       "PRIVATE"
+    );
+    await user.selectOptions(
+      screen.getByLabelText("Who can see your work experience and skills"),
+      "MEMBERS_ONLY"
     );
     await user.click(
       screen.getByRole("button", { name: "Save privacy settings" })
@@ -72,12 +117,15 @@ describe("PrivacyForm", () => {
     const sent = action.mock.calls[0]![0];
     expect(sent.get("visibility")).toBe("MEMBERS_ONLY");
     expect(sent.get("location")).toBe("PRIVATE");
+    expect(sent.get("experience")).toBe("MEMBERS_ONLY");
+    expect(sent.get("contact")).toBe("INHERIT");
+    expect(sent.get("education")).toBe("INHERIT");
     expect(
       await screen.findByText("Privacy settings saved.")
     ).toBeInTheDocument();
   });
 
-  it("shows the field error the action returns", async () => {
+  it("shows the field error the action returns, on the right section", async () => {
     const action = vi.fn<Action>(async () => ({
       ok: false,
       error: {
@@ -93,7 +141,7 @@ describe("PrivacyForm", () => {
     render(
       <PrivacyForm
         action={action}
-        defaults={{ visibility: "MEMBERS_ONLY", location: null }}
+        defaults={{ visibility: "MEMBERS_ONLY", ...inherit }}
       />
     );
     await user.click(
