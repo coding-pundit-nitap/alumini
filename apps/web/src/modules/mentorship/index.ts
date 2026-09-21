@@ -8,6 +8,7 @@ export {
 } from "./application/request-mentorship";
 export { createTransitionMentorship } from "./application/transition-mentorship";
 export { createPrismaMentorProfileStore } from "./infrastructure/prisma-mentor-profile-store";
+export { createPrismaMentorshipStore } from "./infrastructure/prisma-mentorship-store";
 export { createPrismaMentorQueries } from "./infrastructure/prisma-mentor-queries";
 export { CONTACT_METHODS, mentorProfileInput } from "./domain/mentor-profile";
 export type { MentorProfileInput } from "./domain/mentor-profile";
@@ -15,6 +16,11 @@ export type {
   MentorCard,
   MentorProfileRecord,
 } from "./application/mentor-ports";
+export type {
+  MentorshipObserver,
+  MentorshipOutcome,
+} from "./application/mentorship-store";
 export type { MentorPage } from "./application/list-mentors";
 export { MentorList } from "./presentation/ui/mentor-list";
 export { MentorSettingsForm } from "./presentation/ui/mentor-settings-form";
+export { RequestDialog } from "./presentation/ui/request-dialog";

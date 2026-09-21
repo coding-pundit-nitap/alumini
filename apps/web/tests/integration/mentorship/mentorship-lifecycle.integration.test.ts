@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
@@ -441,5 +441,42 @@ describe("mentorship lifecycle against real PostgreSQL", () => {
         })
       )
     ).toBe("ok");
+  });
+
+  it("observe fires once per committed outcome and not when the transaction fails", async () => {
+    const observe = vi.fn();
+    const store = createPrismaMentorshipStore({
+      runner: createTransactionRunner(db.prisma),
+      outbox: createOutboxWriter(),
+    });
+    const request = createRequestMentorship({
+      store,
+      authorize,
+      rateLimiter: allowAll,
+      observe,
+    });
+    const transition = createTransitionMentorship({
+      store,
+      authorize,
+      observe,
+    });
+    const m = await mentor("Mentor Observed");
+    const s = await student("Student Observed");
+
+    const { mentorshipId } = await request({
+      actor: actor(s),
+      mentorId: m,
+      input: { message: "hi" },
+    });
+    expect(observe).toHaveBeenCalledTimes(1);
+    expect(observe).toHaveBeenLastCalledWith("requested", mentorshipId);
+
+    await transition({ actor: actor(m), mentorshipId, action: "accept" });
+    expect(observe).toHaveBeenCalledTimes(2);
+    expect(observe).toHaveBeenLastCalledWith("accepted", mentorshipId);
+
+    // Refused (accept on an already ACCEPTED row): the transaction fails, nothing is observed.
+    await code(transition({ actor: actor(m), mentorshipId, action: "accept" }));
+    expect(observe).toHaveBeenCalledTimes(2);
   });
 });

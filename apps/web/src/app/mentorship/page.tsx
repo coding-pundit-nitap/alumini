@@ -7,9 +7,13 @@ import { getMentorProfile, listMentors } from "@/composition/mentorship";
 import { getOwnProfile } from "@/composition/users";
 import { AppError } from "@/lib/errors";
 import { can, getActor, type Actor } from "@/modules/auth";
-import { MentorList, MentorSettingsForm } from "@/modules/mentorship";
+import {
+  MentorList,
+  MentorSettingsForm,
+  RequestDialog,
+} from "@/modules/mentorship";
 
-import { saveMentorProfileAction } from "./actions";
+import { requestMentorshipAction, saveMentorProfileAction } from "./actions";
 
 export const metadata: Metadata = { title: "Mentorship" };
 
@@ -160,7 +164,19 @@ async function FindTab({
           Search
         </button>
       </form>
-      <MentorList items={page.data} />
+      <MentorList
+        items={page.data}
+        requestSlot={
+          can(actor, PERMISSIONS.MENTORSHIP_REQUEST)
+            ? (m) => (
+                <RequestDialog
+                  mentor={m}
+                  requestAction={requestMentorshipAction}
+                />
+              )
+            : undefined
+        }
+      />
       {page.page.nextCursor ? (
         <Link
           href={`/mentorship?${next.toString()}&cursor=${encodeURIComponent(page.page.nextCursor)}`}

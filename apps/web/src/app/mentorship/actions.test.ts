@@ -5,24 +5,37 @@ const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
   getActor: vi.fn(),
   saveMentorProfile: vi.fn(),
+  requestMentorship: vi.fn(),
+  transitionMentorship: vi.fn(),
 }));
 vi.mock("next/headers", () => ({ headers: async () => mocks.headers }));
 vi.mock("next/cache", () => ({ refresh: mocks.refresh }));
 vi.mock("@/modules/auth", () => ({ getActor: mocks.getActor }));
 vi.mock("@/composition/mentorship", () => ({
   saveMentorProfile: mocks.saveMentorProfile,
+  requestMentorship: mocks.requestMentorship,
+  transitionMentorship: mocks.transitionMentorship,
 }));
 
 import { AuthenticationError, ValidationError } from "@/lib/errors";
 
-import { saveMentorProfileAction } from "./actions";
+import {
+  requestMentorshipAction,
+  saveMentorProfileAction,
+  transitionMentorshipAction,
+} from "./actions";
 
+const ID = "11111111-1111-4111-8111-111111111111";
 const actor = { userId: "u1", accountState: "VERIFIED" };
 
 beforeEach(() => {
   mocks.refresh.mockReset();
   mocks.getActor.mockReset().mockResolvedValue(actor);
   mocks.saveMentorProfile.mockReset().mockResolvedValue({ userId: "u1" });
+  mocks.requestMentorship.mockReset().mockResolvedValue({ mentorshipId: ID });
+  mocks.transitionMentorship
+    .mockReset()
+    .mockResolvedValue({ state: "ACCEPTED" });
 });
 
 describe("saveMentorProfileAction", () => {
@@ -56,5 +69,58 @@ describe("saveMentorProfileAction", () => {
       ok: false,
       error: { code: "UNAUTHENTICATED" },
     });
+  });
+});
+
+describe("requestMentorshipAction", () => {
+  it("passes the actor, mentor id and input, then refreshes", async () => {
+    const input = { message: "hi", topic: "sql" };
+    expect(await requestMentorshipAction(ID, input)).toEqual({
+      ok: true,
+      data: { mentorshipId: ID },
+    });
+    expect(mocks.requestMentorship).toHaveBeenCalledWith({
+      actor,
+      mentorId: ID,
+      input,
+    });
+    expect(mocks.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses a malformed id without calling the use case", async () => {
+    expect(
+      await requestMentorshipAction("nope", { message: "hi" })
+    ).toMatchObject({
+      ok: false,
+      error: { code: "VALIDATION_FAILED" },
+    });
+    expect(mocks.requestMentorship).not.toHaveBeenCalled();
+    expect(mocks.refresh).not.toHaveBeenCalled();
+  });
+});
+
+describe("transitionMentorshipAction", () => {
+  it("passes the action and note, then refreshes", async () => {
+    expect(await transitionMentorshipAction(ID, "decline", "busy")).toEqual({
+      ok: true,
+      data: { state: "ACCEPTED" },
+    });
+    expect(mocks.transitionMentorship).toHaveBeenCalledWith({
+      actor,
+      mentorshipId: ID,
+      action: "decline",
+      note: "busy",
+    });
+    expect(mocks.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses a malformed id and an unknown action", async () => {
+    expect(await transitionMentorshipAction("nope", "accept")).toMatchObject({
+      ok: false,
+    });
+    expect(
+      await transitionMentorshipAction(ID, "start" as unknown as "accept")
+    ).toMatchObject({ ok: false });
+    expect(mocks.transitionMentorship).not.toHaveBeenCalled();
   });
 });
