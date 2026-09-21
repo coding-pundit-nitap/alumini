@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
     "@nitap/database",
     "@nitap/observability",
     "@nitap/jobs",
+    "@nitap/search",
   ],
 };
 

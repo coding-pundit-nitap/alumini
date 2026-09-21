@@ -13,6 +13,7 @@ const MODULE_DEPENDENCIES = {
   auth: [],
   users: ["auth"],
   uploads: ["auth", "users"],
+  directory: ["auth"],
 };
 
 const moduleDagRules = Object.entries(MODULE_DEPENDENCIES).map(
@@ -100,6 +101,16 @@ module.exports = {
       from: { path: "^packages/jobs/src/" },
       to: {
         path: "(^|/)(packages/(queue|email|observability|testing)|database|apps)/",
+      },
+    },
+    {
+      name: "search-is-a-leaf-contract",
+      comment:
+        "@nitap/search is the provider-neutral SearchPort contract, query and cursor; it imports no other workspace, so any adapter (Postgres now, OpenSearch later) can implement it.",
+      severity: "error",
+      from: { path: "^packages/search/src/" },
+      to: {
+        path: "(^|/)(packages/(queue|jobs|email|observability|storage|testing)|database|apps)/",
       },
     },
     {

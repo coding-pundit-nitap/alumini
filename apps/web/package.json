@@ -26,6 +26,7 @@
     "@nitap/database": "workspace:*",
     "@nitap/jobs": "workspace:*",
     "@nitap/observability": "workspace:*",
+    "@nitap/search": "workspace:*",
     "@nitap/storage": "workspace:*",
     "@nitap/ui": "workspace:*",
     "@prisma/adapter-pg": "7.10.0",
