@@ -37,13 +37,21 @@ const GUARDRAILS: readonly Guardrail[] = [separationOfDuties];
 
 /**
  * What an account may do BECAUSE of its state, without any grant (RBAC §7). Everything else is denied
- * before grants are considered. Only self-service permissions belong here.
+ * before grants are considered. Only self-service permissions belong here: submitting one's own
+ * verification request, and `profile.update` (a PENDING or REJECTED account edits its own basic profile;
+ * institutional fields stay out of reach of that use case, FR-PROFILE-004).
  */
 const STATE_ALLOWANCES: Readonly<
   Record<Exclude<AccountState, "VERIFIED">, readonly Permission[]>
 > = {
-  PENDING: [SELF_SERVICE_PERMISSIONS.VERIFICATION_REQUEST],
-  REJECTED: [SELF_SERVICE_PERMISSIONS.VERIFICATION_REQUEST],
+  PENDING: [
+    SELF_SERVICE_PERMISSIONS.VERIFICATION_REQUEST,
+    PERMISSIONS.PROFILE_UPDATE,
+  ],
+  REJECTED: [
+    SELF_SERVICE_PERMISSIONS.VERIFICATION_REQUEST,
+    PERMISSIONS.PROFILE_UPDATE,
+  ],
   SUSPENDED: [],
   DEACTIVATED: [],
 };

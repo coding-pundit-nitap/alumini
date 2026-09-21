@@ -84,7 +84,7 @@ describe("the state allowance never widens into grantable permissions", () => {
     }
   );
 
-  it("every grantable permission is denied to every non-VERIFIED state", () => {
+  it("every grantable permission is denied to every non-VERIFIED state, except profile.update for PENDING and REJECTED", () => {
     for (const state of [
       "PENDING",
       "REJECTED",
@@ -92,11 +92,55 @@ describe("the state allowance never widens into grantable permissions", () => {
       "DEACTIVATED",
     ] as const) {
       for (const permission of Object.values(PERMISSIONS)) {
-        expect(decide({ actor: actor(state), permission, now: NOW })).toEqual({
-          allow: false,
-          reason: "ACCOUNT_STATE",
-        });
+        const allowedByState =
+          permission === PERMISSIONS.PROFILE_UPDATE &&
+          (state === "PENDING" || state === "REJECTED");
+        expect(decide({ actor: actor(state), permission, now: NOW })).toEqual(
+          allowedByState
+            ? { allow: true }
+            : { allow: false, reason: "ACCOUNT_STATE" }
+        );
       }
+    }
+  });
+});
+
+describe("profile.update (allowed by state for accounts that cannot hold grants yet, RBAC §7)", () => {
+  it.each(["PENDING", "REJECTED"] as const)(
+    "is allowed to a %s account",
+    (state) => {
+      expect(
+        decide({
+          actor: actor(state),
+          permission: PERMISSIONS.PROFILE_UPDATE,
+          now: NOW,
+        })
+      ).toEqual({ allow: true });
+    }
+  );
+
+  it.each(["SUSPENDED", "DEACTIVATED"] as const)(
+    "is denied to a %s account",
+    (state) => {
+      expect(
+        decide({
+          actor: actor(state),
+          permission: PERMISSIONS.PROFILE_UPDATE,
+          now: NOW,
+        })
+      ).toEqual({ allow: false, reason: "ACCOUNT_STATE" });
+    }
+  );
+
+  it("does not extend to reading any profile or to institutional changes", () => {
+    for (const permission of [
+      PERMISSIONS.PROFILE_READ,
+      PERMISSIONS.PROFILE_READ_ANY,
+      PERMISSIONS.PROFILE_UPDATE_INSTITUTIONAL,
+    ]) {
+      expect(decide({ actor: actor("PENDING"), permission, now: NOW })).toEqual(
+        { allow: false, reason: "ACCOUNT_STATE" }
+      );
     }
   });
 });

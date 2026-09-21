@@ -38,15 +38,20 @@ describe("decide: account-state gate (RBAC §7)", () => {
   const blocked = ACCOUNT_STATES.filter((state) => state !== "VERIFIED");
 
   it.each(blocked)(
-    "denies every permission to a %s actor even when a grant exists",
+    "denies every permission to a %s actor even when a grant exists, except what its state allows",
     (accountState) => {
+      const allowedByState: Permission[] =
+        accountState === "PENDING" || accountState === "REJECTED"
+          ? [PERMISSIONS.PROFILE_UPDATE]
+          : [];
       const grants = Object.values(PERMISSIONS).map((p) => globalGrant(p));
       const a = actor({ accountState, grants });
       for (const permission of Object.values(PERMISSIONS)) {
-        expect(check(a, permission), permission).toEqual({
-          allow: false,
-          reason: "ACCOUNT_STATE",
-        });
+        expect(check(a, permission), permission).toEqual(
+          allowedByState.includes(permission)
+            ? { allow: true }
+            : { allow: false, reason: "ACCOUNT_STATE" }
+        );
       }
     }
   );
