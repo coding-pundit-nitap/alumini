@@ -11,3 +11,10 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
   workerd: true
+
+# dependency-cruiser only supports TypeScript < 7 and otherwise resolves the workspace's TS 7 through pnpm's
+# hoisting, silently cruising 0 modules. Give it its own compiler; drop this once it supports TS 7.
+packageExtensions:
+  dependency-cruiser:
+    dependencies:
+      typescript: ^6
