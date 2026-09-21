@@ -15,6 +15,10 @@ describe("loadEnv", () => {
     expect(env.EMAIL_RATE_PER_SECOND).toBe(5);
     expect(env.WORKER_HEALTH_PORT).toBe(3010);
     expect(env.NODE_ENV).toBe("development");
+    expect(loadEnv(valid).REDIS_URL).toBeUndefined();
+    expect(
+      loadEnv({ ...valid, REDIS_URL: "redis://localhost:6379" }).REDIS_URL
+    ).toBe("redis://localhost:6379");
   });
 
   it("names every missing or invalid variable, and never echoes a value", () => {

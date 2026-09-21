@@ -1,7 +1,8 @@
+import { Redis } from "ioredis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createOutboxWriter } from "@nitap/database/outbox";
-import { defineJob, emailSend } from "@nitap/jobs";
+import { defineJob, emailSend, messageHintChannel } from "@nitap/jobs";
 import { createQueueAdmin } from "@nitap/queue";
 import type { QueuePort } from "@nitap/queue";
 import { createFakeStoragePort } from "@nitap/storage";
@@ -58,6 +59,7 @@ describe("outbox → relay → queue → worker → SMTP (real PostgreSQL, Redis
         storage: createFakeStoragePort(),
         config: {
           queueRedisUrl: ns.url,
+          cacheRedisUrl: process.env.REDIS_URL,
           queuePrefix: ns.prefix,
           smtpUrl: smtp.url,
           emailFrom: "NITAP <no-reply@alumni.test>",
@@ -222,6 +224,68 @@ describe("outbox → relay → queue → worker → SMTP (real PostgreSQL, Redis
     });
     expect(untouched.publishedAt).toBeNull();
     expect(untouched.failedAt).toBeNull();
+  });
+
+  it("relays a message.sent event as an ids-only hint to every participant", async () => {
+    const [a, b] = await Promise.all(
+      ["a", "b"].map((n) =>
+        db.prisma.user.create({
+          data: { name: n, email: `${n}@example.test` },
+        })
+      )
+    );
+    const conversation = await db.prisma.conversation.create({
+      data: {
+        createdById: a!.id,
+        isGroup: true,
+        title: "t",
+        participants: {
+          create: [{ userId: a!.id }, { userId: b!.id }],
+        },
+      },
+    });
+    const messageId = "11111111-1111-4111-8111-111111111111";
+    const subscriber = new Redis(process.env.REDIS_URL!);
+    const received = new Map<string, string>();
+    subscriber.on("message", (channel, message) =>
+      received.set(channel, message)
+    );
+    try {
+      await subscriber.subscribe(
+        messageHintChannel(a!.id),
+        messageHintChannel(b!.id)
+      );
+      await startWorker();
+
+      const { id } = await db.prisma.$transaction((tx) =>
+        writer.add(tx, {
+          type: "message.sent",
+          payload: {
+            v: 1,
+            messageId,
+            conversationId: conversation.id,
+            senderId: a!.id,
+          },
+        })
+      );
+
+      const hint = JSON.stringify({
+        conversationId: conversation.id,
+        messageId,
+      });
+      await eventually(() => {
+        expect(received.get(messageHintChannel(a!.id))).toBe(hint);
+        expect(received.get(messageHintChannel(b!.id))).toBe(hint);
+      });
+      await eventually(async () =>
+        expect(
+          (await db.prisma.outboxEvent.findUniqueOrThrow({ where: { id } }))
+            .publishedAt
+        ).not.toBeNull()
+      );
+    } finally {
+      subscriber.disconnect();
+    }
   });
 
   it("reports ready while running and not ready once draining", async () => {

@@ -11,6 +11,7 @@ import {
   emailSend,
   idempotencySweep,
   mentorshipJobs,
+  messageSent,
   outboxPrune,
   uploadScan,
   uploadSweep,
@@ -30,11 +31,13 @@ import type { QueuePort, Relay, WorkerRuntime } from "@nitap/queue";
 import type { Logger, Metrics } from "@nitap/observability";
 import type { StoragePort } from "@nitap/storage";
 
+import { createRedisHintPublisher } from "./hints.ts";
 import type { Readiness } from "./health.ts";
 import { createConnectionEventProcessor } from "./processors/connection-event.ts";
 import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
 import { createMentorshipEventProcessor } from "./processors/mentorship-event.ts";
+import { createMessageSentProcessor } from "./processors/message-sent.ts";
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
 import { createUploadScanProcessor } from "./processors/upload-scan.ts";
 import { createUploadSweepProcessor } from "./processors/upload-sweep.ts";
@@ -42,6 +45,7 @@ import { passthroughScanner } from "./scanner.ts";
 
 export type WorkerConfig = {
   queueRedisUrl: string;
+  cacheRedisUrl?: string;
   smtpUrl: string;
   emailFrom: string;
   emailRatePerSecond: number;
@@ -119,6 +123,15 @@ export function composeWorker(
     lazyConnect: true,
   });
   ping.on("error", () => {});
+  const hintRedis = config.cacheRedisUrl
+    ? new Redis(config.cacheRedisUrl, {
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false,
+      })
+    : null;
+  hintRedis?.on("error", (error) =>
+    logger.warn("hint.redis.error", { metadata: { message: error.message } })
+  );
 
   const relay = createRelay({
     store,
@@ -128,6 +141,7 @@ export function composeWorker(
       [uploadScanJob.name]: uploadScanJob,
       [connectionRequested.name]: connectionRequested,
       [connectionAccepted.name]: connectionAccepted,
+      [messageSent.name]: messageSent,
       ...Object.fromEntries(
         Object.values(mentorshipJobs).map((job) => [job.name, job])
       ),
@@ -157,6 +171,19 @@ export function composeWorker(
           job,
           createMentorshipEventProcessor(job.name.slice("mentorship.".length))
         )
+      ),
+      registerJob(
+        messageSent,
+        createMessageSentProcessor({
+          participants: async (conversationId) =>
+            (
+              await prisma.conversationParticipant.findMany({
+                where: { conversationId },
+                select: { userId: true },
+              })
+            ).map((row) => row.userId),
+          publisher: hintRedis ? createRedisHintPublisher(hintRedis) : null,
+        })
       ),
       registerJob(
         uploadScanJob,
@@ -231,6 +258,7 @@ export function composeWorker(
       await rawQueue.close();
       email.close();
       ping.disconnect();
+      hintRedis?.disconnect();
     },
 
     async ready() {

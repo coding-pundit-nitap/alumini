@@ -8,8 +8,12 @@ export { connectionAccepted, connectionRequested } from "./connection.ts";
 export type { ConnectionEventPayload } from "./connection.ts";
 export { mentorshipJobs } from "./mentorship.ts";
 export type { MentorshipEventPayload } from "./mentorship.ts";
-export { messageSent } from "./message.ts";
-export type { MessageSentPayload } from "./message.ts";
+export {
+  MESSAGE_HINT_PREFIX,
+  messageHintChannel,
+  messageSent,
+} from "./message.ts";
+export type { MessageHint, MessageSentPayload } from "./message.ts";
 export { emailSend, emailSendPayload } from "./email.ts";
 export type { EmailSendPayload } from "./email.ts";
 export { idempotencySweep, idempotencySweepPayload } from "./idempotency.ts";

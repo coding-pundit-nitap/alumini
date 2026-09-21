@@ -27,3 +27,10 @@ export const messageSent = defineJob({
   idempotency:
     "Publishing the same hint twice only makes the client refetch; running twice has the same effect as once.",
 });
+
+export const MESSAGE_HINT_PREFIX = "msg:user:";
+/** The Redis pub/sub channel one member's browser tabs listen on (spec M-3). */
+export const messageHintChannel = (userId: string) =>
+  `${MESSAGE_HINT_PREFIX}${userId}`;
+/** What travels on the channel: ids only. The client refetches through the authorized API. */
+export type MessageHint = { conversationId: string; messageId: string };

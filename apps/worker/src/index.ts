@@ -25,6 +25,7 @@ const worker = composeWorker({
   storage,
   config: {
     queueRedisUrl: env.QUEUE_REDIS_URL,
+    cacheRedisUrl: env.REDIS_URL,
     smtpUrl: env.SMTP_URL,
     emailFrom: env.EMAIL_FROM,
     emailRatePerSecond: env.EMAIL_RATE_PER_SECOND,
