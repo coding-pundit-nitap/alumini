@@ -5,3 +5,8 @@ export {
   MAX_OPEN_UPLOADS,
   MAX_UPLOAD_BYTES,
 } from "./domain/upload-rules";
+export { createCompleteUpload } from "./application/complete-upload";
+export { createPresignUpload } from "./application/presign-upload";
+export { createSetProfilePhoto } from "./application/set-profile-photo";
+export type { CompleteUploadResult } from "./application/complete-upload";
+export type { PresignUploadResult } from "./application/presign-upload";

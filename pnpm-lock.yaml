@@ -151,6 +151,9 @@ importers:
       '@nitap/observability':
         specifier: workspace:*
         version: link:../../packages/observability
+      '@nitap/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@nitap/ui':
         specifier: workspace:*
         version: link:../../packages/ui
