@@ -34,7 +34,12 @@ export type MessagingTx = {
     title: string | null;
     memberIds: string[];
   }): Promise<{ id: string }>;
-  addParticipant(conversationId: string, userId: string): Promise<boolean>;
+  /** Joins with the read marker already at `lastReadSeq`: a new member does not inherit the backlog as unread. */
+  addParticipant(
+    conversationId: string,
+    userId: string,
+    lastReadSeq: string
+  ): Promise<boolean>;
   removeParticipant(conversationId: string, userId: string): Promise<boolean>;
   findMessageByClientId(
     conversationId: string,

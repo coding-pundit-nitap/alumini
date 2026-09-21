@@ -237,6 +237,57 @@ describe("conversation routes", () => {
     });
   });
 
+  const EVIL = "https://evil.test";
+  it.each([
+    [
+      "POST /conversations/:id/messages",
+      () =>
+        postMessage(
+          json("/x", "POST", { body: "hi", clientMessageId: other }, EVIL),
+          ctx({ id })
+        ),
+      mocks.sendMessage,
+    ],
+    [
+      "POST /conversations/:id/read",
+      () => postRead(json("/x", "POST", { upToSeq: "5" }, EVIL), ctx({ id })),
+      mocks.markRead,
+    ],
+    [
+      "POST /conversations/:id/participants",
+      () => addMember(json("/x", "POST", { userId: other }, EVIL), ctx({ id })),
+      mocks.addParticipant,
+    ],
+    [
+      "DELETE /conversations/:id/participants/:userId",
+      () =>
+        removeMember(
+          json("/x", "DELETE", undefined, EVIL),
+          ctx({ id, userId: other })
+        ),
+      mocks.removeParticipant,
+    ],
+    [
+      "POST /reports",
+      () =>
+        report(
+          json(
+            "/api/v1/reports",
+            "POST",
+            { targetType: "MESSAGE", targetId: other, reason: "spam" },
+            EVIL
+          )
+        ),
+      mocks.reportMessage,
+    ],
+  ])(
+    "%s refuses a cross-origin request with 403",
+    async (_name, call, useCase) => {
+      expect((await call()).status).toBe(403);
+      expect(useCase).not.toHaveBeenCalled();
+    }
+  );
+
   it("refuses a report whose target type is not MESSAGE (only messages are reportable in Phase 9)", async () => {
     expect(
       (

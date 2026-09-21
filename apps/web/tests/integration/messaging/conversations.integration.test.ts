@@ -309,15 +309,44 @@ describe("conversations and sending against real PostgreSQL", () => {
       const m = build({
         consume: async () => ({ allowed: false, retryAfter: 5 }),
       });
+      const { conversationId } = await build().direct({
+        actor: actor(asha),
+        recipientId: ravi,
+      });
       expect(
         await code(
           m.send({
             actor: actor(asha),
-            conversationId: cid(1),
+            conversationId,
             input: { body: "x", clientMessageId: cid(2) },
           })
         )
       ).toBe("RATE_LIMITED");
+      expect(await db.prisma.message.count()).toBe(0);
+    });
+
+    it("retries of one clientMessageId consume the send budget once", async () => {
+      let consumed = 0;
+      const m = build({
+        consume: async () => {
+          consumed += 1;
+          return { allowed: true, retryAfter: null };
+        },
+      });
+      const { conversationId } = await m.direct({
+        actor: actor(asha),
+        recipientId: ravi,
+      });
+      const beforeSends = consumed;
+      for (let i = 0; i < 5; i += 1) {
+        await m.send({
+          actor: actor(asha),
+          conversationId,
+          input: { body: "once", clientMessageId: cid(7) },
+        });
+      }
+      expect(consumed - beforeSends).toBe(1);
+      expect(await db.prisma.message.count()).toBe(1);
     });
   });
 

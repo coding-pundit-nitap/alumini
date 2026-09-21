@@ -19,6 +19,9 @@ import { parse } from "./validation";
  * FR-MSG-001/002/005. The message, every recipient's unread counter and the `message.sent` event commit
  * together; nothing about delivery runs in the request. The conversation row lock serialises sends, so `seq`
  * is commit-ordered within a conversation and a retried `clientMessageId` finds its first result.
+ *
+ * The send budget is consumed inside that transaction, after the idempotency lookup: only a message that is
+ * actually written costs budget. The price is one Redis round-trip while the conversation row lock is held.
  */
 export function createSendMessage(deps: {
   store: MessagingStore;
@@ -33,12 +36,6 @@ export function createSendMessage(deps: {
   }): Promise<{ message: MessageRow; created: boolean }> {
     const caller = deps.authorize(args.actor, PERMISSIONS.MESSAGE_SEND);
     const input = parse(messageInput, args.input);
-    const verdict = await deps.rateLimiter.consume(
-      `messages.send:${caller.userId}`,
-      SEND_RATE
-    );
-    if (!verdict.allowed) throw new RateLimitedError(verdict.retryAfter ?? 60);
-
     const senderId = caller.userId.toLowerCase();
     const result = await deps.store.transaction(async (tx) => {
       const { conversation, participantIds } = await requireParticipant(
@@ -63,7 +60,15 @@ export function createSendMessage(deps: {
         senderId,
         input.clientMessageId
       );
+      // A retry of a send that already landed costs no budget, so a flaky network cannot exhaust it.
       if (existing) return { message: existing, created: false };
+
+      const verdict = await deps.rateLimiter.consume(
+        `messages.send:${caller.userId}`,
+        SEND_RATE
+      );
+      if (!verdict.allowed)
+        throw new RateLimitedError(verdict.retryAfter ?? 60);
 
       const message = await tx.insertMessage({
         conversationId: conversation.id,

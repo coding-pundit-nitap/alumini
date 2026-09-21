@@ -49,7 +49,12 @@ export function createAddParticipant(deps: Deps) {
       ) {
         throw new ConflictError("PARTICIPANT_UNAVAILABLE");
       }
-      return tx.addParticipant(conversation.id, target);
+      // Joins read up to date: the backlog is history, not 200 unread messages (and rebuildUnread agrees).
+      return tx.addParticipant(
+        conversation.id,
+        target,
+        conversation.lastMessageSeq
+      );
     });
     if (added) deps.observe?.("participant_added", args.conversationId);
     return { added };

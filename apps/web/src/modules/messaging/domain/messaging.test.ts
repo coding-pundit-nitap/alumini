@@ -68,9 +68,24 @@ describe("input schemas", () => {
       groupInput.safeParse({ memberIds: [uuid(1), uuid(1)] }).success
     ).toBe(false);
   });
+  it("bounds a group title to 1..80 characters", () => {
+    const members = { memberIds: [uuid(1), uuid(2)] };
+    const title = (value: string) =>
+      groupInput.safeParse({ ...members, title: value }).success;
+    expect(title("x".repeat(81))).toBe(false);
+    expect(title("x".repeat(80))).toBe(true);
+    expect(title("")).toBe(false);
+    expect(title("   ")).toBe(false);
+  });
   it("bounds report reasons and read markers", () => {
     expect(reportInput.safeParse({ reason: "" }).success).toBe(false);
     expect(reportInput.safeParse({ reason: "spam" }).success).toBe(true);
+    expect(reportInput.safeParse({ reason: "x".repeat(1001) }).success).toBe(
+      false
+    );
+    expect(reportInput.safeParse({ reason: "x".repeat(1000) }).success).toBe(
+      true
+    );
     expect(readInput.safeParse({ upToSeq: "12" }).success).toBe(true);
     expect(readInput.safeParse({ upToSeq: "-1" }).success).toBe(false);
     expect(readInput.safeParse({ upToSeq: "1e3" }).success).toBe(false);

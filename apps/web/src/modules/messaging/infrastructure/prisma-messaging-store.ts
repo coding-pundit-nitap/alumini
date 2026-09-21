@@ -117,9 +117,9 @@ export function createPrismaMessagingStore(deps: {
       return conversation;
     },
 
-    async addParticipant(conversationId, userId) {
+    async addParticipant(conversationId, userId, lastReadSeq) {
       const { count } = await db.conversationParticipant.createMany({
-        data: [{ conversationId, userId }],
+        data: [{ conversationId, userId, lastReadSeq: BigInt(lastReadSeq) }],
         skipDuplicates: true,
       });
       return count === 1;

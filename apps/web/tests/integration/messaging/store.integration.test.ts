@@ -124,6 +124,40 @@ describe("messaging store against real PostgreSQL", () => {
     expect((await unreadOfB()).lastReadSeq.toString()).toBe(seqs[2]);
   });
 
+  it("a member added later joins read up to date: rebuildUnread moves no counter", async () => {
+    const s = store();
+    const { id } = await s.transaction((tx) =>
+      tx.createGroup({ creatorId: a, title: null, memberIds: [b] })
+    );
+    for (let i = 1; i <= 2; i += 1) {
+      await s.transaction(async (tx) => {
+        await tx.lockConversation(id);
+        const m = await tx.insertMessage({
+          conversationId: id,
+          senderId: a,
+          body: `m${i}`,
+          clientMessageId: cid(i),
+        });
+        await tx.recordSend(m);
+      });
+    }
+    await s.transaction(async (tx) => {
+      const conversation = await tx.lockConversation(id);
+      await tx.addParticipant(id, c, conversation!.lastMessageSeq);
+    });
+    const unread = async () =>
+      Object.fromEntries(
+        (
+          await db.prisma.conversationParticipant.findMany({
+            where: { conversationId: id },
+          })
+        ).map((r) => [r.userId, r.unreadCount])
+      );
+    expect(await unread()).toEqual({ [a]: 0, [b]: 2, [c]: 0 });
+    await s.transaction((tx) => tx.rebuildUnread(id));
+    expect(await unread()).toEqual({ [a]: 0, [b]: 2, [c]: 0 });
+  });
+
   it("insertReport is idempotent per reporter and message", async () => {
     const s = store();
     const first = await s.transaction((tx) =>
