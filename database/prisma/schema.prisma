@@ -56,6 +56,8 @@ model User {
   connectionsRequested Connection[] @relation("ConnectionRequester")
   connectionsBlocked   Connection[] @relation("ConnectionBlocker")
   mentorProfile        MentorProfile?
+  mentorshipsAsMentor Mentorship[] @relation("MentorshipMentor")
+  mentorshipsAsMentee Mentorship[] @relation("MentorshipMentee")
 
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
@@ -503,6 +505,39 @@ model MentorProfile {
   @@index([topics], type: Gin, map: "ix_mentor_profile_topics")
   @@index([accepting], map: "ix_mentor_profile_accepting")
   @@map("mentor_profile")
+}
+
+enum MentorshipState {
+  REQUESTED
+  ACCEPTED
+  ACTIVE
+  COMPLETED
+  DECLINED
+  CANCELLED
+}
+
+/// FR-MENTOR-004…006. History is kept: a terminal row is never reused (spec M-4). The open-pair index
+/// `uq_mentorship_open_pair` is PARTIAL (WHERE state IN open states) and is written by hand in the migration.
+model Mentorship {
+  id           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  mentorId     String          @map("mentor_id") @db.Uuid
+  mentor       User            @relation("MentorshipMentor", fields: [mentorId], references: [id], onDelete: Cascade)
+  menteeId     String          @map("mentee_id") @db.Uuid
+  mentee       User            @relation("MentorshipMentee", fields: [menteeId], references: [id], onDelete: Cascade)
+  state        MentorshipState @default(REQUESTED)
+  topic        String?
+  message      String
+  responseNote String?         @map("response_note")
+  requestedAt  DateTime        @default(now()) @map("requested_at") @db.Timestamptz(3)
+  respondedAt  DateTime?       @map("responded_at") @db.Timestamptz(3)
+  startedAt    DateTime?       @map("started_at") @db.Timestamptz(3)
+  endedAt      DateTime?       @map("ended_at") @db.Timestamptz(3)
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([mentorId, menteeId], map: "uq_mentorship_open_pair")
+  @@index([mentorId, state], map: "ix_mentorship_mentor")
+  @@index([menteeId, state], map: "ix_mentorship_mentee")
+  @@map("mentorship")
 }
 
 enum IdempotencyState {
