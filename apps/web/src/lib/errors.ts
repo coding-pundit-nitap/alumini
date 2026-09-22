@@ -54,6 +54,10 @@ export const ERROR_CATALOG: Record<
     status: 403,
     message: "You do not have permission to review this.",
   },
+  REVIEW_NOTE_REQUIRED: {
+    status: 400,
+    message: "A note explaining the rejection is required.",
+  },
   VERIFICATION_LOCKED: {
     status: 403,
     message:
