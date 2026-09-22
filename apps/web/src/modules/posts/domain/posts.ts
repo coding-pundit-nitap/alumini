@@ -32,11 +32,10 @@ export const reactInput = z.object({ type: z.enum(REACTION_TYPES) }).strict();
 export type Refusal = { code: "NOT_FOUND" | "NOT_OWNER" };
 type Decision = { ok: true } | ({ ok: false } & Refusal);
 
-/** May `actorId` comment or react on this post? `block` is "is there a BLOCKED row between actor and author". */
+/** May the caller comment or react on this post? `block` is "is there a BLOCKED row between actor and author". */
 export function decideInteract(
   post: { id: string; authorId: string; deleted: boolean },
-  block: boolean | null,
-  actorId: string
+  block: boolean | null
 ): Decision {
   if (post.deleted) return { ok: false, code: "NOT_FOUND" };
   if (block) return { ok: false, code: "NOT_FOUND" };

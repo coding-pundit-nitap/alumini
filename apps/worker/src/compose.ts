@@ -6,13 +6,22 @@ import { createIdempotencyStore } from "@nitap/database/idempotency";
 import { createUploadStore } from "@nitap/database/uploads";
 import { createSmtpEmailPort } from "@nitap/email";
 import {
+  achievementApproved,
+  achievementRejected,
+  achievementSubmitted,
+  commentCreated,
   connectionAccepted,
   connectionRequested,
+  contentRemoved,
   emailSend,
   idempotencySweep,
   mentorshipJobs,
   messageSent,
   outboxPrune,
+  postCreated,
+  reactionAdded,
+  reportFiled,
+  reportResolved,
   uploadScan,
   uploadSweep,
 } from "@nitap/jobs";
@@ -33,6 +42,17 @@ import type { StoragePort } from "@nitap/storage";
 
 import { createRedisHintPublisher } from "./hints.ts";
 import type { Readiness } from "./health.ts";
+import {
+  createAchievementApprovedProcessor,
+  createAchievementRejectedProcessor,
+  createAchievementSubmittedProcessor,
+  createCommentCreatedProcessor,
+  createContentRemovedProcessor,
+  createPostCreatedProcessor,
+  createReactionAddedProcessor,
+  createReportFiledProcessor,
+  createReportResolvedProcessor,
+} from "./processors/community-event.ts";
 import { createConnectionEventProcessor } from "./processors/connection-event.ts";
 import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
@@ -142,6 +162,15 @@ export function composeWorker(
       [connectionRequested.name]: connectionRequested,
       [connectionAccepted.name]: connectionAccepted,
       [messageSent.name]: messageSent,
+      [postCreated.name]: postCreated,
+      [commentCreated.name]: commentCreated,
+      [reactionAdded.name]: reactionAdded,
+      [achievementSubmitted.name]: achievementSubmitted,
+      [achievementApproved.name]: achievementApproved,
+      [achievementRejected.name]: achievementRejected,
+      [reportFiled.name]: reportFiled,
+      [reportResolved.name]: reportResolved,
+      [contentRemoved.name]: contentRemoved,
       ...Object.fromEntries(
         Object.values(mentorshipJobs).map((job) => [job.name, job])
       ),
@@ -166,6 +195,15 @@ export function composeWorker(
         connectionAccepted,
         createConnectionEventProcessor("accepted")
       ),
+      registerJob(postCreated, createPostCreatedProcessor()),
+      registerJob(commentCreated, createCommentCreatedProcessor()),
+      registerJob(reactionAdded, createReactionAddedProcessor()),
+      registerJob(achievementSubmitted, createAchievementSubmittedProcessor()),
+      registerJob(achievementApproved, createAchievementApprovedProcessor()),
+      registerJob(achievementRejected, createAchievementRejectedProcessor()),
+      registerJob(reportFiled, createReportFiledProcessor()),
+      registerJob(reportResolved, createReportResolvedProcessor()),
+      registerJob(contentRemoved, createContentRemovedProcessor()),
       ...Object.values(mentorshipJobs).map((job) =>
         registerJob(
           job,

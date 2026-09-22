@@ -23,7 +23,7 @@ export function createUnreact(deps: {
       const post = await tx.findPost(args.postId);
       if (!post) throw new NotFoundError();
       const block = await tx.blockedBetween(actorId, post.authorId);
-      const decision = decideInteract(post, block, actorId);
+      const decision = decideInteract(post, block);
       if (!decision.ok) refuse(decision);
       await tx.deleteReaction(post.id, actorId);
     });

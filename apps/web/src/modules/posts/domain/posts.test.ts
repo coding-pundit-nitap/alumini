@@ -51,20 +51,20 @@ describe("input schemas", () => {
 describe("decideInteract (comment/react eligibility, C-10)", () => {
   const post = { id: "p1", authorId: A, deleted: false };
   it("allows any verified member on a visible post with no block", () => {
-    expect(decideInteract(post, null, B)).toEqual({ ok: true });
+    expect(decideInteract(post, null)).toEqual({ ok: true });
   });
   it("refuses a deleted post as NOT_FOUND", () => {
-    expect(decideInteract({ ...post, deleted: true }, null, B)).toEqual({
+    expect(decideInteract({ ...post, deleted: true }, null)).toEqual({
       ok: false,
       code: "NOT_FOUND",
     });
   });
   it("refuses NOT_FOUND on either side of a block, revealing nothing (no distinct blocked error)", () => {
-    expect(decideInteract(post, true, B)).toEqual({
+    expect(decideInteract(post, true)).toEqual({
       ok: false,
       code: "NOT_FOUND",
     });
-    expect(decideInteract(post, true, A)).toEqual({
+    expect(decideInteract(post, true)).toEqual({
       ok: false,
       code: "NOT_FOUND",
     });
