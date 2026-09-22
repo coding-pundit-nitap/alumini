@@ -77,9 +77,15 @@ const anyModule = {
 };
 
 const deepModuleImport = {
-  group: ["@/modules/*/*"],
+  group: [
+    "@/modules/*/*",
+    // A module's server-only entry point (mirrors `index.ts`, kept separate so a client component that
+    // imports the module's client-safe index never drags server-only infrastructure, e.g. the generated
+    // Prisma client, into the browser bundle). Only composition roots (app-ui-lib) import it in practice.
+    "!@/modules/*/server",
+  ],
   message:
-    "Import another module only through its index (`@/modules/<name>`); use relative paths inside a module (strategy §2.3 rule 3).",
+    "Import another module only through its index (`@/modules/<name>`) or its server-only entry point (`@/modules/<name>/server`); use relative paths inside a module (strategy §2.3 rule 3).",
 };
 
 const components = {

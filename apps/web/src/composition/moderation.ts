@@ -5,9 +5,9 @@ import {
   createClaimReport,
   createDismissReport,
   createFileContentReport,
-  createPrismaModerationStore,
   createResolveReport,
 } from "@/modules/moderation";
+import { createPrismaModerationStore } from "@/modules/moderation/server";
 
 /** Wires the moderation module to PostgreSQL (mirrors composition/posts.ts's shape). */
 const store = createPrismaModerationStore({

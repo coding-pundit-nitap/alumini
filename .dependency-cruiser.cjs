@@ -50,21 +50,23 @@ module.exports = {
     {
       name: "no-deep-cross-module-import",
       comment:
-        "Other modules are reached only through their index.ts (strategy §2.3 rule 3).",
+        "Other modules are reached only through their index.ts, or their server.ts for server-only " +
+        "exports a client barrel can't carry (strategy §2.3 rule 3; see modules/moderation/server.ts).",
       severity: "error",
       from: { path: "^(?:apps/web/)?src/modules/([^/]+)/" },
       to: {
         path: "^(?:apps/web/)?src/modules/[^/]+/",
         pathNot: [
           "^(?:apps/web/)?src/modules/$1/",
-          "^(?:apps/web/)?src/modules/[^/]+/index\\.ts$",
+          "^(?:apps/web/)?src/modules/[^/]+/(index|server)\\.ts$",
         ],
       },
     },
     {
       name: "no-deep-cross-module-import-from-outside",
       comment:
-        "app/, components/, etc. reach a module only through its index.ts.",
+        "app/, components/, etc. reach a module only through its index.ts, or its server.ts for " +
+        "server-only exports a client barrel can't carry.",
       severity: "error",
       from: {
         path: "^(?:apps/web/)?src/",
@@ -72,7 +74,7 @@ module.exports = {
       },
       to: {
         path: "^(?:apps/web/)?src/modules/[^/]+/",
-        pathNot: "^(?:apps/web/)?src/modules/[^/]+/index\\.ts$",
+        pathNot: "^(?:apps/web/)?src/modules/[^/]+/(index|server)\\.ts$",
       },
     },
     {
