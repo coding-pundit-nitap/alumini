@@ -60,3 +60,4 @@ Thumbs.db
 database/generated
 # Turborepo
 .turbo
+.superpowers/
