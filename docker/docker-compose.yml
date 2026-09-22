@@ -110,6 +110,11 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     restart: unless-stopped
+    # Reverse-DNS lookups on the connecting IP block the SMTP greeting in this environment (no working
+    # PTR resolution for the docker-bridge gateway address), which reads as a hung "greeting never
+    # received" to any client outside the container's own loopback. Disabling rDNS is a dev-mailbox-only
+    # concern; it never talks to real mail servers.
+    command: ["--smtp-disable-rdns"]
     ports:
       - "${MAILPIT_SMTP_PORT:-1025}:1025"
       - "${MAILPIT_UI_PORT:-8025}:8025"
