@@ -46,7 +46,7 @@ export function createPrismaPostsStore(deps: {
     },
 
     async listFeed({ limit, after }) {
-      return db.post.findMany({
+      const posts = await db.post.findMany({
         where: {
           deleted: false,
           ...(after
@@ -61,6 +61,30 @@ export function createPrismaPostsStore(deps: {
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: limit,
       });
+      if (posts.length === 0) return [];
+
+      // Read-only join against `report` (no import of modules/moderation — schema, not module API, is
+      // the shared contract, same as blockedBetween/uploadsReady above). Oldest-first so `reports`
+      // below keeps each target's first-filed open report when more than one exists.
+      const reports = await db.report.findMany({
+        where: {
+          targetType: "POST",
+          targetId: { in: posts.map((post) => post.id) },
+          status: { in: ["OPEN", "UNDER_REVIEW"] },
+        },
+        orderBy: { createdAt: "asc" },
+        select: { id: true, targetId: true },
+      });
+      const openReportByPostId = new Map<string, string>();
+      for (const report of reports) {
+        if (!openReportByPostId.has(report.targetId)) {
+          openReportByPostId.set(report.targetId, report.id);
+        }
+      }
+      return posts.map((post) => ({
+        ...post,
+        openReportId: openReportByPostId.get(post.id) ?? null,
+      }));
     },
 
     async insertComment(input) {

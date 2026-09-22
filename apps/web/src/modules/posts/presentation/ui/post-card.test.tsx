@@ -118,7 +118,7 @@ describe("PostCard", () => {
     expect(screen.queryByRole("button", { name: /^report$/i })).toBeNull();
   });
 
-  it("shows Report to an actor holding post.moderate or report.review, then Resolve/Dismiss once filed", async () => {
+  it("shows Report to an actor holding post.moderate or report.review, and files it", async () => {
     const a = actions();
     render(
       <PostCard
@@ -139,13 +139,27 @@ describe("PostCard", () => {
       targetId: post.id,
       reason: "Spam",
     });
+  });
+
+  it("shows Resolve/Dismiss once the durable feed data carries an open report, even for an actor who never filed it", async () => {
+    const a = actions();
+    render(
+      <PostCard
+        post={{ ...post, openReportId: "r1" }}
+        currentUserId={otherId}
+        canModerate={true}
+        mine={null}
+        {...a}
+      />
+    );
     expect(
-      await screen.findByRole("button", { name: /resolve/i })
+      screen.getByRole("button", { name: /resolve/i })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /dismiss/i })
     ).toBeInTheDocument();
 
+    const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /resolve/i }));
     expect(a.onResolve).toHaveBeenCalledWith("r1");
   });

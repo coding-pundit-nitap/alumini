@@ -8,6 +8,12 @@ export type PostRow = {
   postType: "TEXT" | "ACHIEVEMENT";
   deleted: boolean;
   createdAt: Date;
+  /** The id of an OPEN/UNDER_REVIEW report against this post, or null; only `listFeed` populates it
+   * (other reads don't join it — optional, not "no report"). Backs the feed's Resolve/Dismiss
+   * affordance (`canModerate` actors only render it); not moderation-module state duplication —
+   * modules/posts reads the `report` table directly, the same cross-module-read-by-schema pattern
+   * `blockedBetween`/`uploadsReady` already use. */
+  openReportId?: string | null;
 };
 export type CommentRow = {
   id: string;

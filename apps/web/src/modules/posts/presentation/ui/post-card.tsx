@@ -3,7 +3,6 @@
 import { Button } from "@nitap/ui/components/button";
 import { Card, CardContent, CardFooter } from "@nitap/ui/components/card";
 import Link from "next/link";
-import { useState } from "react";
 
 import type { ActionResult } from "@/lib/action-result";
 import { ReportDialog, type ModerationTarget } from "@/modules/moderation";
@@ -35,10 +34,9 @@ type ResolveAction = (
 /**
  * A single feed post: Markdown-rendered content (never raw, C-2), images, reactions, a comment-count
  * link, own-post delete, and — for an actor holding `post.moderate`/`report.review` (`canModerate`) — an
- * inline Report affordance that flips to Resolve/Dismiss once filed. There is no persisted "already
- * reported" read this phase (list-feed doesn't join reports), so the flip only tracks the report this
- * actor just filed in this render (ponytail: session-local, not a durable per-post report status — add a
- * joined `reportId` to list-feed's row if a durable read is needed later).
+ * inline Report affordance that flips to Resolve/Dismiss once `post.openReportId` is set (`list-feed`
+ * joins the `report` table, so this is a durable per-post read, not session-local state: any moderator
+ * viewing the feed sees the same affordance, and it clears once the report is resolved/dismissed).
  */
 export function PostCard({
   post,
@@ -63,7 +61,7 @@ export function PostCard({
   onResolve: ResolveAction;
   onDismiss: ResolveAction;
 }) {
-  const [reportId, setReportId] = useState<string | null>(null);
+  const reportId = post.openReportId ?? null;
 
   return (
     <Card>
@@ -147,7 +145,6 @@ export function PostCard({
               targetType="POST"
               targetId={post.id}
               onSubmit={onReport}
-              onReported={setReportId}
             />
           )
         ) : null}

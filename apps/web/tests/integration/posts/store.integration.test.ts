@@ -103,6 +103,73 @@ describe("posts store against real PostgreSQL", () => {
     expect(feed.find((p) => p.id === post.id)).toBeUndefined();
   });
 
+  it("listFeed sets openReportId only for posts with an OPEN/UNDER_REVIEW report, null otherwise", async () => {
+    const s = store();
+    const [reported, clean] = await s.transaction((tx) =>
+      Promise.all([
+        tx.insertPost({
+          authorId: a,
+          chapterId: null,
+          content: "reported",
+          imageUrls: [],
+          linkUrl: null,
+          postType: "TEXT",
+        }),
+        tx.insertPost({
+          authorId: a,
+          chapterId: null,
+          content: "clean",
+          imageUrls: [],
+          linkUrl: null,
+          postType: "TEXT",
+        }),
+      ])
+    );
+    const report = await db.prisma.report.create({
+      data: {
+        reporterId: b,
+        targetType: "POST",
+        targetId: reported.id,
+        reason: "spam",
+      },
+    });
+    const feed = await s.transaction((tx) =>
+      tx.listFeed({ limit: 10, after: null })
+    );
+    expect(feed.find((p) => p.id === reported.id)?.openReportId).toBe(
+      report.id
+    );
+    expect(feed.find((p) => p.id === clean.id)?.openReportId).toBeNull();
+  });
+
+  it("listFeed omits openReportId once the report is resolved/dismissed", async () => {
+    const s = store();
+    const post = await s.transaction((tx) =>
+      tx.insertPost({
+        authorId: a,
+        chapterId: null,
+        content: "hi",
+        imageUrls: [],
+        linkUrl: null,
+        postType: "TEXT",
+      })
+    );
+    await db.prisma.report.create({
+      data: {
+        reporterId: b,
+        targetType: "POST",
+        targetId: post.id,
+        reason: "spam",
+        status: "DISMISSED",
+        resolvedById: b,
+      },
+    });
+    const feed = await s.transaction((tx) =>
+      tx.listFeed({ limit: 10, after: null })
+    );
+    expect(feed.find((p) => p.id === post.id)?.openReportId).toBeNull();
+  });
+
   it("enqueue writes post.created to the outbox iff the transaction commits", async () => {
     const s = store();
     await expect(
