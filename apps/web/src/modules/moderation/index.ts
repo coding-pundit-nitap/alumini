@@ -10,3 +10,5 @@ export type {
   ModerationTx,
   ReportRow,
 } from "./application/moderation-store";
+export type { ModerationTarget } from "./domain/moderation";
+export { ReportDialog } from "./presentation/ui/report-dialog";

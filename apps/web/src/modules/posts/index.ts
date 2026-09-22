@@ -15,3 +15,10 @@ export type {
   PostsStore,
   PostsTx,
 } from "./application/posts-store";
+export type { ReactionType } from "./domain/posts";
+export { CommentThread } from "./presentation/ui/comment-thread";
+export { FeedList } from "./presentation/ui/feed-list";
+export { MarkdownView } from "./presentation/ui/markdown-view";
+export { PostCard } from "./presentation/ui/post-card";
+export { PostComposer } from "./presentation/ui/post-composer";
+export { ReactionPicker } from "./presentation/ui/reaction-picker";

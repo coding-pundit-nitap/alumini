@@ -17,9 +17,19 @@ import {
   fileContentReport,
   resolveReport,
 } from "@/composition/moderation";
+import {
+  completeUpload,
+  getUploadStatus,
+  presignUpload,
+} from "@/composition/uploads";
 import type { ActionResult } from "@/lib/action-result";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import type {
+  CompleteUploadResult,
+  PresignUploadResult,
+  UploadStatusResult,
+} from "@/modules/uploads";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -163,4 +173,45 @@ export async function dismissReportAction(
     refresh();
     return {};
   });
+}
+
+/**
+ * PostComposer's image pickers (spec 3C flow, reused as-is): the underlying upload rows are still
+ * tagged `purpose: "PROFILE_PHOTO"` (uploads' one current purpose) and gated on `profile.update`, which
+ * every verified member holds (MEMBER_BASELINE) — `createPost`'s `uploadsReady` check only cares about
+ * ownership and READY status, not purpose, so this works today. Mirrors app/profile/photo-actions.ts.
+ */
+export async function presignPostImageAction(input: {
+  mime: string;
+  size: number;
+}): Promise<ActionResult<PresignUploadResult>> {
+  return runAction(async () =>
+    presignUpload({
+      actor: await getActor(),
+      mime: input.mime,
+      size: input.size,
+    })
+  );
+}
+
+export async function completePostImageAction(
+  uploadId: string
+): Promise<ActionResult<CompleteUploadResult>> {
+  return runAction(async () =>
+    completeUpload({
+      actor: await getActor(),
+      uploadId: parseId("uploadId", uploadId),
+    })
+  );
+}
+
+export async function getPostImageStatusAction(
+  uploadId: string
+): Promise<ActionResult<UploadStatusResult>> {
+  return runAction(async () =>
+    getUploadStatus({
+      actor: await getActor(),
+      uploadId: parseId("uploadId", uploadId),
+    })
+  );
 }

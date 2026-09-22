@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { addCommentAction, deleteCommentAction } from "../actions";
 import { listComments } from "@/composition/posts";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { CommentThread } from "@/modules/posts";
 
 export const metadata: Metadata = { title: "Post" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Minimal proof of wiring only (Task 11): plain output, no shadcn UI. Task 13 builds the real page. */
 export default async function PostPage({
   params,
 }: {
@@ -35,13 +36,13 @@ export default async function PostPage({
         Back to feed
       </Link>
       <h1 className="text-2xl font-semibold">Comments</h1>
-      <ul className="space-y-4">
-        {page.comments.map((comment) => (
-          <li key={comment.id} className="border-b pb-4">
-            {comment.body}
-          </li>
-        ))}
-      </ul>
+      <CommentThread
+        postId={postId}
+        comments={page.comments}
+        currentUserId={actor.userId}
+        onAddComment={addCommentAction}
+        onDeleteComment={deleteCommentAction}
+      />
     </div>
   );
 }

@@ -1,16 +1,26 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PERMISSIONS } from "@nitap/database/permissions";
 
+import {
+  createPostAction,
+  deletePostAction,
+  dismissReportAction,
+  presignPostImageAction,
+  completePostImageAction,
+  getPostImageStatusAction,
+  reactAction,
+  reportContentAction,
+  resolveReportAction,
+  unreactAction,
+} from "./actions";
 import { listFeed } from "@/composition/posts";
 import { AppError } from "@/lib/errors";
-import { getActor } from "@/modules/auth";
+import { can, getActor } from "@/modules/auth";
+import { FeedList, PostComposer } from "@/modules/posts";
 
 export const metadata: Metadata = { title: "Feed" };
 
-/**
- * Minimal proof of wiring only (Task 11): plain output, no shadcn UI. Task 13 builds the real feed.
- */
 export default async function FeedPage({
   searchParams,
 }: {
@@ -30,30 +40,31 @@ export default async function FeedPage({
     throw error;
   }
 
+  const canModerate =
+    can(actor, PERMISSIONS.POST_MODERATE) ||
+    can(actor, PERMISSIONS.REPORT_REVIEW);
+
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-12">
       <h1 className="text-2xl font-semibold">Feed</h1>
-      <ul className="space-y-4">
-        {page.posts.map((post) => (
-          <li key={post.id} className="border-b pb-4">
-            <p>{post.content}</p>
-            <Link
-              href={`/feed/${post.id}`}
-              className="text-primary text-sm underline"
-            >
-              View comments
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {page.nextCursor ? (
-        <Link
-          href={`/feed?cursor=${encodeURIComponent(page.nextCursor)}`}
-          className="text-primary block text-center text-sm underline"
-        >
-          Next page
-        </Link>
-      ) : null}
+      <PostComposer
+        onSubmit={createPostAction}
+        presignAction={presignPostImageAction}
+        completeAction={completePostImageAction}
+        statusAction={getPostImageStatusAction}
+      />
+      <FeedList
+        posts={page.posts}
+        nextCursor={page.nextCursor}
+        currentUserId={actor.userId}
+        canModerate={canModerate}
+        onDelete={deletePostAction}
+        onReact={reactAction}
+        onUnreact={unreactAction}
+        onReport={reportContentAction}
+        onResolve={resolveReportAction}
+        onDismiss={dismissReportAction}
+      />
     </div>
   );
 }

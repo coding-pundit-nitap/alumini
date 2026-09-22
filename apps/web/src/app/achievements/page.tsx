@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { submitAchievementAction } from "./actions";
 import { listOwnAchievements } from "@/composition/achievements";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { AchievementForm, AchievementList } from "@/modules/achievements";
 
 export const metadata: Metadata = { title: "Your achievements" };
 
-/** Minimal proof of wiring only (Task 11): plain output, no shadcn UI. Task 13 builds the real page. */
 export default async function AchievementsPage({
   searchParams,
 }: {
@@ -30,16 +31,14 @@ export default async function AchievementsPage({
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-12">
       <h1 className="text-2xl font-semibold">Your achievements</h1>
-      <ul className="space-y-4">
-        {page.achievements.map((achievement) => (
-          <li key={achievement.id} className="border-b pb-4">
-            <p className="font-medium">{achievement.title}</p>
-            <p className="text-muted-foreground text-sm">
-              {achievement.status}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <AchievementForm onSubmit={submitAchievementAction} />
+      {/*
+       * `listOwnAchievements` only ever returns the caller's own submissions, and a reviewer may never
+       * review their own (SELF_REVIEW_FORBIDDEN, C-7) — so this list never shows the review affordance.
+       * There is no reviewer queue page this phase; AchievementList itself supports `isReviewer` for
+       * wherever a reviewer's OWN view of someone else's achievement becomes visible later.
+       */}
+      <AchievementList achievements={page.achievements} isReviewer={false} />
     </div>
   );
 }

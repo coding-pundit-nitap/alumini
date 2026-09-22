@@ -10,3 +10,5 @@ export type {
   AchievementsStore,
   AchievementsTx,
 } from "./application/achievements-store";
+export { AchievementForm } from "./presentation/ui/achievement-form";
+export { AchievementList } from "./presentation/ui/achievement-list";
