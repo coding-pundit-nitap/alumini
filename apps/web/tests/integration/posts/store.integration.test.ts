@@ -15,16 +15,14 @@ describe("posts store against real PostgreSQL", () => {
   beforeEach(async () => {
     db = await createTestDatabase();
     await runSeed(db.prisma);
-    [a, b] = await Promise.all(
-      ["one", "two"].map(
-        async (name) =>
-          (
-            await db.prisma.user.create({
-              data: { name, email: `${name}@example.test` },
-            })
-          ).id
-      )
-    );
+    [a, b] = await Promise.all([
+      db.prisma.user
+        .create({ data: { name: "one", email: "one@example.test" } })
+        .then((u) => u.id),
+      db.prisma.user
+        .create({ data: { name: "two", email: "two@example.test" } })
+        .then((u) => u.id),
+    ]);
   });
   afterEach(async () => {
     await db.drop();

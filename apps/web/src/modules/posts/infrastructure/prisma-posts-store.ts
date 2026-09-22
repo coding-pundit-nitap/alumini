@@ -1,14 +1,10 @@
 import { Prisma } from "@nitap/database";
 import type { OutboxWriter } from "@nitap/database/outbox";
+import type { OutboxEvent } from "@nitap/jobs";
 
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
 
-import type {
-  CommentRow,
-  PostRow,
-  PostsStore,
-  PostsTx,
-} from "../application/posts-store";
+import type { PostsStore, PostsTx } from "../application/posts-store";
 import { blockedBetween } from "./sql";
 
 /**
@@ -23,8 +19,10 @@ export function createPrismaPostsStore(deps: {
 }): PostsStore {
   const forClient = (db: Prisma.TransactionClient): PostsTx => ({
     async blockedBetween(x, y) {
-      const rows = await db.$queryRaw<unknown[]>(blockedBetween(x, y));
-      return rows.length > 0;
+      const rows = await db.$queryRaw<{ blocked: boolean }[]>(
+        Prisma.sql`SELECT ${blockedBetween(x, y)} AS "blocked"`
+      );
+      return rows[0]?.blocked ?? false;
     },
 
     async uploadsReady(ids, ownerId) {
@@ -110,7 +108,9 @@ export function createPrismaPostsStore(deps: {
     },
 
     async enqueue(event) {
-      await deps.outbox.add(db, event);
+      // PostsTx.enqueue's `payload: unknown` is narrowed by the caller (each use case builds it with
+      // `satisfies <Payload>`); the outbox writer re-validates against the job schema at runtime regardless.
+      await deps.outbox.add(db, event as OutboxEvent);
     },
   });
 
