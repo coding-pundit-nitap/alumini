@@ -1,0 +1,100 @@
+import { describe, expect, it, vi } from "vitest";
+
+import { AuthorizationError } from "@/lib/errors";
+import type { Actor } from "@/modules/auth";
+
+import { decideTransition } from "../domain/achievement";
+import { createReviewAchievement } from "./review-achievement";
+import type { AchievementRow, AchievementsTx } from "./achievements-store";
+import { refuse } from "./refusal";
+
+const actor: Actor = {
+  userId: "reviewer1",
+  accountState: "VERIFIED",
+  requestId: "r",
+  grants: [],
+};
+const authorize = vi.fn((a: Actor | null) => a as Actor);
+
+const row = (over: Partial<AchievementRow> = {}): AchievementRow => ({
+  id: "a1",
+  userId: "owner1",
+  title: "t",
+  description: "d",
+  category: "AWARD",
+  status: "SUBMITTED",
+  reviewedById: null,
+  publishedPostId: null,
+  createdAt: new Date(),
+  ...over,
+});
+
+function fakeTx(found: AchievementRow | null): AchievementsTx {
+  return {
+    insertAchievement: vi.fn(),
+    findAchievement: vi.fn(async () => found),
+    patchAchievement: vi.fn(async () => {}),
+    publishAsPost: vi.fn(async () => ({ postId: "p1" })),
+    listOwn: vi.fn(),
+    enqueue: vi.fn(),
+  } as unknown as AchievementsTx;
+}
+
+describe("reviewAchievement", () => {
+  it("approves: publishes as post and patches status in the same transaction", async () => {
+    const tx = fakeTx(row());
+    const store = { transaction: vi.fn((work) => work(tx)) };
+    await createReviewAchievement({ store, authorize })({
+      actor,
+      achievementId: "a1",
+      outcome: "approve",
+    });
+    expect(tx.publishAsPost).toHaveBeenCalled();
+    expect(tx.patchAchievement).toHaveBeenCalledWith(
+      "a1",
+      expect.objectContaining({ status: "PUBLISHED" })
+    );
+  });
+
+  it("refuses a self-review (SELF_REVIEW_FORBIDDEN) and writes nothing", async () => {
+    const tx = fakeTx(row({ userId: actor.userId }));
+    const store = { transaction: vi.fn((work) => work(tx)) };
+    await expect(
+      createReviewAchievement({ store, authorize })({
+        actor,
+        achievementId: "a1",
+        outcome: "approve",
+      })
+    ).rejects.toMatchObject({ code: "SELF_REVIEW_FORBIDDEN" });
+    expect(tx.patchAchievement).not.toHaveBeenCalled();
+  });
+
+  /**
+   * `review-achievement.ts` hardcodes `isReviewer: true` at its only call site to `decideTransition` — by
+   * design (spec: `ACHIEVEMENT_REVIEW` is a role-wide permission, no per-achievement reviewer assignment),
+   * so `deps.authorize` having already accepted the caller means the domain's `NOT_REVIEWER` branch can
+   * never fire through the full `reviewAchievement()` call in production. That makes it untestable via a
+   * through-the-stack call (any such test would pass even if the branch were deleted). This test instead
+   * exercises, directly, the exact two-step composition `reviewAchievement()`'s transaction body performs —
+   * `decideTransition(...)` then `refuse(decision)` on failure — with `isReviewer: false`, proving that
+   * composition (both the domain check and its mapping to an AppError) is wired correctly and would break
+   * if either half were removed.
+   */
+  it("propagates the domain's NOT_REVIEWER refusal as AuthorizationError when isReviewer is false", () => {
+    const decision = decideTransition(
+      row(),
+      "someoneElse",
+      { action: "review", outcome: "approve" },
+      false
+    );
+    expect(decision).toEqual({ ok: false, code: "NOT_REVIEWER" });
+    expect(() => {
+      if (!decision.ok) refuse(decision);
+    }).toThrow(AuthorizationError);
+    try {
+      if (!decision.ok) refuse(decision);
+    } catch (e) {
+      expect((e as { code?: string }).code).toBe("NOT_REVIEWER");
+    }
+  });
+});
