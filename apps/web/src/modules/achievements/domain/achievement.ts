@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * The achievement review state machine, pure (FR-ACH-001…003, spec C-7). Mirrors
  * modules/mentorship/domain/mentorship.ts's shape: fixed check order (actor → self-review →
@@ -12,6 +14,22 @@ export const ACHIEVEMENT_STATES = [
   "WITHDRAWN",
 ] as const;
 export type AchievementState = (typeof ACHIEVEMENT_STATES)[number];
+
+/** FR-ACH-001 submission input, the single source of the pure validation rule. */
+export const achievementInput = z
+  .object({
+    title: z.string().trim().min(1).max(200),
+    description: z.string().trim().min(1).max(5000),
+    category: z.enum([
+      "AWARD",
+      "PUBLICATION",
+      "PROMOTION",
+      "CERTIFICATION",
+      "ENTREPRENEURSHIP",
+      "OTHER",
+    ]),
+  })
+  .strict();
 
 export type AchievementAction = "review" | "withdraw";
 export type AchievementEventType =

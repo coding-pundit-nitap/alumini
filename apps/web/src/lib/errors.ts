@@ -50,6 +50,10 @@ export const ERROR_CATALOG: Record<
     status: 403,
     message: "You cannot review your own request.",
   },
+  NOT_REVIEWER: {
+    status: 403,
+    message: "You do not have permission to review this.",
+  },
   VERIFICATION_LOCKED: {
     status: 403,
     message:

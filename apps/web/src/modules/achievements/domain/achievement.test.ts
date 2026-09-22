@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   ACHIEVEMENT_STATES,
+  achievementInput,
   decideTransition,
   type AchievementState,
   type Refusal,
@@ -168,7 +169,7 @@ describe("achievement state machine (C-7)", () => {
         // review actions with each outcome and isReviewer combo
         for (const outcome of outcomes) {
           for (const isReviewer of [true, false]) {
-            let expectedOk = false;
+            let expectedOk: boolean;
             let expectedCode: Refusal["code"] | undefined;
             let expectedTo: AchievementState | undefined;
 
@@ -246,5 +247,39 @@ describe("achievement state machine (C-7)", () => {
 
     // Verify case count
     expect(cases.length).toBe(ACHIEVEMENT_STATES.length * 2 * (1 + 2 * 2));
+  });
+});
+
+describe("achievementInput (FR-ACH-001)", () => {
+  const valid = { title: "t", description: "d", category: "AWARD" };
+
+  it("accepts a well-formed submission", () => {
+    expect(achievementInput.safeParse(valid).success).toBe(true);
+  });
+
+  it("rejects an empty title, an empty description, and an unknown category", () => {
+    expect(achievementInput.safeParse({ ...valid, title: "" }).success).toBe(
+      false
+    );
+    expect(
+      achievementInput.safeParse({ ...valid, description: "" }).success
+    ).toBe(false);
+    expect(
+      achievementInput.safeParse({ ...valid, category: "NOT_A_CATEGORY" })
+        .success
+    ).toBe(false);
+  });
+
+  it("rejects a title over 200 chars, a description over 5000 chars, and unknown fields (strict)", () => {
+    expect(
+      achievementInput.safeParse({ ...valid, title: "x".repeat(201) }).success
+    ).toBe(false);
+    expect(
+      achievementInput.safeParse({ ...valid, description: "x".repeat(5001) })
+        .success
+    ).toBe(false);
+    expect(
+      achievementInput.safeParse({ ...valid, extra: "nope" }).success
+    ).toBe(false);
   });
 });
