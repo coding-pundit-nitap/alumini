@@ -65,6 +65,12 @@ model User {
   reportsFiled         Report[]                  @relation("ReportReporter")
   reportsResolved      Report[]                  @relation("ReportResolver")
 
+  posts                Post[]
+  comments             Comment[]
+  reactions            Reaction[]
+  achievementsOwned    Achievement[]     @relation("AchievementOwner")
+  achievementsReviewed Achievement[]     @relation("AchievementReviewer")
+
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
   @@unique([email])
@@ -163,6 +169,7 @@ model Chapter {
   updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   permissionGrants PermissionGrant[]
+  posts Post[]
 
   @@map("chapter")
 }
@@ -653,4 +660,105 @@ model Report {
   @@unique([reporterId, targetType, targetId], map: "uq_report_once")
   @@index([status, createdAt], map: "ix_report_status")
   @@map("report")
+}
+
+enum PostType {
+  TEXT
+  ACHIEVEMENT
+}
+
+enum AchievementCategory {
+  AWARD
+  PUBLICATION
+  PROMOTION
+  CERTIFICATION
+  ENTREPRENEURSHIP
+  OTHER
+}
+
+enum AchievementStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+  WITHDRAWN
+}
+
+/// FR-FEED. `content` is raw Markdown, rendered only through the sanitized pipeline (modules/posts,
+/// presentation/ui/markdown-view.tsx) — no images/headings/raw HTML in the render allow-list even though
+/// the source string itself isn't bounded to that subset. `chapter_id` exists for a later phase's scoping
+/// (C-5): every Phase 10 post has it null; no filter reads it yet. `post_type = ACHIEVEMENT` is set only by
+/// achievements' publish transaction (C-12), never by createPost directly — enforced at the application layer.
+model Post {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  authorId   String    @map("author_id") @db.Uuid
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  chapterId  String?   @map("chapter_id") @db.Uuid
+  chapter    Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  content    String
+  imageUrls  String[]  @map("image_urls")
+  linkUrl    String?   @map("link_url")
+  postType   PostType  @default(TEXT) @map("post_type")
+  deleted    Boolean   @default(false)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  comments   Comment[]
+  reactions  Reaction[]
+  achievement Achievement?
+
+  @@index([createdAt(sort: Desc), id], map: "ix_post_feed")
+  @@map("post")
+}
+
+/// FR-FEED-003. Soft-delete mirrors Post's (`deleted`), not a separate tombstone table (C-9).
+model Comment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String   @map("author_id") @db.Uuid
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([postId, createdAt], map: "ix_comment_post")
+  @@map("comment")
+}
+
+/// `type` is a free string validated against a fixed allow-list at the application layer (domain model's
+/// note under Post/Comment/Reaction: extending the set later needs no migration). One row per (post, user);
+/// reacting again replaces it rather than adding a second (application layer does an upsert on this key).
+model Reaction {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([postId, userId], map: "uq_reaction_per_user")
+  @@map("reaction")
+}
+
+/// FR-ACH. State machine in modules/achievements/domain/achievement.ts mirrors mentorship.ts's shape.
+/// `published_post_id` is set only in the same transaction as the APPROVED → PUBLISHED transition (C-12);
+/// ck_achievement_published ties the two together. `reviewed_by_id` is set on entering UNDER_REVIEW or later.
+model Achievement {
+  id              String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String              @map("user_id") @db.Uuid
+  user            User                @relation("AchievementOwner", fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  category        AchievementCategory
+  status          AchievementStatus   @default(SUBMITTED)
+  reviewedById    String?             @map("reviewed_by_id") @db.Uuid
+  reviewedBy      User?               @relation("AchievementReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  publishedPostId String?             @unique(map: "uq_achievement_published_post") @map("published_post_id") @db.Uuid
+  publishedPost   Post?               @relation(fields: [publishedPostId], references: [id], onDelete: SetNull)
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([status, createdAt], map: "ix_achievement_status")
+  @@map("achievement")
 }
