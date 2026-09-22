@@ -1,4 +1,5 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
+import type { Permission } from "@nitap/database/permissions";
 
 import { RateLimitedError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
@@ -27,7 +28,7 @@ export type RateLimiter = {
 export function createCreateJob(deps: {
   store: JobStore;
   authorize: Authorize;
-  can: (actor: Actor, permission: string) => boolean;
+  can: (actor: Actor, permission: Permission) => boolean;
   rateLimiter: RateLimiter;
   observe?: JobObserver;
 }) {

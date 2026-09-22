@@ -1,4 +1,5 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
+import type { Permission } from "@nitap/database/permissions";
 
 import { ConflictError, NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
@@ -29,7 +30,7 @@ const materialChanged = (row: JobContent, next: JobContent): boolean =>
 export function createEditJob(deps: {
   store: JobStore;
   authorize: Authorize;
-  can: (actor: Actor, permission: string) => boolean;
+  can: (actor: Actor, permission: Permission) => boolean;
   observe?: JobObserver;
 }) {
   return async function editJob(args: {

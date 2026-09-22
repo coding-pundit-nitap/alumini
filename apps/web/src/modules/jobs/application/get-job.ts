@@ -1,4 +1,5 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
+import type { Permission } from "@nitap/database/permissions";
 
 import { NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
@@ -11,7 +12,7 @@ import type { JobQueries } from "./job-queries";
 export function createGetJob(deps: {
   queries: JobQueries;
   authorize: Authorize;
-  can: (actor: Actor, permission: string) => boolean;
+  can: (actor: Actor, permission: Permission) => boolean;
 }) {
   return async function getJob(args: {
     actor: Actor | null;
