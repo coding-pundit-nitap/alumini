@@ -6,6 +6,17 @@ import { mentorshipJobs } from "./mentorship.ts";
 import { messageSent } from "./message.ts";
 import { outboxPrune } from "./scheduled.ts";
 import { uploadScan, uploadSweep } from "./upload.ts";
+import {
+  achievementApproved,
+  achievementRejected,
+  achievementSubmitted,
+  commentCreated,
+  contentRemoved,
+  postCreated,
+  reactionAdded,
+  reportFiled,
+  reportResolved,
+} from "./community.ts";
 
 /** Jobs a use case can request by writing an outbox event. In 2B an event type maps 1:1 to a job. */
 export const OUTBOX_EVENTS = {
@@ -14,6 +25,15 @@ export const OUTBOX_EVENTS = {
   "connection.accepted": connectionAccepted,
   "upload.scan": uploadScan,
   "message.sent": messageSent,
+  "post.created": postCreated,
+  "comment.created": commentCreated,
+  "reaction.added": reactionAdded,
+  "achievement.submitted": achievementSubmitted,
+  "achievement.approved": achievementApproved,
+  "achievement.rejected": achievementRejected,
+  "report.filed": reportFiled,
+  "report.resolved": reportResolved,
+  "content.removed": contentRemoved,
   ...mentorshipJobs,
 } as const;
 

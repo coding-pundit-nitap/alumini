@@ -27,6 +27,28 @@ export {
   uploadSweepPayload,
 } from "./upload.ts";
 export type { UploadScanPayload, UploadSweepPayload } from "./upload.ts";
+export {
+  achievementApproved,
+  achievementRejected,
+  achievementSubmitted,
+  commentCreated,
+  contentRemoved,
+  postCreated,
+  reactionAdded,
+  reportFiled,
+  reportResolved,
+} from "./community.ts";
+export type {
+  AchievementApprovedPayload,
+  AchievementRejectedPayload,
+  AchievementSubmittedPayload,
+  CommentCreatedPayload,
+  ContentRemovedPayload,
+  PostCreatedPayload,
+  ReactionAddedPayload,
+  ReportFiledPayload,
+  ReportResolvedPayload,
+} from "./community.ts";
 export { JOBS, OUTBOX_EVENTS, isOutboxEventType } from "./registry.ts";
 export type { OutboxEvent, OutboxEventType } from "./registry.ts";
 export type {
