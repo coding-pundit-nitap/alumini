@@ -168,3 +168,10 @@ describe("REQUEST_IN_PROGRESS", () => {
     expect(body.error.code).toBe("REQUEST_IN_PROGRESS");
   });
 });
+
+describe("community error codes", () => {
+  it("has entries for NOT_OWNER and INVALID_STATE_TRANSITION", () => {
+    expect(ERROR_CATALOG.NOT_OWNER).toBeDefined();
+    expect(ERROR_CATALOG.INVALID_STATE_TRANSITION).toBeDefined();
+  });
+});

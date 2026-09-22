@@ -26,6 +26,10 @@ export const ERROR_CATALOG: Record<
     status: 403,
     message: "You do not have permission to do this.",
   },
+  NOT_OWNER: {
+    status: 403,
+    message: "You can only do that to your own content.",
+  },
   ACCOUNT_NOT_VERIFIED: {
     status: 403,
     message: "Your account has not been verified yet.",
