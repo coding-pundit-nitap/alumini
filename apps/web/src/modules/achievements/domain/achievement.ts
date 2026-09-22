@@ -70,8 +70,8 @@ export function decideTransition(
   }
 
   // action === "review"
-  if (!isReviewer) return refuse("NOT_REVIEWER");
   if (row.userId === actorId) return refuse("SELF_REVIEW_FORBIDDEN");
+  if (!isReviewer) return refuse("NOT_REVIEWER");
   if (!REVIEWABLE_FROM.includes(row.status))
     return refuse("INVALID_STATE_TRANSITION");
 

@@ -4,6 +4,7 @@ import {
   ACHIEVEMENT_STATES,
   decideTransition,
   type AchievementState,
+  type Refusal,
 } from "./achievement";
 
 const OWNER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -117,27 +118,133 @@ describe("achievement state machine (C-7)", () => {
     ).toEqual({ ok: false, code: "SELF_REVIEW_FORBIDDEN" });
   });
 
-  it("every (state, action, outcome) triple is covered exactly once (90-case parity with mentorship.test.ts)", () => {
+  it("self-review check runs before reviewer-role check (owner non-reviewer tries to review)", () => {
+    // Even without reviewer role, owner gets SELF_REVIEW_FORBIDDEN not NOT_REVIEWER
+    expect(
+      decideTransition(
+        row("SUBMITTED"),
+        OWNER,
+        { action: "review", outcome: "approve" },
+        false
+      )
+    ).toEqual({ ok: false, code: "SELF_REVIEW_FORBIDDEN" });
+  });
+
+  it("every (state, actor, action, outcome, isReviewer) combo produces valid result (60 cases)", () => {
     const outcomes: Array<"approve" | "reject"> = ["approve", "reject"];
-    let cases = 0;
+    const cases: Array<{
+      status: AchievementState;
+      actorRole: "owner" | "other";
+      action: "withdraw" | "review";
+      outcome?: "approve" | "reject";
+      isReviewer: boolean;
+      expectedOk: boolean;
+      expectedCode?: Refusal["code"];
+      expectedTo?: AchievementState;
+    }> = [];
+
+    // Build expected results table
     for (const status of ACHIEVEMENT_STATES) {
       for (const actorRole of ["owner", "other"] as const) {
-        const actorId = actorRole === "owner" ? OWNER : OTHER;
-        decideTransition(row(status), actorId, { action: "withdraw" }, false);
-        cases += 1;
+        // withdraw action
+        cases.push({
+          status,
+          actorRole,
+          action: "withdraw",
+          isReviewer: false,
+          expectedOk: actorRole === "owner" && status === "SUBMITTED",
+          expectedCode:
+            actorRole === "owner" && status === "SUBMITTED"
+              ? undefined
+              : actorRole === "owner"
+                ? "INVALID_STATE_TRANSITION"
+                : "NOT_OWNER",
+          expectedTo:
+            actorRole === "owner" && status === "SUBMITTED"
+              ? "WITHDRAWN"
+              : undefined,
+        });
+
+        // review actions with each outcome and isReviewer combo
         for (const outcome of outcomes) {
           for (const isReviewer of [true, false]) {
-            decideTransition(
-              row(status),
-              actorId,
-              { action: "review", outcome },
-              isReviewer
-            );
-            cases += 1;
+            let expectedOk = false;
+            let expectedCode: Refusal["code"] | undefined;
+            let expectedTo: AchievementState | undefined;
+
+            if (actorRole === "owner") {
+              // Owner cannot review their own achievement
+              expectedOk = false;
+              expectedCode = "SELF_REVIEW_FORBIDDEN";
+            } else if (!isReviewer) {
+              // Non-reviewer cannot review
+              expectedOk = false;
+              expectedCode = "NOT_REVIEWER";
+            } else if (!["SUBMITTED", "UNDER_REVIEW"].includes(status)) {
+              // Can only review from SUBMITTED or UNDER_REVIEW
+              expectedOk = false;
+              expectedCode = "INVALID_STATE_TRANSITION";
+            } else {
+              // Valid review
+              expectedOk = true;
+              expectedTo = outcome === "approve" ? "PUBLISHED" : "REJECTED";
+            }
+
+            cases.push({
+              status,
+              actorRole,
+              action: "review",
+              outcome,
+              isReviewer,
+              expectedOk,
+              expectedCode,
+              expectedTo,
+            });
           }
         }
       }
     }
-    expect(cases).toBe(ACHIEVEMENT_STATES.length * 2 * (1 + 2 * 2));
+
+    // Execute and verify each case
+    for (const testCase of cases) {
+      const actorId = testCase.actorRole === "owner" ? OWNER : OTHER;
+      const result = decideTransition(
+        row(testCase.status),
+        actorId,
+        {
+          action: testCase.action,
+          outcome: testCase.outcome,
+        },
+        testCase.isReviewer
+      );
+
+      // Verify ok/false status
+      expect(result.ok).toBe(testCase.expectedOk);
+
+      if (testCase.expectedOk) {
+        // For successful transitions, verify to, patch, and event
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+          expect(result.to).toBe(testCase.expectedTo);
+          expect(result.patch.status).toBe(testCase.expectedTo);
+          if (testCase.action === "withdraw") {
+            expect(result.event).toBe("achievement.withdrawn");
+          } else if (testCase.outcome === "approve") {
+            expect(result.event).toBe("achievement.approved");
+          } else {
+            expect(result.event).toBe("achievement.rejected");
+          }
+        }
+      } else {
+        // For failures, verify the error code
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+          expect(result.code).toBe(testCase.expectedCode);
+        }
+      }
+    }
+
+    // Verify case count
+    expect(cases.length).toBe(ACHIEVEMENT_STATES.length * 2 * (1 + 2 * 2));
   });
 });
