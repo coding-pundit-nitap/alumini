@@ -58,6 +58,8 @@ model User {
   mentorProfile        MentorProfile?
   mentorshipsAsMentor Mentorship[] @relation("MentorshipMentor")
   mentorshipsAsMentee Mentorship[] @relation("MentorshipMentee")
+  jobsPosted   Job[] @relation("JobPoster")
+  jobsReviewed Job[] @relation("JobReviewer")
 
   conversationsCreated Conversation[]            @relation("ConversationCreator")
   participations       ConversationParticipant[]
@@ -551,6 +553,58 @@ model Mentorship {
   @@index([mentorId, state], map: "ix_mentorship_mentor")
   @@index([menteeId, state], map: "ix_mentorship_mentee")
   @@map("mentorship")
+}
+
+enum JobStatus {
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  EXPIRED
+  CLOSED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+}
+
+enum WorkMode {
+  ONSITE
+  REMOTE
+  HYBRID
+}
+
+/// FR-JOB-001…005. No DRAFT state (D7, spec J-2): create is submit. REJECTED is NOT terminal (spec J-3):
+/// editing a REJECTED job resubmits it to PENDING_REVIEW. EXPIRED and CLOSED are the only terminal states,
+/// and EXPIRED is set only by the `job.expire` worker sweep (spec J-7).
+model Job {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postedBy       String         @map("posted_by") @db.Uuid
+  poster         User           @relation("JobPoster", fields: [postedBy], references: [id], onDelete: Cascade)
+  title          String
+  company        String
+  description    String
+  employmentType EmploymentType @map("employment_type")
+  location       String
+  workMode       WorkMode       @map("work_mode")
+  experience     String
+  skills         String[]       @default([])
+  applicationUrl String         @map("application_url")
+  deadline       DateTime       @db.Date
+  status         JobStatus      @default(PENDING_REVIEW)
+  reviewedBy     String?        @map("reviewed_by") @db.Uuid
+  reviewer       User?          @relation("JobReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  reviewedAt     DateTime?      @map("reviewed_at") @db.Timestamptz(3)
+  reviewNote     String?        @map("review_note")
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([status, deadline], map: "ix_job_status_deadline")
+  @@index([postedBy, createdAt], map: "ix_job_poster")
+  @@index([status, createdAt], map: "ix_job_moderation_queue")
+  @@map("job")
 }
 
 enum IdempotencyState {
