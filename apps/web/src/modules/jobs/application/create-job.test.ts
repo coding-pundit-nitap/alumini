@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { PERMISSIONS } from "@nitap/database/permissions";
+import type { Permission } from "@nitap/database/permissions";
 
 import {
   AuthenticationError,
@@ -12,13 +13,14 @@ import type { Actor } from "@/modules/auth";
 import { createFakeJobStore } from "../../../../tests/support/fake-job-store";
 import { createCreateJob } from "./create-job";
 
-const actor = (userId: string, grants: string[] = []): Actor => ({
+const actor = (userId: string, grants: Permission[] = []): Actor => ({
   userId,
   accountState: "VERIFIED",
   requestId: "r",
   grants: grants.map((permission) => ({
     permission,
     scope: "GLOBAL" as const,
+    expiresAt: null,
   })),
 });
 const allowAll = { consume: async () => ({ allowed: true, retryAfter: null }) };

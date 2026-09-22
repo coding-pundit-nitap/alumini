@@ -22,7 +22,7 @@ describe("listMyJobs", () => {
     let seen: unknown;
     const listMyJobs = createListMyJobs({
       queries: {
-        listMine: async (userId, filter) => {
+        listMine: async (userId: string, filter: unknown) => {
           seen = { userId, filter };
           return [];
         },

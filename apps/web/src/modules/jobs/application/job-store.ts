@@ -7,17 +7,23 @@ import type {
 } from "../domain/job";
 
 /** The `job.*` events the outbox carries (contracts in `@nitap/jobs`). Ids only. */
-export type JobEvent = {
-  type: JobEventType;
-  payload: {
-    v: 1;
-    jobId: string;
-    postedBy: string;
-    actorId: string;
-    /** Only meaningful (and only sent) on `job.published`. */
-    directPublish?: boolean;
-  };
+type JobEventBasePayload = {
+  v: 1;
+  jobId: string;
+  postedBy: string;
+  actorId: string;
 };
+
+/** `job.published` alone carries `directPublish`, matching `@nitap/jobs`'s two distinct payload schemas. */
+export type JobEvent =
+  | {
+      type: Exclude<JobEventType, "job.published">;
+      payload: JobEventBasePayload;
+    }
+  | {
+      type: "job.published";
+      payload: JobEventBasePayload & { directPublish: boolean };
+    };
 
 export type NewJob = JobContent & { postedBy: string; status: JobStatus };
 

@@ -52,18 +52,20 @@ export function createCreateJob(deps: {
         ...input,
         status: decision.status,
       });
-      await tx.enqueue({
-        type: decision.event,
-        payload: {
-          v: 1,
-          jobId: created.id,
-          postedBy: caller.userId,
-          actorId: caller.userId,
-          ...(decision.event === "job.published"
-            ? { directPublish: decision.directPublish }
-            : {}),
-        },
-      });
+      const base = {
+        v: 1 as const,
+        jobId: created.id,
+        postedBy: caller.userId,
+        actorId: caller.userId,
+      };
+      if (decision.event === "job.published") {
+        await tx.enqueue({
+          type: "job.published",
+          payload: { ...base, directPublish: decision.directPublish },
+        });
+      } else {
+        await tx.enqueue({ type: decision.event, payload: base });
+      }
       return created;
     });
     deps.observe?.(

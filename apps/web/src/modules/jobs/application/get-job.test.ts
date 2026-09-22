@@ -1,18 +1,21 @@
 import { describe, expect, it } from "vitest";
 
+import type { Permission } from "@nitap/database/permissions";
+
 import { AuthenticationError, NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
 
 import { jobRow } from "../../../../tests/support/fake-job-store";
 import { createGetJob } from "./get-job";
 
-const actor = (userId: string, grants: string[] = []): Actor => ({
+const actor = (userId: string, grants: Permission[] = []): Actor => ({
   userId,
   accountState: "VERIFIED",
   requestId: "r",
   grants: grants.map((permission) => ({
     permission,
     scope: "GLOBAL" as const,
+    expiresAt: null,
   })),
 });
 const authorize = (a: Actor | null) => {

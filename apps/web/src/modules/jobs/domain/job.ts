@@ -95,11 +95,12 @@ const refuse = (code: Refusal["code"]): { ok: false } & Refusal => ({
 const CLOSE_ELIGIBLE: readonly JobStatus[] = ["PENDING_REVIEW", "PUBLISHED"];
 
 /** FR-JOB-001, spec J-2. Create and submit are one action; the outcome depends only on the actor's own permission. */
-export function decideCreate(actorHasApprove: boolean): Decision<{
+export function decideCreate(actorHasApprove: boolean): {
+  ok: true;
   status: JobStatus;
   directPublish: boolean;
   event: JobEventType;
-}> {
+} {
   return actorHasApprove
     ? {
         ok: true,
@@ -123,7 +124,7 @@ export function decideEdit(
   row: JobRow,
   materialChanged: boolean,
   isOwnerOrManager: boolean
-): Decision<{ patch: JobPatch; event: JobEventType | null }> {
+): Decision<{ patch: JobPatch; event: "job.submitted" | null }> {
   if (!isOwnerOrManager) return refuse("NOT_OWNER");
   if (TERMINAL_STATES.includes(row.status))
     return refuse("INVALID_STATE_TRANSITION");
