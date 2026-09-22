@@ -43,6 +43,10 @@ export default defineConfig({
             "src/**/*.{dom,integration,contract}.test.ts",
             "src/hooks/**",
             "src/components/**",
+            // Real-Postgres security suites under tests/security use the *.integration.test.ts
+            // suffix like everywhere else; they run in the "integration" project below, which has
+            // the globalSetup that provisions the template database.
+            "tests/security/**/*.integration.test.ts",
           ],
         },
       },
@@ -69,6 +73,7 @@ export default defineConfig({
           include: [
             "src/**/*.integration.test.ts",
             "tests/integration/**/*.integration.test.ts",
+            "tests/security/**/*.integration.test.ts",
           ],
           testTimeout: 30_000,
         },
