@@ -41,6 +41,11 @@ export type AchievementsTx = {
     userId: string,
     args: { limit: number; after: { createdAt: Date; id: string } | null }
   ): Promise<AchievementRow[]>;
+  /** Reviewer queue read: every SUBMITTED achievement, any user. */
+  listPending(args: {
+    limit: number;
+    after: { createdAt: Date; id: string } | null;
+  }): Promise<AchievementRow[]>;
   enqueue(event: {
     type:
       "achievement.submitted" | "achievement.approved" | "achievement.rejected";

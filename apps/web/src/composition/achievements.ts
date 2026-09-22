@@ -2,6 +2,7 @@ import { transactionRunner } from "@/infrastructure/database/client";
 import { outbox } from "@/infrastructure/outbox";
 import {
   createListOwnAchievements,
+  createListPendingAchievements,
   createPrismaAchievementsStore,
   createReviewAchievement,
   createSubmitAchievement,
@@ -20,3 +21,4 @@ export const submitAchievement = createSubmitAchievement(deps);
 export const withdrawAchievement = createWithdrawAchievement(deps);
 export const reviewAchievement = createReviewAchievement(deps);
 export const listOwnAchievements = createListOwnAchievements(deps);
+export const listPendingAchievements = createListPendingAchievements(deps);

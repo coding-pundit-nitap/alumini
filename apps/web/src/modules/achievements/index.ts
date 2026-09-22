@@ -1,5 +1,6 @@
 /** Public API of the achievements module. Other code imports from here, never from the module's internals. */
 export { createListOwnAchievements } from "./application/list-own-achievements";
+export { createListPendingAchievements } from "./application/list-pending-achievements";
 export { createReviewAchievement } from "./application/review-achievement";
 export { createSubmitAchievement } from "./application/submit-achievement";
 export { createWithdrawAchievement } from "./application/withdraw-achievement";

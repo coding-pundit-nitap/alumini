@@ -9,6 +9,7 @@ import { createTransactionRunner } from "@/infrastructure/database/transaction-r
 import { AuthenticationError, AuthorizationError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
 import { createListOwnAchievements } from "@/modules/achievements/application/list-own-achievements";
+import { createListPendingAchievements } from "@/modules/achievements/application/list-pending-achievements";
 import { createReviewAchievement } from "@/modules/achievements/application/review-achievement";
 import { createSubmitAchievement } from "@/modules/achievements/application/submit-achievement";
 import { createWithdrawAchievement } from "@/modules/achievements/application/withdraw-achievement";
@@ -82,6 +83,7 @@ describe("achievements use cases against real PostgreSQL", () => {
       withdraw: createWithdrawAchievement(deps),
       review: createReviewAchievement(deps),
       listOwn: createListOwnAchievements(deps),
+      listPending: createListPendingAchievements(deps),
     };
   }
   const events = (type: string) =>
@@ -249,6 +251,51 @@ describe("achievements use cases against real PostgreSQL", () => {
 
     it("requires a signed-in actor", async () => {
       expect(await code(build().listOwn({ actor: null }))).toBe(
+        "UNAUTHENTICATED"
+      );
+    });
+  });
+
+  describe("list-pending-achievements", () => {
+    it("lists SUBMITTED achievements across all users, gated on ACHIEVEMENT_REVIEW", async () => {
+      const m = build(new Set([ravi]));
+      await m.submit({ actor: actor(asha), input: submitInput });
+      await m.submit({ actor: actor(ravi), input: submitInput });
+
+      const { achievements } = await m.listPending({ actor: actor(ravi) });
+      expect(achievements).toHaveLength(2);
+      expect(achievements.every((a) => a.status === "SUBMITTED")).toBe(true);
+    });
+
+    it("excludes achievements no longer SUBMITTED", async () => {
+      const m = build(new Set([ravi]));
+      const { achievementId } = await m.submit({
+        actor: actor(asha),
+        input: submitInput,
+      });
+      await m.submit({ actor: actor(ravi), input: submitInput });
+      await m.review({
+        actor: actor(ravi),
+        achievementId,
+        outcome: "approve",
+      });
+
+      const { achievements } = await m.listPending({ actor: actor(ravi) });
+      expect(achievements).toHaveLength(1);
+      expect(achievements[0]?.userId).toBe(ravi);
+    });
+
+    it("requires ACHIEVEMENT_REVIEW, not ACHIEVEMENT_SUBMIT", async () => {
+      const m = build(new Set());
+      await m.submit({ actor: actor(asha), input: submitInput });
+
+      expect(await code(m.listPending({ actor: actor(asha) }))).toBe(
+        "NOT_REVIEWER"
+      );
+    });
+
+    it("requires a signed-in actor", async () => {
+      expect(await code(build().listPending({ actor: null }))).toBe(
         "UNAUTHENTICATED"
       );
     });

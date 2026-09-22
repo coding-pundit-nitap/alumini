@@ -65,6 +65,23 @@ export function createPrismaAchievementsStore(deps: {
         take: limit,
       });
     },
+    async listPending({ limit, after }) {
+      return db.achievement.findMany({
+        where: {
+          status: "SUBMITTED",
+          ...(after
+            ? {
+                OR: [
+                  { createdAt: { lt: after.createdAt } },
+                  { createdAt: after.createdAt, id: { lt: after.id } },
+                ],
+              }
+            : {}),
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: limit,
+      });
+    },
     async enqueue(event) {
       await deps.outbox.add(db, event as OutboxEvent);
     },
