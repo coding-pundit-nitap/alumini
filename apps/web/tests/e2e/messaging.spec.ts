@@ -9,12 +9,24 @@ const BASE_URL =
 const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
+/**
+ * Uncaught page errors per member. A hydration mismatch is the one that matters here: React then throws the
+ * server HTML away and re-renders the whole tree, which loses clicks and makes a freshly loaded page flicker
+ * through an empty state — the flakiness these journeys used to paper over with reload-and-retry loops.
+ */
+const pageErrors = new WeakMap<Page, string[]>();
+const hydrationErrors = (page: Page) =>
+  (pageErrors.get(page) ?? []).filter((m) => m.includes("Hydration failed"));
+
 async function member(browser: Browser): Promise<Page> {
   const context = await browser.newContext({
     baseURL: BASE_URL,
     extraHTTPHeaders: { "x-forwarded-for": clientIp() },
   });
   const page = await context.newPage();
+  const errors: string[] = [];
+  pageErrors.set(page, errors);
+  page.on("pageerror", (error) => errors.push(error.message));
   const email = unique(DOMAIN);
   await register(page, email);
   await confirmEmail(page, email);
@@ -110,8 +122,11 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await asha.goto(raviPath);
   await asha.getByRole("button", { name: "Block" }).click();
   await asha.getByRole("button", { name: "Confirm block" }).click();
-  // The block is a Server Action: wait for the refreshed controls, or the send below outruns it.
-  await expect(asha.getByRole("button", { name: "Unblock" })).toBeVisible();
+  // The block is a Server Action: wait for its refresh to land, or the send below outruns it. Blocking
+  // hides the pair both ways, so the blocker's own view of the profile turns into the not-found page.
+  await expect(asha.getByText("Page Not Found (404)")).toBeVisible({
+    timeout: 15_000,
+  });
   await asha.goto(threadUrl);
   await asha
     .getByRole("textbox", { name: "Message" })
@@ -120,6 +135,8 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await expect(asha.getByText("You have blocked this member")).toBeVisible();
   await ravi.goto(threadUrl);
   await expect(ravi.getByText("Page Not Found (404)")).toBeVisible();
+
+  for (const page of [asha, ravi]) expect(hydrationErrors(page)).toEqual([]);
 });
 
 test("J-11 a member starts a group from their connections and manages it", async ({
@@ -180,4 +197,6 @@ test("J-11 a member starts a group from their connections and manages it", async
   await expect(asha.getByRole("button", { name: "Leave group" })).toHaveCount(
     0
   );
+
+  for (const page of [asha, ravi]) expect(hydrationErrors(page)).toEqual([]);
 });

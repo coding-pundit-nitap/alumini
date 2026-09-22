@@ -220,7 +220,10 @@ export function Thread(props: {
             <li key={m.id} className={mine ? "text-right" : undefined}>
               <p className="text-muted-foreground text-xs">
                 {mine ? "You" : nameOf(m.senderId)} ·{" "}
-                <time dateTime={m.createdAt}>
+                {/* The server's locale is not the reader's, so the two renders of this stamp differ. Without
+                    this React calls that a hydration failure and re-renders the whole tree from scratch,
+                    which loses the click that was in flight and flashes the thread empty. */}
+                <time dateTime={m.createdAt} suppressHydrationWarning>
                   {new Date(m.createdAt).toLocaleString()}
                 </time>
               </p>
