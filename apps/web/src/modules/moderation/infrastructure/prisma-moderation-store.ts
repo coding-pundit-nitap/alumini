@@ -23,19 +23,22 @@ export function createPrismaModerationStore(deps: {
       return rows[0]?.authorId ?? null;
     },
     async insertReport({ reporterId, targetType, targetId, reason }) {
-      const existing = await db.report.findUnique({
+      const { count } = await db.report.createMany({
+        data: [{ reporterId, targetType, targetId, reason }],
+        skipDuplicates: true,
+      });
+      const row = await db.report.findUniqueOrThrow({
         where: {
           reporterId_targetType_targetId: { reporterId, targetType, targetId },
         },
+        select: { id: true },
       });
-      if (existing) return { id: existing.id, created: false };
-      const created = await db.report.create({
-        data: { reporterId, targetType, targetId, reason },
-      });
-      return { id: created.id, created: true };
+      return { id: row.id, created: count === 1 };
     },
     async findReport(id) {
-      const row = await db.report.findUnique({ where: { id } });
+      const row = await db.report.findFirst({
+        where: { id, targetType: { in: ["POST", "COMMENT"] } },
+      });
       return row as ReportRow | null;
     },
     async patchReport(id, patch) {

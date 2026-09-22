@@ -127,6 +127,28 @@ describe("moderation use cases against real PostgreSQL", () => {
     });
   });
 
+  it("claim/resolve/dismiss refuse NOT_FOUND on a MESSAGE-scoped report id (cross-module leak guard)", async () => {
+    const meera = await member(db, "Meera");
+    const m = build(new Set([meera]));
+    const messageReport = await db.prisma.report.create({
+      data: {
+        reporterId: ravi,
+        targetType: "MESSAGE",
+        targetId: postId,
+        reason: "spam",
+      },
+    });
+    expect(
+      await code(m.claim({ actor: actor(meera), reportId: messageReport.id }))
+    ).toBe("NOT_FOUND");
+    expect(
+      await code(m.resolve({ actor: actor(meera), reportId: messageReport.id }))
+    ).toBe("NOT_FOUND");
+    expect(
+      await code(m.dismiss({ actor: actor(meera), reportId: messageReport.id }))
+    ).toBe("NOT_FOUND");
+  });
+
   describe("claim-report", () => {
     it("a non-self moderator claims: OPEN -> UNDER_REVIEW, resolvedById left unset", async () => {
       const m = build(new Set([ravi]));

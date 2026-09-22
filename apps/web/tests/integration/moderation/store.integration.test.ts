@@ -40,6 +40,44 @@ describe("moderation store against real PostgreSQL", () => {
       outbox: createOutboxWriter(),
     });
 
+  it("findReport refuses a MESSAGE-scoped report id (belongs to a different module's flow)", async () => {
+    const s = store();
+    const messageReport = await db.prisma.report.create({
+      data: {
+        reporterId: reporter,
+        targetType: "MESSAGE",
+        targetId: postId,
+        reason: "spam",
+      },
+    });
+    const found = await s.transaction((tx) => tx.findReport(messageReport.id));
+    expect(found).toBeNull();
+  });
+
+  it("insertReport is atomic under a concurrent duplicate filing (uq_report_once)", async () => {
+    const s = store();
+    const [first, second] = await Promise.all([
+      s.transaction((tx) =>
+        tx.insertReport({
+          reporterId: reporter,
+          targetType: "POST",
+          targetId: postId,
+          reason: "spam",
+        })
+      ),
+      s.transaction((tx) =>
+        tx.insertReport({
+          reporterId: reporter,
+          targetType: "POST",
+          targetId: postId,
+          reason: "spam",
+        })
+      ),
+    ]);
+    expect(first.id).toBe(second.id);
+    expect([first.created, second.created].sort()).toEqual([false, true]);
+  });
+
   it("contentAuthor resolves a POST's author without any modules/posts import (direct SQL)", async () => {
     const s = store();
     const owner = await s.transaction((tx) => tx.contentAuthor("POST", postId));
