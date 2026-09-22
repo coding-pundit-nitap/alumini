@@ -1,0 +1,70 @@
+import { z } from "zod";
+
+import { defineJob } from "./define-job.ts";
+
+/** Ids only, per reliability §6.4: a consumer re-reads the row, never trusts a name or note in the event. */
+const jobEventPayload = z
+  .object({
+    v: z.literal(1),
+    jobId: z.uuid(),
+    postedBy: z.uuid(),
+    /** Who acted: the poster (submit), a reviewer (publish/reject), or whoever closed it. */
+    actorId: z.uuid(),
+  })
+  .strict();
+export type JobEventPayload = z.infer<typeof jobEventPayload>;
+
+/** `job.published` alone distinguishes a moderated publish from a `job.approve` holder's direct one. */
+const jobPublishedPayload = jobEventPayload.extend({
+  directPublish: z.boolean(),
+});
+export type JobPublishedPayload = z.infer<typeof jobPublishedPayload>;
+
+const retry = {
+  attempts: 5,
+  baseDelayMs: 5_000,
+  maxDelayMs: 300_000,
+  jitter: 0.2,
+};
+const idempotency =
+  "Handling only reads and logs; running twice has the same effect as once.";
+
+/** Facts a job posting changed, written to the outbox with the change. Delivery is Phase 11. */
+export const jobEvents = {
+  "job.submitted": defineJob({
+    name: "job.submitted",
+    version: 1,
+    queue: "default",
+    schema: jobEventPayload,
+    retry,
+    timeoutMs: 10_000,
+    idempotency,
+  }),
+  "job.published": defineJob({
+    name: "job.published",
+    version: 1,
+    queue: "default",
+    schema: jobPublishedPayload,
+    retry,
+    timeoutMs: 10_000,
+    idempotency,
+  }),
+  "job.rejected": defineJob({
+    name: "job.rejected",
+    version: 1,
+    queue: "default",
+    schema: jobEventPayload,
+    retry,
+    timeoutMs: 10_000,
+    idempotency,
+  }),
+  "job.closed": defineJob({
+    name: "job.closed",
+    version: 1,
+    queue: "default",
+    schema: jobEventPayload,
+    retry,
+    timeoutMs: 10_000,
+    idempotency,
+  }),
+} as const;

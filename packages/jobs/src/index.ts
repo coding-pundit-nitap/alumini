@@ -8,6 +8,8 @@ export { connectionAccepted, connectionRequested } from "./connection.ts";
 export type { ConnectionEventPayload } from "./connection.ts";
 export { mentorshipJobs } from "./mentorship.ts";
 export type { MentorshipEventPayload } from "./mentorship.ts";
+export { jobEvents } from "./job.ts";
+export type { JobEventPayload, JobPublishedPayload } from "./job.ts";
 export {
   MESSAGE_HINT_PREFIX,
   messageHintChannel,

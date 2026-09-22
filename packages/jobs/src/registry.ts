@@ -2,6 +2,7 @@ import type { PayloadOf } from "./define-job.ts";
 import { connectionAccepted, connectionRequested } from "./connection.ts";
 import { idempotencySweep } from "./idempotency.ts";
 import { emailSend } from "./email.ts";
+import { jobEvents } from "./job.ts";
 import { mentorshipJobs } from "./mentorship.ts";
 import { messageSent } from "./message.ts";
 import { outboxPrune } from "./scheduled.ts";
@@ -35,6 +36,7 @@ export const OUTBOX_EVENTS = {
   "report.resolved": reportResolved,
   "content.removed": contentRemoved,
   ...mentorshipJobs,
+  ...jobEvents,
 } as const;
 
 /** Every job the worker knows, including scheduled ones that no outbox event produces. */
