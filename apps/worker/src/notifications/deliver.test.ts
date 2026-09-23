@@ -401,4 +401,44 @@ describe("deliverNotification", () => {
     expect(enqueueEmail).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalled();
   });
+
+  it("a debounced duplicate (caller-supplied dedupeKey) bumps the existing row; a read row becomes unread again (N-7)", async () => {
+    const bump = vi.fn(async () => ({ wasRead: true }));
+    const store = fakeStore({
+      insert: vi.fn(async () => ({ id: "notif-1", created: false })),
+      bump,
+    });
+    const increment = vi.fn(async () => {});
+    const publish = vi.fn(async () => {});
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail: vi.fn(async () => {}),
+      hintPublisher: { publish },
+      unreadCounter: { increment },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+    const input = {
+      eventId: "e2",
+      type: "message.sent",
+      category: "ENGAGEMENT" as const,
+      recipientId: "u1",
+      payload: {},
+      dedupeKey: "window-key",
+    };
+
+    await deliver(input);
+    expect(store.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ dedupeKey: "window-key" })
+    );
+    expect(bump).toHaveBeenCalledWith("notif-1");
+    expect(increment).toHaveBeenCalledWith("u1");
+    expect(publish).toHaveBeenCalledWith("u1", { notificationId: "notif-1" });
+
+    bump.mockResolvedValueOnce({ wasRead: false });
+    increment.mockClear();
+    await deliver(input);
+    expect(increment).not.toHaveBeenCalled(); // still unread: already counted
+  });
 });

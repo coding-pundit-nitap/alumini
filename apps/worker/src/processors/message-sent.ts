@@ -1,3 +1,4 @@
+import { MESSAGE_DEBOUNCE_MS, messageDedupeKeyFor } from "@nitap/jobs";
 import type { MessageSentPayload } from "@nitap/jobs";
 import type { JobProcessor } from "@nitap/queue";
 
@@ -8,7 +9,8 @@ import type { MessageDebounce } from "../notifications/message-debounce.ts";
 /**
  * Turns a committed message into a real-time hint for every participant (FR-MSG-005 keeps the message safe
  * without this: delivery never depends on the recipient being online), then delivers an in-app notification
- * to every other participant. The in-app row is written per message; only the email is debounced (spec N-7).
+ * to every other participant: one row per (recipient, conversation, debounce window), bumped by each later
+ * message in the window, and one email per window (spec N-6/N-7).
  * Ids only. A Redis failure on hints is logged, never fatal: clients refetch on their poll/focus.
  */
 export function createMessageSentProcessor(deps: {
@@ -51,14 +53,18 @@ export function createMessageSentProcessor(deps: {
     for (const recipientId of userIds) {
       if (recipientId === payload.senderId) continue;
       if (await deps.blocked(payload.senderId, recipientId)) continue;
-      let openWindow = false;
+      // Redis down or not configured: in-app only, windowed by clock bucket so it still does not flood.
+      let claim = {
+        owner: false,
+        window: `t${Math.floor(Date.now() / MESSAGE_DEBOUNCE_MS)}`,
+      };
       try {
-        openWindow =
-          (await deps.debounce?.tryStart(
+        claim =
+          (await deps.debounce?.claim(
             recipientId,
             payload.conversationId,
             jobId
-          )) ?? false;
+          )) ?? claim;
       } catch (error) {
         // Degrade to in-app only rather than fail (and retry) the whole fan-out.
         logger.warn("message.sent.debounce_unavailable", {
@@ -71,7 +77,12 @@ export function createMessageSentProcessor(deps: {
         category: "ENGAGEMENT",
         recipientId,
         payload: hint,
-        emailTo: openWindow
+        dedupeKey: messageDedupeKeyFor({
+          recipientId,
+          conversationId: payload.conversationId,
+          windowBucket: claim.window,
+        }),
+        emailTo: claim.owner
           ? ((await deps.findEmail(recipientId)) ?? undefined)
           : undefined,
       });

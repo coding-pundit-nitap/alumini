@@ -64,6 +64,16 @@ export function createPrismaDeliveryStore(
         update: {},
       });
     },
+    async bump(notificationId) {
+      const [row] = await prisma.$queryRaw<{ wasRead: boolean }[]>`
+        WITH old AS (
+          SELECT id, read_at FROM notification WHERE id = ${notificationId}::uuid FOR UPDATE
+        )
+        UPDATE notification n SET created_at = now(), read_at = NULL
+        FROM old WHERE n.id = old.id
+        RETURNING old.read_at IS NOT NULL AS "wasRead"`;
+      return { wasRead: row?.wasRead ?? false };
+    },
     async markSent(notificationId, attempt) {
       await prisma.notificationDelivery.updateMany({
         where: { notificationId, channel: "EMAIL" },

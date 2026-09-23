@@ -1,3 +1,6 @@
+/** The message notification debounce window (spec N-7). */
+export const MESSAGE_DEBOUNCE_MS = 5 * 60_000;
+
 export function debounceKeyFor(
   recipientId: string,
   conversationId: string

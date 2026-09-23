@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { messageDedupeKeyFor } from "@nitap/jobs";
+
 import { silentLogger } from "../../tests/support.ts";
 import { createMessageSentProcessor } from "./message-sent.ts";
 
@@ -77,10 +79,14 @@ describe("message.sent processor", () => {
     const deliver = vi.fn(async (input: unknown) => void input);
     let owner: string | null = null;
     const debounce = {
-      tryStart: vi.fn(async (_r: string, _c: string, by: string) => {
+      claim: vi.fn(async (_r: string, _c: string, by: string) => {
         owner ??= by;
-        return owner === by;
+        return { owner: owner === by, window: owner };
       }),
+      /** What reading the conversation does in the web app (N-7). */
+      read: () => {
+        owner = null;
+      },
     };
     return {
       deliver,
@@ -97,18 +103,34 @@ describe("message.sent processor", () => {
     };
   };
   const sender = { ...payload, senderId: "sender" };
+  type Delivered = { emailTo?: string; dedupeKey?: string };
 
-  it("writes an in-app row per message but emails once per debounce window (redelivery re-invokes deliver, which dedupes)", async () => {
-    const { deliver, deps } = notifyDeps();
+  it("keys every message in one window to one notification and emails once; reading starts a new window (N-6/N-7)", async () => {
+    const { deliver, debounce, deps } = notifyDeps();
     const p = createMessageSentProcessor(deps);
     await p(sender, { ...ctx(), jobId: "e1" });
     await p({ ...sender, messageId: "m2" }, { ...ctx(), jobId: "e2" });
-    await p(sender, { ...ctx(), jobId: "e1" }); // redelivery reaches deliver again (real deliver dedupes on the in-app insert: no second email)
-    const calls = deliver.mock.calls.map((c) => c[0] as { emailTo?: string });
-    expect(calls).toHaveLength(3);
-    expect(calls.map((c) => !!c.emailTo)).toEqual([true, false, true]);
+    await p(sender, { ...ctx(), jobId: "e1" }); // redelivery of the window owner
+    debounce.read();
+    await p({ ...sender, messageId: "m3" }, { ...ctx(), jobId: "e3" });
+    const calls = deliver.mock.calls.map((c) => c[0] as Delivered);
+    expect(calls.map((c) => !!c.emailTo)).toEqual([true, false, true, true]);
+    const window1 = messageDedupeKeyFor({
+      recipientId: "r1",
+      conversationId: payload.conversationId,
+      windowBucket: "e1",
+    });
+    expect(calls.map((c) => c.dedupeKey)).toEqual([
+      window1,
+      window1,
+      window1,
+      messageDedupeKeyFor({
+        recipientId: "r1",
+        conversationId: payload.conversationId,
+        windowBucket: "e3",
+      }),
+    ]);
     expect(calls[0]).toMatchObject({
-      eventId: "e1",
       type: "message.sent",
       category: "ENGAGEMENT",
       recipientId: "r1",
@@ -132,14 +154,15 @@ describe("message.sent processor", () => {
     const a = notifyDeps({ debounce: null });
     await createMessageSentProcessor(a.deps)(sender, ctx());
     const b = notifyDeps({
-      debounce: { tryStart: async () => Promise.reject(new Error("down")) },
+      debounce: { claim: async () => Promise.reject(new Error("down")) },
     });
     await createMessageSentProcessor(b.deps)(sender, ctx());
     for (const d of [a.deliver, b.deliver]) {
       expect(d).toHaveBeenCalledTimes(1);
-      expect(
-        (d.mock.calls[0]![0] as { emailTo?: string }).emailTo
-      ).toBeUndefined();
+      const input = d.mock.calls[0]![0] as Delivered;
+      expect(input.emailTo).toBeUndefined();
+      // Still one row per (recipient, conversation, time bucket), never one per message.
+      expect(input.dedupeKey).toMatch(/^[0-9a-f]{64}$/);
     }
   });
 });

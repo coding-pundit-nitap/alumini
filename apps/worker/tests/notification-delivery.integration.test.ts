@@ -464,4 +464,73 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
       expect(await notifications(recipient.id)).toHaveLength(1)
     );
   });
+
+  // N-6/N-7: one row per (recipient, conversation, window), not one per message.
+  it("two message.sent in one debounce window make one notification and one email; reading opens a new window", async () => {
+    const [sender, recipient] = await Promise.all([
+      makeUser("sender"),
+      makeUser("recipient"),
+    ]);
+    const conversation = await db.prisma.conversation.create({
+      data: {
+        createdById: sender.id,
+        isGroup: true,
+        title: "t",
+        participants: {
+          create: [{ userId: sender.id }, { userId: recipient.id }],
+        },
+      },
+    });
+    const redis = new Redis(process.env.REDIS_URL!);
+    const debounceKey = `notif:debounce:${recipient.id}:${conversation.id}`;
+    const send = async (clientMessageId: string) => {
+      const message = await db.prisma.message.create({
+        data: {
+          conversationId: conversation.id,
+          senderId: sender.id,
+          body: "hi",
+          clientMessageId,
+        },
+      });
+      await db.prisma.$transaction((tx) =>
+        writer.add(tx, {
+          type: "message.sent",
+          payload: {
+            v: 1,
+            messageId: message.id,
+            conversationId: conversation.id,
+            senderId: sender.id,
+          },
+        })
+      );
+    };
+    try {
+      await startWorker();
+      await send("44444444-4444-4444-8444-444444444441");
+      await eventually(() => expect(smtp.received).toHaveLength(1));
+      await db.prisma.notification.updateMany({
+        where: { recipientId: recipient.id },
+        data: { readAt: new Date() },
+      });
+      await send("44444444-4444-4444-8444-444444444442");
+      // The second message bumps the same row back to unread.
+      await eventually(async () => {
+        const rows = await notifications(recipient.id);
+        expect(rows).toHaveLength(1);
+        expect(rows[0]!.readAt).toBeNull();
+      });
+      await wait(300);
+      expect(smtp.received).toHaveLength(1);
+
+      await redis.del(debounceKey); // what reading the conversation does in the web app
+      await send("44444444-4444-4444-8444-444444444443");
+      await eventually(async () =>
+        expect(await notifications(recipient.id)).toHaveLength(2)
+      );
+      await eventually(() => expect(smtp.received).toHaveLength(2));
+    } finally {
+      await redis.del(debounceKey);
+      redis.disconnect();
+    }
+  });
 });

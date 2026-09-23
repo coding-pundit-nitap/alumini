@@ -12,11 +12,23 @@ const fake = () => {
 };
 
 describe("redis message debounce", () => {
-  it("grants one owner per window, and the same owner again on retry", async () => {
+  it("grants one owner per window and names the window by its owner; the same owner again on retry", async () => {
     const d = createRedisMessageDebounce(fake());
-    expect(await d.tryStart("r", "c", "e1")).toBe(true);
-    expect(await d.tryStart("r", "c", "e2")).toBe(false);
-    expect(await d.tryStart("r", "c", "e1")).toBe(true);
-    expect(await d.tryStart("r2", "c", "e2")).toBe(true);
+    expect(await d.claim("r", "c", "e1")).toEqual({
+      owner: true,
+      window: "e1",
+    });
+    expect(await d.claim("r", "c", "e2")).toEqual({
+      owner: false,
+      window: "e1",
+    });
+    expect(await d.claim("r", "c", "e1")).toEqual({
+      owner: true,
+      window: "e1",
+    });
+    expect(await d.claim("r2", "c", "e2")).toEqual({
+      owner: true,
+      window: "e2",
+    });
   });
 });

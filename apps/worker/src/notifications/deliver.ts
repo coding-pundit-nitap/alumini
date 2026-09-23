@@ -19,6 +19,11 @@ export type DeliverInput = {
   payload: Record<string, unknown>;
   /** The recipient's current email, re-read by the caller. Omit to skip email regardless of preference. */
   emailTo?: string;
+  /**
+   * Set only by debounced notifications (message.sent, N-6/N-7): the window's key instead of the per-event one.
+   * A duplicate then bumps the existing row (newest, unread) rather than being skipped.
+   */
+  dedupeKey?: string;
 };
 
 export type DeliverNotification = (input: DeliverInput) => Promise<void>;
@@ -47,6 +52,8 @@ export type DeliveryStore = {
    * fail or duplicate the row.
    */
   ensureEmailPending(notificationId: string): Promise<void>;
+  /** Moves a debounced row to now and unread; reports whether it had been read. */
+  bump(notificationId: string): Promise<{ wasRead: boolean }>;
 };
 
 /**
@@ -83,7 +90,21 @@ export function createDeliverNotification(deps: {
   appUrl: string;
 }): DeliverNotification {
   return async (input) => {
-    const dedupeKey = dedupeKeyFor(input);
+    const dedupeKey = input.dedupeKey ?? dedupeKeyFor(input);
+    // N-9: the counter is a cache recomputed from PostgreSQL and the hint is a refetch nudge. A cache
+    // Redis outage must degrade only real-time push, never fail the job before the email step.
+    const announce = async (id: string) => {
+      try {
+        await deps.unreadCounter.increment(input.recipientId);
+        await deps.hintPublisher?.publish(input.recipientId, {
+          notificationId: id,
+        });
+      } catch (error) {
+        deps.logger.warn("notification.realtime_unavailable", {
+          metadata: { message: (error as Error).message },
+        });
+      }
+    };
     const { id, created } = await deps.store.insert({
       recipientId: input.recipientId,
       type: input.type,
@@ -95,6 +116,9 @@ export function createDeliverNotification(deps: {
       deps.logger.info("notification.deduped", {
         metadata: { type: input.type },
       });
+      // A later message in the same window: one row, bumped; count it again only if it had been read.
+      if (input.dedupeKey && (await deps.store.bump(id)).wasRead)
+        await announce(id);
       const emailStatus = await deps.store.emailDeliveryStatus(id);
       if (emailStatus === "SENT" || emailStatus === "FAILED") return;
       // PENDING or null: the enqueue may never have happened (or happened but the outcome hasn't
@@ -109,18 +133,7 @@ export function createDeliverNotification(deps: {
         channel: "IN_APP",
         status: "SENT",
       });
-      // N-9: the counter is a cache recomputed from PostgreSQL and the hint is a refetch nudge. A cache
-      // Redis outage must degrade only real-time push, never fail the job before the email step.
-      try {
-        await deps.unreadCounter.increment(input.recipientId);
-        await deps.hintPublisher?.publish(input.recipientId, {
-          notificationId: id,
-        });
-      } catch (error) {
-        deps.logger.warn("notification.realtime_unavailable", {
-          metadata: { message: (error as Error).message },
-        });
-      }
+      await announce(id);
     }
 
     if (!input.emailTo) return;

@@ -77,13 +77,20 @@ export type {
   OutboxStore,
   PublishResult,
 } from "./outbox.ts";
-export { dedupeKeyFor } from "./notifications/dedupe-key.ts";
+export {
+  dedupeKeyFor,
+  messageDedupeKeyFor,
+} from "./notifications/dedupe-key.ts";
 export { decideChannel } from "./notifications/preference-decision.ts";
 export { domainFor } from "./notifications/domain-for.ts";
 export type { NotificationDomain } from "./notifications/domain-for.ts";
 export { renderNotificationCopy } from "./notifications/copy.ts";
 export type { NotificationCopy } from "./notifications/copy.ts";
-export { debounceKeyFor, shouldFlush } from "./notifications/debounce.ts";
+export {
+  debounceKeyFor,
+  MESSAGE_DEBOUNCE_MS,
+  shouldFlush,
+} from "./notifications/debounce.ts";
 export {
   unreadCounterKey,
   UNREAD_COUNTER_TTL_SECONDS,
