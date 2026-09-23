@@ -57,7 +57,7 @@ export function createPrismaEventStore(deps: {
     async releaseSeat(eventId) {
       const rows = await db.$queryRaw<{ id: string }[]>`
         UPDATE event SET registered_count = registered_count - 1, updated_at = now()
-         WHERE id = ${eventId}::uuid AND status = 'SCHEDULED' AND now() < starts_at
+         WHERE id = ${eventId}::uuid AND status = 'SCHEDULED' AND now() < starts_at AND registered_count > 0
         RETURNING id`;
       return rows.length > 0;
     },

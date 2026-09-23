@@ -91,6 +91,7 @@ export function createFakeEventStore(options: FakeEventStoreOptions = {}) {
       if (!event) return false;
       if (event.status !== "SCHEDULED") return false;
       if (now() >= event.startsAt) return false;
+      if (event.registeredCount <= 0) return false;
       event.registeredCount -= 1;
       return true;
     },

@@ -46,7 +46,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
         registeredCount: 0,
       });
@@ -64,7 +64,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 1,
         registeredCount: 1,
       });
@@ -80,7 +80,7 @@ export function describeEventStoreContract(
         organizerId,
         status: "CANCELLED",
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
         registeredCount: 0,
       });
@@ -111,7 +111,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
       });
 
@@ -133,7 +133,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
       });
       await h.seedRegistration(eventId, userId, "REGISTERED");
@@ -151,7 +151,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
       });
       const cancelledId = await h.seedRegistration(
@@ -177,7 +177,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
         registeredCount: 1,
       });
@@ -186,6 +186,26 @@ export function describeEventStoreContract(
         tx.releaseSeat(eventId)
       );
       expect(released).toBe(true);
+    });
+
+    it("releaseSeat returns false and leaves the count at 0 when registeredCount is 0", async () => {
+      const h = await factory();
+      const organizerId = await h.seedUser();
+      const eventId = await h.seedEvent({
+        organizerId,
+        startsAt: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
+        capacity: 5,
+        registeredCount: 0,
+      });
+
+      const released = await h.store.transaction((tx) =>
+        tx.releaseSeat(eventId)
+      );
+      expect(released).toBe(false);
+
+      const after = await h.store.transaction((tx) => tx.findEvent(eventId));
+      expect(after?.registeredCount).toBe(0);
     });
 
     it("releaseSeat is false after the start", async () => {
@@ -212,7 +232,7 @@ export function describeEventStoreContract(
         organizerId,
         status: "CANCELLED",
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
         registeredCount: 1,
       });
@@ -231,7 +251,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
         registeredCount: 2,
       });
@@ -324,7 +344,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
       });
 
@@ -349,7 +369,7 @@ export function describeEventStoreContract(
       const eventId = await h.seedEvent({
         organizerId,
         startsAt: new Date(Date.now() + HOUR),
-        registrationDeadline: new Date(Date.now() + HOUR),
+        registrationDeadline: new Date(Date.now() + HOUR - 1),
         capacity: 5,
         registeredCount: 0,
       });
