@@ -64,5 +64,7 @@ Column abbreviations: **Gst** Guest · **Stu** Student · **Alu** Alumni · **Fa
 | `analytics.view`               |     |     |     |     |     |     |  ○  |  ○  |  ●  |  ●   |     |
 | `audit.read`                   |     |     |     |     |     |     |     |     |  ●  |  ●   |     |
 | `system.configure`             |     |     |     |     |     |     |     |     |     |  ●   |     |
+| `notification.read`            |     |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●   |  ●  |
+| `notification.replay`          |     |     |     |     |     |     |     |     |  ●  |  ●   |     |
 
 ## 5. Chapter-Scoped Grants
