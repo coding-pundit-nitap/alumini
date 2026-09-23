@@ -1,7 +1,10 @@
+import { execFileSync } from "node:child_process";
+import path from "node:path";
+
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
-import { assertNoNewEmail, countEmails } from "./support/mailpit";
+import { countEmails } from "./support/mailpit";
 
 const DOMAIN = process.env.E2E_INSTITUTIONAL_DOMAIN ?? "nitap.ac.in";
 const BASE_URL =
@@ -101,9 +104,8 @@ test("disabling email preference for a category results in in-app-only delivery"
   await ravi.getByRole("button", { name: "Accept" }).click();
   await expect(ravi.getByText("No requests waiting for you.")).toBeVisible();
 
-  // The in-app notification lands. This only proves the worker got as far as the in-app write, not that
-  // it has reached the email decision further down in the same deliver() call — the worker fans out
-  // asynchronously, so retry the navigation until the row shows up.
+  // The in-app notification lands. The worker fans out asynchronously, so retry the navigation until
+  // the row shows up.
   await expect(async () => {
     await asha.goto("/notifications");
     await expect(asha.getByText("connection accepted")).toBeVisible({
@@ -111,8 +113,21 @@ test("disabling email preference for a category results in in-app-only delivery"
     });
   }).toPass({ timeout: 20_000 });
 
-  // ...but no email.send job was ever queued for it. Watch Mailpit rather than checking once: a single
-  // check right here would race deliver()'s still-possibly-in-flight email decision and could pass even
-  // if a regression were about to enqueue mail.
-  await assertNoNewEmail(ashaEmail, baseline);
+  // ...but no email. The in-app row only proves deliver() got past its first step, so wait for the
+  // worker's job for this event to COMPLETE (its email decision has run), then check what it decided:
+  // deliver() records a PENDING EMAIL delivery row before it ever enqueues mail, so none means none
+  // was queued. A standalone script for the same reason as seed-past-event.ts.
+  const { emailDeliveries } = JSON.parse(
+    execFileSync(
+      "node",
+      [
+        "--experimental-strip-types",
+        path.join(__dirname, "support/email-decision.ts"),
+        ashaEmail,
+      ],
+      { encoding: "utf8", cwd: path.join(__dirname, "../..") }
+    )
+  ) as { emailDeliveries: number };
+  expect(emailDeliveries).toBe(0);
+  expect(await countEmails(ashaEmail)).toBe(baseline);
 });
