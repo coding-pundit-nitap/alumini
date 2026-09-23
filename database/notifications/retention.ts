@@ -20,6 +20,7 @@ export function createNotificationRetentionStore(): NotificationRetentionStore {
       const stale = await db.notification.findMany({
         where: { readAt: { not: null, lt: before } },
         select: { id: true },
+        orderBy: { readAt: "asc" },
         take: limit,
       });
       if (stale.length === 0) return 0;
