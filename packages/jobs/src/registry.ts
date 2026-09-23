@@ -3,6 +3,7 @@ import { connectionAccepted, connectionRequested } from "./connection.ts";
 import { idempotencySweep } from "./idempotency.ts";
 import { emailSend } from "./email.ts";
 import { jobEvents } from "./job.ts";
+import { jobExpire, jobExpired } from "./job-expire.ts";
 import { mentorshipJobs } from "./mentorship.ts";
 import { messageSent } from "./message.ts";
 import { outboxPrune } from "./scheduled.ts";
@@ -37,6 +38,7 @@ export const OUTBOX_EVENTS = {
   "content.removed": contentRemoved,
   ...mentorshipJobs,
   ...jobEvents,
+  "job.expired": jobExpired,
 } as const;
 
 /** Every job the worker knows, including scheduled ones that no outbox event produces. */
@@ -45,6 +47,7 @@ export const JOBS = {
   "outbox.prune": outboxPrune,
   "upload.sweep": uploadSweep,
   "idempotency.sweep": idempotencySweep,
+  "job.expire": jobExpire,
 } as const;
 
 export type OutboxEventType = keyof typeof OUTBOX_EVENTS;
