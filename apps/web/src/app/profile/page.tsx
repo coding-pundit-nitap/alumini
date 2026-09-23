@@ -67,6 +67,9 @@ export default async function ProfilePage() {
         <Link href="/mentorship" className="underline">
           Mentorship
         </Link>
+        <Link href="/jobs" className="underline">
+          Jobs & internships
+        </Link>
         <Link href="/profile/details" className="underline">
           Experience, education, skills & links
         </Link>
