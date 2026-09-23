@@ -1,4 +1,5 @@
 import type { Prisma, ReportStatus } from "@nitap/database";
+import type { AuditWriter } from "@nitap/database/audit";
 import type { OutboxWriter } from "@nitap/database/outbox";
 import type { OutboxEvent } from "@nitap/jobs";
 
@@ -14,6 +15,7 @@ import { findContentAuthor, softDeleteContentSql } from "./sql";
 export function createPrismaModerationStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;
+  audit: AuditWriter;
 }): ModerationStore {
   const forClient = (db: Prisma.TransactionClient): ModerationTx => ({
     async contentAuthor(targetType, targetId) {
@@ -52,6 +54,29 @@ export function createPrismaModerationStore(deps: {
     },
     async enqueue(event) {
       await deps.outbox.add(db, event as OutboxEvent);
+    },
+    async audit(entry) {
+      await deps.audit.record(
+        db,
+        "contentId" in entry
+          ? {
+              actorId: entry.actorId,
+              action: entry.action,
+              targetType: entry.action === "post.removed" ? "post" : "comment",
+              targetId: entry.contentId,
+              metadata: { reportId: entry.reportId },
+            }
+          : {
+              actorId: entry.actorId,
+              action: entry.action,
+              targetType: "report",
+              targetId: entry.reportId,
+              metadata: {
+                targetType: entry.targetType,
+                targetId: entry.targetId,
+              },
+            }
+      );
     },
   });
 

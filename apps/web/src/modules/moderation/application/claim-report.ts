@@ -40,6 +40,13 @@ export function createClaimReport(deps: {
       if (!decision.ok) refuse(decision);
 
       await tx.patchReport(report.id, { status: "UNDER_REVIEW" });
+      await tx.audit({
+        action: "report.claimed",
+        actorId,
+        reportId: report.id,
+        targetType: report.targetType,
+        targetId: report.targetId,
+      });
     });
   };
 }

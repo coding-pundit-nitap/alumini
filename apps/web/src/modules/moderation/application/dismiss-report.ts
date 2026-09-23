@@ -46,6 +46,13 @@ export function createDismissReport(deps: {
         status: decision.to,
         resolvedById: actorId,
       });
+      await tx.audit({
+        action: "report.dismissed",
+        actorId,
+        reportId: report.id,
+        targetType: report.targetType,
+        targetId: report.targetId,
+      });
 
       await tx.enqueue({
         type: "report.resolved",

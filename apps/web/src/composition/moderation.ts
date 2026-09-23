@@ -1,3 +1,4 @@
+import { audit } from "@/infrastructure/audit";
 import { transactionRunner } from "@/infrastructure/database/client";
 import { outbox } from "@/infrastructure/outbox";
 import { authorize } from "@/modules/auth";
@@ -13,6 +14,7 @@ import { createPrismaModerationStore } from "@/modules/moderation/server";
 const store = createPrismaModerationStore({
   runner: transactionRunner,
   outbox,
+  audit,
 });
 const deps = { store, authorize };
 

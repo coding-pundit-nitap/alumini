@@ -14,6 +14,7 @@ export { createFileContentReport } from "./application/file-content-report";
 export { createResolveReport } from "./application/resolve-report";
 export type { Authorize } from "./application/authz";
 export type {
+  ModerationAuditEntry,
   ModerationStore,
   ModerationTx,
   ReportRow,

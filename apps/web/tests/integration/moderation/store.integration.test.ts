@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import { createTestDatabase, type TestDatabase } from "@nitap/testing";
@@ -38,6 +39,7 @@ describe("moderation store against real PostgreSQL", () => {
     createPrismaModerationStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
 
   it("findReport refuses a MESSAGE-scoped report id (belongs to a different module's flow)", async () => {

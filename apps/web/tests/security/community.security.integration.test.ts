@@ -167,6 +167,7 @@ describe("community security", () => {
     const store = createPrismaModerationStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
     return {
       file: createFileContentReport({ store, authorize }),

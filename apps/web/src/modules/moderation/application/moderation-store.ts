@@ -8,6 +8,21 @@ export type ReportRow = {
   resolvedById: string | null;
   createdAt: Date;
 };
+/** Moderator actions leave audit rows in the same transaction (FR-MOD-004, spec A12-9). Ids only. */
+export type ModerationAuditEntry =
+  | {
+      action: "report.claimed" | "report.resolved" | "report.dismissed";
+      actorId: string;
+      reportId: string;
+      targetType: "POST" | "COMMENT";
+      targetId: string;
+    }
+  | {
+      action: "post.removed" | "comment.removed";
+      actorId: string;
+      reportId: string;
+      contentId: string;
+    };
 export type ModerationTx = {
   /** Cross-module read: resolves a POST/COMMENT target's author id without importing modules/posts. */
   contentAuthor(
@@ -34,6 +49,7 @@ export type ModerationTx = {
     type: "report.filed" | "report.resolved" | "content.removed";
     payload: unknown;
   }): Promise<void>;
+  audit(entry: ModerationAuditEntry): Promise<void>;
 };
 export type ModerationStore = {
   transaction<T>(work: (tx: ModerationTx) => Promise<T>): Promise<T>;

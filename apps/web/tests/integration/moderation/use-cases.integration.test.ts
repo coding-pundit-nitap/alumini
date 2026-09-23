@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PERMISSIONS } from "@nitap/database/permissions";
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import { createTestDatabase, type TestDatabase } from "@nitap/testing";
@@ -73,6 +74,7 @@ describe("moderation use cases against real PostgreSQL", () => {
     const store = createPrismaModerationStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
     const deps = { store, authorize: authorizeWith(reviewers) };
     return {
@@ -304,6 +306,89 @@ describe("moderation use cases against real PostgreSQL", () => {
       expect(await code(m.dismiss({ actor: actor(meera), reportId }))).toBe(
         "INVALID_STATE_TRANSITION"
       );
+    });
+  });
+
+  describe("audit (FR-MOD-004)", () => {
+    const auditRows = () =>
+      db.prisma.auditLog.findMany({
+        orderBy: [{ createdAt: "asc" }, { action: "asc" }],
+        select: {
+          action: true,
+          targetType: true,
+          targetId: true,
+          actorId: true,
+          metadata: true,
+        },
+      });
+    const fileSpam = (m: ReturnType<typeof build>) =>
+      m.file({
+        actor: actor(ravi),
+        input: { targetType: "POST", targetId: postId, reason: "spam" },
+      });
+
+    it("audits a claim, then a resolution together with the content removal", async () => {
+      const meera = await member(db, "Meera");
+      const m = build(new Set([meera]));
+      const { reportId } = await fileSpam(m);
+      await m.claim({ actor: actor(meera), reportId });
+      await m.resolve({ actor: actor(meera), reportId });
+
+      const rows = await auditRows();
+      expect(rows).toHaveLength(3);
+      expect(rows).toEqual(
+        expect.arrayContaining([
+          {
+            action: "report.claimed",
+            targetType: "report",
+            targetId: reportId,
+            actorId: meera,
+            metadata: { targetType: "POST", targetId: postId },
+          },
+          {
+            action: "report.resolved",
+            targetType: "report",
+            targetId: reportId,
+            actorId: meera,
+            metadata: { targetType: "POST", targetId: postId },
+          },
+          {
+            action: "post.removed",
+            targetType: "post",
+            targetId: postId,
+            actorId: meera,
+            metadata: { reportId },
+          },
+        ])
+      );
+    });
+
+    it("audits a dismissal", async () => {
+      const meera = await member(db, "Meera");
+      const m = build(new Set([meera]));
+      const { reportId } = await fileSpam(m);
+      await m.dismiss({ actor: actor(meera), reportId });
+      expect((await auditRows()).map((r) => r.action)).toEqual([
+        "report.dismissed",
+      ]);
+    });
+
+    it("writes no audit row when the resolution is refused", async () => {
+      const meera = await member(db, "Meera");
+      const m = build(new Set([meera]));
+      const { reportId } = await fileSpam(m);
+      await m.dismiss({ actor: actor(meera), reportId });
+      expect(await code(m.resolve({ actor: actor(meera), reportId }))).toBe(
+        "INVALID_STATE_TRANSITION"
+      );
+      expect((await auditRows()).map((r) => r.action)).toEqual([
+        "report.dismissed",
+      ]);
+      // The post survived: the refused resolution removed nothing.
+      expect(
+        (await db.prisma.post.findUniqueOrThrow({ where: { id: postId } }))
+          .deleted
+      ).toBe(false);
     });
   });
 });

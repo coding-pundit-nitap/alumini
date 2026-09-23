@@ -47,6 +47,20 @@ export function createResolveReport(deps: {
         resolvedById: actorId,
       });
       await tx.softDeleteContent(report.targetType, report.targetId);
+      await tx.audit({
+        action: "report.resolved",
+        actorId,
+        reportId: report.id,
+        targetType: report.targetType,
+        targetId: report.targetId,
+      });
+      await tx.audit({
+        action:
+          report.targetType === "POST" ? "post.removed" : "comment.removed",
+        actorId,
+        reportId: report.id,
+        contentId: report.targetId,
+      });
 
       await tx.enqueue({
         type: "report.resolved",
