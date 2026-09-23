@@ -209,7 +209,7 @@ export function composeWorker(
   const findActiveRegistrants = async (eventId: string) =>
     (
       await prisma.eventRegistration.findMany({
-        where: { eventId, state: "REGISTERED" },
+        where: { eventId, state: { not: "CANCELLED" } },
         select: { userId: true },
         orderBy: { id: "asc" },
       })
