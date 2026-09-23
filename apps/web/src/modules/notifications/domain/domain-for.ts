@@ -1,0 +1,43 @@
+import type { NotificationDomain } from "@nitap/database/enums";
+
+import { UnexpectedError } from "@/lib/errors";
+
+export type { NotificationDomain };
+
+const EVENT_TYPE_TO_DOMAIN: Record<string, NotificationDomain> = {
+  "connection.requested": "CONNECTION",
+  "connection.accepted": "CONNECTION",
+  "mentorship.requested": "MENTORSHIP",
+  "mentorship.accepted": "MENTORSHIP",
+  "mentorship.declined": "MENTORSHIP",
+  "mentorship.cancelled": "MENTORSHIP",
+  "mentorship.started": "MENTORSHIP",
+  "mentorship.completed": "MENTORSHIP",
+  "job.submitted": "JOB",
+  "job.published": "JOB",
+  "job.rejected": "JOB",
+  "job.closed": "JOB",
+  "job.expired": "JOB",
+  "event.cancelled": "EVENT",
+  "event.registered": "EVENT",
+  "message.sent": "MESSAGE",
+  "comment.created": "POST",
+  "achievement.submitted": "ACHIEVEMENT",
+  "achievement.approved": "ACHIEVEMENT",
+  "achievement.rejected": "ACHIEVEMENT",
+  "report.filed": "MODERATION",
+  "report.resolved": "MODERATION",
+  "content.removed": "MODERATION",
+};
+
+/** Single source of truth for "which preferences-UI toggle governs this event type" (N-14). Every
+ * processor in Part C and the preferences form (Task 19) both call this — never hardcode the mapping
+ * a second time. */
+export function domainFor(type: string): NotificationDomain {
+  const domain = EVENT_TYPE_TO_DOMAIN[type];
+  if (!domain)
+    throw new UnexpectedError(
+      `No notification domain mapped for type "${type}".`
+    );
+  return domain;
+}
