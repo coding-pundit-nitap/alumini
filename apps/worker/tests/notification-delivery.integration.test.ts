@@ -147,6 +147,11 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     await eventually(() => expect(smtp.received).toHaveLength(1));
     expect(smtp.received[0]!.to).toEqual(["recipient@example.test"]);
     expect(await notifications(recipient.id)).toHaveLength(1);
+    await eventually(async () =>
+      expect(
+        (await emailDeliveries(recipient.id)).map((d) => d.status)
+      ).toEqual(["SENT"])
+    );
   });
 
   it("a redelivered outbox event reaches the consumer again yet yields one notification, one email, one unread bump", async () => {
@@ -230,10 +235,10 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     await startWorker();
 
     await eventually(() => expect(smtp.received).toHaveLength(1));
+    // The resumed step recorded exactly one EMAIL delivery row (not a second one on top of a lost first
+    // try); its status races the send outcome (PENDING then SENT), so only its existence/count matters here.
     await eventually(async () =>
-      expect(
-        (await emailDeliveries(recipient.id)).map((d) => d.status)
-      ).toEqual(["PENDING"])
+      expect(await emailDeliveries(recipient.id)).toHaveLength(1)
     );
     await wait(300);
     expect(smtp.received).toHaveLength(1);
@@ -361,29 +366,24 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
   });
 
   // N-12 / TASK.md: retry exhaustion must end in NotificationDelivery FAILED with an alert-worthy metric.
-  // Nothing in Tasks 6-13 records SENT/FAILED for the EMAIL delivery row or emits
-  // notification_delivery_failed_total; `it.fails` keeps the gap visible without turning the suite red.
-  it.fails(
-    "permanent email failure ends in NotificationDelivery FAILED with a metric, not infinite retry",
-    async () => {
-      const [actor, recipient] = await Promise.all([
-        makeUser("actor"),
-        makeUser("recipient"),
-      ]);
-      smtp.setMode("reject-permanent");
-      const { metrics } = await startWorker();
+  it("permanent email failure ends in NotificationDelivery FAILED with a metric, not infinite retry", async () => {
+    const [actor, recipient] = await Promise.all([
+      makeUser("actor"),
+      makeUser("recipient"),
+    ]);
+    smtp.setMode("reject-permanent");
+    const { metrics } = await startWorker();
 
-      await requestConnection(actor.id, recipient.id);
+    await requestConnection(actor.id, recipient.id);
 
-      await eventually(async () =>
-        expect(
-          (await emailDeliveries(recipient.id)).map((d) => d.status)
-        ).toEqual(["FAILED"])
-      );
-      expect(metrics.increment).toHaveBeenCalledWith(
-        "notification_delivery_failed_total",
-        expect.anything()
-      );
-    }
-  );
+    await eventually(async () =>
+      expect(
+        (await emailDeliveries(recipient.id)).map((d) => d.status)
+      ).toEqual(["FAILED"])
+    );
+    expect(metrics.increment).toHaveBeenCalledWith(
+      "notification_delivery_failed_total",
+      expect.anything()
+    );
+  });
 });

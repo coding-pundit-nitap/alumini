@@ -123,6 +123,7 @@ export function createDeliverNotification(deps: {
         v: 1,
         to: input.emailTo,
         template: "notification",
+        notificationId: id,
         params: {
           title: copy.title,
           body: copy.body,

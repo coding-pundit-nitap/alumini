@@ -1,10 +1,18 @@
 import { Prisma, type PrismaClient } from "@nitap/database";
 import type { NotificationDomain } from "@nitap/jobs";
 
+import type { EmailDeliveryUpdater } from "../processors/email-send.ts";
 import type { DeliveryStore } from "./deliver.ts";
 
-/** Worker-side twin of apps/web's prisma-notification-store (worker cannot import from web). */
-export function createPrismaDeliveryStore(prisma: PrismaClient): DeliveryStore {
+/**
+ * Worker-side twin of apps/web's prisma-notification-store (worker cannot import from web). Also
+ * implements `EmailDeliveryUpdater` (N-12): `deliver.ts` records exactly one EMAIL row per notification,
+ * so `updateMany` keyed by notificationId + channel is safe — a missing row (payload predates this
+ * feature, or the row was never written) is a no-op, not a throw.
+ */
+export function createPrismaDeliveryStore(
+  prisma: PrismaClient
+): DeliveryStore & EmailDeliveryUpdater {
   return {
     async insert(input) {
       try {
@@ -38,6 +46,18 @@ export function createPrismaDeliveryStore(prisma: PrismaClient): DeliveryStore {
     },
     async hasDelivery(input) {
       return (await prisma.notificationDelivery.count({ where: input })) > 0;
+    },
+    async markSent(notificationId, attempt) {
+      await prisma.notificationDelivery.updateMany({
+        where: { notificationId, channel: "EMAIL" },
+        data: { status: "SENT", attempts: attempt },
+      });
+    },
+    async markFailed(notificationId, attempt, reason) {
+      await prisma.notificationDelivery.updateMany({
+        where: { notificationId, channel: "EMAIL" },
+        data: { status: "FAILED", attempts: attempt, lastError: reason },
+      });
     },
   };
 }

@@ -55,6 +55,38 @@ describe("deliverNotification", () => {
     });
   });
 
+  it("stamps the enqueued email with the notification id (N-12 status tracking)", async () => {
+    const store = fakeStore({
+      insert: vi.fn(async () => ({ id: "notif-1", created: true })),
+    });
+    const enqueueEmail = vi.fn<(p: unknown, o: unknown) => Promise<void>>(
+      async () => {}
+    );
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+
+    const [payload] = enqueueEmail.mock.calls[0]!;
+    expect((payload as { notificationId: string }).notificationId).toBe(
+      "notif-1"
+    );
+  });
+
   it("skips email when the recipient disabled it, but still writes in-app", async () => {
     const store = fakeStore();
     const enqueueEmail = vi.fn(async () => {});

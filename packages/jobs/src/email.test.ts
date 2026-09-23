@@ -60,6 +60,32 @@ describe("email.send payload", () => {
     expect(emailSendPayload.safeParse(payload).success).toBe(false);
   });
 
+  it("accepts a notification payload with or without notificationId, rejects a non-uuid", () => {
+    const notification = {
+      v: 1,
+      to: "person@example.test",
+      template: "notification",
+      params: {
+        title: "New connection",
+        body: "Someone connected with you",
+        actionUrl: "https://alumni.example/connections",
+      },
+    };
+    expect(emailSendPayload.safeParse(notification).success).toBe(true);
+    expect(
+      emailSendPayload.safeParse({
+        ...notification,
+        notificationId: "11111111-1111-4111-8111-111111111111",
+      }).success
+    ).toBe(true);
+    expect(
+      emailSendPayload.safeParse({
+        ...notification,
+        notificationId: "not-a-uuid",
+      }).success
+    ).toBe(false);
+  });
+
   it("is a single-purpose job on the email queue that states its idempotency rule", () => {
     expect(emailSend.name).toBe("email.send");
     expect(emailSend.queue).toBe("email");

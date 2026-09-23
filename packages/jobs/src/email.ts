@@ -59,6 +59,8 @@ export const emailSendPayload = z.discriminatedUnion("template", [
     .object({
       ...common,
       template: z.literal("notification"),
+      /** Ids-only link back to the NotificationDelivery row this send updates (N-12). */
+      notificationId: z.uuid().optional(),
       params: z
         .object({
           title: z.string().min(1),

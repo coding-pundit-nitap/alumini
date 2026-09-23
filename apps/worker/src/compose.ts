@@ -184,9 +184,10 @@ export function composeWorker(
     logger.warn("hint.redis.error", { metadata: { message: error.message } })
   );
 
+  const deliveryStore = createPrismaDeliveryStore(prisma);
   // The one fan-out-to-a-recipient primitive; later notification processors reuse it.
   const deliver = createDeliverNotification({
-    store: createPrismaDeliveryStore(prisma),
+    store: deliveryStore,
     getPreference: getPreference(prisma),
     appUrl: config.appUrl,
     enqueueEmail: (payload, options) => queue.add(emailJob, payload, options),
@@ -340,7 +341,14 @@ export function composeWorker(
     logger,
     metrics,
     jobs: [
-      registerJob(emailJob, createEmailSendProcessor(email)),
+      registerJob(
+        emailJob,
+        createEmailSendProcessor(email, {
+          deliveries: deliveryStore,
+          metrics,
+          maxAttempts: emailJob.retry.attempts,
+        })
+      ),
       registerJob(outboxPrune, createOutboxPruneProcessor(store)),
       registerJob(
         connectionRequested,

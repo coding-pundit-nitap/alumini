@@ -5,7 +5,7 @@ import type { EmailPort } from "@nitap/email";
 import { PermanentJobError } from "@nitap/jobs";
 import type { EmailSendPayload } from "@nitap/jobs";
 
-import { silentLogger } from "../../tests/support.ts";
+import { silentLogger, recordingMetrics } from "../../tests/support.ts";
 import { createEmailSendProcessor } from "./email-send.ts";
 
 const payload: EmailSendPayload = {
@@ -17,6 +17,22 @@ const payload: EmailSendPayload = {
     expiresInMinutes: 60,
   },
 };
+const notificationPayload: EmailSendPayload = {
+  v: 1,
+  to: "person@example.test",
+  template: "notification",
+  notificationId: "11111111-1111-4111-8111-111111111111",
+  params: {
+    title: "New connection",
+    body: "Someone connected with you",
+    actionUrl: "https://alumni.example/connections",
+  },
+};
+const fakeDeliveries = (over = {}) => ({
+  markSent: vi.fn(async () => {}),
+  markFailed: vi.fn(async () => {}),
+  ...over,
+});
 const context = (over = {}) => ({
   jobId: "event-1",
   attempt: 1,
@@ -85,5 +101,122 @@ describe("email.send processor", () => {
     expect(logged).toContain("email.sent");
     expect(logged).not.toContain("person@example.test");
     expect(logged).not.toContain("alumni.example");
+  });
+
+  describe("delivery status tracking (N-12)", () => {
+    it("marks the delivery SENT on a successful notification email", async () => {
+      const deliveries = fakeDeliveries();
+      const processor = createEmailSendProcessor(
+        { send: async () => {} },
+        { deliveries }
+      );
+
+      await processor(notificationPayload, context());
+
+      expect(deliveries.markSent).toHaveBeenCalledWith(
+        "11111111-1111-4111-8111-111111111111",
+        1
+      );
+      expect(deliveries.markFailed).not.toHaveBeenCalled();
+    });
+
+    it("marks the delivery FAILED and bumps the metric on a permanent send error", async () => {
+      const deliveries = fakeDeliveries();
+      const metrics = recordingMetrics();
+      const processor = createEmailSendProcessor(
+        {
+          send: async () =>
+            Promise.reject(new EmailSendError("SMTP 550", "permanent")),
+        },
+        { deliveries, metrics, maxAttempts: 4 }
+      );
+
+      await expect(
+        processor(notificationPayload, context())
+      ).rejects.toBeInstanceOf(PermanentJobError);
+
+      expect(deliveries.markFailed).toHaveBeenCalledWith(
+        "11111111-1111-4111-8111-111111111111",
+        1,
+        "SMTP 550"
+      );
+      expect(metrics.increment).toHaveBeenCalledWith(
+        "notification_delivery_failed_total",
+        expect.anything()
+      );
+    });
+
+    it("leaves the delivery row alone on a transient failure that is not the final attempt", async () => {
+      const deliveries = fakeDeliveries();
+      const metrics = recordingMetrics();
+      const failure = new EmailSendError("SMTP 451", "retryable");
+      const processor = createEmailSendProcessor(
+        { send: async () => Promise.reject(failure) },
+        { deliveries, metrics, maxAttempts: 4 }
+      );
+
+      await expect(
+        processor(notificationPayload, context({ attempt: 2 }))
+      ).rejects.toBe(failure);
+
+      expect(deliveries.markFailed).not.toHaveBeenCalled();
+      expect(metrics.increment).not.toHaveBeenCalled();
+    });
+
+    it("marks FAILED and bumps the metric on the final transient attempt", async () => {
+      const deliveries = fakeDeliveries();
+      const metrics = recordingMetrics();
+      const failure = new EmailSendError("SMTP 451", "retryable");
+      const processor = createEmailSendProcessor(
+        { send: async () => Promise.reject(failure) },
+        { deliveries, metrics, maxAttempts: 4 }
+      );
+
+      await expect(
+        processor(notificationPayload, context({ attempt: 4 }))
+      ).rejects.toBe(failure);
+
+      expect(deliveries.markFailed).toHaveBeenCalledWith(
+        "11111111-1111-4111-8111-111111111111",
+        4,
+        "SMTP 451"
+      );
+      expect(metrics.increment).toHaveBeenCalledWith(
+        "notification_delivery_failed_total",
+        expect.anything()
+      );
+    });
+
+    it("never touches deliveries for a payload without a notificationId", async () => {
+      const deliveries = fakeDeliveries();
+      const metrics = recordingMetrics();
+      const processor = createEmailSendProcessor(
+        { send: async () => {} },
+        { deliveries, metrics, maxAttempts: 4 }
+      );
+
+      await processor(payload, context());
+
+      expect(deliveries.markSent).not.toHaveBeenCalled();
+      expect(deliveries.markFailed).not.toHaveBeenCalled();
+    });
+
+    it("does not fail the job when markSent itself throws", async () => {
+      const logger = silentLogger();
+      const deliveries = fakeDeliveries({
+        markSent: vi.fn(async () => {
+          throw new Error("db unreachable");
+        }),
+      });
+      const processor = createEmailSendProcessor(
+        { send: async () => {} },
+        { deliveries }
+      );
+
+      await expect(
+        processor(notificationPayload, context({ logger }))
+      ).resolves.toBeUndefined();
+      expect(logger.error).toHaveBeenCalled();
+    });
   });
 });
