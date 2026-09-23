@@ -3,10 +3,7 @@ import path from "node:path";
 
 import { ROLE_NAMES, type RoleName } from "@nitap/database/role-permissions";
 
-const DOC = path.resolve(
-  import.meta.dirname,
-  "../../../../docs/architecture/rbac-permission-matrix.md"
-);
+const DOC = path.resolve(import.meta.dirname, "rbac-permission-matrix.md");
 
 /**
  * Reads §4 of the RBAC matrix (the human-reviewed source of truth) into role → permissions.
