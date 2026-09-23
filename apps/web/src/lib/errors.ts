@@ -151,6 +151,19 @@ export const ERROR_CATALOG: Record<
     status: 409,
     message: "This mentor is not accepting requests right now.",
   },
+  EVENT_FULL: { status: 409, message: "This event is full." },
+  ALREADY_REGISTERED: {
+    status: 409,
+    message: "You are already registered for this event.",
+  },
+  REGISTRATION_CLOSED: {
+    status: 409,
+    message: "Registration for this event has closed.",
+  },
+  EVENT_CANCELLED: {
+    status: 409,
+    message: "This event has been cancelled.",
+  },
   VERIFICATION_REQUEST_OPEN: {
     status: 409,
     message: "A verification request is already awaiting review.",

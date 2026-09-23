@@ -175,3 +175,17 @@ describe("community error codes", () => {
     expect(ERROR_CATALOG.INVALID_STATE_TRANSITION).toBeDefined();
   });
 });
+
+describe("event error codes (Phase 8)", () => {
+  it.each([
+    ["EVENT_FULL", "This event is full."],
+    ["ALREADY_REGISTERED", "You are already registered for this event."],
+    ["REGISTRATION_CLOSED", "Registration for this event has closed."],
+    ["EVENT_CANCELLED", "This event has been cancelled."],
+  ])("%s is a 409 with its safe message", (code, message) => {
+    expect(ERROR_CATALOG[code]).toEqual({ status: 409, message });
+    const error = new ConflictError(code);
+    expect(error.status).toBe(409);
+    expect(error.message).toBe(message);
+  });
+});

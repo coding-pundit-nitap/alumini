@@ -16,6 +16,7 @@ const MODULE_DEPENDENCIES = {
   directory: ["auth"],
   connections: ["auth"],
   mentorship: ["auth"],
+  events: ["auth"],
 };
 
 const moduleDagRules = Object.entries(MODULE_DEPENDENCIES).map(

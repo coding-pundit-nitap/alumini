@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { makeCreateEventInput } from "./validation";
+import { eventFormSchema, makeCreateEventInput } from "./validation";
 
 const NOW = new Date("2026-06-01T00:00:00Z");
 const schema = makeCreateEventInput(() => NOW);
@@ -116,5 +116,61 @@ describe("createEventInput", () => {
   it("rejects an invalid IANA timezone", () => {
     const result = schema.safeParse(baseInput({ timezone: "Not/AZone" }));
     expect(result.success).toBe(false);
+  });
+});
+
+describe("eventFormSchema (client form)", () => {
+  const form = (over: Record<string, unknown> = {}) => ({
+    title: "Reunion",
+    description: "The annual alumni reunion.",
+    startsLocal: "2026-10-01T18:00",
+    deadlineLocal: "2026-09-30T18:00",
+    timezone: "Asia/Kolkata",
+    isOnline: false,
+    location: "Main hall",
+    capacity: 100,
+    ...over,
+  });
+  const fields = (input: unknown) => {
+    const result = eventFormSchema.safeParse(input);
+    return result.success
+      ? []
+      : result.error.issues.map((i) => i.path.join("."));
+  };
+
+  it("accepts a complete in-person event and an online one with no location", () => {
+    expect(fields(form())).toEqual([]);
+    expect(fields(form({ isOnline: true, location: "" }))).toEqual([]);
+  });
+
+  it("flags every missing required field", () => {
+    expect(
+      fields(
+        form({
+          title: "",
+          description: "",
+          startsLocal: "",
+          deadlineLocal: "",
+          timezone: "",
+          location: "",
+          capacity: Number.NaN,
+        })
+      ).sort()
+    ).toEqual(
+      [
+        "capacity",
+        "deadlineLocal",
+        "description",
+        "location",
+        "startsLocal",
+        "timezone",
+        "title",
+      ].sort()
+    );
+  });
+
+  it("enforces the capacity bounds", () => {
+    expect(fields(form({ capacity: 0 }))).toEqual(["capacity"]);
+    expect(fields(form({ capacity: 100_001 }))).toEqual(["capacity"]);
   });
 });
