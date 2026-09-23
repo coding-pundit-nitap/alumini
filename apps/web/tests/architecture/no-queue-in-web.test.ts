@@ -36,12 +36,8 @@ describe("the web app only produces events (spec 2B §3.1)", () => {
       fs.readFileSync(path.join(webRoot, "package.json"), "utf8")
     );
     const declared = { ...pkg.dependencies, ...pkg.devDependencies };
-    for (const name of [
-      "bullmq",
-      "nodemailer",
-      "@nitap/queue",
-      "@nitap/email",
-    ]) {
+    // @nitap/queue is allowed for the admin replay endpoint only (N-13; see checkNoQueueImports).
+    for (const name of ["bullmq", "nodemailer", "@nitap/email"]) {
       expect(declared, name).not.toHaveProperty(name);
     }
   });

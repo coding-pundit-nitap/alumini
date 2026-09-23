@@ -13,6 +13,8 @@ const serverEnvSchema = z.object({
   BETTER_AUTH_URL: z.string().url().optional(),
   // Cache / rate-limit Redis. Optional for the same reason; src/infrastructure/redis/client.ts throws if it is missing when used.
   REDIS_URL: z.string().min(1).optional(),
+  // Job-queue Redis (separate server, ADR-007). Optional; the admin replay endpoint throws if it is missing when used.
+  QUEUE_REDIS_URL: z.string().min(1).optional(),
   // Log threshold (reliability §6.3). Defaults: info, and silent under test.
   LOG_LEVEL: z
     .enum(["debug", "info", "warn", "error", "fatal", "silent"])

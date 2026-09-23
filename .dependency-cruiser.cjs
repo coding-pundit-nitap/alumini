@@ -132,9 +132,12 @@ module.exports = {
           {
             name: "web-never-touches-the-queue",
             comment:
-              "The web app only writes outbox events; the queue and email adapters belong to the worker.",
+              "The web app only writes outbox events; the queue and email adapters belong to the worker. One exception: the notifications composition builds the admin QueueAdmin for the audited replay endpoint (N-13).",
             severity: "error",
-            from: { path: "^(?:apps/web/)?src/" },
+            from: {
+              path: "^(?:apps/web/)?src/",
+              pathNot: "^(?:apps/web/)?src/composition/notifications\\.ts$",
+            },
             to: { path: "(^|/)packages/(queue|email)/" },
           },
         ]),

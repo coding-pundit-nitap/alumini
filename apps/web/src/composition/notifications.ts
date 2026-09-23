@@ -1,8 +1,13 @@
-import { prisma } from "@/infrastructure/database/client";
+import { createQueueAdmin, type QueueAdmin } from "@nitap/queue";
+
+import { env } from "@/config/env";
+import { audit } from "@/infrastructure/audit";
+import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { getRedis } from "@/infrastructure/redis/client";
 import { authorize } from "@/modules/auth";
 import {
   createNotificationUseCases,
+  createReplayNotifications,
   createRedisUnreadCounter,
   NOTIFICATION_DOMAINS,
   createPrismaNotificationStore,
@@ -22,3 +27,18 @@ export const markAllNotificationsRead = useCases.markAllRead;
 export const getUnreadCount = useCases.unreadCount;
 export const getNotificationPreferences = useCases.getPreferences;
 export const setNotificationPreference = useCases.setPreference;
+
+/** The queue Redis (noeviction, ADR-007) is a different server from the cache Redis; connect on first use only. */
+let queueAdmin: QueueAdmin | undefined;
+const replayUseCases = createReplayNotifications({
+  authorize,
+  queueAdmin: () => {
+    const url = env.QUEUE_REDIS_URL;
+    if (!url) throw new Error("QUEUE_REDIS_URL is not set");
+    return (queueAdmin ??= createQueueAdmin({ url }));
+  },
+  audit: (entry) => transactionRunner.run((tx) => audit.record(tx, entry)),
+});
+
+export const authorizeNotificationReplay = replayUseCases.check;
+export const replayNotifications = replayUseCases.replay;

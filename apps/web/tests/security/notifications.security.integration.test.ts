@@ -17,6 +17,14 @@ const mocks = vi.hoisted(() => ({
   dbRef: { current: null as TestDatabase | null },
   getActor: vi.fn(),
   getRedis: vi.fn(),
+  retry: vi.fn(),
+  queueUrl: vi.fn(),
+}));
+vi.mock("@nitap/queue", () => ({
+  createQueueAdmin: (options: { url: string }) => {
+    mocks.queueUrl(options.url);
+    return { retry: mocks.retry };
+  },
 }));
 
 vi.mock("@/infrastructure/database/client", () => {
@@ -60,6 +68,7 @@ import {
   PATCH as prefsPatch,
 } from "@/app/api/v1/notifications/preferences/route";
 import { POST as readAllRoute } from "@/app/api/v1/notifications/read-all/route";
+import { POST as replayRoute } from "@/app/api/v1/admin/notifications/replay/route";
 import { POST as readRoute } from "@/app/api/v1/notifications/[id]/read/route";
 
 const ORIGIN = "https://alumni.example.test";
@@ -443,6 +452,112 @@ describe("notifications API security", () => {
         })
       );
       expect(res.status).toBe(403);
+    });
+  });
+  describe("POST /admin/notifications/replay", () => {
+    const replay = (body: unknown, origin: string | null = ORIGIN) =>
+      replayRoute(
+        req("/api/v1/admin/notifications/replay", {
+          method: "POST",
+          headers: origin ? { origin } : {},
+          body: typeof body === "string" ? body : JSON.stringify(body),
+        })
+      );
+    const valid = { queue: "email", jobIds: ["1", "2"] };
+    async function admin(roleName: string): Promise<Actor> {
+      const actor = await member();
+      const role = await db.prisma.role.findUniqueOrThrow({
+        where: { name: roleName },
+      });
+      await db.prisma.userRole.create({
+        data: { userId: actor.userId, roleId: role.id, grantedBy: grantorId },
+      });
+      return resolveActor(
+        {
+          grantSource: createPrismaGrantSource(db.prisma),
+          now: () => new Date(),
+        },
+        { userId: actor.userId, accountState: "VERIFIED" },
+        "req-replay"
+      );
+    }
+    // audit_log is append-only, so scope rows to the acting user.
+    const auditRows = (actorId: string) =>
+      db.prisma.auditLog.findMany({
+        where: { action: "notification.replay", actorId },
+      });
+    beforeEach(() => {
+      mocks.retry.mockResolvedValue(2);
+    });
+
+    it("401 unauthenticated, even with a malformed body", async () => {
+      as(null);
+      expect((await replay("not json")).status).toBe(401);
+      expect(mocks.retry).not.toHaveBeenCalled();
+    });
+
+    it("403 for a plain member; nothing retried or audited", async () => {
+      const actor = await member();
+      as(actor);
+      expect((await replay(valid)).status).toBe(403);
+      expect(mocks.retry).not.toHaveBeenCalled();
+      expect(await auditRows(actor.userId)).toHaveLength(0);
+    });
+
+    it("403 cross-origin", async () => {
+      as(await admin("SUPER_ADMIN"));
+      expect((await replay(valid, "https://evil.example")).status).toBe(403);
+      expect(mocks.retry).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["unknown queue", { queue: "other", jobIds: ["1"] }],
+      ["empty ids", { queue: "email", jobIds: [] }],
+      [
+        "too many ids",
+        {
+          queue: "email",
+          jobIds: Array.from({ length: 101 }, (_, i) => `${i}`),
+        },
+      ],
+      ["overlong id", { queue: "email", jobIds: ["x".repeat(201)] }],
+      ["non-string id", { queue: "email", jobIds: [1] }],
+      ["extra key", { ...valid, extra: 1 }],
+    ])("400 for %s", async (_name, body) => {
+      as(await admin("SUPER_ADMIN"));
+      expect((await replay(body)).status).toBe(400);
+      expect(mocks.retry).not.toHaveBeenCalled();
+    });
+
+    it("SUPER_ADMIN (notification.replay via role) replays and is audited; only counts returned", async () => {
+      const actor = await admin("SUPER_ADMIN");
+      as(actor);
+      const response = await replay(valid);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ data: { retried: 2 } });
+      expect(mocks.retry).toHaveBeenCalledWith("email", ["1", "2"]);
+      expect(mocks.queueUrl).toHaveBeenCalledWith(process.env.QUEUE_REDIS_URL);
+      const rows = await auditRows(actor.userId);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({
+        actorId: actor.userId,
+        targetType: "notification_queue",
+        targetId: actor.userId,
+      });
+      expect(rows[0]?.metadata).toEqual({
+        queue: "email",
+        requested: 2,
+        retried: 2,
+        jobIds: ["1", "2"],
+      });
+    });
+
+    it("if the retry throws, 500 and no audit row", async () => {
+      const actor = await admin("SUPER_ADMIN");
+      as(actor);
+      mocks.retry.mockRejectedValue(new Error("redis down"));
+      expect((await replay(valid)).status).toBe(500);
+      expect(await auditRows(actor.userId)).toHaveLength(0);
     });
   });
 });

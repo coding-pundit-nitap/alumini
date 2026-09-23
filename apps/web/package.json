@@ -27,6 +27,7 @@
     "@nitap/database": "workspace:*",
     "@nitap/jobs": "workspace:*",
     "@nitap/observability": "workspace:*",
+    "@nitap/queue": "workspace:*",
     "@nitap/search": "workspace:*",
     "@nitap/storage": "workspace:*",
     "@nitap/ui": "workspace:*",

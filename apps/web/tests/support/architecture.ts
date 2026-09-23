@@ -132,6 +132,8 @@ export function checkNoRoleNames(
 const QUEUE_IMPORT =
   /from\s+["'](bullmq|nodemailer|@nitap\/queue|@nitap\/email)["']/;
 
+const QUEUE_ADMIN_COMPOSITION = "composition/notifications.ts";
+
 /**
  * The web app only produces outbox events; the queue, the relay and every provider live in the worker
  * (spec 2B §3.1). Test files are ignored. The cache Redis client (`ioredis`) is unrelated and allowed.
@@ -144,6 +146,8 @@ export function checkNoQueueImports(srcRoot: string): string[] {
   const violations: string[] = [];
   for (const file of walk(srcRoot).files) {
     if (!SOURCE_FILE.test(file) || TEST_FILE.test(file)) continue;
+    // The one exception: the admin replay endpoint (N-13) builds a QueueAdmin here; nothing else may.
+    if (rel(srcRoot, file) === QUEUE_ADMIN_COMPOSITION) continue;
     const match = QUEUE_IMPORT.exec(fs.readFileSync(file, "utf8"));
     if (match) {
       violations.push(
