@@ -53,4 +53,16 @@ describe("MyJobsList", () => {
       "/jobs/job-1/edit"
     );
   });
+
+  it("renders a withdrawSlot per row when given one", () => {
+    render(
+      <MyJobsList
+        items={[row({ status: "PUBLISHED" })]}
+        withdrawSlot={(job) => <button type="button">Withdraw {job.id}</button>}
+      />
+    );
+    expect(
+      screen.getByRole("button", { name: "Withdraw job-1" })
+    ).toBeInTheDocument();
+  });
 });

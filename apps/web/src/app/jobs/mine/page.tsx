@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 
 import { listMyJobs } from "@/composition/jobs";
 import { getActor } from "@/modules/auth";
-import { MyJobsList } from "@/modules/jobs";
+import { MyJobsList, WithdrawButton } from "@/modules/jobs";
+
+import { closeJobAction } from "../actions";
 
 export const metadata: Metadata = { title: "My job postings" };
 
@@ -22,7 +24,14 @@ export default async function MyJobsPage() {
           Post a job
         </Link>
       </div>
-      <MyJobsList items={page.data} />
+      <MyJobsList
+        items={page.data}
+        withdrawSlot={(job) =>
+          job.status === "PENDING_REVIEW" || job.status === "PUBLISHED" ? (
+            <WithdrawButton jobId={job.id} closeAction={closeJobAction} />
+          ) : null
+        }
+      />
     </div>
   );
 }

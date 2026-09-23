@@ -1,7 +1,14 @@
+"use client";
+
+import { Button } from "@nitap/ui/components/button";
 import Link from "next/link";
+import { useState } from "react";
+
+import type { ActionResult } from "@/lib/action-result";
 
 import type { ListedJob } from "../../application/job-queries";
 import type { JobStatus } from "../../domain/job";
+import { useJobAction } from "./use-job-action";
 
 const STATUS_LABEL: Record<JobStatus, string> = {
   PENDING_REVIEW: "Pending review",
@@ -57,5 +64,42 @@ export function MyJobsList({
         </li>
       ))}
     </ul>
+  );
+}
+
+/** A confirm-then-close control for one row of `/jobs/mine` (spec J-7: poster's own withdrawal). */
+export function WithdrawButton({
+  jobId,
+  closeAction,
+}: {
+  jobId: string;
+  closeAction: (jobId: string) => Promise<ActionResult<unknown>>;
+}) {
+  const { pending, error, run } = useJobAction();
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <span className="flex items-center gap-1">
+        <Button
+          size="sm"
+          disabled={pending}
+          onClick={() => run(() => closeAction(jobId))}
+        >
+          Confirm
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
+          Keep
+        </Button>
+        {error ? (
+          <span className="text-destructive text-xs">{error}</span>
+        ) : null}
+      </span>
+    );
+  }
+  return (
+    <Button size="sm" variant="outline" onClick={() => setConfirming(true)}>
+      Withdraw
+    </Button>
   );
 }
