@@ -5,6 +5,8 @@ const mocks = vi.hoisted(() => ({
   getActor: vi.fn(),
   createJob: vi.fn(),
   editJob: vi.fn(),
+  approveJob: vi.fn(),
+  rejectJob: vi.fn(),
 }));
 vi.mock("next/headers", () => ({ headers: async () => mocks.headers }));
 vi.mock("@/modules/auth", () => ({ getActor: mocks.getActor }));
@@ -13,12 +15,19 @@ vi.mock("next/cache", () => ({ refresh: vi.fn() }));
 
 import { ValidationError } from "@/lib/errors";
 
-import { createJobAction, editJobAction } from "./actions";
+import {
+  approveJobAction,
+  createJobAction,
+  editJobAction,
+  rejectJobAction,
+} from "./actions";
 
 beforeEach(() => {
   mocks.getActor.mockReset().mockResolvedValue({ userId: "u1" });
   mocks.createJob.mockReset();
   mocks.editJob.mockReset();
+  mocks.approveJob.mockReset();
+  mocks.rejectJob.mockReset();
 });
 
 describe("createJobAction", () => {
@@ -57,6 +66,33 @@ describe("editJobAction", () => {
       actor: { userId: "u1" },
       jobId: id,
       input: { title: "New title" },
+    });
+  });
+});
+
+describe("approveJobAction / rejectJobAction", () => {
+  it("rejects a non-uuid jobId before calling the use case", async () => {
+    const result = await approveJobAction("not-a-uuid");
+    expect(result.ok).toBe(false);
+    expect(mocks.approveJob).not.toHaveBeenCalled();
+  });
+
+  it("approves a valid job id", async () => {
+    mocks.approveJob.mockResolvedValue({ status: "PUBLISHED" });
+    const id = "11111111-1111-4111-8111-111111111111";
+    const result = await approveJobAction(id);
+    expect(result).toEqual({ ok: true, data: { status: "PUBLISHED" } });
+  });
+
+  it("rejects with a note", async () => {
+    mocks.rejectJob.mockResolvedValue({ status: "REJECTED" });
+    const id = "11111111-1111-4111-8111-111111111111";
+    const result = await rejectJobAction(id, "Add a salary range");
+    expect(result).toEqual({ ok: true, data: { status: "REJECTED" } });
+    expect(mocks.rejectJob).toHaveBeenCalledWith({
+      actor: { userId: "u1" },
+      jobId: id,
+      input: { reviewNote: "Add a salary range" },
     });
   });
 });

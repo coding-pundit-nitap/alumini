@@ -5,6 +5,8 @@ const mocks = vi.hoisted(() => ({
   createJob: vi.fn(),
   editJob: vi.fn(),
   getJob: vi.fn(),
+  approveJob: vi.fn(),
+  rejectJob: vi.fn(),
 }));
 vi.mock("@/config/env", () => ({
   env: { BETTER_AUTH_URL: "https://alumni.example.test" },
@@ -28,6 +30,10 @@ vi.mock("@/infrastructure/idempotency", () => ({
   },
 }));
 
+import { AuthorizationError } from "@/lib/errors";
+
+import { POST as approve } from "./[id]/approve/route";
+import { POST as reject } from "./[id]/reject/route";
 import { GET, PATCH } from "./[id]/route";
 import { POST } from "./route";
 
@@ -129,5 +135,86 @@ describe("PATCH /api/v1/jobs/:id", () => {
     );
     expect(res.status).toBe(200);
     expect((await res.json()).data.status).toBe("PENDING_REVIEW");
+  });
+});
+
+describe("POST /api/v1/jobs/:id/approve", () => {
+  it("rejects a cross-origin request (CSRF)", async () => {
+    const res = await approve(
+      jsonRequest(
+        `https://alumni.example.test/api/v1/jobs/${ID}/approve`,
+        "POST",
+        {},
+        "https://evil.example"
+      ),
+      { params: Promise.resolve({ id: ID }) }
+    );
+    expect(res.status).toBe(403);
+    expect(mocks.approveJob).not.toHaveBeenCalled();
+  });
+
+  it("a stranger with no permission gets PERMISSION_DENIED, not a leak of the job's existence (IDOR)", async () => {
+    mocks.approveJob.mockRejectedValue(
+      new AuthorizationError({ code: "PERMISSION_DENIED" })
+    );
+    const res = await approve(
+      jsonRequest(
+        `https://alumni.example.test/api/v1/jobs/${ID}/approve`,
+        "POST",
+        {}
+      ),
+      { params: Promise.resolve({ id: ID }) }
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("approves and returns the new status", async () => {
+    mocks.approveJob.mockResolvedValue({ status: "PUBLISHED" });
+    const res = await approve(
+      jsonRequest(
+        `https://alumni.example.test/api/v1/jobs/${ID}/approve`,
+        "POST",
+        {}
+      ),
+      { params: Promise.resolve({ id: ID }) }
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).data.status).toBe("PUBLISHED");
+  });
+});
+
+describe("POST /api/v1/jobs/:id/reject", () => {
+  it("rejects a cross-origin request (CSRF)", async () => {
+    const res = await reject(
+      jsonRequest(
+        `https://alumni.example.test/api/v1/jobs/${ID}/reject`,
+        "POST",
+        { reviewNote: "x" },
+        "https://evil.example"
+      ),
+      { params: Promise.resolve({ id: ID }) }
+    );
+    expect(res.status).toBe(403);
+    expect(mocks.rejectJob).not.toHaveBeenCalled();
+  });
+
+  it("rejects with a note and returns the new status", async () => {
+    mocks.rejectJob.mockResolvedValue({ status: "REJECTED" });
+    const res = await reject(
+      jsonRequest(
+        `https://alumni.example.test/api/v1/jobs/${ID}/reject`,
+        "POST",
+        {
+          reviewNote: "Add detail",
+        }
+      ),
+      { params: Promise.resolve({ id: ID }) }
+    );
+    expect(res.status).toBe(200);
+    expect(mocks.rejectJob).toHaveBeenCalledWith({
+      actor: { userId: "u1" },
+      jobId: ID,
+      input: { reviewNote: "Add detail" },
+    });
   });
 });

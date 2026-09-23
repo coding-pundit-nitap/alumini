@@ -3,7 +3,7 @@
 import { refresh } from "next/cache";
 
 import { runAction } from "@/app/_actions/run-action";
-import { createJob, editJob } from "@/composition/jobs";
+import { approveJob, createJob, editJob, rejectJob } from "@/composition/jobs";
 import type { ActionResult } from "@/lib/action-result";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
@@ -39,6 +39,34 @@ export async function editJobAction(
       actor: await getActor(),
       jobId: parseId("jobId", jobId),
       input,
+    });
+    refresh();
+    return result;
+  });
+}
+
+export async function approveJobAction(
+  jobId: string
+): Promise<ActionResult<{ status: string }>> {
+  return runAction(async () => {
+    const result = await approveJob({
+      actor: await getActor(),
+      jobId: parseId("jobId", jobId),
+    });
+    refresh();
+    return result;
+  });
+}
+
+export async function rejectJobAction(
+  jobId: string,
+  reviewNote: string
+): Promise<ActionResult<{ status: string }>> {
+  return runAction(async () => {
+    const result = await rejectJob({
+      actor: await getActor(),
+      jobId: parseId("jobId", jobId),
+      input: { reviewNote },
     });
     refresh();
     return result;
