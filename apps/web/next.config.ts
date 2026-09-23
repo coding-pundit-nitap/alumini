@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
     "@nitap/jobs",
     "@nitap/search",
   ],
+  poweredByHeader: false,
 };
 
 export default nextConfig;
