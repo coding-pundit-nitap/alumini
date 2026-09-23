@@ -215,7 +215,7 @@ describe("report.*", () => {
     expect(d.deliver.mock.calls[0]![0]).toMatchObject({
       type: "report.resolved",
       recipientId: "rep1",
-      payload: { reportId: "r1", outcome: "resolved" },
+      payload: { reportId: "r1" },
     });
     expect(d.deliver.mock.calls[0]![0].emailTo).toBeUndefined();
     d.findReporter.mockResolvedValue(null);

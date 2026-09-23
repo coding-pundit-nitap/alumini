@@ -190,7 +190,7 @@ export function createReportResolvedProcessor(
       type: "report.resolved",
       category: "ENGAGEMENT",
       recipientId: reporterId,
-      payload: { reportId: payload.reportId, outcome: payload.outcome },
+      payload: { reportId: payload.reportId },
     });
   };
 }
