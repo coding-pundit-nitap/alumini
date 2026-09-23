@@ -215,8 +215,10 @@ export function composeWorker(
         orderBy: { id: "asc" },
       })
     ).map((row) => row.userId);
-  // ponytail: CHAPTER-scoped job.approve grants count as moderators too (no chapter filter); narrow when job review is chapter-scoped.
-  const findModerators = async (permission: "job.approve") => {
+  // ponytail: CHAPTER-scoped grants count as reviewers too (no chapter filter); narrow when review is chapter-scoped.
+  const findModerators = async (
+    permission: "job.approve" | "achievement.review" | "report.review"
+  ) => {
     const now = new Date();
     const [viaRole, viaGrant] = await Promise.all([
       prisma.userRole.findMany({
@@ -237,6 +239,55 @@ export function composeWorker(
     ]);
     return [...new Set([...viaRole, ...viaGrant].map((r) => r.userId))];
   };
+
+  const findPostAuthor = async (postId: string) =>
+    (
+      await prisma.post.findFirst({
+        where: { id: postId, deleted: false },
+        select: { authorId: true },
+      })
+    )?.authorId ?? null;
+  // ponytail: first 200 distinct prior commenters (by id); raise or chunk if threads outgrow it.
+  const findPriorCommenters = async (postId: string, excludeUserId: string) =>
+    (
+      await prisma.comment.findMany({
+        where: { postId, deleted: false, authorId: { not: excludeUserId } },
+        select: { authorId: true },
+        distinct: ["authorId"],
+        orderBy: { authorId: "asc" },
+        take: 200,
+      })
+    ).map((row) => row.authorId);
+  const commentIsLive = async (commentId: string) =>
+    (await prisma.comment.count({ where: { id: commentId, deleted: false } })) >
+    0;
+  const achievementExists = async (id: string) =>
+    (await prisma.achievement.count({ where: { id } })) > 0;
+  const reportExists = async (id: string) =>
+    (await prisma.report.count({ where: { id } })) > 0;
+  const findReporter = async (reportId: string) =>
+    (
+      await prisma.report.findUnique({
+        where: { id: reportId },
+        select: { reporterId: true },
+      })
+    )?.reporterId ?? null;
+  // Deliberately no `deleted` filter: content.removed fires after the soft-delete.
+  const findContentAuthor = async (
+    targetType: "POST" | "COMMENT",
+    targetId: string
+  ) =>
+    (
+      await (targetType === "POST"
+        ? prisma.post.findUnique({
+            where: { id: targetId },
+            select: { authorId: true },
+          })
+        : prisma.comment.findUnique({
+            where: { id: targetId },
+            select: { authorId: true },
+          }))
+    )?.authorId ?? null;
 
   const relay = createRelay({
     store,
@@ -296,14 +347,60 @@ export function composeWorker(
         })
       ),
       registerJob(postCreated, createPostCreatedProcessor()),
-      registerJob(commentCreated, createCommentCreatedProcessor()),
+      registerJob(
+        commentCreated,
+        createCommentCreatedProcessor({
+          deliver,
+          findEmail,
+          findPostAuthor,
+          findPriorCommenters,
+          commentIsLive,
+          blocked,
+        })
+      ),
       registerJob(reactionAdded, createReactionAddedProcessor()),
-      registerJob(achievementSubmitted, createAchievementSubmittedProcessor()),
-      registerJob(achievementApproved, createAchievementApprovedProcessor()),
-      registerJob(achievementRejected, createAchievementRejectedProcessor()),
-      registerJob(reportFiled, createReportFiledProcessor()),
-      registerJob(reportResolved, createReportResolvedProcessor()),
-      registerJob(contentRemoved, createContentRemovedProcessor()),
+      registerJob(
+        achievementSubmitted,
+        createAchievementSubmittedProcessor({
+          deliver,
+          findEmail,
+          findModerators,
+          achievementExists,
+        })
+      ),
+      registerJob(
+        achievementApproved,
+        createAchievementApprovedProcessor({
+          deliver,
+          findEmail,
+          achievementExists,
+        })
+      ),
+      registerJob(
+        achievementRejected,
+        createAchievementRejectedProcessor({
+          deliver,
+          findEmail,
+          achievementExists,
+        })
+      ),
+      registerJob(
+        reportFiled,
+        createReportFiledProcessor({
+          deliver,
+          findEmail,
+          findModerators,
+          reportExists,
+        })
+      ),
+      registerJob(
+        reportResolved,
+        createReportResolvedProcessor({ deliver, findEmail, findReporter })
+      ),
+      registerJob(
+        contentRemoved,
+        createContentRemovedProcessor({ deliver, findEmail, findContentAuthor })
+      ),
       ...[...Object.values(jobEvents), jobExpired].map((job) =>
         registerJob(
           job as JobDefinition<
