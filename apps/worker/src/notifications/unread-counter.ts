@@ -1,3 +1,4 @@
+import { unreadCounterKey as key } from "@nitap/jobs";
 import type { Redis } from "ioredis";
 
 export type UnreadCounter = {
@@ -5,8 +6,6 @@ export type UnreadCounter = {
   decrement(userId: string, by?: number): Promise<void>;
   get(userId: string): Promise<number | null>;
 };
-
-const key = (userId: string) => `notif:unread:${userId}`;
 
 /** Redis is an optimisation; a null `get()` means "recompute from Postgres" (spec N-9). */
 export function createRedisUnreadCounter(

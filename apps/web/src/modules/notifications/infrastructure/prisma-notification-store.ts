@@ -88,6 +88,12 @@ export function createPrismaNotificationStore(
       return result.count > 0;
     },
 
+    async exists({ recipientId, id }) {
+      return (
+        (await prisma.notification.count({ where: { id, recipientId } })) > 0
+      );
+    },
+
     async markAllRead(recipientId) {
       const result = await prisma.notification.updateMany({
         where: { recipientId, readAt: null },

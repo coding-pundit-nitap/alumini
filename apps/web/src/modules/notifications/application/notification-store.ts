@@ -28,6 +28,8 @@ export type NotificationStore = {
     limit: number;
   }): Promise<{ items: NotificationRow[]; nextCursor: string | null }>;
   markRead(input: { recipientId: string; id: string }): Promise<boolean>;
+  /** True when the row exists and belongs to `recipientId` (read or not). */
+  exists(input: { recipientId: string; id: string }): Promise<boolean>;
   markAllRead(recipientId: string): Promise<number>;
   unreadCountFromDb(recipientId: string): Promise<number>;
   getPreferences(

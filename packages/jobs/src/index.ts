@@ -84,3 +84,4 @@ export type { NotificationDomain } from "./notifications/domain-for.ts";
 export { renderNotificationCopy } from "./notifications/copy.ts";
 export type { NotificationCopy } from "./notifications/copy.ts";
 export { debounceKeyFor, shouldFlush } from "./notifications/debounce.ts";
+export { unreadCounterKey } from "./notifications/unread-key.ts";
