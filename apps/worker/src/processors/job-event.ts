@@ -44,17 +44,20 @@ export function createJobEventProcessor(
           id === (payload as JobEventPayload).actorId
         )
           continue;
-        await send(id, true);
+        await send(id, false); // in-app only (spec catalogue)
       }
       return;
     }
-    // No actorId on expired (worker sweep): in-app only.
+    // Spec catalogue: only published/rejected email the poster; closed and expired are in-app only.
     if (
       action === "closed" &&
       "actorId" in payload &&
       payload.actorId === payload.postedBy
     )
       return; // self-close: no notification
-    await send(payload.postedBy, action !== "expired");
+    await send(
+      payload.postedBy,
+      action === "published" || action === "rejected"
+    );
   };
 }

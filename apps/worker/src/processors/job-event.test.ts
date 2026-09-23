@@ -44,6 +44,25 @@ describe("job event processor", () => {
     );
   });
 
+  it("job.submitted and a job.closed by someone else are in-app only (spec catalogue)", async () => {
+    const deliver = vi.fn(async (input: unknown) => void input);
+    const findEmail = vi.fn(async () => "x@nitap.ac.in");
+    await createJobEventProcessor("submitted", {
+      deliver,
+      findEmail,
+      findModerators: async () => ["mod-1"],
+    })({ ...base, actorId: "poster-1" } as never, ctx());
+    await createJobEventProcessor("closed", { deliver, findEmail })(
+      base as never,
+      ctx()
+    );
+    expect(deliver.mock.calls.map((c) => c[0])).toEqual([
+      expect.objectContaining({ type: "job.submitted", emailTo: undefined }),
+      expect.objectContaining({ type: "job.closed", emailTo: undefined }),
+    ]);
+    expect(findEmail).not.toHaveBeenCalled();
+  });
+
   it("does not notify the submitter when they hold job.approve", async () => {
     const deliver = vi.fn(async () => {});
     const processor = createJobEventProcessor("submitted", {
