@@ -2,6 +2,18 @@ import { Button, buttonVariants } from "@nitap/ui/components/button";
 import { Field, FieldGroup, FieldLabel } from "@nitap/ui/components/field";
 import { Input } from "@nitap/ui/components/input";
 
+/** Human labels for every query field, so a validation error can name what to fix. */
+export const AUDIT_FILTER_LABELS: Record<string, string> = {
+  action: "Action",
+  actorId: "Actor id",
+  targetType: "Target type",
+  targetId: "Target id",
+  from: "From",
+  to: "To",
+  limit: "Page size",
+  cursor: "Page",
+};
+
 const TEXT_FIELDS = [
   { name: "action", label: "Action", placeholder: "job.approved" },
   { name: "actorId", label: "Actor id", placeholder: "uuid" },

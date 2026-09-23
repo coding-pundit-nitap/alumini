@@ -110,6 +110,13 @@ test("an admin sees a pending job on the dashboard, approves it, and an auditor 
   await auditor.page.goto("/admin/audit?action=job.approved&cursor=bogus");
   await expect(auditor.page).toHaveURL(/\/admin\/audit\?action=job\.approved$/);
   await expect(auditor.page.getByText(moderator.email)).toBeVisible();
+
+  // An invalid filter is reported, and what the admin typed is kept (not silently reset).
+  await auditor.page.goto("/admin/audit?actorId=not-a-uuid");
+  await expect(
+    auditor.page.getByRole("alert").filter({ hasText: /actor id/i })
+  ).toBeVisible();
+  await expect(auditor.page.getByLabel("Actor id")).toHaveValue("not-a-uuid");
 });
 
 test("a member sees no Admin link and gets not-found at /admin and /admin/audit", async ({
