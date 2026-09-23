@@ -10,12 +10,10 @@ import { JobForm } from "./job-form";
 
 describe("JobForm", () => {
   it("submits the filled fields, coercing deadline to a plain date string", async () => {
-    const submitAction = vi
-      .fn()
-      .mockResolvedValue({
-        ok: true,
-        data: { jobId: "job-1", status: "PENDING_REVIEW" },
-      });
+    const submitAction = vi.fn().mockResolvedValue({
+      ok: true,
+      data: { jobId: "job-1", status: "PENDING_REVIEW" },
+    });
     render(<JobForm submitAction={submitAction} submitLabel="Post job" />);
 
     await userEvent.type(screen.getByLabelText("Title"), "Backend Engineer");

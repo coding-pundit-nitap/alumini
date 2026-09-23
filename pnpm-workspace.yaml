@@ -14,6 +14,11 @@ allowBuilds:
 
 # dependency-cruiser only supports TypeScript < 7 and otherwise resolves the workspace's TS 7 through pnpm's
 # hoisting, silently cruising 0 modules. Give it its own compiler; drop this once it supports TS 7.
+overrides:
+  deepmerge-ts@<8.0.0: ^8.0.0
+  mysql2@<3.22.0: ^3.22.0
+  mysql2@<=3.23.0: ^3.23.1
+
 packageExtensions:
   dependency-cruiser:
     dependencies:
