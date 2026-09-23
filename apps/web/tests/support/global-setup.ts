@@ -5,7 +5,7 @@ import { provideTemplateDatabase } from "@nitap/testing/global-setup";
 /** Web's integration suite needs PostgreSQL and the cache Redis (strategy §6.2). */
 export default async function setup(project: TestProject) {
   return provideTemplateDatabase(project, {
-    name: "web",
+    name: "web_" + project.name,
     requiredEnv: ["DATABASE_URL", "REDIS_URL"],
   });
 }
