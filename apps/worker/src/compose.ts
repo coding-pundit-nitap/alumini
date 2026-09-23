@@ -197,6 +197,15 @@ export function composeWorker(
         select: { email: true },
       })
     )?.email ?? null;
+  /** Symmetric block check (either party may have blocked); pairs are stored ordered, userAId < userBId. */
+  const blocked = async (a: string, b: string) =>
+    (await prisma.connection.count({
+      where: {
+        state: "BLOCKED",
+        userAId: a < b ? a : b,
+        userBId: a < b ? b : a,
+      },
+    })) > 0;
   // ponytail: CHAPTER-scoped job.approve grants count as moderators too (no chapter filter); narrow when job review is chapter-scoped.
   const findModerators = async (permission: "job.approve") => {
     const now = new Date();
@@ -263,11 +272,19 @@ export function composeWorker(
       registerJob(outboxPrune, createOutboxPruneProcessor(store)),
       registerJob(
         connectionRequested,
-        createConnectionEventProcessor("requested")
+        createConnectionEventProcessor("requested", {
+          deliver,
+          findEmail,
+          blocked,
+        })
       ),
       registerJob(
         connectionAccepted,
-        createConnectionEventProcessor("accepted")
+        createConnectionEventProcessor("accepted", {
+          deliver,
+          findEmail,
+          blocked,
+        })
       ),
       registerJob(postCreated, createPostCreatedProcessor()),
       registerJob(commentCreated, createCommentCreatedProcessor()),
