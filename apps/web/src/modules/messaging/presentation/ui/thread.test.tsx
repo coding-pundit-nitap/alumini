@@ -40,6 +40,9 @@ class FakeEventSource {
   addEventListener(name: string, listener: (event: { data: string }) => void) {
     this.listeners.set(name, listener);
   }
+  removeEventListener(name: string) {
+    this.listeners.delete(name);
+  }
   emit(data: unknown) {
     this.listeners.get("message")?.({ data: JSON.stringify(data) });
   }

@@ -9,6 +9,8 @@ import {
   type FormEvent,
 } from "react";
 
+import { subscribeToMessageStream } from "@/lib/message-stream-client";
+
 import type { Person } from "../../application/messaging-store";
 
 export type ThreadMessage = {
@@ -107,10 +109,9 @@ export function Thread(props: {
   }, [props.initialMessages, markRead]);
 
   useEffect(() => {
-    const source = new EventSource("/api/v1/messages/stream");
-    source.addEventListener("message", (event) => {
+    const unsubscribe = subscribeToMessageStream("message", (event) => {
       try {
-        const hint = JSON.parse((event as MessageEvent).data) as {
+        const hint = JSON.parse(event.data) as {
           conversationId?: string;
         };
         if (hint.conversationId === conversationId) void refresh();
@@ -124,7 +125,7 @@ export function Thread(props: {
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => {
-      source.close();
+      unsubscribe();
       clearInterval(poll);
       document.removeEventListener("visibilitychange", onVisible);
     };

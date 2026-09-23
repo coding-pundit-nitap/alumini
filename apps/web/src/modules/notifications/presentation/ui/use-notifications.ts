@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { subscribeToMessageStream } from "@/lib/message-stream-client";
+
 export type BellNotification = {
   id: string;
   type: string;
@@ -69,18 +71,15 @@ export function useNotifications() {
     };
     document.addEventListener("visibilitychange", onVisible);
 
-    let source: EventSource | undefined;
-    try {
-      source = new EventSource("/api/v1/messages/stream");
-      source.addEventListener("notification", () => void refresh());
-    } catch {
-      // EventSource unavailable or the stream can't connect: the poll still covers it
-    }
+    const unsubscribe = subscribeToMessageStream(
+      "notification",
+      () => void refresh()
+    );
 
     return () => {
       clearInterval(poll);
       document.removeEventListener("visibilitychange", onVisible);
-      source?.close();
+      unsubscribe();
     };
   }, [refresh]);
 
