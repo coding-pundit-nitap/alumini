@@ -44,8 +44,25 @@ export function createPrismaDeliveryStore(
         data: { ...input, attempts: 1 },
       });
     },
-    async hasDelivery(input) {
-      return (await prisma.notificationDelivery.count({ where: input })) > 0;
+    async emailDeliveryStatus(notificationId) {
+      const row = await prisma.notificationDelivery.findUnique({
+        where: {
+          notificationId_channel: { notificationId, channel: "EMAIL" },
+        },
+        select: { status: true },
+      });
+      return row?.status ?? null;
+    },
+    async ensureEmailPending(notificationId) {
+      await prisma.notificationDelivery.upsert({
+        where: {
+          notificationId_channel: { notificationId, channel: "EMAIL" },
+        },
+        create: { notificationId, channel: "EMAIL", status: "PENDING" },
+        // Already exists (PENDING from an earlier attempt, or already SENT/FAILED): leave it alone,
+        // never downgrade a terminal status back to PENDING.
+        update: {},
+      });
     },
     async markSent(notificationId, attempt) {
       await prisma.notificationDelivery.updateMany({

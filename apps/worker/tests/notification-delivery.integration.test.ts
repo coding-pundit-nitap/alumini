@@ -236,10 +236,13 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
 
     await eventually(() => expect(smtp.received).toHaveLength(1));
     // The resumed step recorded exactly one EMAIL delivery row (not a second one on top of a lost first
-    // try); its status races the send outcome (PENDING then SENT), so only its existence/count matters here.
-    await eventually(async () =>
-      expect(await emailDeliveries(recipient.id)).toHaveLength(1)
-    );
+    // try, now enforced by a DB-level unique (notificationId, channel) constraint); its status races the
+    // send outcome (PENDING then SENT), so only PENDING/SENT are acceptable, never a second row or FAILED.
+    await eventually(async () => {
+      const rows = await emailDeliveries(recipient.id);
+      expect(rows).toHaveLength(1);
+      expect(["PENDING", "SENT"]).toContain(rows[0]!.status);
+    });
     await wait(300);
     expect(smtp.received).toHaveLength(1);
     expect(await notifications(recipient.id)).toHaveLength(1);

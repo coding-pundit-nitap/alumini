@@ -7,7 +7,8 @@ function fakeStore(overrides: Record<string, unknown> = {}) {
   return {
     insert: vi.fn(async () => ({ id: "notif-1", created: true })),
     recordDelivery: vi.fn(async () => {}),
-    hasDelivery: vi.fn(async () => false),
+    emailDeliveryStatus: vi.fn(async () => null),
+    ensureEmailPending: vi.fn(async () => {}),
     ...overrides,
   };
 }
@@ -53,6 +54,155 @@ describe("deliverNotification", () => {
         type: "connection.requested",
       }),
     });
+  });
+
+  it("records the EMAIL row PENDING before enqueueing, not after (closes the markSent-before-insert race)", async () => {
+    const calls: string[] = [];
+    const store = fakeStore({
+      ensureEmailPending: vi.fn(async () => {
+        calls.push("ensurePending");
+      }),
+    });
+    const enqueueEmail = vi.fn<(p: unknown, o: unknown) => Promise<void>>(
+      async () => {
+        calls.push("enqueue");
+      }
+    );
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+
+    expect(calls).toEqual(["ensurePending", "enqueue"]);
+  });
+
+  it("propagates an enqueue failure after the PENDING row is recorded, so the job retries", async () => {
+    const store = fakeStore();
+    const failure = new Error("queue unreachable");
+    const enqueueEmail = vi.fn(async () => Promise.reject(failure));
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await expect(
+      deliver({
+        eventId: "e1",
+        type: "connection.requested",
+        category: "ENGAGEMENT",
+        recipientId: "u1",
+        payload: {},
+        emailTo: "u1@nitap.ac.in",
+      })
+    ).rejects.toBe(failure);
+
+    expect(store.ensureEmailPending).toHaveBeenCalledWith("notif-1");
+  });
+
+  it("a redelivery with the EMAIL row still PENDING re-enqueues (idempotently) rather than skipping", async () => {
+    const store = fakeStore({
+      insert: vi.fn(async () => ({ id: "notif-1", created: false })),
+      emailDeliveryStatus: vi.fn(async () => "PENDING"),
+    });
+    const enqueueEmail = vi.fn(async () => {});
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+
+    expect(store.ensureEmailPending).toHaveBeenCalledWith("notif-1");
+    expect(enqueueEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("a redelivery with the EMAIL row already SENT does nothing", async () => {
+    const store = fakeStore({
+      insert: vi.fn(async () => ({ id: "notif-1", created: false })),
+      emailDeliveryStatus: vi.fn(async () => "SENT"),
+    });
+    const enqueueEmail = vi.fn(async () => {});
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+
+    expect(store.ensureEmailPending).not.toHaveBeenCalled();
+    expect(enqueueEmail).not.toHaveBeenCalled();
+  });
+
+  it("a redelivery with the EMAIL row already FAILED does nothing", async () => {
+    const store = fakeStore({
+      insert: vi.fn(async () => ({ id: "notif-1", created: false })),
+      emailDeliveryStatus: vi.fn(async () => "FAILED"),
+    });
+    const enqueueEmail = vi.fn(async () => {});
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+
+    expect(store.ensureEmailPending).not.toHaveBeenCalled();
+    expect(enqueueEmail).not.toHaveBeenCalled();
   });
 
   it("stamps the enqueued email with the notification id (N-12 status tracking)", async () => {
@@ -116,7 +266,7 @@ describe("deliverNotification", () => {
   it("is a no-op on a duplicate dedupeKey (already delivered)", async () => {
     const store = fakeStore({
       insert: vi.fn(async () => ({ id: "notif-1", created: false })),
-      hasDelivery: vi.fn(async () => true),
+      emailDeliveryStatus: vi.fn(async () => "SENT"),
     });
     const enqueueEmail = vi.fn(async () => {});
     const deliver = createDeliverNotification({
@@ -167,10 +317,8 @@ describe("deliverNotification", () => {
     });
 
     expect(enqueueEmail).toHaveBeenCalledTimes(1);
-    expect(store.recordDelivery).toHaveBeenCalledTimes(1);
-    expect(store.recordDelivery).toHaveBeenCalledWith(
-      expect.objectContaining({ channel: "EMAIL", status: "PENDING" })
-    );
+    expect(store.ensureEmailPending).toHaveBeenCalledWith("notif-1");
+    expect(store.recordDelivery).not.toHaveBeenCalled();
     expect(increment).not.toHaveBeenCalled();
   });
 

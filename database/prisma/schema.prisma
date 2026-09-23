@@ -950,6 +950,7 @@ model NotificationDelivery {
   providerMessageId String?             @map("provider_message_id")
   updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
 
+  @@unique([notificationId, channel], map: "ux_notification_delivery_notification_channel")
   @@index([status], map: "ix_notification_delivery_status")
   @@map("notification_delivery")
 }
