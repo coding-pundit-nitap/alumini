@@ -23,4 +23,5 @@ export { isValidTimeZone, zonedWallTimeToUtc } from "./domain/zoned-time";
 export { EventForm } from "./presentation/ui/event-form";
 export { EventList } from "./presentation/ui/event-list";
 export { EventBadges } from "./presentation/ui/event-badges";
+export { RegistrationButton } from "./presentation/ui/registration-button";
 export { formatEventTime, spotsLabel } from "./presentation/format";

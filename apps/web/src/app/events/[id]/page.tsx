@@ -6,13 +6,20 @@ import { z } from "zod";
 import { getEvent } from "@/composition/events";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
-import { EventBadges, formatEventTime, spotsLabel } from "@/modules/events";
+import {
+  EventBadges,
+  formatEventTime,
+  RegistrationButton,
+  spotsLabel,
+} from "@/modules/events";
+
+import { cancelRegistrationAction, registerForEventAction } from "../actions";
 
 export const metadata: Metadata = { title: "Event" };
 
 const uuid = z.uuid();
 
-/** Read-only event detail (slice 8a). */
+/** Event detail, with the register / cancel registration button (slice 8b). */
 export default async function EventPage({
   params,
 }: {
@@ -63,7 +70,12 @@ export default async function EventPage({
         <dt className="text-muted-foreground">Organizer</dt>
         <dd>{event.organizer.name}</dd>
       </dl>
-      {/* Slice 8b adds the Register / Cancel registration button here; slice 8c the organizer panel. */}
+      <RegistrationButton
+        event={event}
+        registerAction={registerForEventAction}
+        cancelAction={cancelRegistrationAction}
+      />
+      {/* Slice 8c adds the organizer panel here. */}
       <p className="text-sm whitespace-pre-wrap">{event.description}</p>
     </div>
   );

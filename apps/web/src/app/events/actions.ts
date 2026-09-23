@@ -1,7 +1,11 @@
 "use server";
 
 import { runAction } from "@/app/_actions/run-action";
-import { createEvent } from "@/composition/events";
+import {
+  cancelRegistration,
+  createEvent,
+  registerForEvent,
+} from "@/composition/events";
 import type { ActionResult } from "@/lib/action-result";
 import { ValidationError, type ValidationDetail } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
@@ -62,4 +66,22 @@ export async function createEventAction(
       },
     });
   });
+}
+
+/** Registers the caller for an event from the detail page (FR-EVENT-005). */
+export async function registerForEventAction(
+  eventId: string
+): Promise<ActionResult<{ registrationId: string }>> {
+  return runAction(async () =>
+    registerForEvent({ actor: await getActor(), eventId })
+  );
+}
+
+/** Cancels the caller's own registration from the detail page (FR-EVENT-006). */
+export async function cancelRegistrationAction(
+  eventId: string
+): Promise<ActionResult<{ registrationId: string }>> {
+  return runAction(async () =>
+    cancelRegistration({ actor: await getActor(), eventId })
+  );
 }
