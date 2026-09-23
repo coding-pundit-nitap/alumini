@@ -72,10 +72,13 @@ const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
 /** Minimal in-memory stand-in for the ioredis calls the web counter makes. */
 function fakeRedis() {
   const data = new Map<string, string>();
+  const ttls = new Map<string, number>();
   return {
     data,
+    ttls,
     get: async (k: string) => data.get(k) ?? null,
-    set: async (k: string, v: string) => {
+    set: async (k: string, v: string, _ex: "EX", ttl: number) => {
+      ttls.set(k, ttl);
       if (data.has(k)) return null;
       data.set(k, v);
       return "OK";
@@ -207,15 +210,8 @@ describe("notifications API security", () => {
         (await listRoute(req("/api/v1/notifications?limit=1000"))).status
       ).toBe(400);
     });
-
-    it("still returns 200 when Redis is down (list never touches it)", async () => {
-      const a = await member();
-      await notify(a.userId);
-      redisDown();
-      as(a);
-      expect((await listRoute(req("/api/v1/notifications"))).status).toBe(200);
-    });
   });
+
   describe("mark read", () => {
     const readAt = async (id: string) =>
       (await db.prisma.notification.findUniqueOrThrow({ where: { id } }))
@@ -274,6 +270,28 @@ describe("notifications API security", () => {
       expect(await readAt(id)).not.toBeNull();
     });
 
+    it("mark-all-read with Redis down still 200s and flips the rows in Postgres", async () => {
+      const a = await member();
+      const id = await notify(a.userId);
+      redisDown();
+      as(a);
+      const res = await readAllRoute(post("/x"));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ data: { updated: 1 } });
+      expect(await readAt(id)).not.toBeNull();
+    });
+
+    it("a decrement on a missing key drops it, so the next count recomputes from Postgres", async () => {
+      const a = await member();
+      const id = await notify(a.userId);
+      await notify(a.userId);
+      as(a);
+      expect((await readRoute(post("/x"), ctx(id))).status).toBe(204);
+      expect(redis.data.has(`notif:unread:${a.userId}`)).toBe(false);
+      const res = await unreadRoute(req("/x"));
+      expect(await res.json()).toEqual({ data: { count: 1 } });
+    });
+
     it("mark-all-read only touches the caller's rows and decrements by the flipped count", async () => {
       const a = await member();
       const b = await member();
@@ -312,6 +330,7 @@ describe("notifications API security", () => {
       as(a);
       expect(await count()).toBe(2);
       expect(redis.data.get(`notif:unread:${a.userId}`)).toBe("2");
+      expect(redis.ttls.get(`notif:unread:${a.userId}`)).toBe(300);
     });
 
     it("serves the Redis value when present", async () => {
@@ -355,6 +374,7 @@ describe("notifications API security", () => {
       as(null);
       expect((await prefsGet(req("/x"))).status).toBe(401);
       expect((await patch({ domain: "JOB", enabled: false })).status).toBe(401);
+      expect((await patch({ domain: "BILLING" })).status).toBe(401);
     });
 
     it("GET reports every domain enabled when no row is stored", async () => {

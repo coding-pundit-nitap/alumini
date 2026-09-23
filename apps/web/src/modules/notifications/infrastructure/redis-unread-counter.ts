@@ -1,11 +1,17 @@
-import { unreadCounterKey } from "@nitap/jobs";
+import { UNREAD_COUNTER_TTL_SECONDS, unreadCounterKey } from "@nitap/jobs";
 
 import { logger } from "@/infrastructure/observability";
 import type { UnreadCounter } from "../application/notification-use-cases";
 
 type RedisLike = {
   get(key: string): Promise<string | null>;
-  set(key: string, value: string, mode: "NX"): Promise<unknown>;
+  set(
+    key: string,
+    value: string,
+    ex: "EX",
+    seconds: number,
+    nx: "NX"
+  ): Promise<unknown>;
   decrby(key: string, by: number): Promise<number>;
   del(key: string): Promise<unknown>;
 };
@@ -35,10 +41,16 @@ export function createRedisUnreadCounter(
     },
     async seed(userId, count) {
       try {
-        // NX: never clobber a value the worker has already started incrementing.
+        // NX: never clobber a value the worker has already started incrementing. EX: bound any drift.
         await (
           await getClient()
-        ).set(unreadCounterKey(userId), String(count), "NX");
+        ).set(
+          unreadCounterKey(userId),
+          String(count),
+          "EX",
+          UNREAD_COUNTER_TTL_SECONDS,
+          "NX"
+        );
       } catch (error) {
         warn("seed", error);
       }
