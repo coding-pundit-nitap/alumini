@@ -55,6 +55,10 @@ import { createPrismaGrantSource } from "@/modules/auth/infrastructure/prisma-gr
 
 import { GET as listRoute } from "@/app/api/v1/notifications/route";
 import { GET as unreadRoute } from "@/app/api/v1/notifications/unread-count/route";
+import {
+  GET as prefsGet,
+  PATCH as prefsPatch,
+} from "@/app/api/v1/notifications/preferences/route";
 import { POST as readAllRoute } from "@/app/api/v1/notifications/read-all/route";
 import { POST as readRoute } from "@/app/api/v1/notifications/[id]/read/route";
 
@@ -335,6 +339,90 @@ describe("notifications API security", () => {
       const res = await unreadRoute(req("/x"));
       expect(res.status).toBe(200);
       expect(await res.json()).toEqual({ data: { count: 2 } });
+    });
+  });
+  describe("/api/v1/notifications/preferences", () => {
+    const patch = (body: unknown) =>
+      prefsPatch(
+        req("/x", {
+          method: "PATCH",
+          headers: { origin: ORIGIN, "content-type": "application/json" },
+          body: JSON.stringify(body),
+        })
+      );
+
+    it("401s a signed-out caller", async () => {
+      as(null);
+      expect((await prefsGet(req("/x"))).status).toBe(401);
+      expect((await patch({ domain: "JOB", enabled: false })).status).toBe(401);
+    });
+
+    it("GET reports every domain enabled when no row is stored", async () => {
+      as(await member());
+      const res = await prefsGet(req("/x"));
+      expect(res.status).toBe(200);
+      const { data } = (await res.json()) as {
+        data: { domain: string; email: boolean }[];
+      };
+      expect(data.map((d) => d.domain).sort()).toEqual(
+        [
+          "ACHIEVEMENT",
+          "CONNECTION",
+          "EVENT",
+          "JOB",
+          "MESSAGE",
+          "MENTORSHIP",
+          "MODERATION",
+          "POST",
+        ].sort()
+      );
+      expect(data.every((d) => d.email)).toBe(true);
+    });
+
+    it("PATCH disables one domain for the caller only, and can re-enable it", async () => {
+      const a = await member();
+      const b = await member();
+      as(a);
+      expect((await patch({ domain: "JOB", enabled: false })).status).toBe(204);
+      const read = async (actor: Actor) => {
+        as(actor);
+        const { data } = (await (await prefsGet(req("/x"))).json()) as {
+          data: { domain: string; email: boolean }[];
+        };
+        return data.find((d) => d.domain === "JOB")!.email;
+      };
+      expect(await read(a)).toBe(false);
+      expect(await read(b)).toBe(true);
+      as(a);
+      expect((await patch({ domain: "JOB", enabled: true })).status).toBe(204);
+      expect(await read(a)).toBe(true);
+    });
+
+    it.each([
+      [{ domain: "BILLING", enabled: false }],
+      [{ domain: "TRANSACTIONAL", enabled: false }],
+      [{ domain: "JOB", enabled: "no" }],
+      [{ domain: "JOB", enabled: false, userId: "someone-else" }],
+      [{ enabled: false }],
+    ])("PATCH rejects %j with 400 VALIDATION_FAILED", async (body) => {
+      as(await member());
+      const res = await patch(body);
+      expect(res.status).toBe(400);
+      expect(
+        ((await res.json()) as { error: { code: string } }).error.code
+      ).toBe("VALIDATION_FAILED");
+    });
+
+    it("PATCH 403s a cross-origin request", async () => {
+      as(await member());
+      const res = await prefsPatch(
+        req("/x", {
+          method: "PATCH",
+          headers: { origin: "https://evil.test" },
+          body: "{}",
+        })
+      );
+      expect(res.status).toBe(403);
     });
   });
 });
