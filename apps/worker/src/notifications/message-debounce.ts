@@ -4,10 +4,12 @@ import { debounceKeyFor } from "@nitap/jobs";
 
 export type MessageDebounce = {
   /**
-   * Atomically claims the email window for (recipient, conversation). True for the claimant, and again for the
-   * SAME owner (a retry of the event that claimed it, so a crash before enqueue never loses the email; deliver's
-   * dedupeKey stops a second send). False while another event's window is open.
+   * Atomically claims the email window for (recipient, conversation). Email is at-most-once (best-effort
+   * for ENGAGEMENT): the same owner is re-granted on retry, but deliver() dedupes on the in-app insert and
+   * returns before any email enqueue, so a crash after the in-app insert loses that email and the key holds
+   * for the window. Reading the conversation in the web app deletes the key (N-7).
    */
+
   tryStart(
     recipientId: string,
     conversationId: string,

@@ -90,12 +90,12 @@ describe("message.sent processor", () => {
   };
   const sender = { ...payload, senderId: "sender" };
 
-  it("writes an in-app row per message but emails once per debounce window (and on redelivery of the starter)", async () => {
+  it("writes an in-app row per message but emails once per debounce window (redelivery re-invokes deliver, which dedupes)", async () => {
     const { deliver, deps } = notifyDeps();
     const p = createMessageSentProcessor(deps);
     await p(sender, { ...ctx(), jobId: "e1" });
     await p({ ...sender, messageId: "m2" }, { ...ctx(), jobId: "e2" });
-    await p(sender, { ...ctx(), jobId: "e1" }); // redelivery: deliver dedupes, same email intent
+    await p(sender, { ...ctx(), jobId: "e1" }); // redelivery reaches deliver again (real deliver dedupes on the in-app insert: no second email)
     const calls = deliver.mock.calls.map((c) => c[0] as { emailTo?: string });
     expect(calls).toHaveLength(3);
     expect(calls.map((c) => !!c.emailTo)).toEqual([true, false, true]);

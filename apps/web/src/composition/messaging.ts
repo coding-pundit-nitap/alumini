@@ -1,6 +1,9 @@
+import { debounceKeyFor } from "@nitap/jobs";
+
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { getMetrics, logger } from "@/infrastructure/observability";
 import { outbox } from "@/infrastructure/outbox";
+import { getRedis } from "@/infrastructure/redis/client";
 import { redisRateLimitStorage } from "@/infrastructure/redis/rate-limit-storage";
 import { authorize } from "@/modules/auth";
 import {
@@ -39,7 +42,21 @@ export const createDirectConversation =
 export const createGroupConversation =
   createCreateGroupConversation(withLimiter);
 export const sendMessage = createSendMessage(withLimiter);
-export const markRead = createMarkRead({ store, authorize, observe });
+export const markRead = createMarkRead({
+  store,
+  authorize,
+  observe,
+  // N-7: reading the conversation ends the recipient's email debounce window.
+  onRead: async (userId, conversationId) => {
+    try {
+      await (await getRedis()).del(debounceKeyFor(userId, conversationId));
+    } catch (error) {
+      logger.warn("messaging.debounce_clear_failed", {
+        metadata: { message: (error as Error).message },
+      });
+    }
+  },
+});
 export const addParticipant = createAddParticipant({
   store,
   authorize,

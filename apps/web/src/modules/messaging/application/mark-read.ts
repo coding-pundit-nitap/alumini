@@ -17,6 +17,8 @@ export function createMarkRead(deps: {
   store: MessagingStore;
   authorize: Authorize;
   observe?: MessagingObserver;
+  /** Best-effort, after commit and outside the transaction (e.g. clears the notification debounce window). */
+  onRead?: (userId: string, conversationId: string) => Promise<void>;
 }) {
   return async function markRead(args: {
     actor: Actor | null;
@@ -34,6 +36,11 @@ export function createMarkRead(deps: {
       );
       await tx.markRead(conversation.id, userId, input.upToSeq);
     });
+    try {
+      await deps.onRead?.(userId, args.conversationId);
+    } catch {
+      // Never fail a committed mark-read over a cache hiccup; the window just expires by TTL.
+    }
     deps.observe?.("read", args.conversationId);
   };
 }
