@@ -37,3 +37,4 @@ export {
 export { createJobInput, editJobInput } from "./domain/validation";
 export { JobForm, type JobFormDefaults } from "./presentation/ui/job-form";
 export { MyJobsList } from "./presentation/ui/my-jobs-list";
+export { ModerationQueue } from "./presentation/ui/moderation-queue";
