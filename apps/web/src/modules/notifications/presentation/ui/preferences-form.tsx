@@ -10,9 +10,14 @@ export type PreferenceRow = { domain: string; email: boolean };
 export function PreferencesForm({
   preferences,
   onChange,
+  pendingDomains,
 }: {
   preferences: PreferenceRow[];
   onChange: (domain: string, enabled: boolean) => void;
+  /** Domains with a PATCH in flight: their switch is disabled so a second toggle can't race the first
+   * (finding: a same-domain double-toggle before the first PATCH resolves could revert to the first
+   * call's optimistic value instead of the true server state). */
+  pendingDomains?: ReadonlySet<string>;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -29,6 +34,7 @@ export function PreferencesForm({
             id={`pref-${pref.domain}`}
             aria-label={pref.domain.toLowerCase()}
             checked={pref.email}
+            disabled={pendingDomains?.has(pref.domain)}
             onCheckedChange={(checked) => onChange(pref.domain, checked)}
           />
         </div>

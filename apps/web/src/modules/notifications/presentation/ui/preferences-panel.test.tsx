@@ -51,6 +51,35 @@ describe("PreferencesPanel", () => {
     await waitFor(() => expect(toggle).toBeChecked());
   });
 
+  it("disables a toggle while its PATCH is in flight and ignores a second click until it resolves", async () => {
+    let resolveConnection!: (response: Response) => void;
+    const pendingConnection = new Promise<Response>((resolve) => {
+      resolveConnection = resolve;
+    });
+    const fetchMock = vi.fn(async () => pendingConnection);
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <PreferencesPanel
+        initialPreferences={[{ domain: "CONNECTION", email: true }]}
+      />
+    );
+    const toggle = screen.getByRole("switch", { name: /connection/i });
+
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-disabled", "true");
+
+    // Before the first PATCH resolves, a second click on the same domain must not send another
+    // request or race the eventual revert/settle against a value captured mid-flight.
+    await userEvent.click(toggle);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    resolveConnection(await ok());
+    await waitFor(() =>
+      expect(toggle).not.toHaveAttribute("aria-disabled", "true")
+    );
+    expect(toggle).not.toBeChecked();
+  });
+
   it("a failed PATCH reverts only that domain, not a concurrent success", async () => {
     let resolveConnection!: (response: Response) => void;
     const pendingConnection = new Promise<Response>((resolve) => {
