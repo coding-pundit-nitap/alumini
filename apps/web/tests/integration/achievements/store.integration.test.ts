@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import { createTestDatabase, type TestDatabase } from "@nitap/testing";
@@ -28,6 +29,7 @@ describe("achievements store against real PostgreSQL", () => {
     createPrismaAchievementsStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
 
   it("publishAsPost + patchAchievement in one transaction: a mid-transaction failure leaves neither row", async () => {

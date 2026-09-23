@@ -74,6 +74,15 @@ export function createReviewAchievement(deps: {
           } satisfies AchievementRejectedPayload,
         });
       }
+      await tx.audit({
+        action:
+          args.outcome === "approve"
+            ? "achievement.approved"
+            : "achievement.rejected",
+        actorId: reviewerId,
+        achievementId: row.id,
+        ownerId: row.userId,
+      });
     });
   };
 }

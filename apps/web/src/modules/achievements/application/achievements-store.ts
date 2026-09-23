@@ -15,6 +15,13 @@ export type AchievementRow = {
   publishedPostId: string | null;
   createdAt: Date;
 };
+/** Review decisions leave an audit row in the same transaction (FR-MOD-004, spec A12-9). Ids only. */
+export type AchievementAuditEntry = {
+  action: "achievement.approved" | "achievement.rejected";
+  actorId: string;
+  achievementId: string;
+  ownerId: string;
+};
 export type AchievementsTx = {
   insertAchievement(input: {
     userId: string;
@@ -51,6 +58,7 @@ export type AchievementsTx = {
       "achievement.submitted" | "achievement.approved" | "achievement.rejected";
     payload: unknown;
   }): Promise<void>;
+  audit(entry: AchievementAuditEntry): Promise<void>;
 };
 export type AchievementsStore = {
   transaction<T>(work: (tx: AchievementsTx) => Promise<T>): Promise<T>;

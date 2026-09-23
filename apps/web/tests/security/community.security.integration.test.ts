@@ -1,6 +1,7 @@
 // apps/web/tests/security/community.security.integration.test.ts
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import type { RoleName } from "@nitap/database/role-permissions";
@@ -153,6 +154,7 @@ describe("community security", () => {
     const store = createPrismaAchievementsStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
     return {
       submit: createSubmitAchievement({ store, authorize }),

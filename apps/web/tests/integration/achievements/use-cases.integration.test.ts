@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { PERMISSIONS } from "@nitap/database/permissions";
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import { createTestDatabase, type TestDatabase } from "@nitap/testing";
@@ -76,6 +77,7 @@ describe("achievements use cases against real PostgreSQL", () => {
     const store = createPrismaAchievementsStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
     const deps = { store, authorize: authorizeWith(reviewers) };
     return {
@@ -181,6 +183,25 @@ describe("achievements use cases against real PostgreSQL", () => {
         userId: asha,
         postId: row.publishedPostId,
       });
+
+      expect(
+        await db.prisma.auditLog.findMany({
+          where: { targetId: achievementId },
+          select: {
+            action: true,
+            actorId: true,
+            targetType: true,
+            metadata: true,
+          },
+        })
+      ).toEqual([
+        {
+          action: "achievement.approved",
+          actorId: ravi,
+          targetType: "achievement",
+          metadata: { ownerId: asha },
+        },
+      ]);
     });
 
     it("reject: REJECTED + achievement.rejected outboxed, no post created", async () => {
@@ -221,6 +242,9 @@ describe("achievements use cases against real PostgreSQL", () => {
           m.review({ actor: actor(asha), achievementId, outcome: "approve" })
         )
       ).toBe("SELF_REVIEW_FORBIDDEN");
+      expect(
+        await db.prisma.auditLog.count({ where: { targetId: achievementId } })
+      ).toBe(0);
     });
 
     it("refuses review by a non-reviewer (NOT_REVIEWER)", async () => {

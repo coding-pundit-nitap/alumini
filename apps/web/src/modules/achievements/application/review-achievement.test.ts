@@ -37,6 +37,7 @@ function fakeTx(found: AchievementRow | null): AchievementsTx {
     publishAsPost: vi.fn(async () => ({ postId: "p1" })),
     listOwn: vi.fn(),
     enqueue: vi.fn(),
+    audit: vi.fn(async () => {}),
   } as unknown as AchievementsTx;
 }
 
@@ -96,5 +97,40 @@ describe("reviewAchievement", () => {
     } catch (e) {
       expect((e as { code?: string }).code).toBe("NOT_REVIEWER");
     }
+  });
+
+  it.each([
+    ["approve", "achievement.approved"],
+    ["reject", "achievement.rejected"],
+  ] as const)(
+    "audits %s as %s in the same transaction",
+    async (outcome, action) => {
+      const tx = fakeTx(row());
+      const store = { transaction: vi.fn((work) => work(tx)) };
+      await createReviewAchievement({ store, authorize })({
+        actor,
+        achievementId: "a1",
+        outcome,
+      });
+      expect(tx.audit).toHaveBeenCalledWith({
+        action,
+        actorId: "reviewer1",
+        achievementId: "a1",
+        ownerId: "owner1",
+      });
+    }
+  );
+
+  it("writes no audit on a refused self-review", async () => {
+    const tx = fakeTx(row({ userId: actor.userId }));
+    const store = { transaction: vi.fn((work) => work(tx)) };
+    await expect(
+      createReviewAchievement({ store, authorize })({
+        actor,
+        achievementId: "a1",
+        outcome: "reject",
+      })
+    ).rejects.toThrow();
+    expect(tx.audit).not.toHaveBeenCalled();
   });
 });

@@ -3,6 +3,7 @@ import type {
   AchievementStatus,
   Prisma,
 } from "@nitap/database";
+import type { AuditWriter } from "@nitap/database/audit";
 import type { OutboxWriter } from "@nitap/database/outbox";
 import type { OutboxEvent } from "@nitap/jobs";
 
@@ -18,6 +19,7 @@ import type {
 export function createPrismaAchievementsStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;
+  audit: AuditWriter;
 }): AchievementsStore {
   const forClient = (db: Prisma.TransactionClient): AchievementsTx => ({
     async insertAchievement(input) {
@@ -84,6 +86,15 @@ export function createPrismaAchievementsStore(deps: {
     },
     async enqueue(event) {
       await deps.outbox.add(db, event as OutboxEvent);
+    },
+    async audit(entry) {
+      await deps.audit.record(db, {
+        actorId: entry.actorId,
+        action: entry.action,
+        targetType: "achievement",
+        targetId: entry.achievementId,
+        metadata: { ownerId: entry.ownerId },
+      });
     },
   });
 

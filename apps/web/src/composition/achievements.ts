@@ -1,3 +1,4 @@
+import { audit } from "@/infrastructure/audit";
 import { transactionRunner } from "@/infrastructure/database/client";
 import { outbox } from "@/infrastructure/outbox";
 import {
@@ -14,6 +15,7 @@ import { authorize } from "@/modules/auth";
 const store = createPrismaAchievementsStore({
   runner: transactionRunner,
   outbox,
+  audit,
 });
 const deps = { store, authorize };
 
