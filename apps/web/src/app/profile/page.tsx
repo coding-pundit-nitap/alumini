@@ -73,6 +73,9 @@ export default async function ProfilePage() {
         <Link href="/events" className="underline">
           Events
         </Link>
+        <Link href="/notifications" className="underline">
+          Notifications
+        </Link>
         <Link href="/profile/details" className="underline">
           Experience, education, skills & links
         </Link>

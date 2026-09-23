@@ -8,3 +8,6 @@ export { createReplayNotifications } from "./application/replay-notifications";
 export { NotificationBell } from "./presentation/ui/notification-bell";
 export { useNotifications } from "./presentation/ui/use-notifications";
 export type { BellNotification } from "./presentation/ui/use-notifications";
+export { NotificationInbox } from "./presentation/ui/notification-inbox";
+export { NotificationList } from "./presentation/ui/notification-list";
+export type { NotificationItem } from "./presentation/ui/notification-list";
