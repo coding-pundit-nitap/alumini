@@ -34,7 +34,7 @@ export default async function VerificationQueuePage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-12">
+    <div className="flex max-w-3xl flex-col gap-6">
       <h1 className="text-2xl font-semibold">Verification requests</h1>
       <ReviewQueue
         page={page}

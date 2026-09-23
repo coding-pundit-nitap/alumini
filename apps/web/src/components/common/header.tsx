@@ -3,7 +3,8 @@ import { siteConfig } from "@/config/site";
 import { buttonVariants } from "@nitap/ui/components/button";
 import { Badge } from "@nitap/ui/components/badge";
 import { Sparkles, Code } from "lucide-react";
-import { getActor } from "@/modules/auth";
+import { hasAdminAccess } from "@/modules/admin";
+import { can, getActor } from "@/modules/auth";
 import { NotificationBell } from "@/modules/notifications";
 
 export async function Header() {
@@ -60,6 +61,14 @@ export async function Header() {
             <Code className="size-4" />
             <span>GitHub</span>
           </a>
+          {actor && hasAdminAccess((permission) => can(actor, permission)) ? (
+            <Link
+              href="/admin"
+              className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+            >
+              Admin
+            </Link>
+          ) : null}
           {actor ? <NotificationBell /> : null}
         </nav>
       </div>

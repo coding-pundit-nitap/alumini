@@ -21,3 +21,7 @@ export type {
   TileCount,
 } from "./application/admin-store";
 export { auditQuerySchema } from "./domain/audit-query";
+export { AdminSidebar } from "./presentation/ui/admin-sidebar";
+export { AuditFilters } from "./presentation/ui/audit-filters";
+export { AuditTable } from "./presentation/ui/audit-table";
+export { DashboardTiles } from "./presentation/ui/dashboard-tiles";
