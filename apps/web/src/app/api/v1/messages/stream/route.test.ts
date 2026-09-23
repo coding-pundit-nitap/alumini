@@ -44,10 +44,14 @@ describe("GET /api/v1/messages/stream", () => {
   it("streams a hint as an SSE event and unsubscribes when the client goes away", async () => {
     const unsubscribe = vi.fn();
     let push: (hint: unknown) => void = () => undefined;
-    mocks.subscribeToUser.mockImplementation((_user, listener) => {
-      push = listener;
-      return unsubscribe;
-    });
+    let pushNotification: (hint: unknown) => void = () => undefined;
+    mocks.subscribeToUser.mockImplementation(
+      (_user, listener, onNotification) => {
+        push = listener;
+        pushNotification = onNotification;
+        return unsubscribe;
+      }
+    );
     const abort = new AbortController();
     const res = await GET(
       new Request("https://x.test/api/v1/messages/stream", {
@@ -59,6 +63,7 @@ describe("GET /api/v1/messages/stream", () => {
     expect(res.headers.get("Cache-Control")).toContain("no-cache");
     expect(mocks.subscribeToUser).toHaveBeenCalledWith(
       "u1",
+      expect.any(Function),
       expect.any(Function)
     );
 
@@ -71,6 +76,11 @@ describe("GET /api/v1/messages/stream", () => {
     const chunk = decoder.decode((await reader.read()).value);
     expect(chunk).toBe(
       'event: message\ndata: {"conversationId":"c1","messageId":"m1"}\n\n'
+    );
+
+    pushNotification({ notificationId: "n1" });
+    expect(decoder.decode((await reader.read()).value)).toBe(
+      'event: notification\ndata: {"notificationId":"n1"}\n\n'
     );
 
     abort.abort();

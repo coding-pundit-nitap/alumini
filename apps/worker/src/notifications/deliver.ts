@@ -8,7 +8,7 @@ import {
 } from "@nitap/jobs";
 import type { Logger } from "@nitap/observability";
 
-import type { HintPublisher } from "../hints.ts";
+import type { NotificationHintPublisher } from "../hints.ts";
 import type { UnreadCounter } from "./unread-counter.ts";
 
 export type DeliverInput = {
@@ -64,7 +64,7 @@ export function createDeliverNotification(deps: {
     payload: EmailSendPayload,
     options: { jobId: string }
   ) => Promise<void>;
-  hintPublisher: HintPublisher | null;
+  hintPublisher: NotificationHintPublisher | null;
   unreadCounter: UnreadCounter;
   logger: Logger;
   /** Public web origin, the base of the email's action link. */
@@ -99,7 +99,7 @@ export function createDeliverNotification(deps: {
       await deps.unreadCounter.increment(input.recipientId);
       await deps.hintPublisher?.publish(input.recipientId, {
         notificationId: id,
-      } as never);
+      });
     }
 
     if (!input.emailTo) return;

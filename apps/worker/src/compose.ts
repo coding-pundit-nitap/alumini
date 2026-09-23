@@ -52,7 +52,10 @@ import type { QueuePort, Relay, WorkerRuntime } from "@nitap/queue";
 import type { Logger, Metrics } from "@nitap/observability";
 import type { StoragePort } from "@nitap/storage";
 
-import { createRedisHintPublisher } from "./hints.ts";
+import {
+  createNotificationHintPublisher,
+  createRedisHintPublisher,
+} from "./hints.ts";
 import { createDeliverNotification } from "./notifications/deliver.ts";
 import {
   createPrismaDeliveryStore,
@@ -187,7 +190,9 @@ export function composeWorker(
     getPreference: getPreference(prisma),
     appUrl: config.appUrl,
     enqueueEmail: (payload, options) => queue.add(emailJob, payload, options),
-    hintPublisher: hintRedis ? createRedisHintPublisher(hintRedis) : null,
+    hintPublisher: hintRedis
+      ? createNotificationHintPublisher(hintRedis)
+      : null,
     unreadCounter: hintRedis
       ? createRedisUnreadCounter(hintRedis)
       : {

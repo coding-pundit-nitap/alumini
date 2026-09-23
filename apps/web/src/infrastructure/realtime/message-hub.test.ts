@@ -43,7 +43,7 @@ describe("message hub", () => {
     subscribeToUser("alice", a1);
     subscribeToUser("alice", a2);
     subscribeToUser("bob", b);
-    expect(fake().subscribe).toHaveBeenCalledTimes(2);
+    expect(fake().subscribe).toHaveBeenCalledTimes(4); // msg + notif per user
 
     fake().emit("message", "msg:user:alice", JSON.stringify(hint));
     expect(a1).toHaveBeenCalledWith(hint);
@@ -56,6 +56,7 @@ describe("message hub", () => {
     const off = subscribeToUser("alice", listener);
     off();
     expect(fake().unsubscribe).toHaveBeenCalledWith("msg:user:alice");
+    expect(fake().unsubscribe).toHaveBeenCalledWith("notif:user:alice");
     fake().emit("message", "msg:user:alice", JSON.stringify(hint));
     expect(listener).not.toHaveBeenCalled();
   });
@@ -67,5 +68,19 @@ describe("message hub", () => {
       fake().emit("message", "msg:user:alice", "{not json")
     ).not.toThrow();
     expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("routes a notification hint to the notification listener only", () => {
+    const onMessage = vi.fn();
+    const onNotification = vi.fn();
+    subscribeToUser("alice", onMessage, onNotification);
+    expect(fake().subscribe).toHaveBeenCalledWith("notif:user:alice");
+    const nHint = { notificationId: "n1" };
+    fake().emit("message", "notif:user:alice", JSON.stringify(nHint));
+    expect(onNotification).toHaveBeenCalledWith(nHint);
+    expect(onMessage).not.toHaveBeenCalled();
+    fake().emit("message", "msg:user:alice", JSON.stringify(hint));
+    expect(onMessage).toHaveBeenCalledWith(hint);
+    expect(onNotification).toHaveBeenCalledTimes(1);
   });
 });

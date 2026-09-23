@@ -170,4 +170,25 @@ describe("deliverNotification", () => {
       (payload as { params: { actionUrl: string } }).params.actionUrl
     ).toMatch(/^https:\/\/alumni\.example\//);
   });
+
+  it("publishes a notificationId-only hint for a newly created row", async () => {
+    const publish = vi.fn(async () => {});
+    const deliver = createDeliverNotification({
+      store: fakeStore() as never,
+      getPreference: async () => null,
+      enqueueEmail: vi.fn(async () => {}),
+      hintPublisher: { publish },
+      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+    });
+    expect(publish).toHaveBeenCalledWith("u1", { notificationId: "notif-1" });
+  });
 });

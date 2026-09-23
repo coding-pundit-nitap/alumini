@@ -10,7 +10,7 @@ import { authorize, getActor } from "@/modules/auth";
 const HEARTBEAT_MS = 25_000;
 
 /**
- * GET /api/v1/messages/stream — Server-Sent Events. Carries ids-only hints for the caller's own channel; the
+ * GET /api/v1/messages/stream — Server-Sent Events. Carries ids-only message and notification hints for the caller's own channels; the
  * browser refetches through the authorized list endpoints, so nothing here can leak a message. Without Redis
  * the answer is 503 and the client falls back to polling (spec M-3, M-12).
  */
@@ -29,8 +29,11 @@ export const GET = routeHandler(async (request) => {
         }
       };
       write("retry: 5000\n: connected\n\n");
-      const unsubscribe = subscribeToUser(caller.userId, (hint) =>
-        write(`event: message\ndata: ${JSON.stringify(hint)}\n\n`)
+      const unsubscribe = subscribeToUser(
+        caller.userId,
+        (hint) => write(`event: message\ndata: ${JSON.stringify(hint)}\n\n`),
+        (hint) =>
+          write(`event: notification\ndata: ${JSON.stringify(hint)}\n\n`)
       );
       const heartbeat = setInterval(() => write(": ping\n\n"), HEARTBEAT_MS);
       request.signal.addEventListener(

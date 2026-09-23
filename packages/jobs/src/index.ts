@@ -21,8 +21,14 @@ export {
   MESSAGE_HINT_PREFIX,
   messageHintChannel,
   messageSent,
+  NOTIFICATION_HINT_PREFIX,
+  notificationHintChannel,
 } from "./message.ts";
-export type { MessageHint, MessageSentPayload } from "./message.ts";
+export type {
+  MessageHint,
+  MessageSentPayload,
+  NotificationHint,
+} from "./message.ts";
 export { emailSend, emailSendPayload } from "./email.ts";
 export type { EmailSendPayload } from "./email.ts";
 export { idempotencySweep, idempotencySweepPayload } from "./idempotency.ts";

@@ -1,6 +1,11 @@
 import type { Redis } from "ioredis";
 
-import { messageHintChannel, type MessageHint } from "@nitap/jobs";
+import {
+  messageHintChannel,
+  notificationHintChannel,
+  type MessageHint,
+  type NotificationHint,
+} from "@nitap/jobs";
 
 export type HintPublisher = {
   publish(userId: string, hint: MessageHint): Promise<void>;
@@ -13,6 +18,24 @@ export function createRedisHintPublisher(
   return {
     async publish(userId, hint) {
       await redis.publish(messageHintChannel(userId), JSON.stringify(hint));
+    },
+  };
+}
+
+export type NotificationHintPublisher = {
+  publish(userId: string, hint: NotificationHint): Promise<void>;
+};
+
+/** Same fire-and-forget contract as the message hints, on the notification channel. */
+export function createNotificationHintPublisher(
+  redis: Pick<Redis, "publish">
+): NotificationHintPublisher {
+  return {
+    async publish(userId, hint) {
+      await redis.publish(
+        notificationHintChannel(userId),
+        JSON.stringify(hint)
+      );
     },
   };
 }
