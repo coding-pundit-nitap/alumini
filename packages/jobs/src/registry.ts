@@ -1,6 +1,7 @@
 import type { PayloadOf } from "./define-job.ts";
 import { connectionAccepted, connectionRequested } from "./connection.ts";
 import { idempotencySweep } from "./idempotency.ts";
+import { notificationRetentionSweep } from "./notification-retention.ts";
 import { emailSend } from "./email.ts";
 import { jobEvents } from "./job.ts";
 import { jobExpire, jobExpired } from "./job-expire.ts";
@@ -50,6 +51,7 @@ export const JOBS = {
   "upload.sweep": uploadSweep,
   "idempotency.sweep": idempotencySweep,
   "job.expire": jobExpire,
+  "notification.retention-sweep": notificationRetentionSweep,
 } as const;
 
 export type OutboxEventType = keyof typeof OUTBOX_EVENTS;

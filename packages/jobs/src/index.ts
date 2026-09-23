@@ -27,6 +27,11 @@ export { emailSend, emailSendPayload } from "./email.ts";
 export type { EmailSendPayload } from "./email.ts";
 export { idempotencySweep, idempotencySweepPayload } from "./idempotency.ts";
 export type { IdempotencySweepPayload } from "./idempotency.ts";
+export {
+  notificationRetentionSweep,
+  notificationRetentionSweepPayload,
+} from "./notification-retention.ts";
+export type { NotificationRetentionSweepPayload } from "./notification-retention.ts";
 export { outboxPrune } from "./scheduled.ts";
 export {
   IMAGE_OUTPUT,

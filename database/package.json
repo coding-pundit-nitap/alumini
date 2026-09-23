@@ -10,6 +10,7 @@
     "./uploads": "./uploads/index.ts",
     "./jobs": "./jobs/index.ts",
     "./idempotency": "./idempotency/index.ts",
+    "./notifications": "./notifications/index.ts",
     "./permissions": "./prisma/seed-data/permissions.ts",
     "./enums": "./generated/prisma/enums.ts",
     "./role-permissions": "./prisma/seed-data/role-permissions.ts",

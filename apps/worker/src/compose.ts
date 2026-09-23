@@ -4,6 +4,7 @@ import type { PrismaClient } from "@nitap/database";
 import { createJobExpireStore } from "@nitap/database/jobs";
 import { createOutboxStore, createOutboxWriter } from "@nitap/database/outbox";
 import { createIdempotencyStore } from "@nitap/database/idempotency";
+import { createNotificationRetentionStore } from "@nitap/database/notifications";
 import { createUploadStore } from "@nitap/database/uploads";
 import { createSmtpEmailPort } from "@nitap/email";
 import {
@@ -22,6 +23,7 @@ import {
   jobExpired,
   mentorshipJobs,
   messageSent,
+  notificationRetentionSweep,
   outboxPrune,
   postCreated,
   reactionAdded,
@@ -78,6 +80,7 @@ import { createJobExpireProcessor } from "./processors/job-expire.ts";
 import { createEventActivityProcessor } from "./processors/event-activity.ts";
 import { createMentorshipEventProcessor } from "./processors/mentorship-event.ts";
 import { createMessageSentProcessor } from "./processors/message-sent.ts";
+import { createNotificationRetentionSweepProcessor } from "./processors/notification-retention-sweep.ts";
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
 import { createUploadScanProcessor } from "./processors/upload-scan.ts";
 import { createUploadSweepProcessor } from "./processors/upload-sweep.ts";
@@ -148,6 +151,7 @@ export function composeWorker(
   const jobExpireStore = createJobExpireStore({ prisma, outbox: outboxWriter });
   const uploads = createUploadStore();
   const idempotency = createIdempotencyStore();
+  const notificationRetention = createNotificationRetentionStore();
   const email = createSmtpEmailPort({
     url: config.smtpUrl,
     from: config.emailFrom,
@@ -475,6 +479,13 @@ export function composeWorker(
         })
       ),
       registerJob(
+        notificationRetentionSweep,
+        createNotificationRetentionSweepProcessor({
+          sweep: (before, limit) =>
+            notificationRetention.sweep(prisma, before, limit),
+        })
+      ),
+      registerJob(
         uploadSweep,
         createUploadSweepProcessor({
           store: {
@@ -514,6 +525,11 @@ export function composeWorker(
       });
       await rawQueue.upsertSchedule(idempotencySweep, {
         id: "idempotency-sweep",
+        everyMs: DAY_MS,
+        payload: { v: 1 },
+      });
+      await rawQueue.upsertSchedule(notificationRetentionSweep, {
+        id: "notification-retention-sweep",
         everyMs: DAY_MS,
         payload: { v: 1 },
       });
