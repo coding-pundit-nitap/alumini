@@ -40,9 +40,9 @@ describe("message hub", () => {
     const a1 = vi.fn();
     const a2 = vi.fn();
     const b = vi.fn();
-    subscribeToUser("alice", a1);
-    subscribeToUser("alice", a2);
-    subscribeToUser("bob", b);
+    subscribeToUser("alice", a1, vi.fn());
+    subscribeToUser("alice", a2, vi.fn());
+    subscribeToUser("bob", b, vi.fn());
     expect(fake().subscribe).toHaveBeenCalledTimes(4); // msg + notif per user
 
     fake().emit("message", "msg:user:alice", JSON.stringify(hint));
@@ -53,7 +53,7 @@ describe("message hub", () => {
 
   it("unsubscribes from Redis when the last listener leaves, and stops delivering", () => {
     const listener = vi.fn();
-    const off = subscribeToUser("alice", listener);
+    const off = subscribeToUser("alice", listener, vi.fn());
     off();
     expect(fake().unsubscribe).toHaveBeenCalledWith("msg:user:alice");
     expect(fake().unsubscribe).toHaveBeenCalledWith("notif:user:alice");
@@ -82,5 +82,18 @@ describe("message hub", () => {
     fake().emit("message", "msg:user:alice", JSON.stringify(hint));
     expect(onMessage).toHaveBeenCalledWith(hint);
     expect(onNotification).toHaveBeenCalledTimes(1);
+  });
+
+  it("never subscribes a channel it has no listener for", () => {
+    const onNotification = vi.fn();
+    const off = subscribeToUser("alice", undefined, onNotification);
+    expect(fake().subscribe).toHaveBeenCalledTimes(1);
+    expect(fake().subscribe).toHaveBeenCalledWith("notif:user:alice");
+    off();
+    expect(fake().unsubscribe).toHaveBeenCalledTimes(1);
+
+    subscribeToUser("alice", vi.fn());
+    expect(fake().subscribe).toHaveBeenLastCalledWith("msg:user:alice");
+    expect(fake().subscribe).toHaveBeenCalledTimes(2);
   });
 });

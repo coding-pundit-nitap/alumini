@@ -132,13 +132,13 @@ describe("GET /api/v1/messages/stream", () => {
     await vi.waitFor(() => expect(unsubscribe).toHaveBeenCalledTimes(1));
   });
 
-  it("gives an actor with only NOTIFICATION_READ a 200 stream, but drops message hints instead of writing them", async () => {
+  it("gives an actor with only NOTIFICATION_READ a 200 stream without subscribing its message channel", async () => {
     mocks.can.mockImplementation(
       (_actor: unknown, permission: string) =>
         permission === PERMISSIONS.NOTIFICATION_READ
     );
-    let push: (hint: unknown) => void = () => undefined;
-    let pushNotification: (hint: unknown) => void = () => undefined;
+    let push: ((hint: unknown) => void) | undefined;
+    let pushNotification: ((hint: unknown) => void) | undefined;
     mocks.subscribeToUser.mockImplementation(
       (_user, listener, onNotification) => {
         push = listener;
@@ -155,10 +155,10 @@ describe("GET /api/v1/messages/stream", () => {
     await reader.read(); // ": connected"
 
     // A message hint this actor is not entitled to must never reach the wire, even though the
-    // channel is per-user (never another conversation's traffic): dropping it here, not just relying
-    // on the client to ignore it, is the enforcement point.
-    push({ conversationId: "c1", messageId: "m1" });
-    pushNotification({ notificationId: "n1" });
+    // channel is per-user (never another conversation's traffic): not subscribing its channel at
+    // all, not just relying on the client to ignore it, is the enforcement point.
+    expect(push).toBeUndefined();
+    pushNotification!({ notificationId: "n1" });
 
     const chunk = decoder.decode((await reader.read()).value);
     expect(chunk).toBe(
@@ -166,13 +166,13 @@ describe("GET /api/v1/messages/stream", () => {
     );
   });
 
-  it("gives an actor with only MESSAGE_SEND a 200 stream, but drops notification hints instead of writing them", async () => {
+  it("gives an actor with only MESSAGE_SEND a 200 stream without subscribing its notification channel", async () => {
     mocks.can.mockImplementation(
       (_actor: unknown, permission: string) =>
         permission === PERMISSIONS.MESSAGE_SEND
     );
-    let push: (hint: unknown) => void = () => undefined;
-    let pushNotification: (hint: unknown) => void = () => undefined;
+    let push: ((hint: unknown) => void) | undefined;
+    let pushNotification: ((hint: unknown) => void) | undefined;
     mocks.subscribeToUser.mockImplementation(
       (_user, listener, onNotification) => {
         push = listener;
@@ -188,8 +188,8 @@ describe("GET /api/v1/messages/stream", () => {
     const decoder = new TextDecoder();
     await reader.read(); // ": connected"
 
-    pushNotification({ notificationId: "n1" });
-    push({ conversationId: "c1", messageId: "m1" });
+    expect(pushNotification).toBeUndefined();
+    push!({ conversationId: "c1", messageId: "m1" });
 
     const chunk = decoder.decode((await reader.read()).value);
     expect(chunk).toBe(

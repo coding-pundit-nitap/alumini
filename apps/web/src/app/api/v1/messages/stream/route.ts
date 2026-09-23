@@ -48,11 +48,11 @@ export const GET = routeHandler(async (request) => {
         caller.userId,
         canReceiveMessages
           ? (hint) => write(`event: message\ndata: ${JSON.stringify(hint)}\n\n`)
-          : () => undefined,
+          : undefined,
         canReceiveNotifications
           ? (hint) =>
               write(`event: notification\ndata: ${JSON.stringify(hint)}\n\n`)
-          : () => undefined
+          : undefined
       );
       const heartbeat = setInterval(() => write(": ping\n\n"), HEARTBEAT_MS);
       request.signal.addEventListener(
