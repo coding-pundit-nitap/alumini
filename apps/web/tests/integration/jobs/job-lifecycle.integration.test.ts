@@ -12,7 +12,9 @@ import type { Actor } from "@/modules/auth";
 import { createApproveJob } from "@/modules/jobs/application/approve-job";
 import { createCreateJob } from "@/modules/jobs/application/create-job";
 import { createEditJob } from "@/modules/jobs/application/edit-job";
+import { createListPublishedJobs } from "@/modules/jobs/application/list-published-jobs";
 import { createRejectJob } from "@/modules/jobs/application/reject-job";
+import { createPrismaJobQueries } from "@/modules/jobs/infrastructure/prisma-job-queries";
 import { createPrismaJobStore } from "@/modules/jobs/infrastructure/prisma-job-store";
 
 const actor = (userId: string, grants: Permission[] = []): Actor => ({
@@ -226,5 +228,33 @@ describe("job create/edit against real PostgreSQL", () => {
       })
     ).rejects.toMatchObject({ code: "SELF_REVIEW_FORBIDDEN" });
     void created;
+  });
+
+  it("a job due exactly today stays listed; a job due yesterday does not (spec J-9)", async () => {
+    const { createJob } = build();
+    const listPublishedJobs = createListPublishedJobs({
+      queries: createPrismaJobQueries(db.prisma),
+      authorize,
+    });
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const yesterdayIso = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+
+    const dueToday = await createJob({
+      actor: actor(poster, [PERMISSIONS.JOB_CREATE, PERMISSIONS.JOB_APPROVE]),
+      input: { ...validInput, deadline: todayIso },
+    });
+    const dueYesterday = await createJob({
+      actor: actor(poster, [PERMISSIONS.JOB_CREATE, PERMISSIONS.JOB_APPROVE]),
+      input: { ...validInput, deadline: yesterdayIso },
+    });
+
+    const page = await listPublishedJobs({
+      actor: actor(poster, [PERMISSIONS.JOB_READ]),
+    });
+    const ids = page.data.map((j) => j.id);
+    expect(ids).toContain(dueToday.jobId);
+    expect(ids).not.toContain(dueYesterday.jobId);
   });
 });

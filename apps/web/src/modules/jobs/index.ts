@@ -13,6 +13,8 @@ export { createGetJob } from "./application/get-job";
 export { createApproveJob } from "./application/approve-job";
 export { createRejectJob } from "./application/reject-job";
 export { createListPendingJobs } from "./application/list-pending-jobs";
+export { createCloseJob } from "./application/close-job";
+export { createListPublishedJobs } from "./application/list-published-jobs";
 export type { Authorize } from "./application/authz";
 export type {
   JobObserver,

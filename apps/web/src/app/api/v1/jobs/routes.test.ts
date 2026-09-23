@@ -7,6 +7,9 @@ const mocks = vi.hoisted(() => ({
   getJob: vi.fn(),
   approveJob: vi.fn(),
   rejectJob: vi.fn(),
+  closeJob: vi.fn(),
+  listMyJobs: vi.fn(),
+  listPublishedJobs: vi.fn(),
 }));
 vi.mock("@/config/env", () => ({
   env: { BETTER_AUTH_URL: "https://alumni.example.test" },
@@ -33,9 +36,10 @@ vi.mock("@/infrastructure/idempotency", () => ({
 import { AuthorizationError } from "@/lib/errors";
 
 import { POST as approve } from "./[id]/approve/route";
+import { POST as close } from "./[id]/close/route";
 import { POST as reject } from "./[id]/reject/route";
 import { GET, PATCH } from "./[id]/route";
-import { POST } from "./route";
+import { GET as listJobs, POST } from "./route";
 
 const ORIGIN = "https://alumni.example.test";
 const ID = "11111111-1111-4111-8111-111111111111";
@@ -216,5 +220,63 @@ describe("POST /api/v1/jobs/:id/reject", () => {
       jobId: ID,
       input: { reviewNote: "Add detail" },
     });
+  });
+});
+
+describe("GET /api/v1/jobs", () => {
+  it("defaults to the public listing", async () => {
+    mocks.listPublishedJobs.mockResolvedValue({
+      data: [],
+      page: { limit: 20, nextCursor: null, hasMore: false },
+    });
+    const res = await listJobs(
+      new Request("https://alumni.example.test/api/v1/jobs")
+    );
+    expect(res.status).toBe(200);
+    expect(mocks.listPublishedJobs).toHaveBeenCalled();
+    expect(mocks.listMyJobs).not.toHaveBeenCalled();
+  });
+
+  it("mine=true calls listMyJobs instead", async () => {
+    mocks.listMyJobs.mockResolvedValue({
+      data: [],
+      page: { limit: 20, nextCursor: null, hasMore: false },
+    });
+    const res = await listJobs(
+      new Request("https://alumni.example.test/api/v1/jobs?mine=true")
+    );
+    expect(res.status).toBe(200);
+    expect(mocks.listMyJobs).toHaveBeenCalled();
+    expect(mocks.listPublishedJobs).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/v1/jobs/:id/close", () => {
+  it("rejects a cross-origin request (CSRF)", async () => {
+    const res = await close(
+      jsonRequest(
+        `https://alumni.example.test/api/v1/jobs/${ID}/close`,
+        "POST",
+        {},
+        "https://evil.example"
+      ),
+      { params: Promise.resolve({ id: ID }) }
+    );
+    expect(res.status).toBe(403);
+    expect(mocks.closeJob).not.toHaveBeenCalled();
+  });
+
+  it("closes and returns the new status", async () => {
+    mocks.closeJob.mockResolvedValue({ status: "CLOSED" });
+    const res = await close(
+      jsonRequest(
+        `https://alumni.example.test/api/v1/jobs/${ID}/close`,
+        "POST",
+        {}
+      ),
+      { params: Promise.resolve({ id: ID }) }
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).data.status).toBe("CLOSED");
   });
 });

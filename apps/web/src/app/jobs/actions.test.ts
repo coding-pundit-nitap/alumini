@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   editJob: vi.fn(),
   approveJob: vi.fn(),
   rejectJob: vi.fn(),
+  closeJob: vi.fn(),
 }));
 vi.mock("next/headers", () => ({ headers: async () => mocks.headers }));
 vi.mock("@/modules/auth", () => ({ getActor: mocks.getActor }));
@@ -17,6 +18,7 @@ import { ValidationError } from "@/lib/errors";
 
 import {
   approveJobAction,
+  closeJobAction,
   createJobAction,
   editJobAction,
   rejectJobAction,
@@ -28,6 +30,7 @@ beforeEach(() => {
   mocks.editJob.mockReset();
   mocks.approveJob.mockReset();
   mocks.rejectJob.mockReset();
+  mocks.closeJob.mockReset();
 });
 
 describe("createJobAction", () => {
@@ -94,5 +97,14 @@ describe("approveJobAction / rejectJobAction", () => {
       jobId: id,
       input: { reviewNote: "Add a salary range" },
     });
+  });
+});
+
+describe("closeJobAction", () => {
+  it("closes a valid job id", async () => {
+    mocks.closeJob.mockResolvedValue({ status: "CLOSED" });
+    const id = "11111111-1111-4111-8111-111111111111";
+    const result = await closeJobAction(id);
+    expect(result).toEqual({ ok: true, data: { status: "CLOSED" } });
   });
 });

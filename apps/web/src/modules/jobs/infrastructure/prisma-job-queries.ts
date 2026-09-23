@@ -45,11 +45,52 @@ export function createPrismaJobQueries(prisma: PrismaClient): JobQueries {
       });
     },
 
-    // Implemented in Task 23 (public listing) — 7a/7b never call this path.
-    async listPublished() {
-      throw new Error(
-        "listPublished: not implemented until slice 7c (Task 23)"
+    async listPublished(filter) {
+      const today = new Date();
+      const currentDate = new Date(
+        Date.UTC(
+          today.getUTCFullYear(),
+          today.getUTCMonth(),
+          today.getUTCDate()
+        )
       );
+      const and: Prisma.JobWhereInput[] = [{ deadline: { gte: currentDate } }];
+      if (filter.employmentType)
+        and.push({ employmentType: filter.employmentType });
+      if (filter.workMode) and.push({ workMode: filter.workMode });
+      if (filter.location) {
+        and.push({
+          location: { equals: filter.location, mode: "insensitive" },
+        });
+      }
+      if (filter.after) {
+        const key = new Date(filter.after.key);
+        and.push({
+          OR: [
+            { createdAt: { lt: key } },
+            { createdAt: key, id: { gt: filter.after.id } },
+          ],
+        });
+      }
+      return prisma.job.findMany({
+        where: { status: "PUBLISHED", AND: and },
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        take: filter.limit,
+        select: {
+          id: true,
+          title: true,
+          company: true,
+          description: true,
+          employmentType: true,
+          location: true,
+          workMode: true,
+          experience: true,
+          skills: true,
+          applicationUrl: true,
+          deadline: true,
+          createdAt: true,
+        },
+      });
     },
   };
 }

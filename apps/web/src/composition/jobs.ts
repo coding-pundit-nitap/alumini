@@ -5,11 +5,13 @@ import { redisRateLimitStorage } from "@/infrastructure/redis/rate-limit-storage
 import { authorize, can } from "@/modules/auth";
 import {
   createApproveJob,
+  createCloseJob,
   createCreateJob,
   createEditJob,
   createGetJob,
   createListMyJobs,
   createListPendingJobs,
+  createListPublishedJobs,
   createRejectJob,
   type JobObserver,
 } from "@/modules/jobs";
@@ -41,3 +43,8 @@ export const getJob = createGetJob({ queries, authorize, can });
 export const approveJob = createApproveJob({ store, authorize, observe });
 export const rejectJob = createRejectJob({ store, authorize, observe });
 export const listPendingJobs = createListPendingJobs({ queries, authorize });
+export const closeJob = createCloseJob({ store, authorize, can, observe });
+export const listPublishedJobs = createListPublishedJobs({
+  queries,
+  authorize,
+});
