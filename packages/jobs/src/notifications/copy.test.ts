@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { renderNotificationCopy } from "./copy";
+import { renderNotificationCopy } from "./copy.ts";
 
 describe("renderNotificationCopy", () => {
   it("renders connection.requested", () => {

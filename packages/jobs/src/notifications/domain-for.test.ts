@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { domainFor } from "./domain-for";
+import { domainFor } from "./domain-for.ts";
 
 describe("domainFor", () => {
   it("maps every catalogued event type to its preferences domain", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decideChannel } from "./preference-decision";
+import { decideChannel } from "./preference-decision.ts";
 
 describe("decideChannel", () => {
   it("transactional is always allowed regardless of preference", () => {

@@ -66,3 +66,9 @@ export type {
   OutboxStore,
   PublishResult,
 } from "./outbox.ts";
+export { dedupeKeyFor } from "./notifications/dedupe-key.ts";
+export { decideChannel } from "./notifications/preference-decision.ts";
+export { domainFor } from "./notifications/domain-for.ts";
+export type { NotificationDomain } from "./notifications/domain-for.ts";
+export { renderNotificationCopy } from "./notifications/copy.ts";
+export type { NotificationCopy } from "./notifications/copy.ts";

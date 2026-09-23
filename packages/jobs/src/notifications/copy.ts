@@ -1,5 +1,3 @@
-import { UnexpectedError } from "@/lib/errors";
-
 export type NotificationCopy = {
   title: string;
   body: string;
@@ -104,6 +102,6 @@ export function renderNotificationCopy(
         actionPath: "/feed",
       };
     default:
-      throw new UnexpectedError(`No notification copy for type "${type}".`);
+      throw new Error(`No notification copy for type "${type}".`);
   }
 }

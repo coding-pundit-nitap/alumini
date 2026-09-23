@@ -1,8 +1,12 @@
-import type { NotificationDomain } from "@nitap/database/enums";
-
-import { UnexpectedError } from "@/lib/errors";
-
-export type { NotificationDomain };
+export type NotificationDomain =
+  | "CONNECTION"
+  | "MENTORSHIP"
+  | "JOB"
+  | "EVENT"
+  | "MESSAGE"
+  | "POST"
+  | "ACHIEVEMENT"
+  | "MODERATION";
 
 const EVENT_TYPE_TO_DOMAIN: Record<string, NotificationDomain> = {
   "connection.requested": "CONNECTION",
@@ -36,8 +40,6 @@ const EVENT_TYPE_TO_DOMAIN: Record<string, NotificationDomain> = {
 export function domainFor(type: string): NotificationDomain {
   const domain = EVENT_TYPE_TO_DOMAIN[type];
   if (!domain)
-    throw new UnexpectedError(
-      `No notification domain mapped for type "${type}".`
-    );
+    throw new Error(`No notification domain mapped for type "${type}".`);
   return domain;
 }

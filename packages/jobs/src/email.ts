@@ -55,6 +55,19 @@ export const emailSendPayload = z.discriminatedUnion("template", [
       params: z.object({}).strict(),
     })
     .strict(),
+  z
+    .object({
+      ...common,
+      template: z.literal("notification"),
+      params: z
+        .object({
+          title: z.string().min(1),
+          body: z.string().min(1),
+          actionUrl: httpUrl,
+        })
+        .strict(),
+    })
+    .strict(),
 ]);
 
 export type EmailSendPayload = z.infer<typeof emailSendPayload>;

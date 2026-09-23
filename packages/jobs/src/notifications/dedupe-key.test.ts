@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeKeyFor } from "./dedupe-key";
+import { dedupeKeyFor } from "./dedupe-key.ts";
 
 describe("dedupeKeyFor", () => {
   it("is deterministic for the same event, recipient and type", () => {
