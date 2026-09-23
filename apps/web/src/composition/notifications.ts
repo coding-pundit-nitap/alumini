@@ -14,13 +14,15 @@ import {
 } from "@/modules/notifications";
 
 /** Wires the notifications module to PostgreSQL and the shared Redis unread counter (Redis-optional, N-9). */
+const store = createPrismaNotificationStore(prisma);
 const useCases = createNotificationUseCases({
-  store: createPrismaNotificationStore(prisma),
+  store,
   authorize,
   counter: createRedisUnreadCounter(getRedis),
   domains: NOTIFICATION_DOMAINS,
 });
 
+export const authorizeNotifications = useCases.check;
 export const listNotifications = useCases.list;
 export const markNotificationRead = useCases.markRead;
 export const markAllNotificationsRead = useCases.markAllRead;
@@ -32,6 +34,7 @@ export const setNotificationPreference = useCases.setPreference;
 let queueAdmin: QueueAdmin | undefined;
 const replayUseCases = createReplayNotifications({
   authorize,
+  failedEmailJobId: store.failedEmailJobId,
   queueAdmin: () => {
     const url = env.QUEUE_REDIS_URL;
     if (!url) throw new Error("QUEUE_REDIS_URL is not set");

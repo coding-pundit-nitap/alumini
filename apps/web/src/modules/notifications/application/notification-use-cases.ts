@@ -32,6 +32,8 @@ export function createNotificationUseCases(deps: {
     deps.authorize(actor, PERMISSIONS.NOTIFICATION_READ).userId;
 
   return {
+    /** Lets routes authenticate/authorize before they validate params or a body. */
+    check: own,
     async list(args: { actor: Actor | null; cursor?: string; limit?: number }) {
       const recipientId = own(args.actor);
       const limit = Math.min(

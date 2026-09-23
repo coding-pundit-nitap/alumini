@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { listNotifications } from "@/composition/notifications";
+import {
+  authorizeNotifications,
+  listNotifications,
+} from "@/composition/notifications";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { getActor } from "@/modules/auth";
 
@@ -13,6 +16,8 @@ const listQuery = z.object({
 
 /** GET /api/v1/notifications?limit=&cursor= — the caller's own notifications, newest first. */
 export const GET = routeHandler(async (request) => {
+  const actor = await getActor();
+  authorizeNotifications(actor); // 401/403 before the query is validated
   const params = new URL(request.url).searchParams;
   const parsed = listQuery.safeParse({
     limit: params.get("limit") ?? undefined,
@@ -20,7 +25,7 @@ export const GET = routeHandler(async (request) => {
   });
   if (!parsed.success) throw invalid(parsed.error);
   const result = await listNotifications({
-    actor: await getActor(),
+    actor,
     ...parsed.data,
   });
   return Response.json(result, {

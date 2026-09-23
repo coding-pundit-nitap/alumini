@@ -22,6 +22,8 @@ export type NotificationStore = {
     lastError?: string;
     providerMessageId?: string;
   }): Promise<void>;
+  /** Dedupe key (the email job id) when the notification's EMAIL delivery is FAILED, else null. */
+  failedEmailJobId(notificationId: string): Promise<string | null>;
   list(input: {
     recipientId: string;
     cursor?: { createdAt: Date; id: string };

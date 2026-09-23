@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 import {
+  authorizeNotifications,
   getNotificationPreferences,
   setNotificationPreference,
 } from "@/composition/notifications";
-import { AuthenticationError } from "@/lib/errors";
 import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { getActor } from "@/modules/auth";
@@ -30,7 +30,7 @@ export const GET = routeHandler(async () => {
 export const PATCH = routeHandler(async (request) => {
   assertSameOrigin(request);
   const actor = await getActor();
-  if (!actor) throw new AuthenticationError();
+  authorizeNotifications(actor); // 401/403 before the body is validated
   const parsed = patchBody.safeParse(await readJson(request));
   if (!parsed.success) throw invalid(parsed.error);
   await setNotificationPreference({ actor, ...parsed.data });

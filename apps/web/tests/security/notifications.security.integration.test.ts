@@ -181,6 +181,13 @@ describe("notifications API security", () => {
       expect((await listRoute(req("/api/v1/notifications"))).status).toBe(401);
     });
 
+    it("401s a signed-out caller with a bad query before validating it", async () => {
+      as(null);
+      expect(
+        (await listRoute(req("/api/v1/notifications?limit=1000"))).status
+      ).toBe(401);
+    });
+
     it("only ever lists the caller's own notifications (IDOR)", async () => {
       const a = await member();
       const b = await member();
@@ -231,6 +238,11 @@ describe("notifications API security", () => {
       const id = await notify((await member()).userId);
       expect((await readRoute(post(`/x`), ctx(id))).status).toBe(401);
       expect((await readAllRoute(post(`/x`))).status).toBe(401);
+    });
+
+    it("401s a signed-out caller with a malformed id (auth before param parsing)", async () => {
+      as(null);
+      expect((await readRoute(post("/x"), ctx("nope"))).status).toBe(401);
     });
 
     it("403s a cross-origin mutation", async () => {
@@ -386,6 +398,27 @@ describe("notifications API security", () => {
       expect((await patch({ domain: "BILLING" })).status).toBe(401);
     });
 
+    it("PATCH 403s an authenticated caller without notification.read before validating the body", async () => {
+      const bare = await db.prisma.user.create({
+        data: {
+          name: "Bare",
+          email: "bare@example.test",
+          accountState: "VERIFIED",
+        },
+      });
+      as(
+        await resolveActor(
+          {
+            grantSource: createPrismaGrantSource(db.prisma),
+            now: () => new Date(),
+          },
+          { userId: bare.id, accountState: "VERIFIED" },
+          "req-bare"
+        )
+      );
+      expect((await patch({ domain: "BILLING" })).status).toBe(403);
+    });
+
     it("GET reports every domain enabled when no row is stored", async () => {
       as(await member());
       const res = await prefsGet(req("/x"));
@@ -463,7 +496,18 @@ describe("notifications API security", () => {
           body: typeof body === "string" ? body : JSON.stringify(body),
         })
       );
-    const valid = { queue: "email", jobIds: ["1", "2"] };
+    const failedEmail = async (status: "FAILED" | "PENDING" = "FAILED") => {
+      const recipient = await member();
+      const id = await notify(recipient.userId);
+      await db.prisma.notificationDelivery.create({
+        data: { notificationId: id, channel: "EMAIL", status },
+      });
+      const { dedupeKey } = await db.prisma.notification.findUniqueOrThrow({
+        where: { id },
+      });
+      return { id, dedupeKey };
+    };
+    const valid = { notificationId: "3f0c9c1e-6f5e-4f1c-9d55-0b3f0f3a1a11" };
     async function admin(roleName: string): Promise<Actor> {
       const actor = await member();
       const role = await db.prisma.role.findUniqueOrThrow({
@@ -511,52 +555,57 @@ describe("notifications API security", () => {
     });
 
     it.each([
-      ["unknown queue", { queue: "other", jobIds: ["1"] }],
-      ["empty ids", { queue: "email", jobIds: [] }],
-      [
-        "too many ids",
-        {
-          queue: "email",
-          jobIds: Array.from({ length: 101 }, (_, i) => `${i}`),
-        },
-      ],
-      ["overlong id", { queue: "email", jobIds: ["x".repeat(201)] }],
-      ["non-string id", { queue: "email", jobIds: [1] }],
-      ["extra key", { ...valid, extra: 1 }],
+      ["missing id", {}],
+      ["non-uuid id", { notificationId: "abc" }],
+      ["extra key", { ...valid, queue: "email" }],
+      ["old shape", { queue: "email", jobIds: ["1"] }],
     ])("400 for %s", async (_name, body) => {
       as(await admin("SUPER_ADMIN"));
       expect((await replay(body)).status).toBe(400);
       expect(mocks.retry).not.toHaveBeenCalled();
     });
 
-    it("SUPER_ADMIN (notification.replay via role) replays and is audited; only counts returned", async () => {
+    it("400 MALFORMED_REQUEST for non-JSON", async () => {
+      as(await admin("SUPER_ADMIN"));
+      const res = await replay("not json");
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(await res.json())).toContain("MALFORMED_REQUEST");
+    });
+
+    it("404 for an unknown notification and for one whose email did not fail (same answer)", async () => {
+      as(await admin("SUPER_ADMIN"));
+      expect((await replay(valid)).status).toBe(404);
+      const pending = await failedEmail("PENDING");
+      expect((await replay({ notificationId: pending.id })).status).toBe(404);
+      expect(mocks.retry).not.toHaveBeenCalled();
+    });
+
+    it("SUPER_ADMIN retries the email job keyed by the dedupe key and is audited; only counts returned", async () => {
       const actor = await admin("SUPER_ADMIN");
       as(actor);
-      const response = await replay(valid);
+      mocks.retry.mockResolvedValue(1);
+      const { id, dedupeKey } = await failedEmail();
+      const response = await replay({ notificationId: id });
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ data: { retried: 2 } });
-      expect(mocks.retry).toHaveBeenCalledWith("email", ["1", "2"]);
+      expect(await response.json()).toEqual({ data: { retried: 1 } });
+      expect(mocks.retry).toHaveBeenCalledWith("email", [dedupeKey]);
       expect(mocks.queueUrl).toHaveBeenCalledWith(process.env.QUEUE_REDIS_URL);
       const rows = await auditRows(actor.userId);
       expect(rows).toHaveLength(1);
       expect(rows[0]).toMatchObject({
         actorId: actor.userId,
-        targetType: "notification_queue",
-        targetId: actor.userId,
+        targetType: "notification",
+        targetId: id,
       });
-      expect(rows[0]?.metadata).toEqual({
-        queue: "email",
-        requested: 2,
-        retried: 2,
-        jobIds: ["1", "2"],
-      });
+      expect(rows[0]?.metadata).toEqual({ retried: 1 });
     });
 
     it("if the retry throws, 500 and no audit row", async () => {
       const actor = await admin("SUPER_ADMIN");
       as(actor);
       mocks.retry.mockRejectedValue(new Error("redis down"));
-      expect((await replay(valid)).status).toBe(500);
+      const { id } = await failedEmail();
+      expect((await replay({ notificationId: id })).status).toBe(500);
       expect(await auditRows(actor.userId)).toHaveLength(0);
     });
   });

@@ -34,6 +34,14 @@ export function createPrismaNotificationStore(
       }
     },
 
+    async failedEmailJobId(notificationId) {
+      const row = await prisma.notificationDelivery.findUnique({
+        where: { notificationId_channel: { notificationId, channel: "EMAIL" } },
+        select: { status: true, notification: { select: { dedupeKey: true } } },
+      });
+      return row?.status === "FAILED" ? row.notification.dedupeKey : null;
+    },
+
     async recordDelivery(input) {
       await prisma.notificationDelivery.create({
         data: {
