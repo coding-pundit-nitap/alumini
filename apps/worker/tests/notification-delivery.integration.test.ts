@@ -1,7 +1,8 @@
+import { Redis } from "ioredis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createOutboxWriter } from "@nitap/database/outbox";
-import { defineJob, emailSend } from "@nitap/jobs";
+import { dedupeKeyFor, defineJob, emailSend } from "@nitap/jobs";
 import type { QueuePort } from "@nitap/queue";
 import { createFakeStoragePort } from "@nitap/storage";
 import {
@@ -148,36 +149,95 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     expect(await notifications(recipient.id)).toHaveLength(1);
   });
 
-  it("a redelivered outbox event yields exactly one notification and one email", async () => {
+  it("a redelivered outbox event reaches the consumer again yet yields one notification, one email, one unread bump", async () => {
     const [actor, recipient] = await Promise.all([
       makeUser("actor"),
       makeUser("recipient"),
     ]);
-    await startWorker();
+    const redis = new Redis(process.env.REDIS_URL!);
+    const unreadKey = `notif:unread:${recipient.id}`;
+    const queueRedis = new Redis(ns.url);
+    try {
+      const { metrics } = await startWorker();
+      const infoCalls = () =>
+        metrics.increment.mock.calls.filter(
+          ([name, labels]) =>
+            name === "jobs_processed_total" &&
+            (labels as { job?: string; outcome?: string })?.job ===
+              "connection.requested" &&
+            (labels as { outcome?: string }).outcome === "completed"
+        ).length;
+      const { id } = await requestConnection(actor.id, recipient.id);
+      await eventually(() => expect(smtp.received).toHaveLength(1));
+      await eventually(async () =>
+        expect(
+          (await db.prisma.outboxEvent.findUniqueOrThrow({ where: { id } }))
+            .publishedAt
+        ).not.toBeNull()
+      );
+      const before = infoCalls();
+
+      // Drop the retained completed job so BullMQ's jobId dedupe cannot absorb the redelivery:
+      // the relay re-adds it and the processor genuinely runs a second time with the same event id.
+      const keys = await queueRedis.keys(`${ns.prefix}:*:${id}`);
+      expect(keys.length).toBeGreaterThan(0);
+      await queueRedis.del(...keys);
+      await db.prisma.outboxEvent.update({
+        where: { id },
+        data: { publishedAt: null },
+      });
+      await eventually(() => expect(infoCalls()).toBeGreaterThan(before));
+      await wait(400);
+
+      expect(await notifications(recipient.id)).toHaveLength(1);
+      expect(smtp.received).toHaveLength(1);
+      expect(await redis.get(unreadKey)).toBe("1");
+    } finally {
+      await redis.del(unreadKey);
+      redis.disconnect();
+      queueRedis.disconnect();
+    }
+  });
+
+  it("resumes a delivery whose in-app row exists but whose email step never ran: exactly one email", async () => {
+    const [actor, recipient] = await Promise.all([
+      makeUser("actor"),
+      makeUser("recipient"),
+    ]);
     const { id } = await requestConnection(actor.id, recipient.id);
+    // State left by a worker that died after the in-app write and before the email enqueue.
+    const row = await db.prisma.notification.create({
+      data: {
+        recipientId: recipient.id,
+        type: "connection.requested",
+        category: "ENGAGEMENT",
+        payload: { connectionId: "22222222-2222-4222-8222-222222222222" },
+        dedupeKey: dedupeKeyFor({
+          eventId: id,
+          recipientId: recipient.id,
+          type: "connection.requested",
+        }),
+      },
+    });
+    await db.prisma.notificationDelivery.create({
+      data: {
+        notificationId: row.id,
+        channel: "IN_APP",
+        status: "SENT",
+        attempts: 1,
+      },
+    });
+    await startWorker();
+
     await eventually(() => expect(smtp.received).toHaveLength(1));
     await eventually(async () =>
       expect(
-        (await db.prisma.outboxEvent.findUniqueOrThrow({ where: { id } }))
-          .publishedAt
-      ).not.toBeNull()
+        (await emailDeliveries(recipient.id)).map((d) => d.status)
+      ).toEqual(["PENDING"])
     );
-
-    // The relay publishes the same event id again (e.g. it crashed before marking the row).
-    await db.prisma.outboxEvent.update({
-      where: { id },
-      data: { publishedAt: null },
-    });
-    await eventually(async () =>
-      expect(
-        (await db.prisma.outboxEvent.findUniqueOrThrow({ where: { id } }))
-          .publishedAt
-      ).not.toBeNull()
-    );
-    await wait(400);
-
-    expect(await notifications(recipient.id)).toHaveLength(1);
+    await wait(300);
     expect(smtp.received).toHaveLength(1);
+    expect(await notifications(recipient.id)).toHaveLength(1);
   });
 
   it("a recipient without a preference row gets the default (email on); one who disabled the domain gets in-app only", async () => {

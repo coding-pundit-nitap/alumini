@@ -88,6 +88,9 @@ export function createDeliverNotification(deps: {
       )
         return;
     } else {
+      // Known residual gap: a crash between the insert above and this IN_APP record means the retry sees a
+      // duplicate and skips these steps, so the unread bump and hint are lost. The in-app row is still
+      // visible, and the unread counter is a cache recomputed from PostgreSQL (N-9), so it self-heals.
       await deps.store.recordDelivery({
         notificationId: id,
         channel: "IN_APP",
