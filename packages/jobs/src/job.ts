@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { defineJob } from "./define-job.ts";
+import { defineJob, FANOUT_TIMEOUT_MS } from "./define-job.ts";
 
 /** Ids only, per reliability §6.4: a consumer re-reads the row, never trusts a name or note in the event. */
 const jobEventPayload = z
@@ -37,7 +37,7 @@ export const jobEvents = {
     queue: "default",
     schema: jobEventPayload,
     retry,
-    timeoutMs: 10_000,
+    timeoutMs: FANOUT_TIMEOUT_MS,
     idempotency,
   }),
   "job.published": defineJob({

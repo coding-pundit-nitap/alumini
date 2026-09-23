@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { defineJob } from "./define-job.ts";
+import { defineJob, FANOUT_TIMEOUT_MS } from "./define-job.ts";
 
 /** An event's own lifecycle: created, cancelled. Ids only (reliability §6.4). */
 const eventLifecyclePayload = z
@@ -36,7 +36,8 @@ const retry = {
 
 const eventJob = <N extends `event.${string}`, S extends z.ZodType>(
   name: N,
-  schema: S
+  schema: S,
+  timeoutMs = 10_000
 ) =>
   defineJob({
     name,
@@ -44,7 +45,7 @@ const eventJob = <N extends `event.${string}`, S extends z.ZodType>(
     queue: "default",
     schema,
     retry,
-    timeoutMs: 10_000,
+    timeoutMs,
     idempotency:
       "Handling only reads and logs; running twice has the same effect as once.",
   });
@@ -52,7 +53,11 @@ const eventJob = <N extends `event.${string}`, S extends z.ZodType>(
 /** Facts about events and registrations, written to the outbox with the change (FR-EVENT, NFR-REL-002). Delivery is Phase 11. */
 export const eventJobs = {
   "event.created": eventJob("event.created", eventLifecyclePayload),
-  "event.cancelled": eventJob("event.cancelled", eventLifecyclePayload),
+  "event.cancelled": eventJob(
+    "event.cancelled",
+    eventLifecyclePayload,
+    FANOUT_TIMEOUT_MS
+  ),
   "event.registered": eventJob("event.registered", eventRegistrationPayload),
   "event.registration-cancelled": eventJob(
     "event.registration-cancelled",

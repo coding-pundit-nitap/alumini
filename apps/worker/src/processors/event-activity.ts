@@ -24,7 +24,7 @@ export function createEventActivityProcessor(
   action: string,
   deps: EventActivityDeps
 ): JobProcessor<EventLifecyclePayload | EventRegistrationPayload> {
-  return async (payload, { logger, jobId: eventId }) => {
+  return async (payload, { logger, signal, jobId: eventId }) => {
     const ids: Record<string, unknown> = { ...payload };
     delete ids.v;
     logger.info(`event.${action}.handled`, { metadata: ids });
@@ -40,11 +40,13 @@ export function createEventActivityProcessor(
       });
 
     if (action === "cancelled") {
-      // ponytail: sequential; fine to a few thousand registrants. A midway failure retries safely
-      // (deliver dedupes per recipient on the stable jobId); fan out in chunks if events grow past that.
+      // ponytail: sequential, ~2,000 recipients per attempt within FANOUT_TIMEOUT_MS. Past that the loop stops
+      // on the abort signal and the retry resumes cheaply (deliver dedupes per recipient on the stable jobId);
+      // fan out in chunked child jobs if events grow well past that.
       for (const recipientId of await deps.findActiveRegistrants(
         payload.eventId
       )) {
+        signal.throwIfAborted();
         if (recipientId === payload.actorId) continue;
         if (await deps.blocked(payload.actorId, recipientId)) continue;
         await send(recipientId, "event.cancelled");

@@ -22,7 +22,7 @@ export function createJobEventProcessor(
   action: "submitted" | "published" | "rejected" | "closed" | "expired",
   deps: JobEventDeps
 ): JobProcessor<Payload> {
-  return async (payload, { jobId: eventId }) => {
+  return async (payload, { signal, jobId: eventId }) => {
     const type = `job.${action}`;
     const send = async (recipientId: string, withEmail: boolean) =>
       deps.deliver({
@@ -38,6 +38,7 @@ export function createJobEventProcessor(
 
     if (action === "submitted") {
       for (const id of (await deps.findModerators?.("job.approve")) ?? []) {
+        signal.throwIfAborted(); // timed out: stop, the retry resumes (deliver dedupes)
         // The submitter must not be notified of their own submission.
         if (
           id === payload.postedBy ||

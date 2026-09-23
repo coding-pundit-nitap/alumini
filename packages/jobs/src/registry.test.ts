@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { FANOUT_TIMEOUT_MS } from "./define-job.ts";
 import { JOBS, OUTBOX_EVENTS, isOutboxEventType } from "./registry.ts";
 
 describe("registry", () => {
@@ -83,5 +84,19 @@ describe("registry", () => {
     expect(
       schema.safeParse({ ...payload, mentorshipId: "not-a-uuid" }).success
     ).toBe(false);
+  });
+
+  it("fan-out consumers (one job, many recipients) get the long timeout; the rest keep 10 s", () => {
+    const fanOut = [
+      "event.cancelled",
+      "report.filed",
+      "job.submitted",
+      "achievement.submitted",
+    ];
+    expect(FANOUT_TIMEOUT_MS).toBeGreaterThanOrEqual(60_000);
+    for (const [type, job] of Object.entries(OUTBOX_EVENTS)) {
+      if (fanOut.includes(type)) expect(job.timeoutMs).toBe(FANOUT_TIMEOUT_MS);
+      else expect(job.timeoutMs).toBeLessThan(FANOUT_TIMEOUT_MS);
+    }
   });
 });

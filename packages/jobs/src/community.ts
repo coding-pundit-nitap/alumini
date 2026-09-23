@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { defineJob } from "./define-job.ts";
+import { defineJob, FANOUT_TIMEOUT_MS } from "./define-job.ts";
 
 const base = { v: z.literal(1) };
 
@@ -130,7 +130,7 @@ export const achievementSubmitted = defineJob({
   queue: "default",
   schema: achievementSubmittedPayload,
   retry,
-  timeoutMs: 10_000,
+  timeoutMs: FANOUT_TIMEOUT_MS,
   idempotency,
 });
 
@@ -160,7 +160,7 @@ export const reportFiled = defineJob({
   queue: "default",
   schema: reportFiledPayload,
   retry,
-  timeoutMs: 10_000,
+  timeoutMs: FANOUT_TIMEOUT_MS,
   idempotency,
 });
 

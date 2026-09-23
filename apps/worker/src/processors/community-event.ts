@@ -47,7 +47,7 @@ export function createCommentCreatedProcessor(
     blocked: (a: string, b: string) => Promise<boolean>;
   }
 ): JobProcessor<CommentCreatedPayload> {
-  return async (payload, { logger, jobId: eventId }) => {
+  return async (payload, { logger, signal, jobId: eventId }) => {
     logger.info("comment.created.handled", {
       metadata: {
         commentId: payload.commentId,
@@ -63,8 +63,9 @@ export function createCommentCreatedProcessor(
     );
     const recipients = new Set([author, ...prior]);
     recipients.delete(payload.authorId);
-    // ponytail: sequential; a midway failure retries safely (deliver dedupes per recipient on the stable jobId).
+    // ponytail: sequential (≤201 recipients); a midway failure or timeout retries safely (deliver dedupes per recipient).
     for (const recipientId of recipients) {
+      signal.throwIfAborted();
       if (await deps.blocked(payload.authorId, recipientId)) continue;
       await deps.deliver({
         eventId,
@@ -96,7 +97,7 @@ export function createAchievementSubmittedProcessor(
     findModerators: (permission: "achievement.review") => Promise<string[]>;
   }
 ): JobProcessor<AchievementSubmittedPayload> {
-  return async (payload, { logger, jobId: eventId }) => {
+  return async (payload, { logger, signal, jobId: eventId }) => {
     logger.info("achievement.submitted.handled", {
       metadata: {
         achievementId: payload.achievementId,
@@ -105,6 +106,7 @@ export function createAchievementSubmittedProcessor(
     });
     if (!(await deps.achievementExists(payload.achievementId))) return;
     for (const recipientId of await deps.findModerators("achievement.review")) {
+      signal.throwIfAborted(); // timed out: stop, the retry resumes (deliver dedupes)
       if (recipientId === payload.userId) continue;
       await deps.deliver({
         eventId,
@@ -155,12 +157,13 @@ export function createReportFiledProcessor(
     reportExists: (reportId: string) => Promise<boolean>;
   }
 ): JobProcessor<ReportFiledPayload> {
-  return async (payload, { logger, jobId: eventId }) => {
+  return async (payload, { logger, signal, jobId: eventId }) => {
     logger.info("report.filed.handled", {
       metadata: { reportId: payload.reportId, reporterId: payload.reporterId },
     });
     if (!(await deps.reportExists(payload.reportId))) return;
     for (const recipientId of await deps.findModerators("report.review")) {
+      signal.throwIfAborted(); // timed out: stop, the retry resumes (deliver dedupes)
       if (recipientId === payload.reporterId) continue;
       await deps.deliver({
         eventId,

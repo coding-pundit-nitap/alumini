@@ -24,6 +24,16 @@ export type JobDefinition<TName extends string = string, TPayload = unknown> = {
   readonly idempotency: string;
 };
 
+/**
+ * Timeout for a consumer that fans one event out to many recipients (event.cancelled, report.filed,
+ * job.submitted, achievement.submitted). Each recipient costs ~10-12 sequential PostgreSQL/Redis round trips
+ * (block check, insert, IN_APP row, unread bump, hint, email, preference, suppression, PENDING row, enqueue);
+ * at ~5 ms each that is ~60 ms, so 120 s covers ~2,000 recipients in one attempt. A bigger set times out,
+ * the processor stops on the abort signal, and the retry skips the already-delivered recipients cheaply
+ * (dedupeKey), so every attempt makes progress.
+ */
+export const FANOUT_TIMEOUT_MS = 120_000;
+
 export type PayloadOf<D> = D extends JobDefinition<string, infer P> ? P : never;
 
 /** Validates the definition at load time so a bad job fails on startup, not on the first message. */
