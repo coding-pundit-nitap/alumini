@@ -3,8 +3,11 @@ import { siteConfig } from "@/config/site";
 import { buttonVariants } from "@nitap/ui/components/button";
 import { Badge } from "@nitap/ui/components/badge";
 import { Sparkles, Code } from "lucide-react";
+import { getActor } from "@/modules/auth";
+import { NotificationBell } from "@/modules/notifications";
 
-export function Header() {
+export async function Header() {
+  const actor = await getActor();
   return (
     <header className="border-border/40 bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-8">
@@ -57,6 +60,7 @@ export function Header() {
             <Code className="size-4" />
             <span>GitHub</span>
           </a>
+          {actor ? <NotificationBell /> : null}
         </nav>
       </div>
     </header>
