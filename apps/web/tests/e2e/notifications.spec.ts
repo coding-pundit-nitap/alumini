@@ -1,7 +1,7 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
-import { countEmails } from "./support/mailpit";
+import { assertNoNewEmail, countEmails } from "./support/mailpit";
 
 const DOMAIN = process.env.E2E_INSTITUTIONAL_DOMAIN ?? "nitap.ac.in";
 const BASE_URL =
@@ -101,9 +101,9 @@ test("disabling email preference for a category results in in-app-only delivery"
   await ravi.getByRole("button", { name: "Accept" }).click();
   await expect(ravi.getByText("No requests waiting for you.")).toBeVisible();
 
-  // The in-app notification lands (proves the worker processed and committed the delivery, so the email
-  // decision inside that same call has already been made). The worker fans out asynchronously, so retry
-  // the navigation until the row shows up.
+  // The in-app notification lands. This only proves the worker got as far as the in-app write, not that
+  // it has reached the email decision further down in the same deliver() call — the worker fans out
+  // asynchronously, so retry the navigation until the row shows up.
   await expect(async () => {
     await asha.goto("/notifications");
     await expect(asha.getByText("connection accepted")).toBeVisible({
@@ -111,6 +111,8 @@ test("disabling email preference for a category results in in-app-only delivery"
     });
   }).toPass({ timeout: 20_000 });
 
-  // ...but no email.send job was ever queued for it: Mailpit's count for Asha stays at the baseline.
-  expect(await countEmails(ashaEmail)).toBe(baseline);
+  // ...but no email.send job was ever queued for it. Watch Mailpit rather than checking once: a single
+  // check right here would race deliver()'s still-possibly-in-flight email decision and could pass even
+  // if a regression were about to enqueue mail.
+  await assertNoNewEmail(ashaEmail, baseline);
 });

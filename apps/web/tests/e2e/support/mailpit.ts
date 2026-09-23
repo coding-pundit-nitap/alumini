@@ -38,6 +38,32 @@ export async function countEmails(to: string): Promise<number> {
   return (await search(to)).length;
 }
 
+/**
+ * Watches Mailpit for `windowMs` and fails as soon as a message to `to` arrives, instead of a single
+ * check right after some other signal (the in-app row landing, say) that only proves an *earlier* step
+ * ran — the worker's email decision (`deliver()`) runs after that, so a lone immediate check can pass
+ * even though a regression is about to enqueue mail. The window is polled throughout, not a blind sleep,
+ * so a late arrival still fails the assertion; it's sized to the same worker fan-out latency this suite
+ * already trusts elsewhere (`toPass({ timeout: 20_000 })` for the in-app notification itself, which lands
+ * before any email would).
+ */
+export async function assertNoNewEmail(
+  to: string,
+  baseline: number,
+  windowMs = 20_000
+): Promise<void> {
+  const deadline = Date.now() + windowMs;
+  while (Date.now() < deadline) {
+    const count = await countEmails(to);
+    if (count !== baseline) {
+      throw new Error(
+        `Expected no new email to ${to} (baseline ${baseline}) but found ${count}`
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
+
 /** The first http(s) link in a plain-text email body. */
 export function linkIn(text: string): string {
   const match = /https?:\/\/\S+/.exec(text);
