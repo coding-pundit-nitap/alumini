@@ -80,8 +80,10 @@ export function createEmailSendProcessor(
       try {
         await deliveries?.markSent(notificationId, context.attempt);
       } catch (error) {
+        // The email went out but the row stays PENDING: operators reconcile by notificationId.
         context.logger.error("notification.delivery.mark_sent_error", {
           error,
+          metadata: { notificationId },
         });
       }
     }

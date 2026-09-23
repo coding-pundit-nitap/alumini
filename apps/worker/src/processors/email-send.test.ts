@@ -216,7 +216,12 @@ describe("email.send processor", () => {
       await expect(
         processor(notificationPayload, context({ logger }))
       ).resolves.toBeUndefined();
-      expect(logger.error).toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalledWith(
+        "notification.delivery.mark_sent_error",
+        expect.objectContaining({
+          metadata: { notificationId: notificationPayload.notificationId },
+        })
+      );
     });
   });
 });

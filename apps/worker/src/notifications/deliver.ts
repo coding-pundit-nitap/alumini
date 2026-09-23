@@ -56,7 +56,7 @@ export type DeliveryStore = {
  * second in-app row or unread bump, and the email step is skipped once the EMAIL delivery has reached a
  * terminal status (SENT/FAILED).
  *
- * The EMAIL delivery row is recorded PENDING *before* `enqueueEmail` runs, not after (N-12 fix round 1):
+ * The EMAIL delivery row is recorded PENDING *before* `enqueueEmail` runs, not after:
  * recording it after would leave a window where the enqueued job runs and marks the row SENT before the
  * PENDING insert even lands, after which that insert would either fail (unique row already exists — see
  * `ensureEmailPending`) or silently strand the row PENDING forever. Because the write now happens first,
