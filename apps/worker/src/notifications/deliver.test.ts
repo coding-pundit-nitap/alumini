@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+import { dedupeKeyFor } from "@nitap/jobs";
+
 import { createDeliverNotification } from "./deliver.ts";
 
-function fakeStore(overrides: Partial<any> = {}) {
+function fakeStore(overrides: Record<string, unknown> = {}) {
   return {
     insert: vi.fn(async () => ({ id: "notif-1", created: true })),
     recordDelivery: vi.fn(async () => {}),
@@ -18,16 +20,18 @@ describe("deliverNotification", () => {
         return { id: "notif-1", created: true };
       }),
     });
-    const enqueueEmail = vi.fn(async () => {
-      calls.push("email");
-    });
+    const enqueueEmail = vi.fn<(p: unknown, o: unknown) => Promise<void>>(
+      async () => {
+        calls.push("email");
+      }
+    );
     const deliver = createDeliverNotification({
-      store: store as any,
+      store: store as never,
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
       unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
-      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any,
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
     });
 
     await deliver({
@@ -40,18 +44,25 @@ describe("deliverNotification", () => {
     });
 
     expect(calls).toEqual(["insert", "email"]);
+    expect(enqueueEmail).toHaveBeenCalledWith(expect.anything(), {
+      jobId: dedupeKeyFor({
+        eventId: "e1",
+        recipientId: "u1",
+        type: "connection.requested",
+      }),
+    });
   });
 
   it("skips email when the recipient disabled it, but still writes in-app", async () => {
     const store = fakeStore();
     const enqueueEmail = vi.fn(async () => {});
     const deliver = createDeliverNotification({
-      store: store as any,
+      store: store as never,
       getPreference: async () => ({ enabled: false }),
       enqueueEmail,
       hintPublisher: null,
       unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
-      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any,
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
     });
 
     await deliver({
@@ -73,12 +84,12 @@ describe("deliverNotification", () => {
     });
     const enqueueEmail = vi.fn(async () => {});
     const deliver = createDeliverNotification({
-      store: store as any,
+      store: store as never,
       getPreference: async () => ({ enabled: true }),
       enqueueEmail,
       hintPublisher: null,
       unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
-      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any,
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
     });
 
     await deliver({

@@ -38,6 +38,12 @@ export function createJobEventProcessor(
 
     if (action === "submitted") {
       for (const id of (await deps.findModerators?.("job.approve")) ?? []) {
+        // The submitter must not be notified of their own submission.
+        if (
+          id === payload.postedBy ||
+          id === (payload as JobEventPayload).actorId
+        )
+          continue;
         await send(id, true);
       }
       return;

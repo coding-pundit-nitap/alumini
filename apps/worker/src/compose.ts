@@ -202,12 +202,16 @@ export function composeWorker(
     const now = new Date();
     const [viaRole, viaGrant] = await Promise.all([
       prisma.userRole.findMany({
-        where: { role: { rolePermissions: { some: { permission } } } },
+        where: {
+          role: { rolePermissions: { some: { permission } } },
+          user: { accountState: "VERIFIED" },
+        },
         select: { userId: true },
       }),
       prisma.permissionGrant.findMany({
         where: {
           permission,
+          user: { accountState: "VERIFIED" },
           OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
         },
         select: { userId: true },

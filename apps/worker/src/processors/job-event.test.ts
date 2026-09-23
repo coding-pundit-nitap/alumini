@@ -44,6 +44,20 @@ describe("job event processor", () => {
     );
   });
 
+  it("does not notify the submitter when they hold job.approve", async () => {
+    const deliver = vi.fn(async () => {});
+    const processor = createJobEventProcessor("submitted", {
+      deliver,
+      findEmail: async () => "x",
+      findModerators: async () => ["poster-1", "mod-1"],
+    });
+    await processor({ ...base, actorId: "poster-1" } as never, ctx());
+    expect(deliver).toHaveBeenCalledTimes(1);
+    expect(deliver).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientId: "mod-1" })
+    );
+  });
+
   it("job.expired is in-app only for the poster", async () => {
     const deliver = vi.fn(async () => {});
     const findEmail = vi.fn(async () => "poster@nitap.ac.in");
