@@ -15,6 +15,7 @@ import {
   connectionRequested,
   contentRemoved,
   emailSend,
+  eventJobs,
   idempotencySweep,
   jobExpire,
   mentorshipJobs,
@@ -29,6 +30,8 @@ import {
 } from "@nitap/jobs";
 import type {
   EmailSendPayload,
+  EventLifecyclePayload,
+  EventRegistrationPayload,
   JobDefinition,
   UploadScanPayload,
 } from "@nitap/jobs";
@@ -59,6 +62,7 @@ import { createConnectionEventProcessor } from "./processors/connection-event.ts
 import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
 import { createJobExpireProcessor } from "./processors/job-expire.ts";
+import { createEventActivityProcessor } from "./processors/event-activity.ts";
 import { createMentorshipEventProcessor } from "./processors/mentorship-event.ts";
 import { createMessageSentProcessor } from "./processors/message-sent.ts";
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
@@ -179,6 +183,9 @@ export function composeWorker(
       ...Object.fromEntries(
         Object.values(mentorshipJobs).map((job) => [job.name, job])
       ),
+      ...Object.fromEntries(
+        Object.values(eventJobs).map((job) => [job.name, job])
+      ),
     },
     logger,
     metrics,
@@ -213,6 +220,15 @@ export function composeWorker(
         registerJob(
           job,
           createMentorshipEventProcessor(job.name.slice("mentorship.".length))
+        )
+      ),
+      ...Object.values(eventJobs).map((job) =>
+        registerJob(
+          job as JobDefinition<
+            string,
+            EventLifecyclePayload | EventRegistrationPayload
+          >,
+          createEventActivityProcessor(job.name.slice("event.".length))
         )
       ),
       registerJob(
