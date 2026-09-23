@@ -533,4 +533,222 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
       redis.disconnect();
     }
   });
+
+  // Spec tests: fan-out correctness through the real Prisma lookups in compose.ts.
+  describe("fan-out recipients (real lookups)", () => {
+    const makeUserIn = (name: string, accountState = "VERIFIED" as const) =>
+      db.prisma.user.create({
+        data: {
+          name,
+          email: `${name}@example.test`,
+          emailVerified: true,
+          accountState,
+        },
+      });
+    const block = (a: string, b: string) =>
+      db.prisma.connection.create({
+        data: {
+          userAId: a < b ? a : b,
+          userBId: a < b ? b : a,
+          requestedById: a,
+          blockedById: a,
+          state: "BLOCKED",
+        },
+      });
+    const emit = (type: string, payload: Record<string, unknown>) =>
+      db.prisma.$transaction((tx) =>
+        writer.add(tx, { type, payload: { v: 1, ...payload } } as never)
+      );
+    /** Waits for `expected` to be notified, then proves nobody else was. */
+    const expectNotified = async (
+      type: string,
+      expected: string[],
+      everyone: string[]
+    ) => {
+      const notifiedOf = async () =>
+        (await db.prisma.notification.findMany({ where: { type } }))
+          .map((n) => n.recipientId)
+          .sort();
+      await eventually(async () =>
+        expect(await notifiedOf()).toEqual([...expected].sort())
+      );
+      await wait(300);
+      expect(await notifiedOf()).toEqual([...expected].sort());
+      expect(everyone.length).toBeGreaterThan(expected.length);
+    };
+
+    it("event.cancelled notifies every non-cancelled registrant except the actor and anyone blocked with them", async () => {
+      const users = await Promise.all(
+        ["org", "reg", "att", "noshow", "cancelled", "blocked"].map((n) =>
+          makeUserIn(n)
+        )
+      );
+      const [org, reg, att, noshow, cancelled, blocked] = users.map(
+        (u) => u!.id
+      ) as [string, string, string, string, string, string];
+      const event = await db.prisma.event.create({
+        data: {
+          organizerId: org,
+          title: "Meetup",
+          description: "An alumni meetup.",
+          startsAt: new Date(Date.now() + 86_400_000),
+          timezone: "Asia/Kolkata",
+          isOnline: true,
+          capacity: 10,
+          registrationDeadline: new Date(Date.now() + 3_600_000),
+          status: "CANCELLED",
+          cancelledAt: new Date(),
+        },
+      });
+      await db.prisma.eventRegistration.createMany({
+        data: [
+          { eventId: event.id, userId: org, state: "REGISTERED" },
+          { eventId: event.id, userId: reg, state: "REGISTERED" },
+          { eventId: event.id, userId: att, state: "ATTENDED" },
+          { eventId: event.id, userId: noshow, state: "NO_SHOW" },
+          { eventId: event.id, userId: cancelled, state: "CANCELLED" },
+          { eventId: event.id, userId: blocked, state: "REGISTERED" },
+        ],
+      });
+      await block(blocked, org);
+      await startWorker();
+
+      await emit("event.cancelled", { eventId: event.id, actorId: org });
+
+      await expectNotified(
+        "event.cancelled",
+        [reg, att, noshow],
+        users.map((u) => u.id)
+      );
+    });
+
+    it("report.filed notifies report.review holders by role or live grant, never expired, suspended or the reporter", async () => {
+      const users = await Promise.all([
+        makeUserIn("roleholder"),
+        makeUserIn("granted"),
+        makeUserIn("expired"),
+        makeUserIn("suspended", "SUSPENDED" as never),
+        makeUserIn("reporter"),
+        makeUserIn("bystander"),
+        makeUserIn("author"),
+      ]);
+      const [roleHolder, granted, expired, suspended, reporter, , author] =
+        users.map((u) => u.id) as string[];
+      const role = await db.prisma.role.create({
+        data: {
+          name: "test-moderator",
+          rolePermissions: { create: { permission: "report.review" } },
+        },
+      });
+      await db.prisma.userRole.createMany({
+        data: [roleHolder!, suspended!, reporter!].map((userId) => ({
+          userId,
+          roleId: role.id,
+          grantedBy: author!,
+        })),
+      });
+      await db.prisma.permissionGrant.createMany({
+        data: [
+          { userId: granted!, expiresAt: null },
+          { userId: expired!, expiresAt: new Date(Date.now() - 60_000) },
+        ].map((g) => ({
+          ...g,
+          permission: "report.review",
+          scopeType: "GLOBAL" as const,
+          grantedBy: author!,
+        })),
+      });
+      const post = await db.prisma.post.create({
+        data: { authorId: author!, content: "x", imageUrls: [] },
+      });
+      const report = await db.prisma.report.create({
+        data: {
+          reporterId: reporter!,
+          targetType: "POST",
+          targetId: post.id,
+          reason: "spam",
+        },
+      });
+      await startWorker();
+
+      await emit("report.filed", {
+        reportId: report.id,
+        targetType: "POST",
+        targetId: post.id,
+        reporterId: reporter,
+      });
+
+      await expectNotified(
+        "report.filed",
+        [roleHolder!, granted!],
+        users.map((u) => u.id)
+      );
+    });
+
+    it("comment.created notifies the post author and live prior commenters, never the commenter or a blocked pair", async () => {
+      const users = await Promise.all(
+        ["author", "prior", "deletedprior", "blockedprior", "commenter"].map(
+          (n) => makeUserIn(n)
+        )
+      );
+      const [author, prior, deletedPrior, blockedPrior, commenter] = users.map(
+        (u) => u.id
+      ) as [string, string, string, string, string];
+      const post = await db.prisma.post.create({
+        data: { authorId: author, content: "x", imageUrls: [] },
+      });
+      await db.prisma.comment.createMany({
+        data: [
+          { postId: post.id, authorId: prior, body: "a" },
+          { postId: post.id, authorId: deletedPrior, body: "b", deleted: true },
+          { postId: post.id, authorId: blockedPrior, body: "c" },
+        ],
+      });
+      const comment = await db.prisma.comment.create({
+        data: { postId: post.id, authorId: commenter, body: "new" },
+      });
+      await block(blockedPrior, commenter);
+      await startWorker();
+
+      await emit("comment.created", {
+        commentId: comment.id,
+        postId: post.id,
+        authorId: commenter,
+      });
+
+      await expectNotified(
+        "comment.created",
+        [author, prior],
+        users.map((u) => u.id)
+      );
+    });
+
+    it("content.removed notifies the author of the soft-deleted post", async () => {
+      const [author, other] = await Promise.all([
+        makeUserIn("author"),
+        makeUserIn("other"),
+      ]);
+      const post = await db.prisma.post.create({
+        data: {
+          authorId: author.id,
+          content: "x",
+          imageUrls: [],
+          deleted: true,
+        },
+      });
+      await startWorker();
+
+      await emit("content.removed", {
+        targetType: "POST",
+        targetId: post.id,
+        reportId: "55555555-5555-4555-8555-555555555555",
+      });
+
+      await expectNotified(
+        "content.removed",
+        [author.id],
+        [author.id, other.id]
+      );
+    });
+  });
 });
