@@ -52,6 +52,9 @@ export const PERMISSIONS = {
   // Moderation
   REPORT_CREATE: "report.create",
   REPORT_REVIEW: "report.review",
+  // Notifications
+  NOTIFICATION_READ: "notification.read",
+  NOTIFICATION_REPLAY: "notification.replay",
   // Donations
   DONATION_MAKE: "donation.make",
   CAMPAIGN_MANAGE: "campaign.manage",

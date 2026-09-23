@@ -52,6 +52,7 @@ const MEMBER_BASELINE: Permission[] = [
   P.POST_INTERACT,
   P.REPORT_CREATE,
   P.DONATION_MAKE,
+  P.NOTIFICATION_READ,
 ];
 
 export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
@@ -129,6 +130,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     P.DONATION_VIEW_ALL,
     P.ANALYTICS_VIEW,
     P.AUDIT_READ,
+    P.NOTIFICATION_REPLAY,
   ],
 
   SUPER_ADMIN: [
@@ -157,6 +159,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     P.DONATION_VIEW_ALL,
     P.ANALYTICS_VIEW,
     P.AUDIT_READ,
+    P.NOTIFICATION_REPLAY,
     P.SYSTEM_CONFIGURE,
   ],
 };
