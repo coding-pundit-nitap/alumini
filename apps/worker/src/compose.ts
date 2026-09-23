@@ -311,7 +311,11 @@ export function composeWorker(
       ...Object.values(mentorshipJobs).map((job) =>
         registerJob(
           job,
-          createMentorshipEventProcessor(job.name.slice("mentorship.".length))
+          createMentorshipEventProcessor(job.name.slice("mentorship.".length), {
+            deliver,
+            findEmail,
+            blocked,
+          })
         )
       ),
       ...Object.values(eventJobs).map((job) =>
