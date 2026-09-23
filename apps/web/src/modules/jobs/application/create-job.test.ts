@@ -48,7 +48,7 @@ const validInput = {
 };
 
 function build(overrides: Partial<Parameters<typeof createCreateJob>[0]> = {}) {
-  const { store, rows, events } = createFakeJobStore();
+  const { store, rows, events, audits } = createFakeJobStore();
   const createJob = createCreateJob({
     store,
     authorize,
@@ -56,7 +56,7 @@ function build(overrides: Partial<Parameters<typeof createCreateJob>[0]> = {}) {
     rateLimiter: allowAll,
     ...overrides,
   });
-  return { createJob, rows, events };
+  return { createJob, rows, events, audits };
 }
 
 describe("createJob", () => {
@@ -148,5 +148,26 @@ describe("createJob", () => {
       input: validInput,
     });
     expect(observe).toHaveBeenCalledWith("publish_direct", result.jobId);
+  });
+
+  it("audits a direct publish by a job.approve holder, and not an ordinary submission", async () => {
+    const { createJob, audits } = build();
+    await createJob({
+      actor: actor("poster-1", [PERMISSIONS.JOB_CREATE]),
+      input: validInput,
+    });
+    expect(audits).toEqual([]);
+    const { jobId } = await createJob({
+      actor: actor("tp-1", [PERMISSIONS.JOB_CREATE, PERMISSIONS.JOB_APPROVE]),
+      input: validInput,
+    });
+    expect(audits).toEqual([
+      {
+        action: "job.publish_direct",
+        actorId: "tp-1",
+        jobId,
+        postedBy: "tp-1",
+      },
+    ]);
   });
 });

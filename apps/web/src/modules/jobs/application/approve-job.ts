@@ -42,6 +42,12 @@ export function createApproveJob(deps: {
           directPublish: false,
         },
       });
+      await tx.audit({
+        action: "job.approved",
+        actorId: caller.userId,
+        jobId: row.id,
+        postedBy: row.postedBy,
+      });
       return decision.patch.status;
     });
     deps.observe?.("approved", args.jobId);

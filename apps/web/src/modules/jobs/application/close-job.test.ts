@@ -30,9 +30,9 @@ const can = (a: Actor, permission: string) =>
   a.grants.some((g) => g.permission === permission);
 
 function build(seed = [jobRow({ postedBy: "poster-1", status: "PUBLISHED" })]) {
-  const { store, rows, events } = createFakeJobStore(seed);
+  const { store, rows, events, audits } = createFakeJobStore(seed);
   const closeJob = createCloseJob({ store, authorize, can });
-  return { closeJob, rows, events };
+  return { closeJob, rows, events, audits };
 }
 
 describe("closeJob", () => {
@@ -90,4 +90,27 @@ describe("closeJob", () => {
       });
     }
   );
+
+  it("audits a job.manage holder closing someone else's job, not the poster closing their own", async () => {
+    const own = build();
+    await own.closeJob({
+      actor: actor("poster-1", [PERMISSIONS.JOB_READ]),
+      jobId: "job-1",
+    });
+    expect(own.audits).toEqual([]);
+
+    const managed = build();
+    await managed.closeJob({
+      actor: actor("tp-1", [PERMISSIONS.JOB_READ, PERMISSIONS.JOB_MANAGE]),
+      jobId: "job-1",
+    });
+    expect(managed.audits).toEqual([
+      {
+        action: "job.closed",
+        actorId: "tp-1",
+        jobId: "job-1",
+        postedBy: "poster-1",
+      },
+    ]);
+  });
 });

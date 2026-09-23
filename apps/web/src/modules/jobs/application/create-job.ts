@@ -67,6 +67,14 @@ export function createCreateJob(deps: {
       } else {
         await tx.enqueue({ type: decision.event, payload: base });
       }
+      if (decision.directPublish) {
+        await tx.audit({
+          action: "job.publish_direct",
+          actorId: caller.userId,
+          jobId: created.id,
+          postedBy: caller.userId,
+        });
+      }
       return created;
     });
     deps.observe?.(

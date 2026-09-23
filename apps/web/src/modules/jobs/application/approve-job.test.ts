@@ -36,9 +36,9 @@ const authorize = (a: Actor | null, permission: string) => {
 const NOW = new Date("2026-09-23T10:00:00Z");
 
 function build(seed = [jobRow({ postedBy: "poster-1" })]) {
-  const { store, rows, events } = createFakeJobStore(seed);
+  const { store, rows, events, audits } = createFakeJobStore(seed);
   const approveJob = createApproveJob({ store, authorize, now: () => NOW });
-  return { approveJob, rows, events };
+  return { approveJob, rows, events, audits };
 }
 
 describe("approveJob", () => {
@@ -110,5 +110,32 @@ describe("approveJob", () => {
       jobId: "job-1",
     });
     expect(observe).toHaveBeenCalledWith("approved", "job-1");
+  });
+
+  it("audits job.approved in the same transaction", async () => {
+    const { approveJob, audits } = build();
+    await approveJob({
+      actor: actor("mod-1", [PERMISSIONS.JOB_APPROVE]),
+      jobId: "job-1",
+    });
+    expect(audits).toEqual([
+      {
+        action: "job.approved",
+        actorId: "mod-1",
+        jobId: "job-1",
+        postedBy: "poster-1",
+      },
+    ]);
+  });
+
+  it("writes no audit when the approval is refused", async () => {
+    const { approveJob, audits } = build();
+    await expect(
+      approveJob({
+        actor: actor("poster-1", [PERMISSIONS.JOB_APPROVE]),
+        jobId: "job-1",
+      })
+    ).rejects.toThrow();
+    expect(audits).toEqual([]);
   });
 });

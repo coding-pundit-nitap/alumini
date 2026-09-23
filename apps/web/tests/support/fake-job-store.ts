@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type {
+  JobAuditEntry,
   JobEvent,
   JobStore,
   JobTx,
@@ -11,6 +12,7 @@ import type { JobRow, JobStatus } from "@/modules/jobs/domain/job";
 export function createFakeJobStore(seed: JobRow[] = []) {
   const rows = new Map(seed.map((r) => [r.id, { ...r }]));
   const events: JobEvent[] = [];
+  const audits: JobAuditEntry[] = [];
 
   const tx: JobTx = {
     async findById(id) {
@@ -41,24 +43,29 @@ export function createFakeJobStore(seed: JobRow[] = []) {
     async enqueue(event) {
       events.push(event);
     },
+    async audit(entry) {
+      audits.push(entry);
+    },
   };
 
   const store: JobStore = {
     async transaction(work) {
       const before = new Map(rows);
       const beforeEvents = events.length;
+      const beforeAudits = audits.length;
       try {
         return await work(tx);
       } catch (error) {
         rows.clear();
         for (const [k, v] of before) rows.set(k, v);
         events.length = beforeEvents;
+        audits.length = beforeAudits;
         throw error;
       }
     },
   };
 
-  return { store, rows, events };
+  return { store, rows, events, audits };
 }
 
 export const jobRow = (over: Partial<JobRow> = {}): JobRow => ({

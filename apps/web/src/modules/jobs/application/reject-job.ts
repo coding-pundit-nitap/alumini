@@ -50,6 +50,12 @@ export function createRejectJob(deps: {
           actorId: caller.userId,
         },
       });
+      await tx.audit({
+        action: "job.rejected",
+        actorId: caller.userId,
+        jobId: row.id,
+        postedBy: row.postedBy,
+      });
       return decision.patch.status;
     });
     deps.observe?.("rejected", args.jobId);

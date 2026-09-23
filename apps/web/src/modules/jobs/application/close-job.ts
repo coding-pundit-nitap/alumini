@@ -44,6 +44,15 @@ export function createCloseJob(deps: {
           actorId: caller.userId,
         },
       });
+      // Closing your own job is not an admin action; closing someone else's (job.manage) is.
+      if (caller.userId !== row.postedBy) {
+        await tx.audit({
+          action: "job.closed",
+          actorId: caller.userId,
+          jobId: row.id,
+          postedBy: row.postedBy,
+        });
+      }
       return decision.patch.status;
     });
     deps.observe?.("closed", args.jobId);

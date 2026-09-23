@@ -1,4 +1,5 @@
 import { Prisma } from "@nitap/database";
+import type { AuditWriter } from "@nitap/database/audit";
 import type { OutboxWriter } from "@nitap/database/outbox";
 
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
@@ -17,6 +18,7 @@ const toRow = (r: JobRow): JobRow => ({ ...r, skills: [...r.skills] });
 export function createPrismaJobStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;
+  audit: AuditWriter;
 }): JobStore {
   const forClient = (db: Prisma.TransactionClient): JobTx => ({
     async findById(id) {
@@ -41,6 +43,19 @@ export function createPrismaJobStore(deps: {
 
     async enqueue(event) {
       await deps.outbox.add(db, event);
+    },
+
+    async audit(entry) {
+      await deps.audit.record(db, {
+        actorId: entry.actorId,
+        action: entry.action,
+        targetType: "job",
+        targetId: entry.jobId,
+        metadata:
+          entry.action === "job.publish_direct"
+            ? {}
+            : { postedBy: entry.postedBy },
+      });
     },
   });
 

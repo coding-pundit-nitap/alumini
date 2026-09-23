@@ -1,3 +1,4 @@
+import { audit } from "@/infrastructure/audit";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { getMetrics, logger } from "@/infrastructure/observability";
 import { outbox } from "@/infrastructure/outbox";
@@ -22,7 +23,11 @@ import {
 
 /** Wires the jobs module to PostgreSQL and the shared Redis rate limiter. */
 const queries = createPrismaJobQueries(prisma);
-const store = createPrismaJobStore({ runner: transactionRunner, outbox });
+const store = createPrismaJobStore({
+  runner: transactionRunner,
+  outbox,
+  audit,
+});
 
 /** One log line and one counter per committed outcome; publish_direct is distinct from published (spec J-15). */
 const observe: JobObserver = (outcome, jobId) => {

@@ -32,9 +32,9 @@ const authorize = (a: Actor | null, permission: string) => {
 const NOW = new Date("2026-09-23T10:00:00Z");
 
 function build(seed = [jobRow({ postedBy: "poster-1" })]) {
-  const { store, rows, events } = createFakeJobStore(seed);
+  const { store, rows, events, audits } = createFakeJobStore(seed);
   const rejectJob = createRejectJob({ store, authorize, now: () => NOW });
-  return { rejectJob, rows, events };
+  return { rejectJob, rows, events, audits };
 }
 
 describe("rejectJob", () => {
@@ -85,5 +85,30 @@ describe("rejectJob", () => {
         input: { reviewNote: "note" },
       })
     ).rejects.toMatchObject({ code: "SELF_REVIEW_FORBIDDEN" });
+  });
+
+  it("audits job.rejected, and nothing when refused", async () => {
+    const { rejectJob, audits } = build();
+    await expect(
+      rejectJob({
+        actor: actor("poster-1", [PERMISSIONS.JOB_APPROVE]),
+        jobId: "job-1",
+        input: { reviewNote: "no" },
+      })
+    ).rejects.toThrow();
+    expect(audits).toEqual([]);
+    await rejectJob({
+      actor: actor("mod-1", [PERMISSIONS.JOB_APPROVE]),
+      jobId: "job-1",
+      input: { reviewNote: "Add a salary range" },
+    });
+    expect(audits).toEqual([
+      {
+        action: "job.rejected",
+        actorId: "mod-1",
+        jobId: "job-1",
+        postedBy: "poster-1",
+      },
+    ]);
   });
 });

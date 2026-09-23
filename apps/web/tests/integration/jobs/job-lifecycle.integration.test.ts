@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { PERMISSIONS } from "@nitap/database/permissions";
 import type { Permission } from "@nitap/database/permissions";
@@ -79,6 +80,7 @@ describe("job create/edit against real PostgreSQL", () => {
     const store = createPrismaJobStore({
       runner: createTransactionRunner(db.prisma),
       outbox,
+      audit: createAuditWriter(),
     });
     return {
       createJob: createCreateJob({
@@ -200,6 +202,19 @@ describe("job create/edit against real PostgreSQL", () => {
         })) - rejectedBefore;
       expect(approvedAfter).toBe(approved === "ok" ? 1 : 0);
       expect(rejectedAfter).toBe(rejected === "ok" ? 1 : 0);
+
+      // The loser's audit row rolled back with its transaction: exactly one decision is on record.
+      expect(
+        await db.prisma.auditLog.findMany({
+          where: { targetId: created.jobId },
+          select: { action: true, actorId: true },
+        })
+      ).toEqual([
+        {
+          action: approved === "ok" ? "job.approved" : "job.rejected",
+          actorId: moderator,
+        },
+      ]);
     }
   });
 
@@ -227,7 +242,15 @@ describe("job create/edit against real PostgreSQL", () => {
         input: { reviewNote: "note" },
       })
     ).rejects.toMatchObject({ code: "SELF_REVIEW_FORBIDDEN" });
-    void created;
+    expect(
+      await db.prisma.auditLog.count({ where: { targetId: pending.jobId } })
+    ).toBe(0);
+    expect(
+      await db.prisma.auditLog.findMany({
+        where: { targetId: created.jobId },
+        select: { action: true, actorId: true },
+      })
+    ).toEqual([{ action: "job.publish_direct", actorId: poster }]);
   });
 
   it("a job due exactly today stays listed; a job due yesterday does not (spec J-9)", async () => {

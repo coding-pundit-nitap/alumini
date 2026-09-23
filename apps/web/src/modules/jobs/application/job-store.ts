@@ -25,6 +25,14 @@ export type JobEvent =
       payload: JobEventBasePayload & { directPublish: boolean };
     };
 
+/** Admin decisions on a job leave an audit row in the same transaction (FR-MOD-004, spec A12-9). Ids only. */
+export type JobAuditEntry = {
+  action: "job.approved" | "job.rejected" | "job.publish_direct" | "job.closed";
+  actorId: string;
+  jobId: string;
+  postedBy: string;
+};
+
 export type NewJob = JobContent & { postedBy: string; status: JobStatus };
 
 /**
@@ -44,6 +52,7 @@ export type JobTx = {
     patch: Partial<JobContent> & JobPatch
   ): Promise<JobRow | null>;
   enqueue(event: JobEvent): Promise<void>;
+  audit(entry: JobAuditEntry): Promise<void>;
 };
 
 export type JobStore = {
