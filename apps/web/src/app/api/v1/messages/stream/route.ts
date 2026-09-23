@@ -5,7 +5,8 @@ import {
   subscribeToUser,
 } from "@/infrastructure/realtime/message-hub";
 import { routeHandler } from "@/infrastructure/http/route-handler";
-import { authorize, getActor } from "@/modules/auth";
+import { AuthenticationError, AuthorizationError } from "@/lib/errors";
+import { can, getActor } from "@/modules/auth";
 
 const HEARTBEAT_MS = 25_000;
 
@@ -13,9 +14,20 @@ const HEARTBEAT_MS = 25_000;
  * GET /api/v1/messages/stream — Server-Sent Events. Carries ids-only message and notification hints for the caller's own channels; the
  * browser refetches through the authorized list endpoints, so nothing here can leak a message. Without Redis
  * the answer is 503 and the client falls back to polling (spec M-3, M-12).
+ *
+ * A caller needs MESSAGE_SEND, NOTIFICATION_READ, or both — permissions, never a role — to open the
+ * connection at all (401/403 otherwise); each hint kind is then only ever written to the wire for a
+ * caller who holds the matching permission, so an actor with only NOTIFICATION_READ gets notification
+ * hints and no message traffic, and vice versa.
  */
 export const GET = routeHandler(async (request) => {
-  const caller = authorize(await getActor(), PERMISSIONS.MESSAGE_SEND);
+  const caller = await getActor();
+  if (!caller) throw new AuthenticationError();
+  const canReceiveMessages = can(caller, PERMISSIONS.MESSAGE_SEND);
+  const canReceiveNotifications = can(caller, PERMISSIONS.NOTIFICATION_READ);
+  if (!canReceiveMessages && !canReceiveNotifications) {
+    throw new AuthorizationError();
+  }
   if (!realtimeAvailable()) return new Response(null, { status: 503 });
 
   const encoder = new TextEncoder();
@@ -31,9 +43,13 @@ export const GET = routeHandler(async (request) => {
       write("retry: 5000\n: connected\n\n");
       const unsubscribe = subscribeToUser(
         caller.userId,
-        (hint) => write(`event: message\ndata: ${JSON.stringify(hint)}\n\n`),
-        (hint) =>
-          write(`event: notification\ndata: ${JSON.stringify(hint)}\n\n`)
+        canReceiveMessages
+          ? (hint) => write(`event: message\ndata: ${JSON.stringify(hint)}\n\n`)
+          : () => undefined,
+        canReceiveNotifications
+          ? (hint) =>
+              write(`event: notification\ndata: ${JSON.stringify(hint)}\n\n`)
+          : () => undefined
       );
       const heartbeat = setInterval(() => write(": ping\n\n"), HEARTBEAT_MS);
       request.signal.addEventListener(
