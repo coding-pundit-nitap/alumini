@@ -371,4 +371,34 @@ describe("deliverNotification", () => {
     });
     expect(publish).toHaveBeenCalledWith("u1", { notificationId: "notif-1" });
   });
+
+  it("a cache Redis outage (unread bump and hint both reject) still records PENDING and enqueues the email (N-9)", async () => {
+    const store = fakeStore();
+    const enqueueEmail = vi.fn(async () => {});
+    const warn = vi.fn();
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: { publish: async () => Promise.reject(new Error("down")) },
+      unreadCounter: {
+        increment: async () => Promise.reject(new Error("down")),
+      },
+      logger: { info: vi.fn(), warn, error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+
+    expect(store.ensureEmailPending).toHaveBeenCalledWith("notif-1");
+    expect(enqueueEmail).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalled();
+  });
 });

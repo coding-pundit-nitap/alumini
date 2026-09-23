@@ -109,10 +109,18 @@ export function createDeliverNotification(deps: {
         channel: "IN_APP",
         status: "SENT",
       });
-      await deps.unreadCounter.increment(input.recipientId);
-      await deps.hintPublisher?.publish(input.recipientId, {
-        notificationId: id,
-      });
+      // N-9: the counter is a cache recomputed from PostgreSQL and the hint is a refetch nudge. A cache
+      // Redis outage must degrade only real-time push, never fail the job before the email step.
+      try {
+        await deps.unreadCounter.increment(input.recipientId);
+        await deps.hintPublisher?.publish(input.recipientId, {
+          notificationId: id,
+        });
+      } catch (error) {
+        deps.logger.warn("notification.realtime_unavailable", {
+          metadata: { message: (error as Error).message },
+        });
+      }
     }
 
     if (!input.emailTo) return;

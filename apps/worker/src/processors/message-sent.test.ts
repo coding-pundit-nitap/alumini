@@ -40,15 +40,23 @@ describe("message.sent processor", () => {
     });
   });
 
-  it("lets a publish failure fail the job so the queue retries it", async () => {
-    const processor = createMessageSentProcessor({
-      participants: async () => ["a"],
+  it("a hint publish failure is logged and never stops the notification fan-out (N-9: only real-time degrades)", async () => {
+    const logger = silentLogger();
+    const warn = vi.spyOn(logger, "warn");
+    const deliver = vi.fn(async () => {});
+    await createMessageSentProcessor({
+      participants: async () => ["sender", "r1"],
       publisher: {
         publish: async () => Promise.reject(new Error("redis down")),
       },
       ...noNotify,
-    });
-    await expect(processor(payload, ctx())).rejects.toThrow("redis down");
+      deliver,
+    })({ ...payload, senderId: "sender" }, ctx(logger));
+    expect(deliver).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(
+      "message.sent.hint_failed",
+      expect.anything()
+    );
   });
 
   it("succeeds with a warning when real-time is not configured: clients backfill by refetching", async () => {

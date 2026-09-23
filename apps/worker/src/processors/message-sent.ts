@@ -9,7 +9,7 @@ import type { MessageDebounce } from "../notifications/message-debounce.ts";
  * Turns a committed message into a real-time hint for every participant (FR-MSG-005 keeps the message safe
  * without this: delivery never depends on the recipient being online), then delivers an in-app notification
  * to every other participant. The in-app row is written per message; only the email is debounced (spec N-7).
- * Ids only. A Redis failure on hints fails the job and the queue retries it.
+ * Ids only. A Redis failure on hints is logged, never fatal: clients refetch on their poll/focus.
  */
 export function createMessageSentProcessor(deps: {
   participants(conversationId: string): Promise<string[]>;
@@ -29,8 +29,15 @@ export function createMessageSentProcessor(deps: {
       messageId: payload.messageId,
     };
     if (publisher) {
+      // N-9: a cache Redis outage degrades only real-time push; the notification fan-out below still runs.
       await Promise.all(
-        userIds.map((userId) => publisher.publish(userId, hint))
+        userIds.map((userId) =>
+          publisher.publish(userId, hint).catch((error: Error) =>
+            logger.warn("message.sent.hint_failed", {
+              metadata: { message: error.message },
+            })
+          )
+        )
       );
       logger.info("message.sent.published", {
         metadata: { ...hint, recipients: userIds.length },

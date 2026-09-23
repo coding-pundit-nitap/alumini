@@ -49,7 +49,10 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     await db.drop();
   });
 
-  const startWorker = async (wrapQueue?: (queue: QueuePort) => QueuePort) => {
+  const startWorker = async (
+    wrapQueue?: (queue: QueuePort) => QueuePort,
+    cacheRedisUrl: string | undefined = process.env.REDIS_URL
+  ) => {
     const metrics = recordingMetrics();
     const worker = composeWorker(
       {
@@ -59,7 +62,7 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
         storage: createFakeStoragePort(),
         config: {
           queueRedisUrl: ns.url,
-          cacheRedisUrl: process.env.REDIS_URL,
+          cacheRedisUrl,
           queuePrefix: ns.prefix,
           smtpUrl: smtp.url,
           emailFrom: "NITAP <no-reply@alumni.test>",
@@ -388,6 +391,77 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     expect(metrics.increment).toHaveBeenCalledWith(
       "notification_delivery_failed_total",
       expect.anything()
+    );
+  });
+
+  // N-9: the cache Redis (unread counter, hints, debounce) going down only degrades real-time push.
+  it("a dead cache Redis still writes the in-app row, records EMAIL PENDING and sends the email", async () => {
+    const [actor, recipient] = await Promise.all([
+      makeUser("actor"),
+      makeUser("recipient"),
+    ]);
+    // Nothing listens on port 1.
+    const { metrics } = await startWorker(undefined, "redis://127.0.0.1:1");
+
+    await requestConnection(actor.id, recipient.id);
+
+    await eventually(async () =>
+      expect(await notifications(recipient.id)).toHaveLength(1)
+    );
+    await eventually(async () =>
+      expect(await emailDeliveries(recipient.id)).toHaveLength(1)
+    );
+    await eventually(() => expect(smtp.received).toHaveLength(1));
+    // First attempt succeeded: the cache outage did not fail the job into a retry.
+    expect(
+      metrics.increment.mock.calls.filter(
+        ([name, labels]) =>
+          name === "jobs_processed_total" &&
+          (labels as { job?: string }).job === "connection.requested" &&
+          (labels as { outcome?: string }).outcome !== "completed"
+      )
+    ).toEqual([]);
+  });
+
+  it("a dead cache Redis still delivers message.sent in-app notifications", async () => {
+    const [sender, recipient] = await Promise.all([
+      makeUser("sender"),
+      makeUser("recipient"),
+    ]);
+    const conversation = await db.prisma.conversation.create({
+      data: {
+        createdById: sender.id,
+        isGroup: true,
+        title: "t",
+        participants: {
+          create: [{ userId: sender.id }, { userId: recipient.id }],
+        },
+      },
+    });
+    const message = await db.prisma.message.create({
+      data: {
+        conversationId: conversation.id,
+        senderId: sender.id,
+        body: "hi",
+        clientMessageId: "44444444-4444-4444-8444-444444444444",
+      },
+    });
+    await startWorker(undefined, "redis://127.0.0.1:1");
+
+    await db.prisma.$transaction((tx) =>
+      writer.add(tx, {
+        type: "message.sent",
+        payload: {
+          v: 1,
+          messageId: message.id,
+          conversationId: conversation.id,
+          senderId: sender.id,
+        },
+      })
+    );
+
+    await eventually(async () =>
+      expect(await notifications(recipient.id)).toHaveLength(1)
     );
   });
 });
