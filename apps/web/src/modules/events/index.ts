@@ -2,10 +2,16 @@
 export { createCreateEvent, CREATE_RATE } from "./application/create-event";
 export { createGetEvent } from "./application/get-event";
 export { createListEvents } from "./application/list-events";
+export { createRegisterForEvent } from "./application/register-for-event";
+export { createCancelRegistration } from "./application/cancel-registration";
 export { createPrismaEventStore } from "./infrastructure/prisma-event-store";
 export { createPrismaEventQueries } from "./infrastructure/prisma-event-queries";
 export type { EventDetail, EventSummary } from "./application/event-queries";
-export type { EventObserver, EventOutcome } from "./application/ports";
+export type {
+  EventObserver,
+  EventOutcome,
+  RefusalObserver,
+} from "./application/ports";
 export type { EventStatus, RegistrationState } from "./domain/event";
 export {
   EVENT_CAPACITY_MAX,
