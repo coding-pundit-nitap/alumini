@@ -1,36 +1,20 @@
-import {
-  UNREAD_COUNTER_TTL_SECONDS,
-  unreadCounterKey as key,
-} from "@nitap/jobs";
+import { unreadCounterKey as key } from "@nitap/jobs";
 import type { Redis } from "ioredis";
 
 export type UnreadCounter = {
   increment(userId: string): Promise<void>;
-  decrement(userId: string, by?: number): Promise<void>;
-  get(userId: string): Promise<number | null>;
 };
 
-/** Redis is an optimisation; a null `get()` means "recompute from Postgres" (spec N-9). */
+// Increment only a key that already exists: the web seeds it from Postgres (with the TTL). Creating it here
+// would store 1 while Postgres holds N unread, and the web's NX seed could not correct it for the TTL (spec N-9).
+const INCR_IF_EXISTS = `if redis.call('EXISTS', KEYS[1]) == 1 then return redis.call('INCR', KEYS[1]) end return nil`;
+
 export function createRedisUnreadCounter(
-  redis: Pick<Redis, "multi" | "decrby" | "del" | "get">
+  redis: Pick<Redis, "eval">
 ): UnreadCounter {
   return {
     async increment(userId) {
-      // One round trip; EXPIRE NX gives a fresh key a TTL without extending a live one, so drift is bounded.
-      await redis
-        .multi()
-        .incr(key(userId))
-        .expire(key(userId), UNREAD_COUNTER_TTL_SECONDS, "NX")
-        .exec();
-    },
-    async decrement(userId, by = 1) {
-      // A decrement on a missing key would leave a negative, TTL-less key behind: drop it (recomputed from Postgres).
-      const left = await redis.decrby(key(userId), by);
-      if (left < 0) await redis.del(key(userId));
-    },
-    async get(userId) {
-      const value = await redis.get(key(userId));
-      return value === null ? null : Number(value);
+      await redis.eval(INCR_IF_EXISTS, 1, key(userId));
     },
   };
 }

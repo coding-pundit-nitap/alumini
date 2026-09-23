@@ -196,11 +196,7 @@ export function composeWorker(
       : null,
     unreadCounter: hintRedis
       ? createRedisUnreadCounter(hintRedis)
-      : {
-          increment: async () => {},
-          decrement: async () => {},
-          get: async () => null,
-        },
+      : { increment: async () => {} },
     logger,
   });
   /** Current email of a VERIFIED account; null for anything else (no mail to suspended/deactivated users). */

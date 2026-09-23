@@ -32,7 +32,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -73,7 +73,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -99,7 +99,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -129,7 +129,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -158,7 +158,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -187,7 +187,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -217,7 +217,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -245,7 +245,7 @@ describe("deliverNotification", () => {
       getPreference: async () => ({ enabled: false }),
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -274,7 +274,7 @@ describe("deliverNotification", () => {
       getPreference: async () => ({ enabled: true }),
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -302,7 +302,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment, decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -331,7 +331,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail,
       hintPublisher: null,
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });
@@ -358,7 +358,7 @@ describe("deliverNotification", () => {
       getPreference: async () => null,
       enqueueEmail: vi.fn(async () => {}),
       hintPublisher: { publish },
-      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      unreadCounter: { increment: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
       appUrl: "https://alumni.example",
     });

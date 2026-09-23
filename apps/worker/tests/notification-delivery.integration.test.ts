@@ -163,6 +163,7 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     const unreadKey = `notif:unread:${recipient.id}`;
     const queueRedis = new Redis(ns.url);
     try {
+      await redis.set(unreadKey, "0", "EX", 300); // the web seeds the key; the worker only bumps an existing one
       const { metrics } = await startWorker();
       const infoCalls = () =>
         metrics.increment.mock.calls.filter(
