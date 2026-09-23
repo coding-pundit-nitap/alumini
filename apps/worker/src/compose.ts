@@ -56,6 +56,7 @@ import {
   createPrismaDeliveryStore,
   getPreference,
 } from "./notifications/prisma-delivery-store.ts";
+import { createRedisMessageDebounce } from "./notifications/message-debounce.ts";
 import { createRedisUnreadCounter } from "./notifications/unread-counter.ts";
 import type { Readiness } from "./health.ts";
 import {
@@ -351,6 +352,10 @@ export function composeWorker(
               })
             ).map((row) => row.userId),
           publisher: hintRedis ? createRedisHintPublisher(hintRedis) : null,
+          deliver,
+          findEmail,
+          blocked,
+          debounce: hintRedis ? createRedisMessageDebounce(hintRedis) : null,
         })
       ),
       registerJob(

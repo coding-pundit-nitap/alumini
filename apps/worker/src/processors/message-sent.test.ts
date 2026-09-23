@@ -17,12 +17,20 @@ const ctx = (logger = silentLogger()) => ({
   logger,
 });
 
+const noNotify = {
+  deliver: async () => {},
+  findEmail: async () => null,
+  blocked: async () => false,
+  debounce: null,
+};
+
 describe("message.sent processor", () => {
   it("publishes an ids-only hint to every participant, sender included (their other tabs)", async () => {
     const publish = vi.fn(async () => undefined);
     const processor = createMessageSentProcessor({
       participants: async () => ["a", "b", "c"],
       publisher: { publish },
+      ...noNotify,
     });
     await processor(payload, ctx());
     expect(publish).toHaveBeenCalledTimes(3);
@@ -38,6 +46,7 @@ describe("message.sent processor", () => {
       publisher: {
         publish: async () => Promise.reject(new Error("redis down")),
       },
+      ...noNotify,
     });
     await expect(processor(payload, ctx())).rejects.toThrow("redis down");
   });
@@ -48,10 +57,81 @@ describe("message.sent processor", () => {
     await createMessageSentProcessor({
       participants: async () => ["a"],
       publisher: null,
+      ...noNotify,
     })(payload, ctx(logger));
     expect(warn).toHaveBeenCalledWith(
       "message.sent.realtime_disabled",
       expect.anything()
     );
+  });
+
+  const notifyDeps = (over: Record<string, unknown> = {}) => {
+    const deliver = vi.fn(async (input: unknown) => void input);
+    let owner: string | null = null;
+    const debounce = {
+      tryStart: vi.fn(async (_r: string, _c: string, by: string) => {
+        owner ??= by;
+        return owner === by;
+      }),
+    };
+    return {
+      deliver,
+      debounce,
+      deps: {
+        participants: async () => ["sender", "r1"],
+        publisher: null,
+        deliver,
+        findEmail: async () => "e@nitap.ac.in",
+        blocked: async () => false,
+        debounce,
+        ...over,
+      },
+    };
+  };
+  const sender = { ...payload, senderId: "sender" };
+
+  it("writes an in-app row per message but emails once per debounce window (and on redelivery of the starter)", async () => {
+    const { deliver, deps } = notifyDeps();
+    const p = createMessageSentProcessor(deps);
+    await p(sender, { ...ctx(), jobId: "e1" });
+    await p({ ...sender, messageId: "m2" }, { ...ctx(), jobId: "e2" });
+    await p(sender, { ...ctx(), jobId: "e1" }); // redelivery: deliver dedupes, same email intent
+    const calls = deliver.mock.calls.map((c) => c[0] as { emailTo?: string });
+    expect(calls).toHaveLength(3);
+    expect(calls.map((c) => !!c.emailTo)).toEqual([true, false, true]);
+    expect(calls[0]).toMatchObject({
+      eventId: "e1",
+      type: "message.sent",
+      category: "ENGAGEMENT",
+      recipientId: "r1",
+      payload: {
+        conversationId: payload.conversationId,
+        messageId: payload.messageId,
+      },
+    });
+  });
+
+  it("skips the sender and blocked pairs", async () => {
+    const { deliver, deps } = notifyDeps({
+      participants: async () => ["sender", "r1", "r2"],
+      blocked: async (_a: string, b: string) => b === "r2",
+    });
+    await createMessageSentProcessor(deps)(sender, ctx());
+    expect(deliver).toHaveBeenCalledTimes(1);
+  });
+
+  it("still delivers in-app without email when Redis debounce is unavailable or throws", async () => {
+    const a = notifyDeps({ debounce: null });
+    await createMessageSentProcessor(a.deps)(sender, ctx());
+    const b = notifyDeps({
+      debounce: { tryStart: async () => Promise.reject(new Error("down")) },
+    });
+    await createMessageSentProcessor(b.deps)(sender, ctx());
+    for (const d of [a.deliver, b.deliver]) {
+      expect(d).toHaveBeenCalledTimes(1);
+      expect(
+        (d.mock.calls[0]![0] as { emailTo?: string }).emailTo
+      ).toBeUndefined();
+    }
   });
 });

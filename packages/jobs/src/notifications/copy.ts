@@ -8,6 +8,7 @@ export type NotificationCopy = {
  * what happened generically; the in-app UI re-reads current state to show names (spec N-3). */
 export function renderNotificationCopy(
   type: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for a stable signature
   _payload: Record<string, unknown>
 ): NotificationCopy {
   switch (type) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { debounceKeyFor, shouldFlush } from "./debounce";
+import { debounceKeyFor, shouldFlush } from "./debounce.ts";
 
 describe("message debounce", () => {
   it("builds a stable per-(recipient,conversation) key", () => {
