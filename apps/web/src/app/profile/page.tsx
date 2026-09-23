@@ -82,6 +82,9 @@ export default async function ProfilePage() {
         <Link href="/profile/privacy" className="underline">
           Privacy settings
         </Link>
+        <Link href="/settings/notifications" className="underline">
+          Notification preferences
+        </Link>
         <Link href={`/members/${profile.userId}`} className="underline">
           View my profile
         </Link>

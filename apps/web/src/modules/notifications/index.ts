@@ -11,3 +11,6 @@ export type { BellNotification } from "./presentation/ui/use-notifications";
 export { NotificationInbox } from "./presentation/ui/notification-inbox";
 export { NotificationList } from "./presentation/ui/notification-list";
 export type { NotificationItem } from "./presentation/ui/notification-list";
+export { PreferencesForm } from "./presentation/ui/preferences-form";
+export type { PreferenceRow } from "./presentation/ui/preferences-form";
+export { PreferencesPanel } from "./presentation/ui/preferences-panel";
