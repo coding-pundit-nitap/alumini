@@ -54,15 +54,27 @@ describe("MyJobsList", () => {
     );
   });
 
-  it("renders a withdrawSlot per row when given one", () => {
+  it("renders a Withdraw button on eligible rows when given a closeAction", () => {
     render(
       <MyJobsList
         items={[row({ status: "PUBLISHED" })]}
-        withdrawSlot={(job) => <button type="button">Withdraw {job.id}</button>}
+        closeAction={async () => ({ ok: true, data: {} })}
       />
     );
     expect(
-      screen.getByRole("button", { name: "Withdraw job-1" })
+      screen.getByRole("button", { name: "Withdraw" })
     ).toBeInTheDocument();
+  });
+
+  it("does not render Withdraw on a terminal-status row even with a closeAction", () => {
+    render(
+      <MyJobsList
+        items={[row({ status: "CLOSED" })]}
+        closeAction={async () => ({ ok: true, data: {} })}
+      />
+    );
+    expect(
+      screen.queryByRole("button", { name: "Withdraw" })
+    ).not.toBeInTheDocument();
   });
 });

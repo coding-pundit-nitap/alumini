@@ -18,13 +18,19 @@ const STATUS_LABEL: Record<JobStatus, string> = {
   CLOSED: "Closed",
 };
 
-/** FR-JOB. The caller's own postings, any status. `withdrawSlot` (added in slice 7c) renders a Withdraw action per row. */
+const WITHDRAWABLE: readonly JobStatus[] = ["PENDING_REVIEW", "PUBLISHED"];
+
+/**
+ * FR-JOB. The caller's own postings, any status. `closeAction` (added in slice 7c), when given, renders a
+ * Withdraw control on rows still eligible to close. It must be the `closeJobAction` Server Action itself —
+ * not a closure — since this is a Client Component and only a Server Action reference crosses that boundary.
+ */
 export function MyJobsList({
   items,
-  withdrawSlot,
+  closeAction,
 }: {
   items: ListedJob[];
-  withdrawSlot?: (job: ListedJob) => React.ReactNode;
+  closeAction?: (jobId: string) => Promise<ActionResult<unknown>>;
 }) {
   if (items.length === 0) {
     return (
@@ -59,7 +65,9 @@ export function MyJobsList({
             >
               Edit
             </Link>
-            {withdrawSlot ? withdrawSlot(job) : null}
+            {closeAction && WITHDRAWABLE.includes(job.status) ? (
+              <WithdrawButton jobId={job.id} closeAction={closeAction} />
+            ) : null}
           </div>
         </li>
       ))}

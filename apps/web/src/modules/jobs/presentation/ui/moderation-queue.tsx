@@ -64,7 +64,7 @@ function Row({
       <div className="space-y-1">
         <p className="font-medium">{job.title}</p>
         <p className="text-muted-foreground text-sm">
-          {job.company} · posted {job.createdAt.toLocaleDateString()}
+          {job.company} · posted {job.createdAt.toLocaleDateString("en-US")}
         </p>
         <p className="text-sm">{job.description}</p>
       </div>

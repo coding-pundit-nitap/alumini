@@ -47,7 +47,7 @@ export function JobList({ items }: { items: PublishedJobCard[] }) {
             </ul>
           ) : null}
           <p className="text-muted-foreground text-xs">
-            Apply by {job.deadline.toLocaleDateString()}
+            Apply by {job.deadline.toLocaleDateString("en-US")}
           </p>
           <a
             href={job.applicationUrl}

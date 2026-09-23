@@ -43,7 +43,7 @@ export default async function EditJobPage({
       <h1 className="text-2xl font-semibold">Edit job posting</h1>
       <JobForm
         defaults={defaults}
-        submitAction={(input) => editJobAction(id, input)}
+        submitAction={editJobAction.bind(null, id)}
         submitLabel="Save changes"
       />
     </div>
