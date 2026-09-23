@@ -43,14 +43,14 @@ export async function countEmails(to: string): Promise<number> {
  * check right after some other signal (the in-app row landing, say) that only proves an *earlier* step
  * ran — the worker's email decision (`deliver()`) runs after that, so a lone immediate check can pass
  * even though a regression is about to enqueue mail. The window is polled throughout, not a blind sleep,
- * so a late arrival still fails the assertion; it's sized to the same worker fan-out latency this suite
- * already trusts elsewhere (`toPass({ timeout: 20_000 })` for the in-app notification itself, which lands
- * before any email would).
+ * so a late arrival still fails the assertion. Callers start it once the in-app row is visible, so only
+ * one preference read plus an email.send job stand between that point and a regression's mail landing —
+ * a few seconds covers it and keeps the spec inside Playwright's 30s test timeout.
  */
 export async function assertNoNewEmail(
   to: string,
   baseline: number,
-  windowMs = 20_000
+  windowMs = 5_000
 ): Promise<void> {
   const deadline = Date.now() + windowMs;
   while (Date.now() < deadline) {
