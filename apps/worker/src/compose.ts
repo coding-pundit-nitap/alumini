@@ -206,6 +206,14 @@ export function composeWorker(
         userBId: a < b ? b : a,
       },
     })) > 0;
+  const findActiveRegistrants = async (eventId: string) =>
+    (
+      await prisma.eventRegistration.findMany({
+        where: { eventId, state: "REGISTERED" },
+        select: { userId: true },
+        orderBy: { id: "asc" },
+      })
+    ).map((row) => row.userId);
   // ponytail: CHAPTER-scoped job.approve grants count as moderators too (no chapter filter); narrow when job review is chapter-scoped.
   const findModerators = async (permission: "job.approve") => {
     const now = new Date();
@@ -324,7 +332,12 @@ export function composeWorker(
             string,
             EventLifecyclePayload | EventRegistrationPayload
           >,
-          createEventActivityProcessor(job.name.slice("event.".length))
+          createEventActivityProcessor(job.name.slice("event.".length), {
+            deliver,
+            findEmail,
+            findActiveRegistrants,
+            blocked,
+          })
         )
       ),
       registerJob(
