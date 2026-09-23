@@ -4,14 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getActor: vi.fn(),
   can: vi.fn(),
+  authorize: vi.fn(),
   subscribeToUser: vi.fn(),
   realtimeAvailable: vi.fn(() => true),
 }));
 vi.mock("@/modules/auth", () => ({
   getActor: mocks.getActor,
   can: mocks.can,
+  authorize: mocks.authorize,
 }));
 vi.mock("@/infrastructure/realtime/message-hub", () => mocks);
+
+import { AuthenticationError, AuthorizationError } from "@/lib/errors";
 
 import { GET } from "./route";
 
@@ -19,8 +23,14 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.realtimeAvailable.mockReturnValue(true);
   mocks.getActor.mockResolvedValue({ userId: "u1" });
-  // Full access by default; individual tests narrow this.
-  mocks.can.mockReturnValue(true);
+  // Full access by default (never for a null actor, like the real can()); individual tests narrow this.
+  mocks.can.mockImplementation((actor: unknown) => actor !== null);
+  // Mirrors the real authorize(): records the decision, then throws 401/403 or returns the actor.
+  mocks.authorize.mockImplementation((actor: unknown, permission: string) => {
+    if (actor === null) throw new AuthenticationError();
+    if (!mocks.can(actor, permission)) throw new AuthorizationError();
+    return actor;
+  });
 });
 
 describe("GET /api/v1/messages/stream", () => {
@@ -29,6 +39,10 @@ describe("GET /api/v1/messages/stream", () => {
     expect(
       (await GET(new Request("https://x.test/api/v1/messages/stream"))).status
     ).toBe(401);
+    expect(mocks.authorize).toHaveBeenCalledWith(
+      null,
+      PERMISSIONS.NOTIFICATION_READ
+    );
     expect(mocks.subscribeToUser).not.toHaveBeenCalled();
   });
 
@@ -37,7 +51,20 @@ describe("GET /api/v1/messages/stream", () => {
     expect(
       (await GET(new Request("https://x.test/api/v1/messages/stream"))).status
     ).toBe(403);
+    // The denial goes through authorize(), which records it for the authz observer/audit.
+    expect(mocks.authorize).toHaveBeenCalledWith(
+      { userId: "u1" },
+      PERMISSIONS.NOTIFICATION_READ
+    );
     expect(mocks.subscribeToUser).not.toHaveBeenCalled();
+  });
+
+  it("records the allowed decision on MESSAGE_SEND for an actor who holds it", async () => {
+    await GET(new Request("https://x.test/api/v1/messages/stream"));
+    expect(mocks.authorize).toHaveBeenCalledWith(
+      { userId: "u1" },
+      PERMISSIONS.MESSAGE_SEND
+    );
   });
 
   it("is 503 when real-time is not configured, so the client polls instead", async () => {
@@ -47,7 +74,7 @@ describe("GET /api/v1/messages/stream", () => {
     ).toBe(503);
   });
 
-  it("checks permissions with can(), never a role", async () => {
+  it("checks permissions, never a role", async () => {
     await GET(new Request("https://x.test/api/v1/messages/stream"));
     expect(mocks.can).toHaveBeenCalledWith(
       { userId: "u1" },

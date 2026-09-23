@@ -5,8 +5,7 @@ import {
   subscribeToUser,
 } from "@/infrastructure/realtime/message-hub";
 import { routeHandler } from "@/infrastructure/http/route-handler";
-import { AuthenticationError, AuthorizationError } from "@/lib/errors";
-import { can, getActor } from "@/modules/auth";
+import { authorize, can, getActor } from "@/modules/auth";
 
 const HEARTBEAT_MS = 25_000;
 
@@ -21,13 +20,17 @@ const HEARTBEAT_MS = 25_000;
  * hints and no message traffic, and vice versa.
  */
 export const GET = routeHandler(async (request) => {
-  const caller = await getActor();
-  if (!caller) throw new AuthenticationError();
-  const canReceiveMessages = can(caller, PERMISSIONS.MESSAGE_SEND);
+  const actor = await getActor();
+  const canReceiveMessages = can(actor, PERMISSIONS.MESSAGE_SEND);
+  // authorize() records the decision: on MESSAGE_SEND when held, else on NOTIFICATION_READ, which
+  // throws 401/403 when the caller has neither.
+  const caller = authorize(
+    actor,
+    canReceiveMessages
+      ? PERMISSIONS.MESSAGE_SEND
+      : PERMISSIONS.NOTIFICATION_READ
+  );
   const canReceiveNotifications = can(caller, PERMISSIONS.NOTIFICATION_READ);
-  if (!canReceiveMessages && !canReceiveNotifications) {
-    throw new AuthorizationError();
-  }
   if (!realtimeAvailable()) return new Response(null, { status: 503 });
 
   const encoder = new TextEncoder();
