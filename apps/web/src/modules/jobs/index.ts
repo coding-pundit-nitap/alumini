@@ -32,3 +32,4 @@ export {
   type WorkMode,
 } from "./domain/job";
 export { createJobInput, editJobInput } from "./domain/validation";
+export { JobForm, type JobFormDefaults } from "./presentation/ui/job-form";
