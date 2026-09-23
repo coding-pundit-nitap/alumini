@@ -5,4 +5,5 @@
 UPDATE "outbox_event"
 SET "published_at" = now()
 WHERE "published_at" IS NULL
+  AND "failed_at" IS NULL
   AND "type" LIKE 'job.%';
