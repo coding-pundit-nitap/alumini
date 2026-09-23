@@ -33,7 +33,15 @@ export function NotificationInbox({
 
   const onRead = async (id: string) => {
     setError(null);
-    const previous = items;
+    // Revert only this item's own prior value on failure: another item's mark-read may resolve
+    // while this one is still in flight, and its success must survive a whole-array rollback.
+    const previousReadAt = items.find((item) => item.id === id)?.readAt ?? null;
+    const revert = () =>
+      setItems((current) =>
+        current.map((item) =>
+          item.id === id ? { ...item, readAt: previousReadAt } : item
+        )
+      );
     setItems((current) =>
       current.map((item) =>
         item.id === id ? { ...item, readAt: new Date().toISOString() } : item
@@ -45,7 +53,7 @@ export function NotificationInbox({
         headers: JSON_HEADERS,
       });
       if (!response.ok) {
-        setItems(previous);
+        revert();
         setError(
           await errorMessage(
             response,
@@ -54,7 +62,7 @@ export function NotificationInbox({
         );
       }
     } catch {
-      setItems(previous);
+      revert();
       setError("Could not mark as read. Check your connection and try again.");
     }
   };

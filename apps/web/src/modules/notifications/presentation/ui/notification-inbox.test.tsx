@@ -82,4 +82,51 @@ describe("NotificationInbox", () => {
       screen.getByRole("button", { name: /mark read/i })
     ).toBeInTheDocument();
   });
+
+  it("a failed mark-read reverts only that item, not a concurrent success", async () => {
+    let resolveA!: (response: Response) => void;
+    const pendingA = new Promise<Response>((resolve) => {
+      resolveA = resolve;
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).includes("/a/read")) return pendingA;
+        if (String(url).includes("/b/read")) return ok();
+        throw new Error(`unexpected fetch: ${url}`);
+      })
+    );
+    render(
+      <NotificationInbox
+        initialItems={[item("a"), item("b")]}
+        initialNextCursor={null}
+      />
+    );
+
+    const [readA, readB] = screen.getAllByRole("button", {
+      name: /mark read/i,
+    });
+    // a's request is still in flight when b's is sent and succeeds.
+    await userEvent.click(readA!);
+    await userEvent.click(readB!);
+    await waitFor(() =>
+      expect(
+        screen.queryAllByRole("button", { name: /mark read/i })
+      ).toHaveLength(0)
+    );
+
+    // a's request now fails.
+    resolveA(
+      new Response(JSON.stringify({ error: { message: "Nope" } }), {
+        status: 500,
+      })
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/nope/i)
+    );
+    // Only a's button comes back; b's successful mark-read must survive the rollback.
+    const backButtons = screen.getAllByRole("button", { name: /mark read/i });
+    expect(backButtons).toHaveLength(1);
+  });
 });

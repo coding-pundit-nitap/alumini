@@ -50,4 +50,50 @@ describe("PreferencesPanel", () => {
     );
     await waitFor(() => expect(toggle).toBeChecked());
   });
+
+  it("a failed PATCH reverts only that domain, not a concurrent success", async () => {
+    let resolveConnection!: (response: Response) => void;
+    const pendingConnection = new Promise<Response>((resolve) => {
+      resolveConnection = resolve;
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body)) as { domain: string };
+        if (body.domain === "CONNECTION") return pendingConnection;
+        return ok();
+      })
+    );
+    render(
+      <PreferencesPanel
+        initialPreferences={[
+          { domain: "CONNECTION", email: true },
+          { domain: "EVENT", email: true },
+        ]}
+      />
+    );
+
+    const connectionToggle = screen.getByRole("switch", {
+      name: /connection/i,
+    });
+    const eventToggle = screen.getByRole("switch", { name: /event/i });
+    // CONNECTION's PATCH is still in flight when EVENT's is sent and succeeds.
+    await userEvent.click(connectionToggle);
+    await userEvent.click(eventToggle);
+    await waitFor(() => expect(eventToggle).not.toBeChecked());
+
+    // CONNECTION's PATCH now fails.
+    resolveConnection(
+      new Response(JSON.stringify({ error: { message: "Nope" } }), {
+        status: 500,
+      })
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/nope/i)
+    );
+    // CONNECTION reverts to checked; EVENT's successful toggle must survive the rollback.
+    await waitFor(() => expect(connectionToggle).toBeChecked());
+    expect(eventToggle).not.toBeChecked();
+  });
 });

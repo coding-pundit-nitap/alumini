@@ -26,7 +26,16 @@ export function PreferencesPanel({
 
   const onChange = async (domain: string, enabled: boolean) => {
     setError(null);
-    const previous = preferences;
+    // Revert only this domain's own prior value on failure: another domain's toggle may resolve
+    // while this one is still in flight, and its success must survive a whole-array rollback.
+    const previousEmail =
+      preferences.find((pref) => pref.domain === domain)?.email ?? true;
+    const revert = () =>
+      setPreferences((current) =>
+        current.map((pref) =>
+          pref.domain === domain ? { ...pref, email: previousEmail } : pref
+        )
+      );
     setPreferences((current) =>
       current.map((pref) =>
         pref.domain === domain ? { ...pref, email: enabled } : pref
@@ -39,7 +48,7 @@ export function PreferencesPanel({
         body: JSON.stringify({ domain, enabled }),
       });
       if (!response.ok) {
-        setPreferences(previous);
+        revert();
         setError(
           await errorMessage(
             response,
@@ -48,7 +57,7 @@ export function PreferencesPanel({
         );
       }
     } catch {
-      setPreferences(previous);
+      revert();
       setError(
         "Could not save that preference. Check your connection and try again."
       );
