@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { subscribeToMessageStream } from "./message-stream-client";
 
 class FakeEventSource {
+  static CLOSED = 2;
   static instances: FakeEventSource[] = [];
+  readyState = 0;
   close = vi.fn();
   listeners = new Map<string, Set<(event: unknown) => void>>();
   constructor(public url: string) {
@@ -66,5 +68,55 @@ describe("subscribeToMessageStream", () => {
     expect(notificationListener).not.toHaveBeenCalled();
     unsubA();
     unsubB();
+  });
+
+  it("reopens a CLOSED shared source for a new subscriber and keeps delivering to existing listeners", () => {
+    const bellListener = vi.fn();
+    const unsubBell = subscribeToMessageStream("notification", bellListener);
+    const [dead] = FakeEventSource.instances;
+    dead!.readyState = FakeEventSource.CLOSED;
+
+    const threadListener = vi.fn();
+    const unsubThread = subscribeToMessageStream("message", threadListener);
+
+    expect(FakeEventSource.instances).toHaveLength(2);
+    expect(dead!.close).toHaveBeenCalled();
+    const fresh = FakeEventSource.instances[1]!;
+    const event = { data: "{}" };
+    fresh.listeners.get("notification")!.forEach((l) => l(event));
+    fresh.listeners.get("message")!.forEach((l) => l(event));
+    expect(bellListener).toHaveBeenCalledWith(event);
+    expect(threadListener).toHaveBeenCalledWith(event);
+
+    unsubBell();
+    unsubThread();
+    expect(fresh.close).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries opening for a new subscriber when the constructor threw for an earlier one", () => {
+    let fail = true;
+    class FlakyEventSource extends FakeEventSource {
+      constructor(url: string) {
+        if (fail) throw new Error("unavailable");
+        super(url);
+      }
+    }
+    vi.stubGlobal("EventSource", FlakyEventSource);
+
+    const bellListener = vi.fn();
+    const unsubBell = subscribeToMessageStream("notification", bellListener);
+    expect(FakeEventSource.instances).toHaveLength(0);
+
+    fail = false;
+    const unsubThread = subscribeToMessageStream("message", () => undefined);
+
+    expect(FakeEventSource.instances).toHaveLength(1);
+    const event = { data: "{}" };
+    FakeEventSource.instances[0]!.listeners.get("notification")!.forEach((l) =>
+      l(event)
+    );
+    expect(bellListener).toHaveBeenCalledWith(event);
+    unsubBell();
+    unsubThread();
   });
 });
