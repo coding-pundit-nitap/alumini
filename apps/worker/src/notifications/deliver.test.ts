@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { hashEmail } from "@nitap/email";
 import { dedupeKeyFor } from "@nitap/jobs";
 
 import { createDeliverNotification } from "./deliver.ts";
@@ -440,5 +441,35 @@ describe("deliverNotification", () => {
     increment.mockClear();
     await deliver(input);
     expect(increment).not.toHaveBeenCalled(); // still unread: already counted
+  });
+
+  it("skips email to a suppressed address (N-10) but still writes in-app", async () => {
+    const store = fakeStore();
+    const enqueueEmail = vi.fn(async () => {});
+    const isSuppressed = vi.fn(async () => true);
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      isSuppressed,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "U1@nitap.ac.in",
+    });
+
+    expect(store.insert).toHaveBeenCalled();
+    expect(isSuppressed).toHaveBeenCalledWith(hashEmail("u1@nitap.ac.in"));
+    expect(store.ensureEmailPending).not.toHaveBeenCalled();
+    expect(enqueueEmail).not.toHaveBeenCalled();
   });
 });

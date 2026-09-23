@@ -6,6 +6,7 @@ import {
   type EmailSendPayload,
   type NotificationDomain,
 } from "@nitap/jobs";
+import { hashEmail } from "@nitap/email";
 import type { Logger } from "@nitap/observability";
 
 import type { NotificationHintPublisher } from "../hints.ts";
@@ -83,6 +84,8 @@ export function createDeliverNotification(deps: {
     payload: EmailSendPayload,
     options: { jobId: string }
   ) => Promise<void>;
+  /** `EmailPort.isSuppressed` (N-10); omitted means nothing is suppressed. */
+  isSuppressed?: (emailHash: string) => Promise<boolean>;
   hintPublisher: NotificationHintPublisher | null;
   unreadCounter: UnreadCounter;
   logger: Logger;
@@ -150,6 +153,14 @@ export function createDeliverNotification(deps: {
       })
     )
       return;
+
+    // N-5 step 2: a bounced/complained address gets in-app only.
+    if (await deps.isSuppressed?.(hashEmail(input.emailTo))) {
+      deps.logger.info("notification.email_suppressed", {
+        metadata: { type: input.type },
+      });
+      return;
+    }
 
     const copy = renderNotificationCopy(input.type, input.payload);
     await deps.store.ensureEmailPending(id);

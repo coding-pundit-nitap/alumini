@@ -1,4 +1,4 @@
-export { EmailSendError } from "./port.ts";
+export { EmailSendError, hashEmail } from "./port.ts";
 export type { EmailMessage, EmailPort, EmailSendOptions } from "./port.ts";
 export { renderEmail } from "./templates.ts";
 export type { EmailTemplate } from "./templates.ts";

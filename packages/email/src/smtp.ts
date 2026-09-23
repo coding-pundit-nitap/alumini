@@ -11,6 +11,11 @@ export type SmtpEmailPortOptions = {
   connectionTimeoutMs?: number;
   greetingTimeoutMs?: number;
   socketTimeoutMs?: number;
+  /**
+   * Suppression lookup by `hashEmail` (N-10). The provider has no bounce webhook yet, so the composition root
+   * passes a read of the email_suppression table; default: nothing is suppressed.
+   */
+  isSuppressed?: (emailHash: string) => Promise<boolean>;
 };
 
 const RETRYABLE_CODES = new Set([
@@ -102,6 +107,7 @@ export function createSmtpEmailPort(
         throw classify(error);
       }
     },
+    isSuppressed: options.isSuppressed ?? (async () => false),
     close() {
       transporter.close();
     },

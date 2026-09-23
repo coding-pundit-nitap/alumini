@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 export type EmailMessage = { to: string; subject: string; text: string };
 
 export type EmailSendOptions = {
@@ -9,6 +11,15 @@ export type EmailSendOptions = {
 
 export interface EmailPort {
   send(message: EmailMessage, options?: EmailSendOptions): Promise<void>;
+  /** True when the address (as `hashEmail`) bounced or complained and must not be mailed (spec N-10). */
+  isSuppressed(emailHash: string): Promise<boolean>;
+}
+
+/** The `email_suppression.email_hash` key: sha256 hex of the trimmed, lower-cased address. Never store the address. */
+export function hashEmail(address: string): string {
+  return createHash("sha256")
+    .update(address.trim().toLowerCase())
+    .digest("hex");
 }
 
 /** `retryable`: try again later (4xx, network, timeout). `permanent`: retrying cannot help (5xx, bad credentials). */

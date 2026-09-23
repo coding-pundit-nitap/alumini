@@ -2,6 +2,7 @@ import { Redis } from "ioredis";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createOutboxWriter } from "@nitap/database/outbox";
+import { hashEmail } from "@nitap/email";
 import { dedupeKeyFor, defineJob, emailSend } from "@nitap/jobs";
 import type { QueuePort } from "@nitap/queue";
 import { createFakeStoragePort } from "@nitap/storage";
@@ -532,6 +533,31 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
       await redis.del(debounceKey);
       redis.disconnect();
     }
+  });
+
+  it("a suppressed address gets the in-app notification but no email (N-10)", async () => {
+    const [actor, recipient, control] = await Promise.all([
+      makeUser("actor"),
+      makeUser("recipient"),
+      makeUser("control"),
+    ]);
+    await db.prisma.emailSuppression.create({
+      data: { emailHash: hashEmail(recipient.email), reason: "bounce" },
+    });
+    await startWorker();
+
+    await requestConnection(actor.id, recipient.id);
+    await requestConnection(actor.id, control.id); // proves the pipeline ran
+
+    await eventually(async () =>
+      expect(await notifications(recipient.id)).toHaveLength(1)
+    );
+    await eventually(() => expect(smtp.received).toHaveLength(1));
+    await wait(300);
+    expect(smtp.received.flatMap((m) => m.to)).toEqual([
+      "control@example.test",
+    ]);
+    expect(await emailDeliveries(recipient.id)).toHaveLength(0);
   });
 
   // Spec tests: fan-out correctness through the real Prisma lookups in compose.ts.

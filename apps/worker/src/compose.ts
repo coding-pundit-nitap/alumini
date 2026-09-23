@@ -160,6 +160,8 @@ export function composeWorker(
   const email = createSmtpEmailPort({
     url: config.smtpUrl,
     from: config.emailFrom,
+    isSuppressed: async (emailHash) =>
+      (await prisma.emailSuppression.count({ where: { emailHash } })) > 0,
     ...overrides.smtp,
   });
   const rawQueue = createBullQueuePort({
@@ -191,6 +193,7 @@ export function composeWorker(
     getPreference: getPreference(prisma),
     appUrl: config.appUrl,
     enqueueEmail: (payload, options) => queue.add(emailJob, payload, options),
+    isSuppressed: (emailHash) => email.isSuppressed(emailHash),
     hintPublisher: hintRedis
       ? createNotificationHintPublisher(hintRedis)
       : null,

@@ -34,7 +34,7 @@ export type EmailSendProcessorDeps = {
  * successfully sent email is never re-sent just because the status write failed.
  */
 export function createEmailSendProcessor(
-  email: EmailPort,
+  email: Pick<EmailPort, "send">,
   deps: EmailSendProcessorDeps = {}
 ): JobProcessor<EmailSendPayload> {
   const { deliveries, metrics, maxAttempts = Infinity } = deps;
