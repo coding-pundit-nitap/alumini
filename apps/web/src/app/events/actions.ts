@@ -2,8 +2,10 @@
 
 import { runAction } from "@/app/_actions/run-action";
 import {
+  cancelEvent,
   cancelRegistration,
   createEvent,
+  markAttendance,
   registerForEvent,
 } from "@/composition/events";
 import type { ActionResult } from "@/lib/action-result";
@@ -83,5 +85,25 @@ export async function cancelRegistrationAction(
 ): Promise<ActionResult<{ registrationId: string }>> {
   return runAction(async () =>
     cancelRegistration({ actor: await getActor(), eventId })
+  );
+}
+
+/** Cancels the event: the organizer or an `event.manage` holder (E-3). */
+export async function cancelEventAction(
+  eventId: string
+): Promise<ActionResult<{ eventId: string }>> {
+  return runAction(async () =>
+    cancelEvent({ actor: await getActor(), eventId })
+  );
+}
+
+/** Marks a registrant's attendance: the organizer or an `event.manage` holder, after the start (E-4). */
+export async function markAttendanceAction(
+  eventId: string,
+  registrationId: string,
+  state: "ATTENDED" | "NO_SHOW"
+): Promise<ActionResult<{ registrationId: string }>> {
+  return runAction(async () =>
+    markAttendance({ actor: await getActor(), eventId, registrationId, state })
   );
 }

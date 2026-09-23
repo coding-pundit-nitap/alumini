@@ -4,6 +4,7 @@ import type {
   EventDetailRow,
   EventQueries,
   EventSummaryRow,
+  Registrant,
 } from "../application/event-queries";
 import type { EventStatus, RegistrationState } from "../domain/event";
 
@@ -112,6 +113,37 @@ export function createPrismaEventQueries(prisma: PrismaClient): EventQueries {
         description: row.description,
       };
       return detail;
+    },
+
+    async listRegistrants(eventId, filter) {
+      const where: Prisma.Sql[] = [Prisma.sql`r.event_id = ${eventId}::uuid`];
+
+      if (filter.after) {
+        const key = new Date(filter.after.key);
+        where.push(Prisma.sql`(r.registered_at > ${key}
+          OR (r.registered_at = ${key} AND r.id > ${filter.after.id}::uuid))`);
+      }
+
+      const rows = await prisma.$queryRaw<
+        {
+          registrationId: string;
+          userId: string;
+          name: string;
+          state: RegistrationState;
+          registeredAt: Date;
+        }[]
+      >`
+        SELECT r.id AS "registrationId", r.user_id AS "userId",
+               COALESCE(p.full_name, u.name) AS "name",
+               r.state, r.registered_at AS "registeredAt"
+        FROM event_registration r
+        JOIN "user" u ON u.id = r.user_id
+        LEFT JOIN profile p ON p.user_id = r.user_id
+        WHERE ${Prisma.join(where, " AND ")}
+        ORDER BY r.registered_at ASC, r.id ASC
+        LIMIT ${filter.limit}`;
+
+      return rows satisfies Registrant[];
     },
   };
 }

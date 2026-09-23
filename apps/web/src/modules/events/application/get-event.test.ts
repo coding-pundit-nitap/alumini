@@ -40,7 +40,11 @@ function setup(
     return a;
   }) as Authorize;
   const can = vi.fn(() => options.canManageAny ?? false);
-  const queries: EventQueries = { list: vi.fn(), get };
+  const queries: EventQueries = {
+    list: vi.fn(),
+    get,
+    listRegistrants: vi.fn(),
+  };
   return {
     get,
     asked,

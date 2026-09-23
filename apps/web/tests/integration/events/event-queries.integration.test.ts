@@ -306,4 +306,91 @@ describe("PrismaEventQueries against real PostgreSQL", () => {
       expect(missing).toBeNull();
     });
   });
+
+  describe("listRegistrants", () => {
+    it("orders by (registered_at, id) ascending, with names from the user/profile join", async () => {
+      const organizer = await user("Org9");
+      const first = await user("Alice", true);
+      const second = await user("Bob", false);
+      const id = await event(organizer, {
+        startsAt: new Date(Date.now() + HOUR),
+      });
+
+      await db.prisma.eventRegistration.create({
+        data: {
+          eventId: id,
+          userId: first,
+          state: "REGISTERED",
+          registeredAt: new Date(Date.now() - HOUR),
+        },
+      });
+      await db.prisma.eventRegistration.create({
+        data: {
+          eventId: id,
+          userId: second,
+          state: "ATTENDED",
+          registeredAt: new Date(Date.now()),
+        },
+      });
+
+      const rows = await queries().listRegistrants(id, { limit: 10 });
+      expect(rows.map((r) => r.userId)).toEqual([first, second]);
+      expect(rows[0]).toMatchObject({
+        name: "Alice Full Name",
+        state: "REGISTERED",
+      });
+      expect(rows[1]).toMatchObject({ name: "Bob", state: "ATTENDED" });
+    });
+
+    it("pages with the (registered_at, id) keyset across two calls with no duplicates", async () => {
+      const organizer = await user("Org10");
+      const q = queries();
+      const id = await event(organizer, {
+        startsAt: new Date(Date.now() + HOUR),
+      });
+      const userIds: string[] = [];
+      for (let i = 1; i <= 5; i += 1) {
+        const u = await user(`Registrant ${i}`);
+        userIds.push(u);
+        await db.prisma.eventRegistration.create({
+          data: {
+            eventId: id,
+            userId: u,
+            state: "REGISTERED",
+            registeredAt: new Date(Date.now() + i * 1000),
+          },
+        });
+      }
+
+      const first = await q.listRegistrants(id, { limit: 3 });
+      expect(first).toHaveLength(3);
+      const last = first.at(-1)!;
+      const second = await q.listRegistrants(id, {
+        limit: 3,
+        after: {
+          key: last.registeredAt.toISOString(),
+          id: last.registrationId,
+        },
+      });
+
+      const combined = [...first, ...second].map((r) => r.userId);
+      expect(new Set(combined).size).toBe(5);
+      expect(combined).toEqual(userIds);
+    });
+
+    it("only returns registrants for the given event", async () => {
+      const organizer = await user("Org11");
+      const other = await user("Other");
+      const eventA = await event(organizer, {
+        startsAt: new Date(Date.now() + HOUR),
+      });
+      const eventB = await event(organizer, {
+        startsAt: new Date(Date.now() + HOUR),
+      });
+      await register(eventA, other, "REGISTERED");
+
+      const rowsB = await queries().listRegistrants(eventB, { limit: 10 });
+      expect(rowsB).toHaveLength(0);
+    });
+  });
 });

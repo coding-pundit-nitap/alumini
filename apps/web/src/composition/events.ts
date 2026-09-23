@@ -4,10 +4,13 @@ import { outbox } from "@/infrastructure/outbox";
 import { redisRateLimitStorage } from "@/infrastructure/redis/rate-limit-storage";
 import { authorize, can } from "@/modules/auth";
 import {
+  createCancelEvent,
   createCancelRegistration,
   createCreateEvent,
   createGetEvent,
   createListEvents,
+  createListRegistrants,
+  createMarkAttendance,
   createPrismaEventQueries,
   createPrismaEventStore,
   createRegisterForEvent,
@@ -49,4 +52,23 @@ export const cancelRegistration = createCancelRegistration({
   authorize,
   observe,
   observeRefusal,
+});
+export const cancelEvent = createCancelEvent({
+  store,
+  authorize,
+  can,
+  observe,
+  observeRefusal,
+});
+export const markAttendance = createMarkAttendance({
+  store,
+  authorize,
+  can,
+  observe,
+  observeRefusal,
+});
+export const listRegistrants = createListRegistrants({
+  queries,
+  authorize,
+  can,
 });

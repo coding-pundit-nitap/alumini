@@ -3,17 +3,23 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
-import { getEvent } from "@/composition/events";
+import { getEvent, listRegistrants } from "@/composition/events";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import {
   EventBadges,
   formatEventTime,
+  OrganizerPanel,
   RegistrationButton,
   spotsLabel,
 } from "@/modules/events";
 
-import { cancelRegistrationAction, registerForEventAction } from "../actions";
+import {
+  cancelEventAction,
+  cancelRegistrationAction,
+  markAttendanceAction,
+  registerForEventAction,
+} from "../actions";
 
 export const metadata: Metadata = { title: "Event" };
 
@@ -40,6 +46,10 @@ export default async function EventPage({
     }
     throw error;
   }
+
+  const registrants = event.canManage
+    ? (await listRegistrants({ actor, eventId: id })).data
+    : [];
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-12">
@@ -75,7 +85,14 @@ export default async function EventPage({
         registerAction={registerForEventAction}
         cancelAction={cancelRegistrationAction}
       />
-      {/* Slice 8c adds the organizer panel here. */}
+      {event.canManage ? (
+        <OrganizerPanel
+          event={event}
+          registrants={registrants}
+          cancelEventAction={cancelEventAction}
+          markAttendanceAction={markAttendanceAction}
+        />
+      ) : null}
       <p className="text-sm whitespace-pre-wrap">{event.description}</p>
     </div>
   );

@@ -39,7 +39,11 @@ function setup(
     if (options.allowed === false) throw new AuthorizationError();
     return a;
   }) as Authorize;
-  const queries: EventQueries = { list, get: vi.fn() };
+  const queries: EventQueries = {
+    list,
+    get: vi.fn(),
+    listRegistrants: vi.fn(),
+  };
   return {
     list,
     asked,

@@ -34,7 +34,26 @@ export type EventListFilter = {
   after?: ListCursor;
 };
 
+/** One row of `listRegistrants` (spec "names from the existing user summary join"). */
+export type Registrant = {
+  registrationId: string;
+  userId: string;
+  name: string;
+  state: RegistrationState;
+  registeredAt: Date;
+};
+
+export type RegistrantFilter = {
+  limit: number;
+  after?: ListCursor;
+};
+
 export type EventQueries = {
   list(viewerId: string, filter: EventListFilter): Promise<EventSummaryRow[]>;
   get(viewerId: string, eventId: string): Promise<EventDetailRow | null>;
+  /** Keyset by `(registered_at, id)` ascending (spec E-application "listRegistrants"). */
+  listRegistrants(
+    eventId: string,
+    filter: RegistrantFilter
+  ): Promise<Registrant[]>;
 };
