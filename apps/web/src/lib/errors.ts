@@ -209,6 +209,11 @@ export const ERROR_CATALOG: Record<
     status: 413,
     message: "The request body is too large.",
   },
+  REPLAY_JOB_GONE: {
+    status: 409,
+    message:
+      "The failed email job is no longer held by the queue, so it cannot be retried.",
+  },
   UNSUPPORTED_MEDIA_TYPE: {
     status: 415,
     message: "The request must be application/json.",

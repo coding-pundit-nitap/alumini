@@ -1,6 +1,6 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
 
-import { NotFoundError } from "@/lib/errors";
+import { ConflictError, NotFoundError } from "@/lib/errors";
 import type { Actor, Permission } from "@/modules/auth";
 
 /** The one QueueAdmin method replay needs (structurally `QueueAdmin.retry`); the module never imports the queue package. */
@@ -42,6 +42,8 @@ export function createReplayNotifications(deps: {
       const jobId = await deps.failedEmailJobId(args.notificationId);
       if (!jobId) throw new NotFoundError(); // unknown and not-failed look the same
       const retried = await deps.queueAdmin().retry("email", [jobId]);
+      // BullMQ already dropped the failed job (7-day retention): nothing changed, so nothing to audit.
+      if (retried === 0) throw new ConflictError("REPLAY_JOB_GONE");
       await deps.audit({
         actorId: caller.userId,
         action: "notification.replay",

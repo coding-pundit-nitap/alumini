@@ -16,7 +16,7 @@ export const jobExpired = defineJob({
   retry: { attempts: 5, baseDelayMs: 5_000, maxDelayMs: 300_000, jitter: 0.2 },
   timeoutMs: 10_000,
   idempotency:
-    "Handling only reads and logs; running twice has the same effect as once.",
+    "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.",
 });
 
 /** Flips overdue PUBLISHED jobs to EXPIRED (spec J-7, J-9). Scheduled only — no use case ever writes this. */

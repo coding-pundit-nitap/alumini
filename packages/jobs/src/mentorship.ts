@@ -31,10 +31,10 @@ const mentorshipJob = <N extends `mentorship.${string}`>(name: N) =>
     retry,
     timeoutMs: 10_000,
     idempotency:
-      "Handling only reads and logs; running twice has the same effect as once.",
+      "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.",
   });
 
-/** Facts a mentorship changed, written to the outbox with the change (FR-MENTOR, NFR-REL-002). Delivery is Phase 11. */
+/** Facts a mentorship changed, written to the outbox with the change (FR-MENTOR, NFR-REL-002). Phase 11 notifies on them. */
 export const mentorshipJobs = {
   "mentorship.requested": mentorshipJob("mentorship.requested"),
   "mentorship.accepted": mentorshipJob("mentorship.accepted"),

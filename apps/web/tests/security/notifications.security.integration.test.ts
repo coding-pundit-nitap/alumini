@@ -600,6 +600,17 @@ describe("notifications API security", () => {
       expect(rows[0]?.metadata).toEqual({ retried: 1 });
     });
 
+    it("409 REPLAY_JOB_GONE and no audit row when BullMQ no longer holds the failed job (nothing retried)", async () => {
+      const actor = await admin("SUPER_ADMIN");
+      as(actor);
+      mocks.retry.mockResolvedValue(0);
+      const { id } = await failedEmail();
+      const res = await replay({ notificationId: id });
+      expect(res.status).toBe(409);
+      expect(JSON.stringify(await res.json())).toContain("REPLAY_JOB_GONE");
+      expect(await auditRows(actor.userId)).toHaveLength(0);
+    });
+
     it("if the retry throws, 500 and no audit row", async () => {
       const actor = await admin("SUPER_ADMIN");
       as(actor);

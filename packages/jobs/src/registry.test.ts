@@ -99,4 +99,10 @@ describe("registry", () => {
       else expect(job.timeoutMs).toBeLessThan(FANOUT_TIMEOUT_MS);
     }
   });
+
+  it("no notifying outbox event still claims it only reads and logs (Phase 11 delivers notifications)", () => {
+    for (const job of Object.values(OUTBOX_EVENTS)) {
+      expect(job.idempotency, job.name).not.toMatch(/only reads and logs/);
+    }
+  });
 });

@@ -27,9 +27,9 @@ const retry = {
   jitter: 0.2,
 };
 const idempotency =
-  "Handling only reads and logs; running twice has the same effect as once.";
+  "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.";
 
-/** Facts a job posting changed, written to the outbox with the change. Delivery is Phase 11. */
+/** Facts a job posting changed, written to the outbox with the change. Phase 11 notifies on them. */
 export const jobEvents = {
   "job.submitted": defineJob({
     name: "job.submitted",

@@ -25,7 +25,7 @@ export const messageSent = defineJob({
   retry: { attempts: 8, baseDelayMs: 1_000, maxDelayMs: 60_000, jitter: 0.2 },
   timeoutMs: 10_000,
   idempotency:
-    "Publishing the same hint twice only makes the client refetch; running twice has the same effect as once.",
+    "A hint published twice only makes the client refetch, and the notification is keyed by (recipient, conversation, debounce window), so a rerun bumps the same row and enqueues no second email.",
 });
 
 export const MESSAGE_HINT_PREFIX = "msg:user:";

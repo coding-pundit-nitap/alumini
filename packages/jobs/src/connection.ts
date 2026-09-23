@@ -24,8 +24,7 @@ const retry = {
 
 /**
  * Facts a connection changed, written to the outbox in the same transaction as the change (FR-NET, NFR-REL-002).
- * The notification fan-out that consumes them arrives with Phase 10; until then the worker only acknowledges
- * them, which keeps the outbox draining and the event history replayable.
+ * The worker turns them into notifications for the other party (Phase 11).
  */
 export const connectionRequested = defineJob({
   name: "connection.requested",
@@ -35,7 +34,7 @@ export const connectionRequested = defineJob({
   retry,
   timeoutMs: 10_000,
   idempotency:
-    "Handling only reads and logs; running twice has the same effect as once.",
+    "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.",
 });
 
 export const connectionAccepted = defineJob({
@@ -46,5 +45,5 @@ export const connectionAccepted = defineJob({
   retry,
   timeoutMs: 10_000,
   idempotency:
-    "Handling only reads and logs; running twice has the same effect as once.",
+    "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.",
 });

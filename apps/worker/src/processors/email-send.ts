@@ -5,6 +5,17 @@ import type { EmailSendPayload } from "@nitap/jobs";
 import type { JobProcessor } from "@nitap/queue";
 import type { Metrics } from "@nitap/observability";
 
+/**
+ * What `lastError` stores: the error kind plus the adapter's SMTP code, never a raw provider message, since SMTP
+ * replies often echo the recipient address (PII).
+ */
+const failureKind = (error: unknown) =>
+  error instanceof EmailSendError
+    ? /^SMTP \w+$/.test(error.message)
+      ? `${error.kind}: ${error.message}`
+      : error.kind
+    : "unexpected";
+
 /** The worker-side write path onto the EMAIL `NotificationDelivery` row (spec N-12). */
 export type EmailDeliveryUpdater = {
   markSent(notificationId: string, attempt: number): Promise<void>;
@@ -65,13 +76,11 @@ export function createEmailSendProcessor(
       );
     } catch (error) {
       if (error instanceof EmailSendError && error.kind === "permanent") {
-        await recordFailure(error.message);
+        await recordFailure(failureKind(error));
         throw new PermanentJobError(error.message, { cause: error });
       }
       if (context.attempt >= maxAttempts) {
-        await recordFailure(
-          error instanceof Error ? error.message : "send failed"
-        );
+        await recordFailure(failureKind(error));
       }
       throw error;
     }

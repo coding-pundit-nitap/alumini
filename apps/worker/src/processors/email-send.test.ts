@@ -138,7 +138,7 @@ describe("email.send processor", () => {
       expect(deliveries.markFailed).toHaveBeenCalledWith(
         "11111111-1111-4111-8111-111111111111",
         1,
-        "SMTP 550"
+        "permanent: SMTP 550"
       );
       expect(metrics.increment).toHaveBeenCalledWith(
         "notification_delivery_failed_total",
@@ -179,12 +179,45 @@ describe("email.send processor", () => {
       expect(deliveries.markFailed).toHaveBeenCalledWith(
         "11111111-1111-4111-8111-111111111111",
         4,
-        "SMTP 451"
+        "retryable: SMTP 451"
       );
       expect(metrics.increment).toHaveBeenCalledWith(
         "notification_delivery_failed_total",
         expect.anything()
       );
+    });
+
+    it("stores an error kind/code in lastError, never a raw message that may echo the address (PII)", async () => {
+      const deliveries = fakeDeliveries();
+      const processor = createEmailSendProcessor(
+        {
+          send: async () =>
+            Promise.reject(
+              new Error("550 <recipient@example.test>: mailbox unavailable")
+            ),
+        },
+        { deliveries, metrics: recordingMetrics(), maxAttempts: 1 }
+      );
+      const leaky = new EmailSendError(
+        "rejected recipient@example.test",
+        "permanent"
+      );
+      const permanent = createEmailSendProcessor(
+        { send: async () => Promise.reject(leaky) },
+        { deliveries, metrics: recordingMetrics() }
+      );
+
+      await expect(
+        processor(notificationPayload, context({ attempt: 1 }))
+      ).rejects.toThrow();
+      await expect(
+        permanent(notificationPayload, context({ attempt: 1 }))
+      ).rejects.toThrow();
+
+      const reasons = deliveries.markFailed.mock.calls.map(
+        (c) => (c as unknown[])[2]
+      );
+      expect(reasons).toEqual(["unexpected", "permanent"]);
     });
 
     it("never touches deliveries for a payload without a notificationId", async () => {
