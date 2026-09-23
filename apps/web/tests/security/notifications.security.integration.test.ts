@@ -54,6 +54,7 @@ import { resolveActor } from "@/modules/auth/application/resolve-actor";
 import { createPrismaGrantSource } from "@/modules/auth/infrastructure/prisma-grant-source";
 
 import { GET as listRoute } from "@/app/api/v1/notifications/route";
+import { GET as unreadRoute } from "@/app/api/v1/notifications/unread-count/route";
 import { POST as readAllRoute } from "@/app/api/v1/notifications/read-all/route";
 import { POST as readRoute } from "@/app/api/v1/notifications/[id]/read/route";
 
@@ -283,6 +284,57 @@ describe("notifications API security", () => {
       expect(await res.json()).toEqual({ data: { updated: 2 } });
       expect(await readAt(theirs)).toBeNull();
       expect(redis.data.get(`notif:unread:${a.userId}`)).toBe("0");
+    });
+  });
+  describe("GET /api/v1/notifications/unread-count", () => {
+    const count = async () =>
+      (
+        (await (await unreadRoute(req("/x"))).json()) as {
+          data: { count: number };
+        }
+      ).data.count;
+
+    it("401s a signed-out caller", async () => {
+      as(null);
+      expect((await unreadRoute(req("/x"))).status).toBe(401);
+    });
+
+    it("recomputes from Postgres when the key is missing, then seeds Redis", async () => {
+      const a = await member();
+      await notify(a.userId);
+      await notify(a.userId);
+      await notify(a.userId, true);
+      await notify((await member()).userId);
+      as(a);
+      expect(await count()).toBe(2);
+      expect(redis.data.get(`notif:unread:${a.userId}`)).toBe("2");
+    });
+
+    it("serves the Redis value when present", async () => {
+      const a = await member();
+      await notify(a.userId);
+      redis.data.set(`notif:unread:${a.userId}`, "7");
+      as(a);
+      expect(await count()).toBe(7);
+    });
+
+    it("recomputes when the Redis value has drifted negative", async () => {
+      const a = await member();
+      await notify(a.userId);
+      redis.data.set(`notif:unread:${a.userId}`, "-3");
+      as(a);
+      expect(await count()).toBe(1);
+    });
+
+    it("returns 200 with the Postgres count when Redis is down (never 503)", async () => {
+      const a = await member();
+      await notify(a.userId);
+      await notify(a.userId);
+      redisDown();
+      as(a);
+      const res = await unreadRoute(req("/x"));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ data: { count: 2 } });
     });
   });
 });
