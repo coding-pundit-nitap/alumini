@@ -54,10 +54,15 @@ import { resolveActor } from "@/modules/auth/application/resolve-actor";
 import { createPrismaGrantSource } from "@/modules/auth/infrastructure/prisma-grant-source";
 
 import { GET as listRoute } from "@/app/api/v1/notifications/route";
+import { POST as readAllRoute } from "@/app/api/v1/notifications/read-all/route";
+import { POST as readRoute } from "@/app/api/v1/notifications/[id]/read/route";
 
 const ORIGIN = "https://alumni.example.test";
 const req = (path: string, init?: RequestInit) =>
   new Request(`${ORIGIN}${path}`, init);
+const post = (path: string) =>
+  req(path, { method: "POST", headers: { origin: ORIGIN } });
+const ctx = (id: string) => ({ params: Promise.resolve({ id }) });
 
 /** Minimal in-memory stand-in for the ioredis calls the web counter makes. */
 function fakeRedis() {
@@ -204,6 +209,80 @@ describe("notifications API security", () => {
       redisDown();
       as(a);
       expect((await listRoute(req("/api/v1/notifications"))).status).toBe(200);
+    });
+  });
+  describe("mark read", () => {
+    const readAt = async (id: string) =>
+      (await db.prisma.notification.findUniqueOrThrow({ where: { id } }))
+        .readAt;
+
+    it("401s a signed-out caller", async () => {
+      as(null);
+      const id = await notify((await member()).userId);
+      expect((await readRoute(post(`/x`), ctx(id))).status).toBe(401);
+      expect((await readAllRoute(post(`/x`))).status).toBe(401);
+    });
+
+    it("403s a cross-origin mutation", async () => {
+      const a = await member();
+      as(a);
+      const id = await notify(a.userId);
+      const res = await readRoute(
+        req("/x", { method: "POST", headers: { origin: "https://evil.test" } }),
+        ctx(id)
+      );
+      expect(res.status).toBe(403);
+      expect(await readAt(id)).toBeNull();
+    });
+
+    it("404s (no leak) and changes nothing for another member's notification (IDOR)", async () => {
+      const a = await member();
+      const b = await member();
+      const theirs = await notify(b.userId);
+      redis.data.set(`notif:unread:${b.userId}`, "1");
+      as(a);
+      expect((await readRoute(post("/x"), ctx(theirs))).status).toBe(404);
+      expect(await readAt(theirs)).toBeNull();
+      expect(redis.data.get(`notif:unread:${b.userId}`)).toBe("1");
+      // an unknown / malformed id is indistinguishable
+      expect((await readRoute(post("/x"), ctx("nope"))).status).toBe(404);
+    });
+
+    it("marks read, decrements the counter once, and a repeat is a 204 no-op", async () => {
+      const a = await member();
+      as(a);
+      const id = await notify(a.userId);
+      await notify(a.userId);
+      redis.data.set(`notif:unread:${a.userId}`, "2");
+      expect((await readRoute(post("/x"), ctx(id))).status).toBe(204);
+      expect((await readRoute(post("/x"), ctx(id))).status).toBe(204);
+      expect(await readAt(id)).not.toBeNull();
+      expect(redis.data.get(`notif:unread:${a.userId}`)).toBe("1");
+    });
+
+    it("still marks read when Redis is down", async () => {
+      const a = await member();
+      as(a);
+      const id = await notify(a.userId);
+      redisDown();
+      expect((await readRoute(post("/x"), ctx(id))).status).toBe(204);
+      expect(await readAt(id)).not.toBeNull();
+    });
+
+    it("mark-all-read only touches the caller's rows and decrements by the flipped count", async () => {
+      const a = await member();
+      const b = await member();
+      await notify(a.userId);
+      await notify(a.userId);
+      await notify(a.userId, true);
+      const theirs = await notify(b.userId);
+      redis.data.set(`notif:unread:${a.userId}`, "2");
+      as(a);
+      const res = await readAllRoute(post("/x"));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ data: { updated: 2 } });
+      expect(await readAt(theirs)).toBeNull();
+      expect(redis.data.get(`notif:unread:${a.userId}`)).toBe("0");
     });
   });
 });
