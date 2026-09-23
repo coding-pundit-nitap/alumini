@@ -1,7 +1,8 @@
 import { Redis } from "ioredis";
 
 import type { PrismaClient } from "@nitap/database";
-import { createOutboxStore } from "@nitap/database/outbox";
+import { createJobExpireStore } from "@nitap/database/jobs";
+import { createOutboxStore, createOutboxWriter } from "@nitap/database/outbox";
 import { createIdempotencyStore } from "@nitap/database/idempotency";
 import { createUploadStore } from "@nitap/database/uploads";
 import { createSmtpEmailPort } from "@nitap/email";
@@ -15,6 +16,7 @@ import {
   contentRemoved,
   emailSend,
   idempotencySweep,
+  jobExpire,
   mentorshipJobs,
   messageSent,
   outboxPrune,
@@ -56,6 +58,7 @@ import {
 import { createConnectionEventProcessor } from "./processors/connection-event.ts";
 import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
+import { createJobExpireProcessor } from "./processors/job-expire.ts";
 import { createMentorshipEventProcessor } from "./processors/mentorship-event.ts";
 import { createMessageSentProcessor } from "./processors/message-sent.ts";
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
@@ -124,6 +127,8 @@ export function composeWorker(
   const pollIntervalMs = overrides.relay?.pollIntervalMs ?? 1_000;
 
   const store = createOutboxStore(prisma);
+  const outboxWriter = createOutboxWriter();
+  const jobExpireStore = createJobExpireStore({ prisma, outbox: outboxWriter });
   const uploads = createUploadStore();
   const idempotency = createIdempotencyStore();
   const email = createSmtpEmailPort({
@@ -253,6 +258,10 @@ export function composeWorker(
           storage,
         })
       ),
+      registerJob(
+        jobExpire,
+        createJobExpireProcessor({ store: jobExpireStore })
+      ),
     ],
     queueOverrides: {
       email: {
@@ -283,6 +292,11 @@ export function composeWorker(
       });
       await rawQueue.upsertSchedule(uploadSweep, {
         id: "upload-sweep",
+        everyMs: DAY_MS,
+        payload: { v: 1 },
+      });
+      await rawQueue.upsertSchedule(jobExpire, {
+        id: "job-expire",
         everyMs: DAY_MS,
         payload: { v: 1 },
       });
