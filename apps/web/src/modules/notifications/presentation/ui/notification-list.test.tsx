@@ -45,6 +45,30 @@ describe("NotificationList", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("renders the readable title as a link to the target", () => {
+    render(
+      <NotificationList
+        items={[
+          {
+            id: "n4",
+            type: "comment.created",
+            readAt: null,
+            createdAt: new Date().toISOString(),
+            payload: { postId: "p1" },
+          },
+        ]}
+        onRead={vi.fn()}
+      />
+    );
+    expect(screen.getByRole("link", { name: "New comment" })).toHaveAttribute(
+      "href",
+      "/feed/p1"
+    );
+    expect(
+      screen.getByText("Someone commented on a post you're following.")
+    ).toBeInTheDocument();
+  });
+
   it("renders even when the notification's target content is gone (payload empty)", () => {
     render(
       <NotificationList
@@ -60,7 +84,9 @@ describe("NotificationList", () => {
         onRead={vi.fn()}
       />
     );
-    expect(screen.getByText(/post commented/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /post commented/i })
+    ).toHaveAttribute("href", "/notifications");
   });
 
   it("shows an empty state with no items", () => {

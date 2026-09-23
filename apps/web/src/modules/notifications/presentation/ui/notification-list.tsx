@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { Button } from "@nitap/ui/components/button";
 import { Card } from "@nitap/ui/components/card";
 
@@ -11,12 +13,12 @@ export type NotificationItem = {
   payload: Record<string, unknown>;
 };
 
-const humanize = (type: string) => type.replace(/[._]/g, " ");
+import { notificationCopy } from "./notification-copy";
 
 /**
- * The full notification inbox. Renders from `type` and `createdAt` alone — a notification whose target
- * content (a post, a job, an event…) has since been deleted still renders fine, since nothing here looks it
- * up.
+ * The full notification inbox. Renders from `type`, the ids in `payload` and `createdAt` alone — a
+ * notification whose target content (a post, a job, an event…) has since been deleted still renders fine,
+ * since nothing here looks it up; its link just lands on a not-found or list page.
  */
 export function NotificationList({
   items,
@@ -31,27 +33,42 @@ export function NotificationList({
 
   return (
     <div className="flex flex-col gap-2">
-      {items.map((item) => (
-        <Card key={item.id} className={item.readAt ? "opacity-60" : ""}>
-          <div className="flex items-center justify-between gap-4 px-4">
-            <div>
-              <p className="capitalize">{humanize(item.type)}</p>
-              <time
-                dateTime={item.createdAt}
-                className="text-muted-foreground text-xs"
-                suppressHydrationWarning
-              >
-                {new Date(item.createdAt).toLocaleString()}
-              </time>
+      {items.map((item) => {
+        const copy = notificationCopy(item.type, item.payload);
+        return (
+          <Card key={item.id} className={item.readAt ? "opacity-60" : ""}>
+            <div className="flex items-center justify-between gap-4 px-4">
+              <div>
+                <Link
+                  href={copy.actionPath}
+                  className="font-medium hover:underline"
+                >
+                  {copy.title}
+                </Link>
+                {copy.body && (
+                  <p className="text-muted-foreground text-sm">{copy.body}</p>
+                )}
+                <time
+                  dateTime={item.createdAt}
+                  className="text-muted-foreground text-xs"
+                  suppressHydrationWarning
+                >
+                  {new Date(item.createdAt).toLocaleString()}
+                </time>
+              </div>
+              {!item.readAt && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRead(item.id)}
+                >
+                  Mark read
+                </Button>
+              )}
             </div>
-            {!item.readAt && (
-              <Button variant="ghost" size="sm" onClick={() => onRead(item.id)}>
-                Mark read
-              </Button>
-            )}
-          </div>
-        </Card>
-      ))}
+          </Card>
+        );
+      })}
     </div>
   );
 }

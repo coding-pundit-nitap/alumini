@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./notification-copy": "./src/notifications/copy.ts"
   },
   "scripts": {
     "lint": "eslint --max-warnings=0",

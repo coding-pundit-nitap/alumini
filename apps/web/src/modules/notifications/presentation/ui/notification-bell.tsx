@@ -12,9 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@nitap/ui/components/dropdown-menu";
 
+import { notificationCopy } from "./notification-copy";
 import { useNotifications } from "./use-notifications";
-
-const humanize = (type: string) => type.replace(/[._]/g, " ");
 
 export function NotificationBell() {
   const { count, items, markRead } = useNotifications();
@@ -48,16 +47,17 @@ export function NotificationBell() {
           items.map((item) => (
             <DropdownMenuItem
               key={item.id}
-              className="flex items-center justify-between gap-2"
-              onClick={(event) => {
-                if (!item.readAt) {
-                  event.preventDefault();
-                  void markRead(item.id);
-                }
+              render={
+                <Link
+                  href={notificationCopy(item.type, item.payload).actionPath}
+                />
+              }
+              onClick={() => {
+                if (!item.readAt) void markRead(item.id);
               }}
             >
               <span className={item.readAt ? "text-muted-foreground" : ""}>
-                {humanize(item.type)}
+                {notificationCopy(item.type, item.payload).title}
               </span>
             </DropdownMenuItem>
           ))

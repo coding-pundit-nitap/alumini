@@ -49,7 +49,7 @@ describe("NotificationBell", () => {
     );
   });
 
-  it("marks an unread item read on click, without navigating, and reflects it in the badge", async () => {
+  it("marks an unread item read on click and reflects it in the badge", async () => {
     const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       if (url.includes("unread-count")) {
         return new Response(JSON.stringify({ data: { count: 1 } }), {
@@ -80,7 +80,7 @@ describe("NotificationBell", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "Notifications" })
     );
-    const item = await screen.findByText("connection accepted");
+    const item = await screen.findByText("Connection accepted");
     await userEvent.click(item);
 
     await waitFor(() =>
@@ -94,7 +94,7 @@ describe("NotificationBell", () => {
     );
   });
 
-  it("renders a read item as plain text and does not re-mark it on click", async () => {
+  it("does not re-mark a read item on click", async () => {
     const fetchMock = vi.fn(async (url: string) => {
       if (url.includes("unread-count")) {
         return new Response(JSON.stringify({ data: { count: 0 } }), {
@@ -120,13 +120,56 @@ describe("NotificationBell", () => {
     await userEvent.click(
       screen.getByRole("button", { name: "Notifications" })
     );
-    const item = await screen.findByText("connection accepted");
+    const item = await screen.findByText("Connection accepted");
     fetchMock.mockClear();
     await userEvent.click(item);
 
     expect(
       fetchMock.mock.calls.some(([url]) => String(url).endsWith("/read"))
     ).toBe(false);
+  });
+
+  it("renders each item's readable title as a link to its target, falling back for an unknown type", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (url.includes("unread-count")) {
+          return new Response(JSON.stringify({ data: { count: 1 } }), {
+            status: 200,
+          });
+        }
+        return new Response(
+          JSON.stringify({
+            data: [
+              {
+                id: "n1",
+                type: "event.cancelled",
+                payload: { eventId: "e1" },
+                readAt: null,
+                createdAt: new Date().toISOString(),
+              },
+              {
+                id: "n2",
+                type: "legacy.thing",
+                readAt: null,
+                createdAt: new Date().toISOString(),
+              },
+            ],
+          }),
+          { status: 200 }
+        );
+      })
+    );
+    render(<NotificationBell />);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Notifications" })
+    );
+    expect(
+      await screen.findByRole("menuitem", { name: /event cancelled/i })
+    ).toHaveAttribute("href", "/events/e1");
+    expect(
+      screen.getByRole("menuitem", { name: /legacy thing/i })
+    ).toHaveAttribute("href", "/notifications");
   });
 
   it('shows "View all notifications" as a link to /notifications', async () => {

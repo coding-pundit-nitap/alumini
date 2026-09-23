@@ -7,6 +7,7 @@ import { subscribeToMessageStream } from "@/lib/message-stream-client";
 export type BellNotification = {
   id: string;
   type: string;
+  payload?: Record<string, unknown>;
   readAt: string | null;
   createdAt: string;
 };

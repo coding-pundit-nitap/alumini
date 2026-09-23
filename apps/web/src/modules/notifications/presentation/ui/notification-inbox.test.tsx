@@ -43,7 +43,7 @@ describe("NotificationInbox", () => {
     await userEvent.click(screen.getByRole("button", { name: /load more/i }));
 
     await waitFor(() =>
-      expect(screen.getAllByText(/connection requested/i)).toHaveLength(2)
+      expect(screen.getAllByText("New connection request")).toHaveLength(2)
     );
     expect(
       screen.queryByRole("button", { name: /load more/i })

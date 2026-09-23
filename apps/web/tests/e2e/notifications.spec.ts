@@ -71,11 +71,11 @@ test("a connection acceptance shows up in the bell without a reload, and in /not
     timeout: 15_000,
   });
   await asha.getByRole("button", { name: "Notifications" }).click();
-  await expect(asha.getByText("connection accepted")).toBeVisible();
+  await expect(asha.getByText("Connection accepted")).toBeVisible();
 
   // And it's listed on the full inbox page too.
   await asha.goto("/notifications");
-  await expect(asha.getByText("connection accepted")).toBeVisible();
+  await expect(asha.getByText("Connection accepted")).toBeVisible();
 });
 
 test("disabling email preference for a category results in in-app-only delivery", async ({
@@ -108,7 +108,7 @@ test("disabling email preference for a category results in in-app-only delivery"
   // the row shows up.
   await expect(async () => {
     await asha.goto("/notifications");
-    await expect(asha.getByText("connection accepted")).toBeVisible({
+    await expect(asha.getByText("Connection accepted")).toBeVisible({
       timeout: 2_000,
     });
   }).toPass({ timeout: 20_000 });
