@@ -17,7 +17,9 @@ import {
   emailSend,
   eventJobs,
   idempotencySweep,
+  jobEvents,
   jobExpire,
+  jobExpired,
   mentorshipJobs,
   messageSent,
   outboxPrune,
@@ -33,6 +35,9 @@ import type {
   EventLifecyclePayload,
   EventRegistrationPayload,
   JobDefinition,
+  JobEventPayload,
+  JobExpiredPayload,
+  JobPublishedPayload,
   UploadScanPayload,
 } from "@nitap/jobs";
 import {
@@ -46,6 +51,12 @@ import type { Logger, Metrics } from "@nitap/observability";
 import type { StoragePort } from "@nitap/storage";
 
 import { createRedisHintPublisher } from "./hints.ts";
+import { createDeliverNotification } from "./notifications/deliver.ts";
+import {
+  createPrismaDeliveryStore,
+  getPreference,
+} from "./notifications/prisma-delivery-store.ts";
+import { createRedisUnreadCounter } from "./notifications/unread-counter.ts";
 import type { Readiness } from "./health.ts";
 import {
   createAchievementApprovedProcessor,
@@ -61,6 +72,7 @@ import {
 import { createConnectionEventProcessor } from "./processors/connection-event.ts";
 import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
+import { createJobEventProcessor } from "./processors/job-event.ts";
 import { createJobExpireProcessor } from "./processors/job-expire.ts";
 import { createEventActivityProcessor } from "./processors/event-activity.ts";
 import { createMentorshipEventProcessor } from "./processors/mentorship-event.ts";
@@ -162,6 +174,48 @@ export function composeWorker(
     logger.warn("hint.redis.error", { metadata: { message: error.message } })
   );
 
+  // The one fan-out-to-a-recipient primitive; later notification processors reuse it.
+  const deliver = createDeliverNotification({
+    store: createPrismaDeliveryStore(prisma),
+    getPreference: getPreference(prisma),
+    enqueueEmail: (payload, options) => queue.add(emailJob, payload, options),
+    hintPublisher: hintRedis ? createRedisHintPublisher(hintRedis) : null,
+    unreadCounter: hintRedis
+      ? createRedisUnreadCounter(hintRedis)
+      : {
+          increment: async () => {},
+          decrement: async () => {},
+          get: async () => null,
+        },
+    logger,
+  });
+  /** Current email of a VERIFIED account; null for anything else (no mail to suspended/deactivated users). */
+  const findEmail = async (userId: string) =>
+    (
+      await prisma.user.findFirst({
+        where: { id: userId, accountState: "VERIFIED" },
+        select: { email: true },
+      })
+    )?.email ?? null;
+  // ponytail: CHAPTER-scoped job.approve grants count as moderators too (no chapter filter); narrow when job review is chapter-scoped.
+  const findModerators = async (permission: "job.approve") => {
+    const now = new Date();
+    const [viaRole, viaGrant] = await Promise.all([
+      prisma.userRole.findMany({
+        where: { role: { rolePermissions: { some: { permission } } } },
+        select: { userId: true },
+      }),
+      prisma.permissionGrant.findMany({
+        where: {
+          permission,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+        select: { userId: true },
+      }),
+    ]);
+    return [...new Set([...viaRole, ...viaGrant].map((r) => r.userId))];
+  };
+
   const relay = createRelay({
     store,
     queue,
@@ -180,6 +234,10 @@ export function composeWorker(
       [reportFiled.name]: reportFiled,
       [reportResolved.name]: reportResolved,
       [contentRemoved.name]: contentRemoved,
+      [jobExpired.name]: jobExpired,
+      ...Object.fromEntries(
+        Object.values(jobEvents).map((job) => [job.name, job])
+      ),
       ...Object.fromEntries(
         Object.values(mentorshipJobs).map((job) => [job.name, job])
       ),
@@ -216,6 +274,19 @@ export function composeWorker(
       registerJob(reportFiled, createReportFiledProcessor()),
       registerJob(reportResolved, createReportResolvedProcessor()),
       registerJob(contentRemoved, createContentRemovedProcessor()),
+      ...[...Object.values(jobEvents), jobExpired].map((job) =>
+        registerJob(
+          job as JobDefinition<
+            string,
+            JobEventPayload | JobPublishedPayload | JobExpiredPayload
+          >,
+          createJobEventProcessor(job.name.slice("job.".length) as never, {
+            deliver,
+            findEmail,
+            findModerators,
+          })
+        )
+      ),
       ...Object.values(mentorshipJobs).map((job) =>
         registerJob(
           job,

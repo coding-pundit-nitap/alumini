@@ -52,18 +52,23 @@ export function createDeliverNotification(deps: {
     domain: NotificationDomain,
     channel: "EMAIL"
   ) => Promise<{ enabled: boolean } | null>;
-  enqueueEmail: (payload: EmailSendPayload) => Promise<void>;
+  /** `jobId` is the notification dedupe key so a redelivered event cannot enqueue a second email. */
+  enqueueEmail: (
+    payload: EmailSendPayload,
+    options: { jobId: string }
+  ) => Promise<void>;
   hintPublisher: HintPublisher | null;
   unreadCounter: UnreadCounter;
   logger: Logger;
 }): DeliverNotification {
   return async (input) => {
+    const dedupeKey = dedupeKeyFor(input);
     const { id, created } = await deps.store.insert({
       recipientId: input.recipientId,
       type: input.type,
       category: input.category,
       payload: input.payload,
-      dedupeKey: dedupeKeyFor(input),
+      dedupeKey,
     });
     if (!created) {
       deps.logger.info("notification.deduped", {
@@ -97,16 +102,19 @@ export function createDeliverNotification(deps: {
       return;
 
     const copy = renderNotificationCopy(input.type, input.payload);
-    await deps.enqueueEmail({
-      v: 1,
-      to: input.emailTo,
-      template: "notification",
-      params: {
-        title: copy.title,
-        body: copy.body,
-        actionUrl: `${process.env.APP_URL ?? ""}${copy.actionPath}`,
+    await deps.enqueueEmail(
+      {
+        v: 1,
+        to: input.emailTo,
+        template: "notification",
+        params: {
+          title: copy.title,
+          body: copy.body,
+          actionUrl: `${process.env.APP_URL ?? ""}${copy.actionPath}`,
+        },
       },
-    });
+      { jobId: dedupeKey }
+    );
     await deps.store.recordDelivery({
       notificationId: id,
       channel: "EMAIL",
