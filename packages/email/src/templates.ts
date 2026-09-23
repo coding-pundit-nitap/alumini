@@ -9,7 +9,11 @@ export type EmailTemplate =
     }
   | { template: "existing-account"; params: Record<string, never> }
   | { template: "verification-approved"; params: Record<string, never> }
-  | { template: "verification-rejected"; params: Record<string, never> };
+  | { template: "verification-rejected"; params: Record<string, never> }
+  | {
+      template: "notification";
+      params: { title: string; body: string; actionUrl: string };
+    };
 
 const SIGNATURE = "NIT Arunachal Pradesh Alumni Network";
 
@@ -43,6 +47,11 @@ export function renderEmail(input: EmailTemplate): {
       return {
         subject: "Update on your NITAP Alumni Network verification",
         text: `Hello,\n\nWe were not able to verify your connection to NIT Arunachal Pradesh this time. Sign in to see what to do next.\n\n${SIGNATURE}`,
+      };
+    case "notification":
+      return {
+        subject: input.params.title,
+        text: `Hello,\n\n${input.params.body}\n\n${input.params.actionUrl}\n\n${SIGNATURE}`,
       };
   }
 }

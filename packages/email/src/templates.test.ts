@@ -41,6 +41,22 @@ describe("renderEmail", () => {
   });
 });
 
+describe("renderEmail: notification", () => {
+  it("renders the generic notification template", () => {
+    const result = renderEmail({
+      template: "notification",
+      params: {
+        title: "New connection request",
+        body: "Ada Lovelace wants to connect.",
+        actionUrl: "https://app.example/connections",
+      },
+    });
+    expect(result.subject).toBe("New connection request");
+    expect(result.text).toContain("Ada Lovelace wants to connect.");
+    expect(result.text).toContain("https://app.example/connections");
+  });
+});
+
 describe("renderEmail: verification decisions", () => {
   it("tells an approved member to sign in and names no link or note", () => {
     const { subject, text } = renderEmail({
