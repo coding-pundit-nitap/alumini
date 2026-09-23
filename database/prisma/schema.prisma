@@ -75,6 +75,9 @@ model User {
   achievementsOwned    Achievement[] @relation("AchievementOwner")
   achievementsReviewed Achievement[] @relation("AchievementReviewer")
 
+  notifications           Notification[]
+  notificationPreferences NotificationPreference[]
+
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
   @@unique([email])
@@ -873,4 +876,88 @@ model EventRegistration {
   @@unique([userId, eventId], map: "uq_event_registration")
   @@index([eventId, state], map: "ix_event_registration_event")
   @@map("event_registration")
+}
+
+// NOTIFICATION
+
+enum NotificationCategory {
+  TRANSACTIONAL
+  ENGAGEMENT
+}
+
+/** The granular grouping the preferences UI toggles (N-14) — distinct from NotificationCategory, which
+ * only says whether preferences apply at all. Every event in the catalogue maps to exactly one domain
+ * via domainFor() in the notifications domain layer (Task 3). */
+enum NotificationDomain {
+  CONNECTION
+  MENTORSHIP
+  JOB
+  EVENT
+  MESSAGE
+  POST
+  ACHIEVEMENT
+  MODERATION
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model Notification {
+  id          String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recipientId String                 @map("recipient_id") @db.Uuid
+  recipient   User                   @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  type        String
+  category    NotificationCategory
+  payload     Json
+  dedupeKey   String                 @unique(map: "uq_notification_dedupe_key") @map("dedupe_key")
+  readAt      DateTime?              @map("read_at") @db.Timestamptz(3)
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  deliveries  NotificationDelivery[]
+
+  @@index([recipientId, createdAt(sort: Desc)], map: "ix_notification_recipient_created")
+  @@index([recipientId, readAt], map: "ix_notification_recipient_unread")
+  @@map("notification")
+}
+
+model NotificationPreference {
+  userId    String              @map("user_id") @db.Uuid
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain    NotificationDomain
+  channel   NotificationChannel
+  enabled   Boolean
+  updatedAt DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@id([userId, domain, channel])
+  @@map("notification_preference")
+}
+
+model NotificationDelivery {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  notificationId    String              @map("notification_id") @db.Uuid
+  notification      Notification        @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  channel           NotificationChannel
+  status            DeliveryStatus      @default(PENDING)
+  attempts          Int                 @default(0)
+  lastError         String?             @map("last_error")
+  providerMessageId String?             @map("provider_message_id")
+  updatedAt         DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([status], map: "ix_notification_delivery_status")
+  @@map("notification_delivery")
+}
+
+model EmailSuppression {
+  emailHash String   @id @map("email_hash")
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("email_suppression")
 }
