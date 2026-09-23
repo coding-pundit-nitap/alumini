@@ -4,10 +4,13 @@ import { outbox } from "@/infrastructure/outbox";
 import { redisRateLimitStorage } from "@/infrastructure/redis/rate-limit-storage";
 import { authorize, can } from "@/modules/auth";
 import {
+  createApproveJob,
   createCreateJob,
   createEditJob,
   createGetJob,
   createListMyJobs,
+  createListPendingJobs,
+  createRejectJob,
   type JobObserver,
 } from "@/modules/jobs";
 import {
@@ -35,3 +38,6 @@ export const createJob = createCreateJob({
 export const editJob = createEditJob({ store, authorize, can, observe });
 export const listMyJobs = createListMyJobs({ queries, authorize });
 export const getJob = createGetJob({ queries, authorize, can });
+export const approveJob = createApproveJob({ store, authorize, observe });
+export const rejectJob = createRejectJob({ store, authorize, observe });
+export const listPendingJobs = createListPendingJobs({ queries, authorize });

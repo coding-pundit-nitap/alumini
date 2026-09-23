@@ -10,6 +10,9 @@ export { createCreateJob, JOB_CREATE_RATE } from "./application/create-job";
 export { createEditJob } from "./application/edit-job";
 export { createListMyJobs } from "./application/list-my-jobs";
 export { createGetJob } from "./application/get-job";
+export { createApproveJob } from "./application/approve-job";
+export { createRejectJob } from "./application/reject-job";
+export { createListPendingJobs } from "./application/list-pending-jobs";
 export type { Authorize } from "./application/authz";
 export type {
   JobObserver,

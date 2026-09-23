@@ -27,9 +27,22 @@ export function createPrismaJobQueries(prisma: PrismaClient): JobQueries {
       return prisma.job.findUnique({ where: { id } });
     },
 
-    // Implemented in Task 18 (moderation queue) — 7a never calls this path.
-    async listPending() {
-      throw new Error("listPending: not implemented until slice 7b (Task 18)");
+    async listPending(filter) {
+      const and: Prisma.JobWhereInput[] = [];
+      if (filter.after) {
+        const key = new Date(filter.after.key);
+        and.push({
+          OR: [
+            { createdAt: { gt: key } },
+            { createdAt: key, id: { gt: filter.after.id } },
+          ],
+        });
+      }
+      return prisma.job.findMany({
+        where: { status: "PENDING_REVIEW", AND: and },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        take: filter.limit,
+      });
     },
 
     // Implemented in Task 23 (public listing) — 7a/7b never call this path.
