@@ -37,13 +37,20 @@ export type DeliveryStore = {
     channel: "IN_APP" | "EMAIL";
     status: "PENDING" | "SENT" | "FAILED";
   }): Promise<void>;
+  /** Whether a delivery row already exists for the channel (a retry must not repeat a finished step). */
+  hasDelivery(input: {
+    notificationId: string;
+    channel: "IN_APP" | "EMAIL";
+  }): Promise<boolean>;
 };
 
 /**
  * The single fan-out-to-one-recipient primitive every event processor calls (spec N-5). Writes the
  * in-app row first (durable even if email later fails), then enqueues email only if the category,
  * channel and stored preference allow it. Idempotent: a duplicate dedupeKey short-circuits before
- * any email enqueue, so a redelivered outbox event never double-sends.
+ * a second in-app row or unread bump, and the email step is skipped once an EMAIL delivery is recorded.
+ * A retry after a crash between the in-app write and the email enqueue still queues the email; the
+ * dedupe key is its job id, so a job that was in fact queued is not queued twice.
  */
 export function createDeliverNotification(deps: {
   store: DeliveryStore;
@@ -60,6 +67,8 @@ export function createDeliverNotification(deps: {
   hintPublisher: HintPublisher | null;
   unreadCounter: UnreadCounter;
   logger: Logger;
+  /** Public web origin, the base of the email's action link. */
+  appUrl: string;
 }): DeliverNotification {
   return async (input) => {
     const dedupeKey = dedupeKeyFor(input);
@@ -74,17 +83,21 @@ export function createDeliverNotification(deps: {
       deps.logger.info("notification.deduped", {
         metadata: { type: input.type },
       });
-      return;
+      if (
+        await deps.store.hasDelivery({ notificationId: id, channel: "EMAIL" })
+      )
+        return;
+    } else {
+      await deps.store.recordDelivery({
+        notificationId: id,
+        channel: "IN_APP",
+        status: "SENT",
+      });
+      await deps.unreadCounter.increment(input.recipientId);
+      await deps.hintPublisher?.publish(input.recipientId, {
+        notificationId: id,
+      } as never);
     }
-    await deps.store.recordDelivery({
-      notificationId: id,
-      channel: "IN_APP",
-      status: "SENT",
-    });
-    await deps.unreadCounter.increment(input.recipientId);
-    await deps.hintPublisher?.publish(input.recipientId, {
-      notificationId: id,
-    } as never);
 
     if (!input.emailTo) return;
     const preference = await deps.getPreference(
@@ -110,7 +123,7 @@ export function createDeliverNotification(deps: {
         params: {
           title: copy.title,
           body: copy.body,
-          actionUrl: `${process.env.APP_URL ?? ""}${copy.actionPath}`,
+          actionUrl: `${deps.appUrl}${copy.actionPath}`,
         },
       },
       { jobId: dedupeKey }

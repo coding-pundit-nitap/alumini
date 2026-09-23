@@ -10,6 +10,8 @@ const workerSchema = z.object({
   QUEUE_REDIS_URL: z.string().min(1),
   // Cache Redis, used only for real-time message hints; without it messaging still works, clients just refetch.
   REDIS_URL: z.string().min(1).optional(),
+  // Public web origin; the base of the links in notification emails.
+  APP_URL: z.url(),
   SMTP_URL: z.string().min(1),
   EMAIL_FROM: z.string().min(3),
   EMAIL_RATE_PER_SECOND: z.coerce.number().int().positive().default(5),

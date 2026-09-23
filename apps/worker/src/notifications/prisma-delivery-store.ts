@@ -36,6 +36,9 @@ export function createPrismaDeliveryStore(prisma: PrismaClient): DeliveryStore {
         data: { ...input, attempts: 1 },
       });
     },
+    async hasDelivery(input) {
+      return (await prisma.notificationDelivery.count({ where: input })) > 0;
+    },
   };
 }
 

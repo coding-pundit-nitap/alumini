@@ -63,6 +63,7 @@ describe("outbox → relay → queue → worker → SMTP (real PostgreSQL, Redis
           queuePrefix: ns.prefix,
           smtpUrl: smtp.url,
           emailFrom: "NITAP <no-reply@alumni.test>",
+          appUrl: "https://alumni.example",
           emailRatePerSecond: 50,
         },
       },

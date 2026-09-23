@@ -25,6 +25,7 @@ env:
   BETTER_AUTH_SECRET: ci-only-secret-not-used-outside-github-actions-0000
   BETTER_AUTH_URL: http://localhost:3000
   QUEUE_REDIS_URL: redis://localhost:6380
+  APP_URL: http://localhost:3000
   SMTP_URL: smtp://localhost:1025
   EMAIL_FROM: NITAP <no-reply@alumni.test>
   INSTITUTIONAL_EMAIL_POLICY: '{"nitap.ac.in":{"role":"STUDENT","autoVerify":true},"staff.nitap.ac.in":{"role":"STAFF","autoVerify":false}}'

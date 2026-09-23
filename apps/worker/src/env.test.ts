@@ -5,6 +5,7 @@ import { loadCliEnv, loadEnv } from "./env.ts";
 const valid = {
   DATABASE_URL: "postgresql://u:p@localhost:5432/db",
   QUEUE_REDIS_URL: "redis://localhost:6380",
+  APP_URL: "http://localhost:3000",
   SMTP_URL: "smtp://user:secret@localhost:1025",
   EMAIL_FROM: "NITAP <no-reply@alumni.test>",
 };

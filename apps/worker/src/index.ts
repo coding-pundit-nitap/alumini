@@ -28,6 +28,7 @@ const worker = composeWorker({
     cacheRedisUrl: env.REDIS_URL,
     smtpUrl: env.SMTP_URL,
     emailFrom: env.EMAIL_FROM,
+    appUrl: env.APP_URL,
     emailRatePerSecond: env.EMAIL_RATE_PER_SECOND,
   },
 });

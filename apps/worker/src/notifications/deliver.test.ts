@@ -7,6 +7,7 @@ function fakeStore(overrides: Record<string, unknown> = {}) {
   return {
     insert: vi.fn(async () => ({ id: "notif-1", created: true })),
     recordDelivery: vi.fn(async () => {}),
+    hasDelivery: vi.fn(async () => false),
     ...overrides,
   };
 }
@@ -32,6 +33,7 @@ describe("deliverNotification", () => {
       hintPublisher: null,
       unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
     });
 
     await deliver({
@@ -63,6 +65,7 @@ describe("deliverNotification", () => {
       hintPublisher: null,
       unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
     });
 
     await deliver({
@@ -81,6 +84,7 @@ describe("deliverNotification", () => {
   it("is a no-op on a duplicate dedupeKey (already delivered)", async () => {
     const store = fakeStore({
       insert: vi.fn(async () => ({ id: "notif-1", created: false })),
+      hasDelivery: vi.fn(async () => true),
     });
     const enqueueEmail = vi.fn(async () => {});
     const deliver = createDeliverNotification({
@@ -90,6 +94,7 @@ describe("deliverNotification", () => {
       hintPublisher: null,
       unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
       logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
     });
 
     await deliver({
@@ -102,5 +107,67 @@ describe("deliverNotification", () => {
     });
 
     expect(enqueueEmail).not.toHaveBeenCalled();
+  });
+
+  it("on a duplicate whose email step never completed, queues the email but not a second in-app row", async () => {
+    const store = fakeStore({
+      insert: vi.fn(async () => ({ id: "notif-1", created: false })),
+    });
+    const enqueueEmail = vi.fn(async () => {});
+    const increment = vi.fn();
+    const deliver = createDeliverNotification({
+      store: store as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment, decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+
+    expect(enqueueEmail).toHaveBeenCalledTimes(1);
+    expect(store.recordDelivery).toHaveBeenCalledTimes(1);
+    expect(store.recordDelivery).toHaveBeenCalledWith(
+      expect.objectContaining({ channel: "EMAIL", status: "PENDING" })
+    );
+    expect(increment).not.toHaveBeenCalled();
+  });
+
+  it("builds the email action link from the configured app origin", async () => {
+    const enqueueEmail = vi.fn<(p: unknown, o: unknown) => Promise<void>>(
+      async () => {}
+    );
+    const deliver = createDeliverNotification({
+      store: fakeStore() as never,
+      getPreference: async () => null,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn(), decrement: vi.fn(), get: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+
+    await deliver({
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+
+    const [payload] = enqueueEmail.mock.calls[0]!;
+    expect(
+      (payload as { params: { actionUrl: string } }).params.actionUrl
+    ).toMatch(/^https:\/\/alumni\.example\//);
   });
 });

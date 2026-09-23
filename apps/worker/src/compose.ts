@@ -91,6 +91,8 @@ export type WorkerConfig = {
   cacheRedisUrl?: string;
   smtpUrl: string;
   emailFrom: string;
+  /** Public web origin, the base of the links in notification emails. */
+  appUrl: string;
   emailRatePerSecond: number;
   /** BullMQ key prefix; tests use a unique one. */
   queuePrefix?: string;
@@ -183,6 +185,7 @@ export function composeWorker(
   const deliver = createDeliverNotification({
     store: createPrismaDeliveryStore(prisma),
     getPreference: getPreference(prisma),
+    appUrl: config.appUrl,
     enqueueEmail: (payload, options) => queue.add(emailJob, payload, options),
     hintPublisher: hintRedis ? createRedisHintPublisher(hintRedis) : null,
     unreadCounter: hintRedis
