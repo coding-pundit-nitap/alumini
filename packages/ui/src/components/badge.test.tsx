@@ -12,4 +12,10 @@ describe("Badge component", () => {
     const { container } = render(<Badge variant="destructive">Critical</Badge>);
     expect(container.firstChild).toBeInTheDocument();
   });
+
+  it("applies brand variant classes", () => {
+    render(<Badge variant="brand">New</Badge>);
+    const badge = screen.getByText("New");
+    expect(badge.className).toContain("bg-brand/12");
+  });
 });

@@ -33,4 +33,10 @@ describe("Button component", () => {
     const button = container.querySelector("button");
     expect(button).toBeInTheDocument();
   });
+
+  it("applies brand variant classes", () => {
+    render(<Button variant="brand">Post</Button>);
+    const button = screen.getByRole("button", { name: /post/i });
+    expect(button.className).toContain("bg-brand");
+  });
 });
