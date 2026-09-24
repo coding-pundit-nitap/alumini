@@ -30,5 +30,6 @@ export { ConversationList } from "./presentation/ui/conversation-list";
 export { GroupForm } from "./presentation/ui/group-form";
 export { GroupMembers } from "./presentation/ui/group-members";
 export { MessageButton } from "./presentation/ui/message-button";
+export { ReportedMessageContext } from "./presentation/ui/reported-message-context";
 export { Thread } from "./presentation/ui/thread";
 export type { ThreadMessage } from "./presentation/ui/thread";

@@ -36,6 +36,11 @@ export {
 export { ReportDialog } from "./presentation/ui/report-dialog";
 export { ReportDecisionDialog } from "./presentation/ui/report-decision-dialog";
 export {
+  ReportFilters,
+  REPORT_FILTER_LABELS,
+} from "./presentation/ui/report-filters";
+export { ReportsTable } from "./presentation/ui/reports-table";
+export {
   REASON_LABELS,
   STATUS_LABELS,
   TARGET_LABELS,
