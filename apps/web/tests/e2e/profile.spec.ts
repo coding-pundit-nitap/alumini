@@ -70,7 +70,10 @@ test("J-04 a member edits their profile and controls who sees it", async ({
   await guest.goto(memberUrl!);
   await expect(guest.getByText("Robotics engineer")).toBeVisible();
   await expect(guest.getByText("I build robots.")).toHaveCount(0);
-  await expect(guest.getByText("About", { exact: true })).toHaveCount(0);
+  // Scoped to main: the signed-out header has its own "About" link.
+  await expect(
+    guest.getByRole("main").getByText("About", { exact: true })
+  ).toHaveCount(0);
 });
 
 test("a forged institutional field in the profile form changes nothing", async ({
