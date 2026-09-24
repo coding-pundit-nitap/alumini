@@ -12,6 +12,15 @@ export { jobEvents } from "./job.ts";
 export type { JobEventPayload, JobPublishedPayload } from "./job.ts";
 export { jobExpire, jobExpired } from "./job-expire.ts";
 export type { JobExpiredPayload } from "./job-expire.ts";
+export {
+  userReactivated,
+  userSuspended,
+  verificationDecided,
+} from "./account.ts";
+export type {
+  AccountStatePayload,
+  VerificationDecidedPayload,
+} from "./account.ts";
 export { eventJobs } from "./events.ts";
 export type {
   EventLifecyclePayload,

@@ -27,6 +27,10 @@ const NOTIFYING_TYPES = [
   "report.filed",
   "report.resolved",
   "content.removed",
+  "verification.decided",
+  "user.suspended",
+  "user.reactivated",
+  "event.registration-cancelled",
 ];
 
 describe("renderNotificationCopy", () => {
@@ -72,6 +76,44 @@ describe("renderNotificationCopy", () => {
       renderNotificationCopy("event.cancelled", { eventId: "../admin" })
         .actionPath
     ).toBe("/events");
+  });
+
+  it("verification.decided copy follows the decision, with a neutral fallback (spec D12-5)", () => {
+    expect(
+      renderNotificationCopy("verification.decided", { decision: "APPROVED" })
+    ).toEqual({
+      title: "Verification approved",
+      body: "Your alumni verification was approved.",
+      actionPath: "/profile",
+    });
+    expect(
+      renderNotificationCopy("verification.decided", { decision: "REJECTED" })
+    ).toEqual({
+      title: "Verification not approved",
+      body: "Your alumni verification request was not approved.",
+      actionPath: "/onboarding",
+    });
+    expect(renderNotificationCopy("verification.decided", {}).title).toBe(
+      "Verification reviewed"
+    );
+  });
+
+  it("account and registration copy (spec catalogue)", () => {
+    expect(renderNotificationCopy("user.suspended", {})).toEqual({
+      title: "Account suspended",
+      body: "Your account has been suspended by an administrator.",
+      actionPath: "/account/status",
+    });
+    expect(renderNotificationCopy("user.reactivated", {})).toEqual({
+      title: "Account reinstated",
+      body: "Your account has been reinstated. You can sign in again.",
+      actionPath: "/profile",
+    });
+    expect(
+      renderNotificationCopy("event.registration-cancelled", {
+        eventId: "3f1c0a52-0000-4000-8000-000000000001",
+      }).actionPath
+    ).toBe("/events/3f1c0a52-0000-4000-8000-000000000001");
   });
 
   it("throws on an unknown type rather than sending a blank email", () => {

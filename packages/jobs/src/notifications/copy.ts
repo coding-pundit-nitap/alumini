@@ -163,6 +163,42 @@ export function renderNotificationCopy(
         "One of your posts or comments was removed by a moderator.",
         "/feed"
       );
+    case "verification.decided":
+      return payload.decision === "APPROVED"
+        ? copy(
+            "Verification approved",
+            "Your alumni verification was approved.",
+            "/profile"
+          )
+        : payload.decision === "REJECTED"
+          ? copy(
+              "Verification not approved",
+              "Your alumni verification request was not approved.",
+              "/onboarding"
+            )
+          : copy(
+              "Verification reviewed",
+              "Your verification request was reviewed.",
+              "/profile"
+            );
+    case "user.suspended":
+      return copy(
+        "Account suspended",
+        "Your account has been suspended by an administrator.",
+        "/account/status"
+      );
+    case "user.reactivated":
+      return copy(
+        "Account reinstated",
+        "Your account has been reinstated. You can sign in again.",
+        "/profile"
+      );
+    case "event.registration-cancelled":
+      return copy(
+        "Registration cancelled",
+        "Your registration for an event was cancelled.",
+        under("/events", "eventId")
+      );
     default:
       throw new Error(`No notification copy for type "${type}".`);
   }

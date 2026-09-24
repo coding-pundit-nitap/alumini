@@ -7,6 +7,7 @@ describe("domainFor", () => {
     expect(domainFor("mentorship.accepted")).toBe("MENTORSHIP");
     expect(domainFor("job.published")).toBe("JOB");
     expect(domainFor("event.cancelled")).toBe("EVENT");
+    expect(domainFor("event.registration-cancelled")).toBe("EVENT");
     expect(domainFor("message.sent")).toBe("MESSAGE");
     expect(domainFor("comment.created")).toBe("POST");
     expect(domainFor("achievement.approved")).toBe("ACHIEVEMENT");

@@ -21,6 +21,11 @@ import {
   reportFiled,
   reportResolved,
 } from "./community.ts";
+import {
+  userReactivated,
+  userSuspended,
+  verificationDecided,
+} from "./account.ts";
 
 /** Jobs a use case can request by writing an outbox event. In 2B an event type maps 1:1 to a job. */
 export const OUTBOX_EVENTS = {
@@ -39,6 +44,9 @@ export const OUTBOX_EVENTS = {
   "report.resolved": reportResolved,
   "content.removed": contentRemoved,
   "job.expired": jobExpired,
+  "verification.decided": verificationDecided,
+  "user.suspended": userSuspended,
+  "user.reactivated": userReactivated,
   ...mentorshipJobs,
   ...jobEvents,
   ...eventJobs,
