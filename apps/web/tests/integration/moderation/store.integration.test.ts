@@ -42,18 +42,72 @@ describe("moderation store against real PostgreSQL", () => {
       audit: createAuditWriter(),
     });
 
-  it("findReport refuses a MESSAGE-scoped report id (belongs to a different module's flow)", async () => {
-    const s = store();
-    const messageReport = await db.prisma.report.create({
+  async function directMessage(senderId: string, recipientId: string) {
+    const [lo, hi] = [senderId, recipientId].sort();
+    const conversation = await db.prisma.conversation.create({
       data: {
-        reporterId: reporter,
-        targetType: "MESSAGE",
-        targetId: postId,
-        reason: "spam",
+        createdById: senderId,
+        isGroup: false,
+        directPairKey: `${lo}:${hi}`,
       },
     });
-    const found = await s.transaction((tx) => tx.findReport(messageReport.id));
-    expect(found).toBeNull();
+    await db.prisma.conversationParticipant.createMany({
+      data: [
+        { conversationId: conversation.id, userId: senderId },
+        { conversationId: conversation.id, userId: recipientId },
+      ],
+    });
+    return db.prisma.message.create({
+      data: {
+        conversationId: conversation.id,
+        senderId,
+        body: "rude",
+        clientMessageId: crypto.randomUUID(),
+      },
+    });
+  }
+
+  it("findReport returns a report of every target type (spec C12-1)", async () => {
+    const s = store();
+    for (const targetType of ["POST", "COMMENT", "MESSAGE", "USER"] as const) {
+      const row = await db.prisma.report.create({
+        data: {
+          reporterId: reporter,
+          targetType,
+          targetId: postId,
+          reason: "x",
+        },
+      });
+      const found = await s.transaction((tx) => tx.findReport(row.id));
+      expect(found).toMatchObject({ id: row.id, targetType, status: "OPEN" });
+    }
+  });
+
+  it("contentAuthor covers MESSAGE (the sender) and USER (the user itself)", async () => {
+    const s = store();
+    const message = await directMessage(author, reporter);
+    expect(
+      await s.transaction((tx) => tx.contentAuthor("MESSAGE", message.id))
+    ).toBe(author);
+    expect(
+      await s.transaction((tx) => tx.contentAuthor("USER", reporter))
+    ).toBe(reporter);
+    expect(
+      await s.transaction((tx) =>
+        tx.contentAuthor("MESSAGE", "00000000-0000-4000-8000-000000000999")
+      )
+    ).toBeNull();
+  });
+
+  it("hideMessage hides once and reports whether it did", async () => {
+    const s = store();
+    const message = await directMessage(author, reporter);
+    expect(await s.transaction((tx) => tx.hideMessage(message.id))).toBe(true);
+    expect(await s.transaction((tx) => tx.hideMessage(message.id))).toBe(false);
+    const row = await db.prisma.message.findUniqueOrThrow({
+      where: { id: message.id },
+    });
+    expect(row.hiddenAt).not.toBeNull();
   });
 
   it("insertReport is atomic under a concurrent duplicate filing (uq_report_once)", async () => {

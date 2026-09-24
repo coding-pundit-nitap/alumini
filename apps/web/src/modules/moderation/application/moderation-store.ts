@@ -1,50 +1,59 @@
+import type {
+  ModerationTarget,
+  ReportState,
+  ReportTargetType,
+} from "../domain/moderation";
+
 export type ReportRow = {
   id: string;
   reporterId: string;
-  targetType: "POST" | "COMMENT";
+  targetType: ReportTargetType;
   targetId: string;
   reason: string;
-  status: "OPEN" | "UNDER_REVIEW" | "RESOLVED" | "DISMISSED";
+  status: ReportState;
   resolvedById: string | null;
   createdAt: Date;
 };
-/** Moderator actions leave audit rows in the same transaction (FR-MOD-004, spec A12-9). Ids only. */
+/** Moderator actions leave audit rows in the same transaction (FR-MOD-004, spec A12-9). Ids and codes only. */
 export type ModerationAuditEntry =
   | {
       action: "report.claimed" | "report.resolved" | "report.dismissed";
       actorId: string;
       reportId: string;
-      targetType: "POST" | "COMMENT";
+      targetType: ReportTargetType;
       targetId: string;
     }
   | {
-      action: "post.removed" | "comment.removed";
+      action: "post.removed" | "comment.removed" | "message.hidden";
       actorId: string;
       reportId: string;
       contentId: string;
     };
 export type ModerationTx = {
-  /** Cross-module read: resolves a POST/COMMENT target's author id without importing modules/posts. */
+  /** Cross-module read: who owns the target (author, sender, or the user itself), for the self-review guard. */
   contentAuthor(
-    targetType: "POST" | "COMMENT",
+    targetType: ReportTargetType,
     targetId: string
   ): Promise<string | null>;
   insertReport(input: {
     reporterId: string;
-    targetType: "POST" | "COMMENT";
+    targetType: ModerationTarget;
     targetId: string;
     reason: string;
   }): Promise<{ id: string; created: boolean }>;
+  /** Locks the report row (FOR UPDATE): concurrent decisions on one report are serialised. */
   findReport(id: string): Promise<ReportRow | null>;
   patchReport(
     id: string,
-    patch: { status: string; resolvedById?: string }
+    patch: { status: ReportState; resolvedById?: string }
   ): Promise<void>;
-  /** Cross-module write: soft-deletes the reported row directly by SQL (no import of modules/posts). */
+  /** Cross-module write: soft-deletes the reported post/comment by SQL (no import of modules/posts). */
   softDeleteContent(
-    targetType: "POST" | "COMMENT",
+    targetType: ModerationTarget,
     targetId: string
   ): Promise<void>;
+  /** Cross-module write: sets message.hidden_at once. True only when this call hid it. */
+  hideMessage(messageId: string): Promise<boolean>;
   enqueue(event: {
     type: "report.filed" | "report.resolved" | "content.removed";
     payload: unknown;

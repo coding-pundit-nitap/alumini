@@ -10,7 +10,13 @@ import type {
   ModerationTx,
   ReportRow,
 } from "../application/moderation-store";
-import { findContentAuthor, softDeleteContentSql } from "./sql";
+import { findContentAuthor, hideMessageSql, softDeleteContentSql } from "./sql";
+
+const CONTENT_TARGET = {
+  "post.removed": "post",
+  "comment.removed": "comment",
+  "message.hidden": "message",
+} as const;
 
 export function createPrismaModerationStore(deps: {
   runner: Pick<TransactionRunner, "run">;
@@ -38,10 +44,11 @@ export function createPrismaModerationStore(deps: {
       return { id: row.id, created: count === 1 };
     },
     async findReport(id) {
-      const row = await db.report.findFirst({
-        where: { id, targetType: { in: ["POST", "COMMENT"] } },
-      });
-      return row as ReportRow | null;
+      const rows = await db.$queryRaw<ReportRow[]>`
+        SELECT id, reporter_id AS "reporterId", target_type::text AS "targetType", target_id AS "targetId",
+          reason, status::text AS status, resolved_by_id AS "resolvedById", created_at AS "createdAt"
+        FROM "report" WHERE id = ${id}::uuid FOR UPDATE`;
+      return rows[0] ?? null;
     },
     async patchReport(id, patch) {
       await db.report.update({
@@ -51,6 +58,9 @@ export function createPrismaModerationStore(deps: {
     },
     async softDeleteContent(targetType, targetId) {
       await db.$executeRaw(softDeleteContentSql(targetType, targetId));
+    },
+    async hideMessage(messageId) {
+      return (await db.$executeRaw(hideMessageSql(messageId))) === 1;
     },
     async enqueue(event) {
       await deps.outbox.add(db, event as OutboxEvent);
@@ -62,7 +72,7 @@ export function createPrismaModerationStore(deps: {
           ? {
               actorId: entry.actorId,
               action: entry.action,
-              targetType: entry.action === "post.removed" ? "post" : "comment",
+              targetType: CONTENT_TARGET[entry.action],
               targetId: entry.contentId,
               metadata: { reportId: entry.reportId },
             }

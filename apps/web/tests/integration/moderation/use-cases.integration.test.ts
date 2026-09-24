@@ -129,26 +129,144 @@ describe("moderation use cases against real PostgreSQL", () => {
     });
   });
 
-  it("claim/resolve/dismiss refuse NOT_FOUND on a MESSAGE-scoped report id (cross-module leak guard)", async () => {
-    const meera = await member(db, "Meera");
-    const m = build(new Set([meera]));
-    const messageReport = await db.prisma.report.create({
-      data: {
-        reporterId: ravi,
-        targetType: "MESSAGE",
-        targetId: postId,
-        reason: "spam",
-      },
+  describe("MESSAGE and USER reports (spec C12-1, C12-2)", () => {
+    async function reportedMessage(senderId: string, reporterId: string) {
+      const [lo, hi] = [senderId, reporterId].sort();
+      const conversation = await db.prisma.conversation.create({
+        data: {
+          createdById: senderId,
+          isGroup: false,
+          directPairKey: `${lo}:${hi}`,
+        },
+      });
+      await db.prisma.conversationParticipant.createMany({
+        data: [
+          { conversationId: conversation.id, userId: senderId },
+          { conversationId: conversation.id, userId: reporterId },
+        ],
+      });
+      const message = await db.prisma.message.create({
+        data: {
+          conversationId: conversation.id,
+          senderId,
+          body: "rude",
+          clientMessageId: crypto.randomUUID(),
+        },
+      });
+      const report = await db.prisma.report.create({
+        data: {
+          reporterId,
+          targetType: "MESSAGE",
+          targetId: message.id,
+          reason: "rude",
+        },
+      });
+      return { messageId: message.id, reportId: report.id };
+    }
+
+    it("resolving a MESSAGE report hides it and audits report.resolved + message.hidden, no content.removed", async () => {
+      const meera = await member(db, "Meera");
+      const m = build(new Set([meera]));
+      const { messageId, reportId } = await reportedMessage(asha, ravi);
+      await m.resolve({ actor: actor(meera), reportId });
+
+      const message = await db.prisma.message.findUniqueOrThrow({
+        where: { id: messageId },
+      });
+      expect(message.hiddenAt).not.toBeNull();
+      const audit = await db.prisma.auditLog.findMany({
+        orderBy: { action: "asc" },
+      });
+      expect(audit.map((a) => [a.action, a.targetType, a.targetId])).toEqual([
+        ["message.hidden", "message", messageId],
+        ["report.resolved", "report", reportId],
+      ]);
+      expect(audit[0]!.metadata).toEqual({ reportId });
+      expect(await events("content.removed")).toHaveLength(0);
+      expect(await events("report.resolved")).toHaveLength(1);
     });
+
+    it("a moderator who sent the reported message may not claim, resolve or dismiss it", async () => {
+      const m = build(new Set([asha]));
+      const { reportId } = await reportedMessage(asha, ravi);
+      expect(await code(m.claim({ actor: actor(asha), reportId }))).toBe(
+        "SELF_REVIEW_FORBIDDEN"
+      );
+      expect(await code(m.resolve({ actor: actor(asha), reportId }))).toBe(
+        "SELF_REVIEW_FORBIDDEN"
+      );
+      expect(await code(m.dismiss({ actor: actor(asha), reportId }))).toBe(
+        "SELF_REVIEW_FORBIDDEN"
+      );
+    });
+
+    it("resolving a report on a message that no longer exists succeeds without a message.hidden row", async () => {
+      const meera = await member(db, "Meera");
+      const m = build(new Set([meera]));
+      const report = await db.prisma.report.create({
+        data: {
+          reporterId: ravi,
+          targetType: "MESSAGE",
+          targetId: "00000000-0000-4000-8000-000000000999",
+          reason: "gone",
+        },
+      });
+      await m.resolve({ actor: actor(meera), reportId: report.id });
+      expect(
+        (await db.prisma.report.findUniqueOrThrow({ where: { id: report.id } }))
+          .status
+      ).toBe("RESOLVED");
+      expect(
+        await db.prisma.auditLog.count({ where: { action: "message.hidden" } })
+      ).toBe(0);
+    });
+
+    it("a USER report resolves with no side effect; the user may not review a report about themselves", async () => {
+      const meera = await member(db, "Meera");
+      const m = build(new Set([meera, asha]));
+      const report = await db.prisma.report.create({
+        data: {
+          reporterId: ravi,
+          targetType: "USER",
+          targetId: asha,
+          reason: "impersonation",
+        },
+      });
+      expect(
+        await code(m.resolve({ actor: actor(asha), reportId: report.id }))
+      ).toBe("SELF_REVIEW_FORBIDDEN");
+      await m.resolve({ actor: actor(meera), reportId: report.id });
+      const user = await db.prisma.user.findUniqueOrThrow({
+        where: { id: asha },
+      });
+      expect(user.accountState).toBe("VERIFIED");
+      expect(
+        (await db.prisma.auditLog.findMany()).map((a) => a.action)
+      ).toEqual(["report.resolved"]);
+    });
+  });
+
+  it("two concurrent resolutions of one report: one wins, the other is INVALID_STATE_TRANSITION (Review Focus 1)", async () => {
+    const [meera, kiran] = [
+      await member(db, "Meera"),
+      await member(db, "Kiran"),
+    ];
+    const m = build(new Set([meera, kiran]));
+    const { reportId } = await m.file({
+      actor: actor(ravi),
+      input: { targetType: "POST", targetId: postId, reason: "spam" },
+    });
+    const outcomes = await Promise.all([
+      code(m.resolve({ actor: actor(meera), reportId })),
+      code(m.dismiss({ actor: actor(kiran), reportId })),
+    ]);
+    expect(outcomes.sort()).toEqual(["INVALID_STATE_TRANSITION", "ok"]);
     expect(
-      await code(m.claim({ actor: actor(meera), reportId: messageReport.id }))
-    ).toBe("NOT_FOUND");
-    expect(
-      await code(m.resolve({ actor: actor(meera), reportId: messageReport.id }))
-    ).toBe("NOT_FOUND");
-    expect(
-      await code(m.dismiss({ actor: actor(meera), reportId: messageReport.id }))
-    ).toBe("NOT_FOUND");
+      await db.prisma.auditLog.count({
+        where: { action: { in: ["report.resolved", "report.dismissed"] } },
+      })
+    ).toBe(1);
+    expect(await events("report.resolved")).toHaveLength(1);
   });
 
   describe("claim-report", () => {

@@ -6,14 +6,65 @@ import type { Actor } from "@/modules/auth";
 
 import { decideResolve } from "../domain/moderation";
 import type { Authorize } from "./authz";
-import type { ModerationStore } from "./moderation-store";
+import type {
+  ModerationStore,
+  ModerationTx,
+  ReportRow,
+} from "./moderation-store";
 import { refuse } from "./refusal";
 
+/** What resolving does to the reported thing (spec C12-2). Exhaustive: a new target type fails to compile. */
+async function applyResolution(
+  tx: ModerationTx,
+  report: ReportRow,
+  actorId: string
+) {
+  const targetType = report.targetType;
+  switch (targetType) {
+    case "POST":
+    case "COMMENT":
+      await tx.softDeleteContent(targetType, report.targetId);
+      await tx.audit({
+        action: targetType === "POST" ? "post.removed" : "comment.removed",
+        actorId,
+        reportId: report.id,
+        contentId: report.targetId,
+      });
+      await tx.enqueue({
+        type: "content.removed",
+        payload: {
+          v: 1,
+          targetType,
+          targetId: report.targetId,
+          reportId: report.id,
+        } satisfies ContentRemovedPayload,
+      });
+      return;
+    case "MESSAGE":
+      // No content.removed: its copy says "post or comment" (spec C-5).
+      if (await tx.hideMessage(report.targetId))
+        await tx.audit({
+          action: "message.hidden",
+          actorId,
+          reportId: report.id,
+          contentId: report.targetId,
+        });
+      return;
+    case "USER":
+      return; // suspension is a separate, deliberate step on /admin/users/[id]
+    default: {
+      const unhandled: never = targetType;
+      throw new Error(`Unhandled report target: ${String(unhandled)}`);
+    }
+  }
+}
+
 /**
- * FR-MOD-003, spec C-8. `tx.patchReport` and `tx.softDeleteContent` run inside the SAME transaction as the
- * store's `.transaction()` call, so a mid-transaction failure leaves neither the report's status changed
- * nor the reported post/comment soft-deleted. Resolving your own report or your own content is refused
- * SELF_REVIEW_FORBIDDEN; resolving an already-terminal report is refused INVALID_STATE_TRANSITION.
+ * FR-MOD-003, spec C-8. `tx.patchReport` and the per-type side effect (`applyResolution`) run inside the
+ * SAME transaction as the store's `.transaction()` call, so a mid-transaction failure leaves neither the
+ * report's status changed nor the target touched. Resolving soft-deletes a post/comment, hides a message,
+ * or (USER) changes nothing beyond the report itself. Resolving your own report or your own content is
+ * refused SELF_REVIEW_FORBIDDEN; resolving an already-terminal report is refused INVALID_STATE_TRANSITION.
  */
 export function createResolveReport(deps: {
   store: ModerationStore;
@@ -46,7 +97,6 @@ export function createResolveReport(deps: {
         status: decision.to,
         resolvedById: actorId,
       });
-      await tx.softDeleteContent(report.targetType, report.targetId);
       await tx.audit({
         action: "report.resolved",
         actorId,
@@ -54,14 +104,7 @@ export function createResolveReport(deps: {
         targetType: report.targetType,
         targetId: report.targetId,
       });
-      await tx.audit({
-        action:
-          report.targetType === "POST" ? "post.removed" : "comment.removed",
-        actorId,
-        reportId: report.id,
-        contentId: report.targetId,
-      });
-
+      await applyResolution(tx, report, actorId);
       await tx.enqueue({
         type: "report.resolved",
         payload: {
@@ -69,15 +112,6 @@ export function createResolveReport(deps: {
           reportId: report.id,
           outcome: "resolved",
         } satisfies ReportResolvedPayload,
-      });
-      await tx.enqueue({
-        type: "content.removed",
-        payload: {
-          v: 1,
-          targetType: report.targetType,
-          targetId: report.targetId,
-          reportId: report.id,
-        } satisfies ContentRemovedPayload,
       });
     });
   };
