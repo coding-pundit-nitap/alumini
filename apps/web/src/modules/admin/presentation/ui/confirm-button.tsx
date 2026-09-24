@@ -13,7 +13,7 @@ import {
 } from "@nitap/ui/components/alert-dialog";
 import { Button } from "@nitap/ui/components/button";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type ReactNode } from "react";
+import { useId, useState, useTransition, type ReactNode } from "react";
 
 import type { ActionResult } from "@/lib/action-result";
 
@@ -36,12 +36,22 @@ export function ConfirmButton(props: {
   ready?: boolean;
   disabledReason?: string | undefined;
   action: AccessAction;
+  /** Called whenever the dialog closes, so a form inside it starts empty next time. */
+  onClose?: () => void;
   children?: ReactNode;
 }) {
   const router = useRouter();
+  const reasonId = useId();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  function onOpenChange(next: boolean) {
+    setOpen(next);
+    if (next) return;
+    setError(null);
+    props.onClose?.();
+  }
 
   function submit() {
     const form = new FormData();
@@ -55,15 +65,14 @@ export function ConfirmButton(props: {
         );
         return;
       }
-      setError(null);
-      setOpen(false);
+      onOpenChange(false);
       router.refresh();
     });
   }
 
   return (
     <div className="flex flex-col gap-1">
-      <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialog open={open} onOpenChange={onOpenChange}>
         <AlertDialogTrigger
           render={
             <Button
@@ -71,6 +80,7 @@ export function ConfirmButton(props: {
               size="sm"
               variant={props.variant ?? "outline"}
               disabled={props.disabledReason !== undefined}
+              aria-describedby={props.disabledReason ? reasonId : undefined}
             />
           }
         >
@@ -102,7 +112,9 @@ export function ConfirmButton(props: {
         </AlertDialogContent>
       </AlertDialog>
       {props.disabledReason ? (
-        <p className="text-muted-foreground text-xs">{props.disabledReason}</p>
+        <p id={reasonId} className="text-muted-foreground text-xs">
+          {props.disabledReason}
+        </p>
       ) : null}
     </div>
   );

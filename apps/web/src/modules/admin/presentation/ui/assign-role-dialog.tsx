@@ -38,6 +38,7 @@ export function AssignRoleDialog(props: {
       ready={role !== ""}
       disabledReason={props.disabledReason}
       action={props.action}
+      onClose={() => setRole("")}
     >
       <div className="flex flex-col gap-1">
         <label htmlFor={roleId} className="text-sm font-medium">

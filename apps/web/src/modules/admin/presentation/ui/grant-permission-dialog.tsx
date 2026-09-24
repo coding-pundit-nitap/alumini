@@ -17,6 +17,12 @@ const message = (reason: Reason) =>
     : reason === "NOT_SCOPABLE"
       ? "This permission cannot be scoped to a chapter."
       : ESCALATION_MESSAGES[reason];
+/** `datetime-local` wants local wall time without an offset. Only rendered while open, so client-only. */
+function localNow() {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
 const withReason = (label: string, reason: Reason) =>
   reason ? `${label} — ${message(reason)}` : label;
 
@@ -62,6 +68,12 @@ export function GrantPermissionDialog(props: {
       }
       disabledReason={props.disabledReason}
       action={props.action}
+      onClose={() => {
+        setPermission("");
+        setScope("");
+        setChapterId("");
+        setExpires("");
+      }}
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
@@ -146,6 +158,7 @@ export function GrantPermissionDialog(props: {
           <Input
             id={ids.expires}
             type="datetime-local"
+            min={localNow()}
             value={expires}
             onChange={(e) => setExpires(e.target.value)}
           />

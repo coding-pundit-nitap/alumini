@@ -23,6 +23,7 @@ import {
   STATE_LABEL,
   TARGET_STATES,
   canTransition,
+  isUuid,
   type AccountStateValue,
 } from "@/modules/admin";
 import { can, getActor, PERMISSIONS } from "@/modules/auth";
@@ -47,7 +48,7 @@ export default async function UserPage({
 }) {
   const { id } = await params;
   const actor = await getActor();
-  if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
+  if (!isUuid(id)) notFound();
 
   let view;
   try {
@@ -117,7 +118,9 @@ export default async function UserPage({
               ? ` · deactivated ${user.deactivatedAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}`
               : ""}
           </p>
-          {transitions.length > 0 ? (
+          {isSelf ? (
+            <p className="text-muted-foreground text-sm">{SELF_NOTE}</p>
+          ) : transitions.length > 0 ? (
             <div className="flex flex-wrap items-start gap-3">
               {transitions.map((to) => (
                 <AccountStateDialog

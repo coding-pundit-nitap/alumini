@@ -44,6 +44,18 @@ export function AccessList(props: {
       : undefined;
   };
 
+  // E2 applies to revoking as to granting: the same scope the grant sits in.
+  const grantBlock = (g: UserDetail["grants"][number]) => {
+    if (props.blocked) return props.blocked;
+    const opt = props.options.permissions.find(
+      (p) => p.permission === g.permission
+    );
+    const reason = g.scope === "GLOBAL" ? opt?.global : opt?.chapter;
+    return reason === undefined || reason === "NOT_SCOPABLE"
+      ? undefined
+      : ESCALATION_MESSAGES[reason];
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-2">
@@ -132,7 +144,7 @@ export function AccessList(props: {
                         description="They lose this permission on their next request."
                         confirmLabel="Revoke"
                         fields={{ userId: user.id, grantId: g.id }}
-                        disabledReason={props.blocked}
+                        disabledReason={grantBlock(g)}
                         action={props.revokeGrant}
                       />
                     </TableCell>

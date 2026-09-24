@@ -34,6 +34,7 @@ export function AccountStateDialog(props: {
       ready={!needsReason || reason !== ""}
       disabledReason={props.disabledReason}
       action={props.action}
+      onClose={() => setReason("")}
     >
       {needsReason ? (
         <div className="flex flex-col gap-1">

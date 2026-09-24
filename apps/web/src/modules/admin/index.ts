@@ -42,7 +42,7 @@ export type { UserDetail, UserRow } from "./application/admin-store";
 export type { AccessOptions } from "./domain/escalation";
 export { ESCALATION_MESSAGES } from "./domain/escalation";
 export { SUSPENSION_REASONS, TARGET_STATES } from "./domain/lifecycle";
-export { userListQuerySchema } from "./domain/user-query";
+export { isUuid, userListQuerySchema } from "./domain/user-query";
 export { AccessList } from "./presentation/ui/access-list";
 export { AccountStateDialog } from "./presentation/ui/account-state-dialog";
 export { AssignRoleDialog } from "./presentation/ui/assign-role-dialog";
