@@ -4,6 +4,12 @@ export { redact, REDACTED } from "./redact.ts";
 export { getMetrics, setMetrics, noopMetrics } from "./metrics.ts";
 export type { Metrics, MetricLabels } from "./metrics.ts";
 export {
+  createPrometheusMetrics,
+  getPrometheusMetrics,
+  recordPoolStats,
+} from "./prometheus.ts";
+export type { PrometheusMetrics } from "./prometheus.ts";
+export {
   getRequestContext,
   runWithRequestContext,
   setRequestUser,

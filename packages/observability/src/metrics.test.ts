@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import {
   getMetrics,
   noopMetrics,
@@ -28,5 +28,18 @@ describe("Metrics port (decision D10)", () => {
     setMetrics(recording);
     getMetrics().increment("x_total", { a: "b" });
     expect(calls).toEqual([["increment", "x_total", { a: "b" }]]);
+  });
+
+  it("keeps the installed adapter across a module re-import (one slot per process, OD-7)", async () => {
+    const recording: Metrics = {
+      increment: vi.fn(),
+      observe: vi.fn(),
+      gauge: vi.fn(),
+    };
+    setMetrics(recording);
+    vi.resetModules();
+    const fresh = await import("./metrics.ts");
+    expect(fresh.getMetrics()).toBe(recording);
+    fresh.setMetrics(fresh.noopMetrics);
   });
 });

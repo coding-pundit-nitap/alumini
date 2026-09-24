@@ -3,6 +3,7 @@
  * (Prometheus/OpenTelemetry) with `setMetrics` without touching a call site.
  * Names follow Prometheus conventions (`http_requests_total`, `..._seconds`); labels stay low-cardinality
  * (never user ids or raw URLs).
+ * State lives on globalThis so separate Next.js bundles share it (OD-7).
  */
 export type MetricLabels = Record<string, string | number | boolean>;
 
@@ -21,12 +22,13 @@ export const noopMetrics: Metrics = {
   gauge() {},
 };
 
-let current: Metrics = noopMetrics;
+const SLOT = Symbol.for("nitap.metrics");
+const slot = globalThis as unknown as Record<symbol, Metrics | undefined>;
 
 export function getMetrics(): Metrics {
-  return current;
+  return slot[SLOT] ?? noopMetrics;
 }
 
 export function setMetrics(metrics: Metrics): void {
-  current = metrics;
+  slot[SLOT] = metrics;
 }
