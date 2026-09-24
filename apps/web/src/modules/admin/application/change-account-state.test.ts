@@ -97,6 +97,7 @@ describe("changeAccountState (spec B12-1, B12-5, B12-6)", () => {
     );
     expect(s.calls).not.toContain("deleteSessions");
     expect(s.audits[0]?.action).toBe("user.reactivated");
+    expect(s.audits[0]?.metadata.previousState).toBe("SUSPENDED");
   });
   it("deactivates a suspended account", async () => {
     const s = setup("SUSPENDED");
@@ -106,6 +107,7 @@ describe("changeAccountState (spec B12-1, B12-5, B12-6)", () => {
       input: { accountState: "DEACTIVATED", reason: "OTHER" },
     });
     expect(s.users.get(T)?.accountState).toBe("DEACTIVATED");
+    expect(s.audits[0]?.metadata.previousState).toBe("SUSPENDED");
   });
   it("409s an invalid transition with details", async () => {
     await expect(

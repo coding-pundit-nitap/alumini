@@ -26,7 +26,8 @@ export function fakeAccessStore(seed: {
       return work({
         async findUserForUpdate(id) {
           calls.push("findUserForUpdate");
-          return users.get(id) ?? null;
+          const u = users.get(id);
+          return u ? { ...u, roles: [...u.roles] } : null;
         },
         async setAccountState(id, from, to) {
           calls.push("setAccountState");
