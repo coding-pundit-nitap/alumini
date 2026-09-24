@@ -22,7 +22,8 @@ export type DecideResult =
 /**
  * A human reviewer approves or rejects a verification request (FR-AUTH-003a). There is no other path
  * to APPROVED. Everything a decision changes happens in ONE transaction, so it commits or rolls back
- * as a whole: request, account state, role, institutional profile fields, audit row and the email.
+ * as a whole: request, account state, role, institutional profile fields, audit row, the email and
+ * the in-app notice event.
  *
  * Authorization is the grant check first; the self-review rule is then explicit so the client gets
  * SELF_REVIEW_FORBIDDEN (the DECIDE guardrail and a database CHECK back it). The role is injected:
@@ -105,6 +106,15 @@ export function createDecideVerificationRequest(deps: {
             ? "verification-approved"
             : "verification-rejected",
         params: {},
+      });
+      await tx.enqueue({
+        type: "verification.decided",
+        payload: {
+          v: 1,
+          requestId: request.id,
+          userId: request.userId,
+          decision: args.decision,
+        },
       });
       await tx.recordAudit({
         actorId: reviewer.userId,

@@ -153,6 +153,17 @@ describe("decideVerificationRequest: approving", () => {
         params: {},
       },
     ]);
+    expect(fake.events).toEqual([
+      {
+        type: "verification.decided",
+        payload: {
+          v: 1,
+          requestId: "req-1",
+          userId: "u1",
+          decision: "APPROVED",
+        },
+      },
+    ]);
   });
 
   it("records the previous institutional values when they were already set", async () => {
@@ -244,6 +255,9 @@ describe("decideVerificationRequest: rejecting", () => {
       template: "verification-rejected",
       params: {},
     });
+    expect(fake.events.map((e) => e.payload)).toEqual([
+      { v: 1, requestId: "req-1", userId: "u1", decision: "REJECTED" },
+    ]);
   });
 
   it("keeps an already REJECTED account REJECTED when a resubmission is rejected again", async () => {
@@ -348,6 +362,7 @@ describe("decideVerificationRequest: idempotence and atomicity", () => {
     ]);
     expect(fake.emails).toHaveLength(1);
     expect(fake.roles).toHaveLength(1);
+    expect(fake.events).toHaveLength(1);
   });
 
   it("reports already_decided when another reviewer wins the race for the guarded update", async () => {
@@ -363,6 +378,7 @@ describe("decideVerificationRequest: idempotence and atomicity", () => {
     expect(result).toEqual({ outcome: "already_decided" });
     expect(fake.audits).toEqual([]);
     expect(fake.accounts.get("u1")?.accountState).toBe("PENDING");
+    expect(fake.events).toEqual([]);
   });
 
   it("refuses to review a suspended account and leaves the request queued", async () => {
@@ -381,6 +397,7 @@ describe("decideVerificationRequest: idempotence and atomicity", () => {
     "applyInstitutionalFields",
     "assignRole",
     "enqueueEmail",
+    "enqueue",
     "recordAudit",
   ] as const)("rolls EVERYTHING back when %s fails", async (failOn) => {
     const { fake, decide } = setup({ failOn });
@@ -395,5 +412,6 @@ describe("decideVerificationRequest: idempotence and atomicity", () => {
     expect(fake.profiles.size).toBe(0);
     expect(fake.emails).toEqual([]);
     expect(fake.audits).toEqual([]);
+    expect(fake.events).toEqual([]);
   });
 });

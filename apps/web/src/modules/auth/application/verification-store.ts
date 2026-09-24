@@ -1,4 +1,4 @@
-import type { EmailSendPayload } from "@nitap/jobs";
+import type { EmailSendPayload, VerificationDecidedPayload } from "@nitap/jobs";
 
 import type {
   CrossCheck,
@@ -97,6 +97,11 @@ export type VerificationTx = {
     grantedBy: string
   ): Promise<void>;
   enqueueEmail(payload: EmailSendPayload): Promise<void>;
+  /** Writes an outbox event in this transaction (spec D12-8). */
+  enqueue(event: {
+    type: "verification.decided";
+    payload: VerificationDecidedPayload;
+  }): Promise<void>;
   recordAudit(entry: AuditRecord): Promise<void>;
 };
 export type ReferenceOption = { id: string; name: string };

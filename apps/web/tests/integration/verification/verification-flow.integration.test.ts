@@ -194,9 +194,9 @@ describe("alumni verification against real PostgreSQL", () => {
         to: { departmentId, degreeId, graduationYear: 2019 },
       },
     });
-    const emails = (await db.prisma.outboxEvent.findMany()).map(
-      (e) => e.payload
-    );
+    const emails = (
+      await db.prisma.outboxEvent.findMany({ where: { type: "email.send" } })
+    ).map((e) => e.payload);
     expect(emails).toEqual([
       {
         v: 1,
@@ -204,6 +204,12 @@ describe("alumni verification against real PostgreSQL", () => {
         template: "verification-approved",
         params: {},
       },
+    ]);
+    const decided = await db.prisma.outboxEvent.findMany({
+      where: { type: "verification.decided" },
+    });
+    expect(decided.map((e) => e.payload)).toEqual([
+      { v: 1, requestId, userId: asha.id, decision: "APPROVED" },
     ]);
   });
 
@@ -309,7 +315,8 @@ describe("alumni verification against real PostgreSQL", () => {
     expect(await db.prisma.userRole.count({ where: { userId: asha.id } })).toBe(
       1
     );
-    expect(await db.prisma.outboxEvent.count()).toBe(1);
+    // one email.send + one verification.decided
+    expect(await db.prisma.outboxEvent.count()).toBe(2);
   });
 
   it("two simultaneous submissions produce one open request and one conflict", async () => {

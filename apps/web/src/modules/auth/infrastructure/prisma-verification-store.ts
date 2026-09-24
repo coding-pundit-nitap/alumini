@@ -143,6 +143,10 @@ function createTx(tx: Prisma.TransactionClient, deps: Deps): VerificationTx {
       await deps.outbox.add(tx, { type: "email.send", payload });
     },
 
+    async enqueue(event) {
+      await deps.outbox.add(tx, event);
+    },
+
     async recordAudit(entry) {
       await deps.audit.record(tx, entry);
     },

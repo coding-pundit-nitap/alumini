@@ -17,6 +17,7 @@ type State = {
   profiles: Map<string, PreviousInstitutionalFields>;
   emails: EmailSendPayload[];
   audits: AuditRecord[];
+  events: { type: string; payload: unknown }[];
 };
 
 /**
@@ -35,6 +36,7 @@ export function createFakeVerificationStore(
     profiles: new Map(),
     emails: [],
     audits: [],
+    events: [],
   };
   let sequence = 0;
   let decideLost = false;
@@ -132,6 +134,9 @@ export function createFakeVerificationStore(
     enqueueEmail: wrap("enqueueEmail", async (payload) => {
       state.emails.push(payload);
     }),
+    enqueue: wrap("enqueue", async (event) => {
+      state.events.push(event);
+    }),
     recordAudit: wrap("recordAudit", async (entry) => {
       state.audits.push({ ...entry });
     }),
@@ -210,6 +215,9 @@ export function createFakeVerificationStore(
     },
     get audits() {
       return state.audits;
+    },
+    get events() {
+      return state.events;
     },
     /** The next decideRequest reports that another reviewer got there first. */
     loseDecideRace: () => {
