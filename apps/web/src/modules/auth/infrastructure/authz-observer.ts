@@ -1,11 +1,26 @@
+import { audit } from "@/infrastructure/audit";
 import { getMetrics, logger } from "@/infrastructure/observability";
 
 import type { AuthzObserver } from "../application/authorize";
+import { createDeniedAudit } from "./denied-audit";
+
+// The client is imported lazily so a module that merely wires up authorize() (e.g. under unit test,
+// where DATABASE_URL is unset) never loads it; it is only needed once an admin-tier denial actually occurs.
+const recordDenied = createDeniedAudit({
+  write: async (entry) => {
+    const { prisma } = await import("@/infrastructure/database/client");
+    await audit.record(prisma, entry);
+  },
+  onDropped: () => getMetrics().increment("authz_denied_audit_dropped_total"),
+  onFailed: (error) => {
+    logger.warn("authz.denied.audit_failed", { error });
+    getMetrics().increment("authz_denied_audit_failed_total");
+  },
+});
 
 /**
- * Every decision is counted (labels stay low-cardinality: permission names and outcomes, never user
- * ids); every denial is logged. There is no audit row yet: the audit table arrives with 2D, which is
- * when the admin-tier `authz.denied` audit (RBAC §9) is wired in.
+ * Every decision is counted (labels stay low-cardinality); every denial is logged; an admin-tier denial also
+ * leaves a best-effort `authz.denied` audit row (RBAC §9, spec B12-13).
  */
 export const authzObserver: AuthzObserver = {
   record(event) {
@@ -22,6 +37,7 @@ export const authzObserver: AuthzObserver = {
           requestId: event.requestId,
         },
       });
+      recordDenied(event);
     }
   },
 };
