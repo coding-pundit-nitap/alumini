@@ -42,7 +42,6 @@ export default defineConfig({
             ".next/**",
             "src/**/*.{dom,integration,contract}.test.ts",
             "src/hooks/**",
-            "src/components/**",
             // Real-Postgres security suites under tests/security use the *.integration.test.ts
             // suffix like everywhere else; they run in the "integration" project below, which has
             // the globalSetup that provisions the template database.
