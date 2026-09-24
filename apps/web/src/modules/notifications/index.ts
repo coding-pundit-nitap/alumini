@@ -5,6 +5,8 @@ export { NOTIFICATION_DOMAINS } from "./infrastructure/notification-domains";
 export { createPrismaNotificationStore } from "./infrastructure/prisma-notification-store";
 export { createRedisUnreadCounter } from "./infrastructure/redis-unread-counter";
 export { createReplayNotifications } from "./application/replay-notifications";
+export { createListFailedDeliveries } from "./application/list-failed-deliveries";
+export type { EmailDeliveryRow } from "./application/notification-store";
 export { NotificationBell } from "./presentation/ui/notification-bell";
 export { useNotifications } from "./presentation/ui/use-notifications";
 export type { BellNotification } from "./presentation/ui/use-notifications";

@@ -125,4 +125,76 @@ describe("prisma notification store", () => {
     expect(prefs).toHaveLength(1);
     expect(prefs[0]!.enabled).toBe(true);
   });
+
+  it("listEmailDeliveries returns EMAIL rows of one status, newest first, with the recipient", async () => {
+    const store = createPrismaNotificationStore(db.prisma);
+    const make = async (
+      key: string,
+      status: "FAILED" | "PENDING" | "SENT",
+      channel: "EMAIL" | "IN_APP" = "EMAIL"
+    ) => {
+      const n = await db.prisma.notification.create({
+        data: {
+          recipientId: userId,
+          type: "job.published",
+          category: "ENGAGEMENT",
+          payload: {},
+          dedupeKey: key,
+        },
+      });
+      await db.prisma.notificationDelivery.create({
+        data: {
+          notificationId: n.id,
+          channel,
+          status,
+          attempts: 3,
+          lastError: status === "FAILED" ? "smtp 550" : null,
+        },
+      });
+      return n.id;
+    };
+    const failedA = await make("f-a", "FAILED");
+    const failedB = await make("f-b", "FAILED");
+    await make("f-inapp", "FAILED", "IN_APP");
+    await make("s", "SENT");
+    const pending = await make("p", "PENDING");
+
+    const failed = await store.listEmailDeliveries({
+      status: "FAILED",
+      take: 10,
+    });
+    expect(failed.map((d) => d.notificationId)).toEqual([failedB, failedA]);
+    expect(failed[0]).toMatchObject({
+      recipient: { id: userId, email: "store@nitap.ac.in" },
+      lastError: "smtp 550",
+    });
+
+    expect(
+      await store.listEmailDeliveries({
+        status: "PENDING",
+        updatedBefore: new Date(Date.now() - 3_600_000),
+        take: 10,
+      })
+    ).toEqual([]);
+    // Controller ruling: scope the back-date to the PENDING row only, or it also back-dates the FAILED
+    // rows above and corrupts the keyset cursor assertion (`after: failed[0]`) that follows.
+    await db.prisma
+      .$executeRaw`UPDATE notification_delivery SET updated_at = now() - interval '2 hours' WHERE status = 'PENDING'`;
+    expect(
+      (
+        await store.listEmailDeliveries({
+          status: "PENDING",
+          updatedBefore: new Date(Date.now() - 3_600_000),
+          take: 10,
+        })
+      ).map((d) => d.notificationId)
+    ).toEqual([pending]);
+
+    const page2 = await store.listEmailDeliveries({
+      status: "FAILED",
+      after: { updatedAt: failed[0]!.updatedAt, id: failed[0]!.id },
+      take: 10,
+    });
+    expect(page2.map((d) => d.notificationId)).toEqual([failedA]);
+  });
 });

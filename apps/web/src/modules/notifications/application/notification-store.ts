@@ -7,6 +7,16 @@ export type NotificationRow = {
   createdAt: Date;
 };
 
+export type EmailDeliveryRow = {
+  id: string;
+  notificationId: string;
+  type: string;
+  recipient: { id: string; email: string };
+  attempts: number;
+  lastError: string | null;
+  updatedAt: Date;
+};
+
 export type NotificationStore = {
   insert(input: {
     recipientId: string;
@@ -24,6 +34,13 @@ export type NotificationStore = {
   }): Promise<void>;
   /** Dedupe key (the email job id) when the notification's EMAIL delivery is FAILED, else null. */
   failedEmailJobId(notificationId: string): Promise<string | null>;
+  /** EMAIL deliveries of one status, newest first (`updated_at DESC, id DESC`), keyset-paged. */
+  listEmailDeliveries(input: {
+    status: "FAILED" | "PENDING";
+    after?: { updatedAt: Date; id: string };
+    updatedBefore?: Date;
+    take: number;
+  }): Promise<EmailDeliveryRow[]>;
   list(input: {
     recipientId: string;
     cursor?: { createdAt: Date; id: string };

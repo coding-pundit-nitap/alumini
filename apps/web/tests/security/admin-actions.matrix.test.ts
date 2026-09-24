@@ -40,6 +40,7 @@ import { createListReports } from "@/modules/moderation/application/list-reports
 import { createResolveReport } from "@/modules/moderation/application/resolve-report";
 import { createReadReportedMessage } from "@/modules/messaging/application/read-reported-message";
 import { createReplayNotifications } from "@/modules/notifications/application/replay-notifications";
+import { createListFailedDeliveries } from "@/modules/notifications/application/list-failed-deliveries";
 
 import { readRoleMatrixFromDoc } from "../support/rbac-matrix-doc";
 
@@ -193,6 +194,16 @@ const ADMIN_ACTIONS: ReadonlyArray<{
         failedEmailJobId: tripwire(),
         audit: tripwire(),
       }).replay({ actor, notificationId: ID }),
+  },
+  {
+    name: "listFailedDeliveries",
+    permission: PERMISSIONS.NOTIFICATION_REPLAY,
+    run: (actor) =>
+      createListFailedDeliveries({
+        store: tripwire(),
+        authorize,
+        now: () => new Date(),
+      })({ actor }),
   },
   {
     name: "listAuditLog",

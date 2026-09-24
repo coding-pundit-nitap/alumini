@@ -8,6 +8,7 @@ import { authorize } from "@/modules/auth";
 import {
   createNotificationUseCases,
   createReplayNotifications,
+  createListFailedDeliveries,
   createRedisUnreadCounter,
   NOTIFICATION_DOMAINS,
   createPrismaNotificationStore,
@@ -45,3 +46,9 @@ const replayUseCases = createReplayNotifications({
 
 export const authorizeNotificationReplay = replayUseCases.check;
 export const replayNotifications = replayUseCases.replay;
+
+export const listFailedDeliveries = createListFailedDeliveries({
+  store,
+  authorize,
+  now: () => new Date(),
+});

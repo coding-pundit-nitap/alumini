@@ -42,6 +42,50 @@ export function createPrismaNotificationStore(
       return row?.status === "FAILED" ? row.notification.dedupeKey : null;
     },
 
+    async listEmailDeliveries({ status, after, updatedBefore, take }) {
+      const rows = await prisma.notificationDelivery.findMany({
+        where: {
+          channel: "EMAIL",
+          status,
+          AND: [
+            updatedBefore ? { updatedAt: { lt: updatedBefore } } : {},
+            after
+              ? {
+                  OR: [
+                    { updatedAt: { lt: after.updatedAt } },
+                    { updatedAt: after.updatedAt, id: { lt: after.id } },
+                  ],
+                }
+              : {},
+          ],
+        },
+        orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+        take,
+        select: {
+          id: true,
+          notificationId: true,
+          attempts: true,
+          lastError: true,
+          updatedAt: true,
+          notification: {
+            select: {
+              type: true,
+              recipient: { select: { id: true, email: true } },
+            },
+          },
+        },
+      });
+      return rows.map((r) => ({
+        id: r.id,
+        notificationId: r.notificationId,
+        type: r.notification.type,
+        recipient: r.notification.recipient,
+        attempts: r.attempts,
+        lastError: r.lastError,
+        updatedAt: r.updatedAt,
+      }));
+    },
+
     async recordDelivery(input) {
       await prisma.notificationDelivery.create({
         data: {
