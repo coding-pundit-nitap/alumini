@@ -80,6 +80,7 @@ import { createPrismaGrantSource } from "@/modules/auth/infrastructure/prisma-gr
 
 import { GET as getFeed } from "@/app/api/v1/posts/route";
 import { GET as getComments } from "@/app/api/v1/posts/[id]/comments/route";
+import { GET as getUploadImage } from "@/app/api/uploads/[id]/route";
 
 const ORIGIN = "https://alumni.example.test";
 const req = (path: string) => new Request(`${ORIGIN}${path}`);
@@ -319,6 +320,68 @@ describe("GET /api/v1/posts and /api/v1/posts/:id/comments", () => {
           )
         ).status
       ).toBe(404);
+    });
+  });
+
+  describe("GET /api/uploads/:id", () => {
+    /** A READY upload row (ck_upload_object_key_prefix requires avatars/ for READY). */
+    function readyUpload(ownerId: string) {
+      return db.prisma.upload.create({
+        data: {
+          ownerId,
+          purpose: "PROFILE_PHOTO",
+          objectKey: `avatars/${Math.random()}`,
+          mime: "image/png",
+          size: 1,
+          status: "READY",
+        },
+      });
+    }
+
+    it("302s to a fresh presigned URL for a READY image referenced by a live post", async () => {
+      const actor = await member();
+      mocks.getActor.mockResolvedValue(actor);
+      const upload = await readyUpload(actor.userId);
+      await createPost({
+        actor,
+        input: { content: "x", imageUrls: [upload.id] },
+      });
+
+      const res = await getUploadImage(
+        req(`/api/uploads/${upload.id}`),
+        ctx(upload.id)
+      );
+      expect(res.status).toBe(302);
+      expect(res.headers.get("Location")).toBeTruthy();
+      expect(res.headers.get("Cache-Control")).toBe("private, no-store");
+    });
+
+    it("404s a READY upload no live post references", async () => {
+      const actor = await member();
+      mocks.getActor.mockResolvedValue(actor);
+      const upload = await readyUpload(actor.userId);
+
+      const res = await getUploadImage(
+        req(`/api/uploads/${upload.id}`),
+        ctx(upload.id)
+      );
+      expect(res.status).toBe(404);
+    });
+
+    it("404s a non-uuid id", async () => {
+      mocks.getActor.mockResolvedValue(await member());
+      const res = await getUploadImage(
+        req("/api/uploads/not-a-uuid"),
+        ctx("not-a-uuid")
+      );
+      expect(res.status).toBe(404);
+    });
+
+    it("rejects with 401 when signed out, rather than swallowing it as 404", async () => {
+      mocks.getActor.mockResolvedValue(null);
+      await expect(
+        getUploadImage(req(`/api/uploads/${NONEXISTENT}`), ctx(NONEXISTENT))
+      ).rejects.toMatchObject({ status: 401 });
     });
   });
 });
