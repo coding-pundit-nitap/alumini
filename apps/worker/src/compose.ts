@@ -24,6 +24,7 @@ import {
   mentorshipJobs,
   messageSent,
   notificationRetentionSweep,
+  OUTBOX_EVENTS,
   outboxPrune,
   postCreated,
   reactionAdded,
@@ -314,34 +315,12 @@ export function composeWorker(
   const relay = createRelay({
     store,
     queue,
+    // Test overrides (millisecond-retry emailJob/uploadScanJob) still need to route by their
+    // overridden name, so layer them over the canonical registry rather than relying on it alone.
     events: {
+      ...OUTBOX_EVENTS,
       [emailJob.name]: emailJob,
       [uploadScanJob.name]: uploadScanJob,
-      [connectionRequested.name]: connectionRequested,
-      [connectionAccepted.name]: connectionAccepted,
-      [messageSent.name]: messageSent,
-      [postCreated.name]: postCreated,
-      [commentCreated.name]: commentCreated,
-      [reactionAdded.name]: reactionAdded,
-      [achievementSubmitted.name]: achievementSubmitted,
-      [achievementApproved.name]: achievementApproved,
-      [achievementRejected.name]: achievementRejected,
-      [reportFiled.name]: reportFiled,
-      [reportResolved.name]: reportResolved,
-      [contentRemoved.name]: contentRemoved,
-      [jobExpired.name]: jobExpired,
-      [verificationDecided.name]: verificationDecided,
-      [userSuspended.name]: userSuspended,
-      [userReactivated.name]: userReactivated,
-      ...Object.fromEntries(
-        Object.values(jobEvents).map((job) => [job.name, job])
-      ),
-      ...Object.fromEntries(
-        Object.values(mentorshipJobs).map((job) => [job.name, job])
-      ),
-      ...Object.fromEntries(
-        Object.values(eventJobs).map((job) => [job.name, job])
-      ),
     },
     logger,
     metrics,
