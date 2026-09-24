@@ -27,11 +27,7 @@ type ResolveAction = (
   reason: string
 ) => Promise<ActionResult<Record<string, never>>>;
 
-/**
- * The feed, as returned by `listFeed` (newest-first, C-6); a Link carries the next keyset cursor.
- * `mine` is always null: `listFeed` doesn't join the caller's own reaction per post (ponytail: add that
- * join if per-post "already reacted" state is needed — `ReactionPicker` already renders it once passed).
- */
+/** The feed, as returned by `listFeed` (newest-first, C-6); a Link carries the next keyset cursor. */
 export function FeedList({
   posts,
   nextCursor,
@@ -58,20 +54,18 @@ export function FeedList({
   return (
     <div className="space-y-4">
       {posts.map((post) => (
-        <article key={post.id}>
-          <PostCard
-            post={post}
-            currentUserId={currentUserId}
-            canModerate={canModerate}
-            mine={null}
-            onDelete={onDelete}
-            onReact={onReact}
-            onUnreact={onUnreact}
-            onReport={onReport}
-            onResolve={onResolve}
-            onDismiss={onDismiss}
-          />
-        </article>
+        <PostCard
+          key={post.id}
+          post={post}
+          currentUserId={currentUserId}
+          canModerate={canModerate}
+          onDelete={onDelete}
+          onReact={onReact}
+          onUnreact={onUnreact}
+          onReport={onReport}
+          onResolve={onResolve}
+          onDismiss={onDismiss}
+        />
       ))}
       {nextCursor ? (
         <Link
