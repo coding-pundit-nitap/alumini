@@ -27,6 +27,9 @@ export type {
   ReportedMessageView,
 } from "./application/messaging-store";
 export { ConversationList } from "./presentation/ui/conversation-list";
+export type { InboxConversation } from "./presentation/ui/conversation-list";
+export { MessengerPanes } from "./presentation/ui/messenger-panes";
+export { PaneHeader, ThreadHeader } from "./presentation/ui/thread-header";
 export { GroupForm } from "./presentation/ui/group-form";
 export { GroupMembers } from "./presentation/ui/group-members";
 export { MessageButton } from "./presentation/ui/message-button";

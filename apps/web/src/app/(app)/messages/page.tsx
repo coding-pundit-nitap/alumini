@@ -1,52 +1,40 @@
+import { MessagesSquare } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { listConversations } from "@/composition/messaging";
-import { AppError } from "@/lib/errors";
+import { buttonVariants } from "@nitap/ui/components/button";
+
 import { getActor } from "@/modules/auth";
-import { ConversationList } from "@/modules/messaging";
 
 export const metadata: Metadata = { title: "Messages" };
 
-export default async function MessagesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ cursor?: string }>;
-}) {
-  const { cursor } = await searchParams;
+/** The open pane with nothing selected (desktop only; on a phone the inbox fills the screen). */
+export default async function MessagesPage() {
   const actor = await getActor();
   if (!actor) redirect("/login?next=%2Fmessages");
 
-  let page;
-  try {
-    page = await listConversations({ actor, cursor });
-  } catch (error) {
-    if (error instanceof AppError && error.status === 403)
-      redirect("/account/status");
-    if (error instanceof AppError && error.code === "INVALID_CURSOR")
-      redirect("/messages");
-    throw error;
-  }
-
   return (
-    <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-12">
-      <h1 className="text-2xl font-semibold">Messages</h1>
+    <div className="bg-muted/20 flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <span className="bg-brand/10 text-brand flex size-16 items-center justify-center rounded-full">
+        <MessagesSquare aria-hidden className="size-7" />
+      </span>
+      <div>
+        <p className="text-lg font-semibold tracking-tight">Your messages</p>
+        <p className="text-muted-foreground mt-1 max-w-xs text-sm">
+          Pick a conversation, message someone from their profile, or start a
+          group with your connections.
+        </p>
+      </div>
       <Link
         href="/messages/new-group"
-        className="text-primary text-sm underline"
+        className={buttonVariants({
+          variant: "brand",
+          className: "rounded-full",
+        })}
       >
         New group
       </Link>
-      <ConversationList
-        conversations={page.data}
-        viewerId={actor.userId}
-        nextHref={
-          page.page.nextCursor
-            ? `/messages?cursor=${encodeURIComponent(page.page.nextCursor)}`
-            : null
-        }
-      />
     </div>
   );
 }

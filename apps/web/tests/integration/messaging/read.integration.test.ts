@@ -181,6 +181,31 @@ describe("reading conversations against real PostgreSQL", () => {
     expect(await bodies(asha)).toHaveLength(3);
   });
 
+  it("previews the newest message each viewer may see, never a blocked sender's, and hides a hidden body", async () => {
+    const m = build();
+    const { conversationId } = await m.group({
+      actor: actor(asha),
+      input: { memberIds: [ravi, meera] },
+    });
+    await say(m, ravi, conversationId, "from ravi");
+    const last = await say(m, meera, conversationId, "from meera");
+    await block(db, ravi, meera);
+    const preview = async (who: string) =>
+      (await m.conversations({ actor: actor(who) })).data[0]!.lastMessage;
+    expect(await preview(ravi)).toEqual({ senderId: ravi, body: "from ravi" });
+    expect(await preview(asha)).toEqual({
+      senderId: meera,
+      body: "from meera",
+    });
+    expect(
+      (await m.detail({ actor: actor(ravi), conversationId })).lastMessage
+    ).toEqual({ senderId: ravi, body: "from ravi" });
+
+    await db.prisma
+      .$executeRaw`UPDATE "message" SET hidden_at = now() WHERE id = ${last.message.id}::uuid`;
+    expect(await preview(asha)).toEqual({ senderId: meera, body: null });
+  });
+
   it("refuses a non-participant, an invalid cursor and an unknown conversation", async () => {
     const m = build();
     const { conversationId } = await m.direct({

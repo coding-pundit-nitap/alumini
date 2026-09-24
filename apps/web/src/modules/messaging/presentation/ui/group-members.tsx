@@ -1,12 +1,14 @@
 "use client";
 
 import { Button } from "@nitap/ui/components/button";
+import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import type { ActionResult } from "@/lib/action-result";
 
 import type { Person } from "../../application/messaging-store";
+import { photoOf } from "./conversation-avatar";
 
 type Act<T> = Promise<ActionResult<T>>;
 
@@ -54,19 +56,33 @@ export function GroupMembers({
   const addable = candidates.filter((c) => !people.some((p) => p.id === c.id));
 
   return (
-    <section aria-labelledby="members-heading" className="space-y-3">
-      <h2 id="members-heading" className="text-lg font-semibold">
-        Members
+    <section aria-labelledby="members-heading" className="space-y-4">
+      <h2 id="members-heading" className="text-sm font-semibold">
+        Members{" "}
+        <span className="text-muted-foreground font-normal">
+          {people.length}
+        </span>
       </h2>
-      <ul className="space-y-1">
+      <ul className="-mx-2">
         {people.map((p) => (
-          <li key={p.id} className="flex items-center justify-between text-sm">
-            <span>
+          <li
+            key={p.id}
+            className="hover:bg-muted/50 flex items-center gap-3 rounded-xl px-2 py-2 text-sm"
+          >
+            <InitialsAvatar name={p.fullName} seed={p.id} src={photoOf(p)} />
+            <span className="min-w-0 flex-1 truncate font-medium">
               {p.id === viewerId ? `${p.fullName} (you)` : p.fullName}
+              {p.id === createdById ? (
+                <span className="text-muted-foreground ml-1.5 text-xs font-normal">
+                  Admin
+                </span>
+              ) : null}
             </span>
             {isCreator && p.id !== viewerId ? (
               <Button
-                variant="outline"
+                variant="ghost"
+                size="xs"
+                className="text-muted-foreground hover:text-destructive"
                 disabled={pending}
                 onClick={() =>
                   run(
@@ -75,7 +91,7 @@ export function GroupMembers({
                   )
                 }
               >
-                Remove {p.fullName}
+                Remove<span className="sr-only"> {p.fullName}</span>
               </Button>
             ) : null}
           </li>
@@ -83,13 +99,13 @@ export function GroupMembers({
       </ul>
 
       {isCreator && addable.length > 0 ? (
-        <div className="flex items-end gap-2">
-          <label className="text-sm font-medium">
+        <div className="flex items-end gap-2 border-t pt-4">
+          <label className="min-w-0 flex-1 text-sm font-medium">
             Add member
             <select
               value={toAdd}
               onChange={(e) => setToAdd(e.target.value)}
-              className="border-input bg-background mt-1 block rounded-md border px-3 py-2 text-sm"
+              className="border-input bg-background mt-1.5 block w-full rounded-lg border px-3 py-2 text-sm font-normal"
             >
               <option value="">Choose…</option>
               {addable.map((c) => (
@@ -120,6 +136,7 @@ export function GroupMembers({
         <Button
           variant="outline"
           disabled={pending}
+          className="text-destructive hover:text-destructive w-full rounded-full"
           onClick={() =>
             run(
               () => removeAction(conversationId, viewerId),

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@nitap/ui/components/button";
+import { MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -24,6 +25,8 @@ export function MessageButton({
     <div>
       <Button
         variant="outline"
+        size="sm"
+        className="rounded-full"
         disabled={pending}
         onClick={() => {
           setError(null);
@@ -35,6 +38,7 @@ export function MessageButton({
           });
         }}
       >
+        <MessageCircle aria-hidden />
         Message
       </Button>
       {error ? (

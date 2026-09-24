@@ -315,3 +315,79 @@ describe("hidden messages (spec C12-4)", () => {
     expect(screen.queryByText("rude words")).toBeNull();
   });
 });
+
+describe("Thread layout and sending (UI-4)", () => {
+  const day = (d: number, h: number) => new Date(2026, 8, d, h).toISOString();
+
+  it("groups messages into days and draws the unread divider after the last read message", () => {
+    render(
+      <Thread
+        conversationId="c1"
+        viewerId={ME}
+        people={people}
+        initialMessages={[
+          { ...message(3, "ravi", "new"), createdAt: day(24, 9) },
+          { ...message(2, ME, "mine"), createdAt: day(23, 10) },
+          { ...message(1, "ravi", "old"), createdAt: day(23, 9) },
+        ]}
+        initialNextCursor={null}
+        initialLastReadSeq="2"
+      />
+    );
+    expect(screen.getAllByRole("region")).toHaveLength(2);
+    const divider = screen.getByRole("separator", { name: "Unread messages" });
+    expect(divider.nextElementSibling).toHaveTextContent("new");
+  });
+
+  it("opens with the start-of-conversation card when there is no older page", () => {
+    setup();
+    expect(
+      screen.getByText(/beginning of your conversation with Ravi/)
+    ).toBeInTheDocument();
+  });
+
+  it("sends on Enter, keeps Shift+Enter as a newline, and shows the message at once", async () => {
+    let finish!: (r: Response) => void;
+    fetchMock.mockImplementation((url: string) =>
+      String(url).endsWith("/messages")
+        ? new Promise<Response>((resolve) => (finish = resolve))
+        : respond({}, 204)
+    );
+    setup();
+    const box = screen.getByLabelText("Message");
+    await userEvent.type(box, "line one{Shift>}{Enter}{/Shift}two");
+    expect(box).toHaveValue("line one\ntwo");
+    await userEvent.type(box, "{Enter}");
+    expect(await screen.findByText("Sending")).toBeInTheDocument();
+    expect(box).toHaveValue("");
+    finish(
+      new Response(
+        JSON.stringify({
+          data: {
+            id: "m4",
+            seq: "4",
+            conversationId: "c1",
+            senderId: ME,
+            body: "line one\ntwo",
+            createdAt: new Date(4000).toISOString(),
+          },
+        }),
+        { status: 201 }
+      )
+    );
+    await waitFor(() => expect(screen.queryByText("Sending")).toBeNull());
+    expect(calls("/messages")).toHaveLength(1);
+  });
+
+  it("folds a very long message behind Read more", async () => {
+    const long = Array.from({ length: 20 }, (_, i) => `line ${i}`).join("\n");
+    setup([message(1, "ravi", long)]);
+    const toggle = screen.getByRole("button", { name: "Read more" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(toggle);
+    expect(screen.getByRole("button", { name: "Show less" })).toHaveAttribute(
+      "aria-expanded",
+      "true"
+    );
+  });
+});
