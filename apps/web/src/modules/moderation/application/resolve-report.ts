@@ -4,7 +4,7 @@ import type { ContentRemovedPayload, ReportResolvedPayload } from "@nitap/jobs";
 import { NotFoundError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
 
-import { decideResolve } from "../domain/moderation";
+import { decideResolve, resolveInput } from "../domain/moderation";
 import type { Authorize } from "./authz";
 import type {
   ModerationStore,
@@ -12,6 +12,7 @@ import type {
   ReportRow,
 } from "./moderation-store";
 import { refuse } from "./refusal";
+import { parse } from "./validation";
 
 /** What resolving does to the reported thing (spec C12-2). Exhaustive: a new target type fails to compile. */
 async function applyResolution(
@@ -73,8 +74,13 @@ export function createResolveReport(deps: {
   return async function resolveReport(args: {
     actor: Actor | null;
     reportId: string;
+    input: unknown;
   }): Promise<void> {
-    const caller = deps.authorize(args.actor, PERMISSIONS.REPORT_REVIEW);
+    const caller = deps.authorize(args.actor, PERMISSIONS.REPORT_REVIEW, {
+      concealed: true,
+    });
+    // `?? {}` so a missing body reports the `reason` field, not "(body)".
+    const { reason } = parse(resolveInput, args.input ?? {});
     const actorId = caller.userId.toLowerCase();
 
     await deps.store.transaction(async (tx) => {
@@ -103,6 +109,7 @@ export function createResolveReport(deps: {
         reportId: report.id,
         targetType: report.targetType,
         targetId: report.targetId,
+        reason,
       });
       await applyResolution(tx, report, actorId);
       await tx.enqueue({

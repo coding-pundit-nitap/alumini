@@ -124,6 +124,7 @@ const ADMIN_ACTIONS: ReadonlyArray<{
       createResolveReport({ store: tripwire(), authorize })({
         actor,
         reportId: ID,
+        input: { reason: "SPAM" },
       }),
   },
   {
@@ -133,6 +134,7 @@ const ADMIN_ACTIONS: ReadonlyArray<{
       createDismissReport({ store: tripwire(), authorize })({
         actor,
         reportId: ID,
+        input: { reason: "NO_VIOLATION" },
       }),
   },
   {

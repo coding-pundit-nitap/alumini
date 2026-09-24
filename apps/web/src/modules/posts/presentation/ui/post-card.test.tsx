@@ -160,7 +160,9 @@ describe("PostCard", () => {
     ).toBeInTheDocument();
 
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /resolve/i }));
-    expect(a.onResolve).toHaveBeenCalledWith("r1");
+    await user.click(screen.getByRole("button", { name: /^resolve$/i }));
+    await user.selectOptions(screen.getByLabelText("Reason"), "SPAM");
+    await user.click(screen.getByRole("button", { name: "Resolve report" }));
+    expect(a.onResolve).toHaveBeenCalledWith("r1", "SPAM");
   });
 });

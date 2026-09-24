@@ -50,13 +50,13 @@ function fakeStore(targetType: ReportRow["targetType"]) {
   return { store, calls };
 }
 
-// Task 4 adds the reason; until then the call takes none.
 const run = (targetType: ReportRow["targetType"]) => {
   const { store, calls } = fakeStore(targetType);
   return createResolveReport({ store, authorize: (a) => a! })({
     actor,
     reportId: "00000000-0000-4000-8000-000000000001",
-  } as never).then(() => calls);
+    input: { reason: "SPAM" },
+  }).then(() => calls);
 };
 
 describe("resolveReport per target type (spec C12-2)", () => {
@@ -88,5 +88,42 @@ describe("resolveReport per target type (spec C12-2)", () => {
       "audit:report.resolved",
       "enqueue:report.resolved",
     ]);
+  });
+});
+
+describe("resolveReport reason validation (spec C12-3)", () => {
+  it("refuses a missing or wrong reason with VALIDATION_FAILED on `reason`, before touching the store", async () => {
+    const { store, calls } = fakeStore("POST");
+    const resolve = createResolveReport({ store, authorize: (a) => a! });
+    for (const input of [undefined, {}, { reason: "NO_VIOLATION" }]) {
+      await expect(
+        resolve({
+          actor,
+          reportId: "00000000-0000-4000-8000-000000000001",
+          input,
+        })
+      ).rejects.toMatchObject({
+        code: "VALIDATION_FAILED",
+        details: [expect.objectContaining({ field: "reason" })],
+      });
+    }
+    expect(calls).toEqual([]);
+  });
+
+  it("records the reason on report.resolved", async () => {
+    const { store } = fakeStore("USER");
+    const entries: unknown[] = [];
+    const tx = await store.transaction(async (t) => t);
+    (tx as { audit: (e: unknown) => Promise<void> }).audit = async (e) =>
+      void entries.push(e);
+    await createResolveReport({ store, authorize: (a) => a! })({
+      actor,
+      reportId: "00000000-0000-4000-8000-000000000001",
+      input: { reason: "HARASSMENT" },
+    });
+    expect(entries[0]).toMatchObject({
+      action: "report.resolved",
+      reason: "HARASSMENT",
+    });
   });
 });

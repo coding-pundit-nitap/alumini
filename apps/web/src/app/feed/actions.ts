@@ -150,12 +150,14 @@ export async function claimReportAction(
 }
 
 export async function resolveReportAction(
-  reportId: string
+  reportId: string,
+  reason: string
 ): Promise<ActionResult<Record<string, never>>> {
   return runAction(async () => {
     await resolveReport({
       actor: await getActor(),
       reportId: parseId("reportId", reportId),
+      input: { reason },
     });
     refresh();
     return {};
@@ -163,12 +165,14 @@ export async function resolveReportAction(
 }
 
 export async function dismissReportAction(
-  reportId: string
+  reportId: string,
+  reason: string
 ): Promise<ActionResult<Record<string, never>>> {
   return runAction(async () => {
     await dismissReport({
       actor: await getActor(),
       reportId: parseId("reportId", reportId),
+      input: { reason },
     });
     refresh();
     return {};

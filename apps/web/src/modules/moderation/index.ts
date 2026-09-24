@@ -31,3 +31,9 @@ export {
   RESOLVE_REASONS,
 } from "./domain/moderation";
 export { ReportDialog } from "./presentation/ui/report-dialog";
+export { ReportDecisionDialog } from "./presentation/ui/report-decision-dialog";
+export {
+  REASON_LABELS,
+  STATUS_LABELS,
+  TARGET_LABELS,
+} from "./presentation/ui/labels";

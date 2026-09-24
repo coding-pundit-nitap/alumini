@@ -168,7 +168,11 @@ describe("moderation use cases against real PostgreSQL", () => {
       const meera = await member(db, "Meera");
       const m = build(new Set([meera]));
       const { messageId, reportId } = await reportedMessage(asha, ravi);
-      await m.resolve({ actor: actor(meera), reportId });
+      await m.resolve({
+        actor: actor(meera),
+        reportId,
+        input: { reason: "SPAM" },
+      });
 
       const message = await db.prisma.message.findUniqueOrThrow({
         where: { id: messageId },
@@ -192,12 +196,20 @@ describe("moderation use cases against real PostgreSQL", () => {
       expect(await code(m.claim({ actor: actor(asha), reportId }))).toBe(
         "SELF_REVIEW_FORBIDDEN"
       );
-      expect(await code(m.resolve({ actor: actor(asha), reportId }))).toBe(
-        "SELF_REVIEW_FORBIDDEN"
-      );
-      expect(await code(m.dismiss({ actor: actor(asha), reportId }))).toBe(
-        "SELF_REVIEW_FORBIDDEN"
-      );
+      expect(
+        await code(
+          m.resolve({ actor: actor(asha), reportId, input: { reason: "SPAM" } })
+        )
+      ).toBe("SELF_REVIEW_FORBIDDEN");
+      expect(
+        await code(
+          m.dismiss({
+            actor: actor(asha),
+            reportId,
+            input: { reason: "NO_VIOLATION" },
+          })
+        )
+      ).toBe("SELF_REVIEW_FORBIDDEN");
     });
 
     it("resolving a report on a message that no longer exists succeeds without a message.hidden row", async () => {
@@ -211,7 +223,11 @@ describe("moderation use cases against real PostgreSQL", () => {
           reason: "gone",
         },
       });
-      await m.resolve({ actor: actor(meera), reportId: report.id });
+      await m.resolve({
+        actor: actor(meera),
+        reportId: report.id,
+        input: { reason: "SPAM" },
+      });
       expect(
         (await db.prisma.report.findUniqueOrThrow({ where: { id: report.id } }))
           .status
@@ -233,9 +249,19 @@ describe("moderation use cases against real PostgreSQL", () => {
         },
       });
       expect(
-        await code(m.resolve({ actor: actor(asha), reportId: report.id }))
+        await code(
+          m.resolve({
+            actor: actor(asha),
+            reportId: report.id,
+            input: { reason: "SPAM" },
+          })
+        )
       ).toBe("SELF_REVIEW_FORBIDDEN");
-      await m.resolve({ actor: actor(meera), reportId: report.id });
+      await m.resolve({
+        actor: actor(meera),
+        reportId: report.id,
+        input: { reason: "SPAM" },
+      });
       const user = await db.prisma.user.findUniqueOrThrow({
         where: { id: asha },
       });
@@ -257,8 +283,16 @@ describe("moderation use cases against real PostgreSQL", () => {
       input: { targetType: "POST", targetId: postId, reason: "spam" },
     });
     const outcomes = await Promise.all([
-      code(m.resolve({ actor: actor(meera), reportId })),
-      code(m.dismiss({ actor: actor(kiran), reportId })),
+      code(
+        m.resolve({ actor: actor(meera), reportId, input: { reason: "SPAM" } })
+      ),
+      code(
+        m.dismiss({
+          actor: actor(kiran),
+          reportId,
+          input: { reason: "NO_VIOLATION" },
+        })
+      ),
     ]);
     expect(outcomes.sort()).toEqual(["INVALID_STATE_TRANSITION", "ok"]);
     expect(
@@ -267,6 +301,29 @@ describe("moderation use cases against real PostgreSQL", () => {
       })
     ).toBe(1);
     expect(await events("report.resolved")).toHaveLength(1);
+  });
+
+  it("a refused reason writes nothing", async () => {
+    const meera = await member(db, "Meera");
+    const m = build(new Set([meera]));
+    const { reportId } = await m.file({
+      actor: actor(ravi),
+      input: { targetType: "POST", targetId: postId, reason: "spam" },
+    });
+    expect(
+      await code(
+        m.resolve({
+          actor: actor(meera),
+          reportId,
+          input: { reason: "because" },
+        })
+      )
+    ).toBe("VALIDATION_FAILED");
+    expect(
+      (await db.prisma.report.findUniqueOrThrow({ where: { id: reportId } }))
+        .status
+    ).toBe("OPEN");
+    expect(await db.prisma.auditLog.count()).toBe(0);
   });
 
   describe("claim-report", () => {
@@ -310,7 +367,11 @@ describe("moderation use cases against real PostgreSQL", () => {
         actor: actor(ravi),
         input: { targetType: "POST", targetId: postId, reason: "spam" },
       });
-      await m.resolve({ actor: actor(meera), reportId });
+      await m.resolve({
+        actor: actor(meera),
+        reportId,
+        input: { reason: "SPAM" },
+      });
 
       const row = await db.prisma.report.findUniqueOrThrow({
         where: { id: reportId },
@@ -343,12 +404,16 @@ describe("moderation use cases against real PostgreSQL", () => {
         actor: actor(ravi),
         input: { targetType: "POST", targetId: postId, reason: "spam" },
       });
-      expect(await code(m.resolve({ actor: actor(ravi), reportId }))).toBe(
-        "SELF_REVIEW_FORBIDDEN"
-      );
-      expect(await code(m.resolve({ actor: actor(asha), reportId }))).toBe(
-        "SELF_REVIEW_FORBIDDEN"
-      );
+      expect(
+        await code(
+          m.resolve({ actor: actor(ravi), reportId, input: { reason: "SPAM" } })
+        )
+      ).toBe("SELF_REVIEW_FORBIDDEN");
+      expect(
+        await code(
+          m.resolve({ actor: actor(asha), reportId, input: { reason: "SPAM" } })
+        )
+      ).toBe("SELF_REVIEW_FORBIDDEN");
       const post = await db.prisma.post.findUniqueOrThrow({
         where: { id: postId },
       });
@@ -362,10 +427,20 @@ describe("moderation use cases against real PostgreSQL", () => {
         actor: actor(ravi),
         input: { targetType: "POST", targetId: postId, reason: "spam" },
       });
-      await m.resolve({ actor: actor(meera), reportId });
-      expect(await code(m.resolve({ actor: actor(meera), reportId }))).toBe(
-        "INVALID_STATE_TRANSITION"
-      );
+      await m.resolve({
+        actor: actor(meera),
+        reportId,
+        input: { reason: "SPAM" },
+      });
+      expect(
+        await code(
+          m.resolve({
+            actor: actor(meera),
+            reportId,
+            input: { reason: "SPAM" },
+          })
+        )
+      ).toBe("INVALID_STATE_TRANSITION");
     });
   });
 
@@ -377,7 +452,11 @@ describe("moderation use cases against real PostgreSQL", () => {
         actor: actor(ravi),
         input: { targetType: "POST", targetId: postId, reason: "spam" },
       });
-      await m.dismiss({ actor: actor(meera), reportId });
+      await m.dismiss({
+        actor: actor(meera),
+        reportId,
+        input: { reason: "NO_VIOLATION" },
+      });
 
       const row = await db.prisma.report.findUniqueOrThrow({
         where: { id: reportId },
@@ -405,12 +484,24 @@ describe("moderation use cases against real PostgreSQL", () => {
         actor: actor(ravi),
         input: { targetType: "POST", targetId: postId, reason: "spam" },
       });
-      expect(await code(m.dismiss({ actor: actor(ravi), reportId }))).toBe(
-        "SELF_REVIEW_FORBIDDEN"
-      );
-      expect(await code(m.dismiss({ actor: actor(asha), reportId }))).toBe(
-        "SELF_REVIEW_FORBIDDEN"
-      );
+      expect(
+        await code(
+          m.dismiss({
+            actor: actor(ravi),
+            reportId,
+            input: { reason: "NO_VIOLATION" },
+          })
+        )
+      ).toBe("SELF_REVIEW_FORBIDDEN");
+      expect(
+        await code(
+          m.dismiss({
+            actor: actor(asha),
+            reportId,
+            input: { reason: "NO_VIOLATION" },
+          })
+        )
+      ).toBe("SELF_REVIEW_FORBIDDEN");
     });
 
     it("refuses dismissing an already-terminal report (INVALID_STATE_TRANSITION)", async () => {
@@ -420,10 +511,20 @@ describe("moderation use cases against real PostgreSQL", () => {
         actor: actor(ravi),
         input: { targetType: "POST", targetId: postId, reason: "spam" },
       });
-      await m.dismiss({ actor: actor(meera), reportId });
-      expect(await code(m.dismiss({ actor: actor(meera), reportId }))).toBe(
-        "INVALID_STATE_TRANSITION"
-      );
+      await m.dismiss({
+        actor: actor(meera),
+        reportId,
+        input: { reason: "NO_VIOLATION" },
+      });
+      expect(
+        await code(
+          m.dismiss({
+            actor: actor(meera),
+            reportId,
+            input: { reason: "NO_VIOLATION" },
+          })
+        )
+      ).toBe("INVALID_STATE_TRANSITION");
     });
   });
 
@@ -450,7 +551,11 @@ describe("moderation use cases against real PostgreSQL", () => {
       const m = build(new Set([meera]));
       const { reportId } = await fileSpam(m);
       await m.claim({ actor: actor(meera), reportId });
-      await m.resolve({ actor: actor(meera), reportId });
+      await m.resolve({
+        actor: actor(meera),
+        reportId,
+        input: { reason: "SPAM" },
+      });
 
       const rows = await auditRows();
       expect(rows).toHaveLength(3);
@@ -468,7 +573,7 @@ describe("moderation use cases against real PostgreSQL", () => {
             targetType: "report",
             targetId: reportId,
             actorId: meera,
-            metadata: { targetType: "POST", targetId: postId },
+            metadata: { targetType: "POST", targetId: postId, reason: "SPAM" },
           },
           {
             action: "post.removed",
@@ -485,20 +590,34 @@ describe("moderation use cases against real PostgreSQL", () => {
       const meera = await member(db, "Meera");
       const m = build(new Set([meera]));
       const { reportId } = await fileSpam(m);
-      await m.dismiss({ actor: actor(meera), reportId });
-      expect((await auditRows()).map((r) => r.action)).toEqual([
-        "report.dismissed",
-      ]);
+      await m.dismiss({
+        actor: actor(meera),
+        reportId,
+        input: { reason: "NO_VIOLATION" },
+      });
+      const rows = await auditRows();
+      expect(rows.map((r) => r.action)).toEqual(["report.dismissed"]);
+      expect(rows[0]?.metadata).toMatchObject({ reason: "NO_VIOLATION" });
     });
 
     it("writes no audit row when the resolution is refused", async () => {
       const meera = await member(db, "Meera");
       const m = build(new Set([meera]));
       const { reportId } = await fileSpam(m);
-      await m.dismiss({ actor: actor(meera), reportId });
-      expect(await code(m.resolve({ actor: actor(meera), reportId }))).toBe(
-        "INVALID_STATE_TRANSITION"
-      );
+      await m.dismiss({
+        actor: actor(meera),
+        reportId,
+        input: { reason: "NO_VIOLATION" },
+      });
+      expect(
+        await code(
+          m.resolve({
+            actor: actor(meera),
+            reportId,
+            input: { reason: "SPAM" },
+          })
+        )
+      ).toBe("INVALID_STATE_TRANSITION");
       expect((await auditRows()).map((r) => r.action)).toEqual([
         "report.dismissed",
       ]);

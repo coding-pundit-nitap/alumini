@@ -23,7 +23,8 @@ type ReportAction = (input: {
   reason: string;
 }) => Promise<ActionResult<{ reportId: string; created: boolean }>>;
 type ResolveAction = (
-  reportId: string
+  reportId: string,
+  reason: string
 ) => Promise<ActionResult<Record<string, never>>>;
 
 /**

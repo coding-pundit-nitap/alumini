@@ -21,7 +21,9 @@ export function createClaimReport(deps: {
     actor: Actor | null;
     reportId: string;
   }): Promise<void> {
-    const caller = deps.authorize(args.actor, PERMISSIONS.REPORT_REVIEW);
+    const caller = deps.authorize(args.actor, PERMISSIONS.REPORT_REVIEW, {
+      concealed: true,
+    });
     const actorId = caller.userId.toLowerCase();
 
     await deps.store.transaction(async (tx) => {

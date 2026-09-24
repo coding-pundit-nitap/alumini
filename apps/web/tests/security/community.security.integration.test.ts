@@ -489,7 +489,7 @@ describe("community security", () => {
         ).toBe("UNDER_REVIEW");
 
         const { resolve } = buildModeration();
-        await resolve({ actor: reviewer, reportId });
+        await resolve({ actor: reviewer, reportId, input: { reason: "SPAM" } });
         expect(
           (
             await db.prisma.report.findUniqueOrThrow({
@@ -505,20 +505,24 @@ describe("community security", () => {
     );
 
     it.each(NON_REVIEWER_ROLES)(
-      "%s does not hold report.review and is refused claim/resolve/dismiss",
+      "%s does not hold report.review and gets NOT_FOUND on claim/resolve/dismiss",
       async (roleName) => {
         const { reportId } = await reportedPost();
         const { actor: caller } = await actorWithRole(roleName);
         const { claim, resolve, dismiss } = buildModeration();
         await expect(claim({ actor: caller, reportId })).rejects.toMatchObject({
-          code: "PERMISSION_DENIED",
+          code: "NOT_FOUND",
         });
         await expect(
-          resolve({ actor: caller, reportId })
-        ).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
+          resolve({ actor: caller, reportId, input: { reason: "SPAM" } })
+        ).rejects.toMatchObject({ code: "NOT_FOUND" });
         await expect(
-          dismiss({ actor: caller, reportId })
-        ).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
+          dismiss({
+            actor: caller,
+            reportId,
+            input: { reason: "NO_VIOLATION" },
+          })
+        ).rejects.toMatchObject({ code: "NOT_FOUND" });
       }
     );
 
@@ -535,7 +539,11 @@ describe("community security", () => {
       );
       const { resolve } = buildModeration();
       await expect(
-        resolve({ actor: reporterAsReviewer, reportId })
+        resolve({
+          actor: reporterAsReviewer,
+          reportId,
+          input: { reason: "SPAM" },
+        })
       ).rejects.toMatchObject({ code: "SELF_REVIEW_FORBIDDEN" });
     });
 
@@ -552,7 +560,11 @@ describe("community security", () => {
       );
       const { dismiss } = buildModeration();
       await expect(
-        dismiss({ actor: authorAsReviewer, reportId })
+        dismiss({
+          actor: authorAsReviewer,
+          reportId,
+          input: { reason: "NO_VIOLATION" },
+        })
       ).rejects.toMatchObject({ code: "SELF_REVIEW_FORBIDDEN" });
     });
   });
@@ -578,7 +590,7 @@ describe("community security", () => {
       const { resolve } = buildModeration();
       const { actor } = await actorWithRole("MODERATOR");
       await expect(
-        resolve({ actor, reportId: NONEXISTENT })
+        resolve({ actor, reportId: NONEXISTENT, input: { reason: "SPAM" } })
       ).rejects.toMatchObject({ code: "NOT_FOUND" });
     });
   });

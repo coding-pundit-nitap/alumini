@@ -1,7 +1,9 @@
 import type {
+  DismissReason,
   ModerationTarget,
   ReportState,
   ReportTargetType,
+  ResolveReason,
 } from "../domain/moderation";
 
 export type ReportRow = {
@@ -22,6 +24,7 @@ export type ModerationAuditEntry =
       reportId: string;
       targetType: ReportTargetType;
       targetId: string;
+      reason?: ResolveReason | DismissReason;
     }
   | {
       action: "post.removed" | "comment.removed" | "message.hidden";

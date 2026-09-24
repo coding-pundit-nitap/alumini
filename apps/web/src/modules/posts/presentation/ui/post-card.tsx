@@ -5,7 +5,11 @@ import { Card, CardContent, CardFooter } from "@nitap/ui/components/card";
 import Link from "next/link";
 
 import type { ActionResult } from "@/lib/action-result";
-import { ReportDialog, type ModerationTarget } from "@/modules/moderation";
+import {
+  ReportDecisionDialog,
+  ReportDialog,
+  type ModerationTarget,
+} from "@/modules/moderation";
 
 import type { PostRow } from "../../application/posts-store";
 import type { ReactionType } from "../../domain/posts";
@@ -28,7 +32,8 @@ type ReportAction = (input: {
   reason: string;
 }) => Promise<ActionResult<{ reportId: string; created: boolean }>>;
 type ResolveAction = (
-  reportId: string
+  reportId: string,
+  reason: string
 ) => Promise<ActionResult<Record<string, never>>>;
 
 /**
@@ -123,22 +128,16 @@ export function PostCard({
         {canModerate ? (
           reportId ? (
             <div className="flex gap-1.5">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onResolve(reportId)}
-              >
-                Resolve
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => onDismiss(reportId)}
-              >
-                Dismiss
-              </Button>
+              <ReportDecisionDialog
+                outcome="resolve"
+                reportId={reportId}
+                action={onResolve}
+              />
+              <ReportDecisionDialog
+                outcome="dismiss"
+                reportId={reportId}
+                action={onDismiss}
+              />
             </div>
           ) : (
             <ReportDialog

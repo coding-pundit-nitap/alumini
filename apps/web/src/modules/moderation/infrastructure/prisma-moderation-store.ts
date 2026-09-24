@@ -84,6 +84,7 @@ export function createPrismaModerationStore(deps: {
               metadata: {
                 targetType: entry.targetType,
                 targetId: entry.targetId,
+                ...(entry.reason ? { reason: entry.reason } : {}),
               },
             }
       );

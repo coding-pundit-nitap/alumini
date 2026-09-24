@@ -254,6 +254,10 @@ test.describe("community journey", () => {
       modArticle.getByRole("button", { name: "Resolve" })
     ).toBeVisible({ timeout: 15_000 });
     await modArticle.getByRole("button", { name: "Resolve" }).click();
+    await moderator.page.getByLabel("Reason").selectOption("SPAM");
+    await moderator.page
+      .getByRole("button", { name: "Resolve report" })
+      .click();
     await expect(modArticle).toHaveCount(0, { timeout: 15_000 });
 
     // Resolving soft-deletes the reported content; it disappears from both feeds.
