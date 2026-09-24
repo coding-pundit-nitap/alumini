@@ -28,3 +28,18 @@ export {
 } from "./presentation/ui/audit-filters";
 export { AuditTable } from "./presentation/ui/audit-table";
 export { DashboardTiles } from "./presentation/ui/dashboard-tiles";
+export { createListUsers } from "./application/list-users";
+export type { ListUsers } from "./application/list-users";
+export { createGetUser } from "./application/get-user";
+export type { GetUser, UserView } from "./application/get-user";
+export { createChangeAccountState } from "./application/change-account-state";
+export { createAssignRole } from "./application/assign-role";
+export { createRevokeRole } from "./application/revoke-role";
+export { createGrantPermission } from "./application/grant-permission";
+export { createRevokeGrant } from "./application/revoke-grant";
+export type { GrantRow } from "./application/access-store";
+export type { UserDetail, UserRow } from "./application/admin-store";
+export type { AccessOptions } from "./domain/escalation";
+export { ESCALATION_MESSAGES } from "./domain/escalation";
+export { SUSPENSION_REASONS, TARGET_STATES } from "./domain/lifecycle";
+export { userListQuerySchema } from "./domain/user-query";

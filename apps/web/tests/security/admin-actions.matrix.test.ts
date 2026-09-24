@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 
 import { PERMISSIONS, type Permission } from "@nitap/database/permissions";
-import { ROLE_NAMES } from "@nitap/database/role-permissions";
+import { ROLE_NAMES, ROLE_PERMISSIONS } from "@nitap/database/role-permissions";
 
 import {
   AuthenticationError,
@@ -14,8 +14,15 @@ import {
 } from "@/lib/errors";
 import {
   ADMIN_PERMISSIONS,
+  createAssignRole,
+  createChangeAccountState,
   createGetDashboard,
+  createGetUser,
+  createGrantPermission,
   createListAuditLog,
+  createListUsers,
+  createRevokeGrant,
+  createRevokeRole,
 } from "@/modules/admin";
 import type { Actor } from "@/modules/auth";
 import { createAuthorization } from "@/modules/auth/application/authorize";
@@ -167,17 +174,124 @@ const ADMIN_ACTIONS: ReadonlyArray<{
         query: {},
       }),
   },
+  ...(() => {
+    const TARGET = "00000000-0000-4000-8000-0000000000bb";
+    const CHAPTER = "00000000-0000-4000-8000-0000000000c1";
+    const access = () => ({
+      store: tripwire(),
+      authorize,
+      loadGrants: tripwire(),
+    });
+    const roleDeps = () => ({
+      ...access(),
+      roles: ROLE_PERMISSIONS,
+      superAdminRole: "SUPER_ADMIN",
+    });
+    return [
+      {
+        name: "listUsers",
+        permission: PERMISSIONS.USER_READ_ADMIN,
+        run: (actor: Actor | null) =>
+          createListUsers({ store: tripwire(), authorize })({
+            actor,
+            query: {},
+          }),
+      },
+      {
+        name: "getUser",
+        permission: PERMISSIONS.USER_READ_ADMIN,
+        run: (actor: Actor | null) =>
+          createGetUser({ ...roleDeps() })({ actor, userId: TARGET }),
+      },
+      {
+        name: "suspendUser",
+        permission: PERMISSIONS.USER_SUSPEND,
+        run: (actor: Actor | null) =>
+          createChangeAccountState({
+            ...access(),
+            superAdminRole: "SUPER_ADMIN",
+          })({
+            actor,
+            userId: TARGET,
+            input: { accountState: "SUSPENDED", reason: "SPAM" },
+          }),
+      },
+      {
+        name: "deactivateUser",
+        permission: PERMISSIONS.USER_SUSPEND,
+        run: (actor: Actor | null) =>
+          createChangeAccountState({
+            ...access(),
+            superAdminRole: "SUPER_ADMIN",
+          })({
+            actor,
+            userId: TARGET,
+            input: { accountState: "DEACTIVATED", reason: "OTHER" },
+          }),
+      },
+      {
+        name: "reactivateUser",
+        permission: PERMISSIONS.USER_REACTIVATE,
+        run: (actor: Actor | null) =>
+          createChangeAccountState({
+            ...access(),
+            superAdminRole: "SUPER_ADMIN",
+          })({
+            actor,
+            userId: TARGET,
+            input: { accountState: "VERIFIED" },
+          }),
+      },
+      {
+        name: "assignRole",
+        permission: PERMISSIONS.ROLE_ASSIGN,
+        run: (actor: Actor | null) =>
+          createAssignRole(roleDeps())({
+            actor,
+            userId: TARGET,
+            input: { role: "STUDENT" },
+          }),
+      },
+      {
+        name: "revokeRole",
+        permission: PERMISSIONS.ROLE_ASSIGN,
+        run: (actor: Actor | null) =>
+          createRevokeRole(roleDeps())({
+            actor,
+            userId: TARGET,
+            role: "STUDENT",
+          }),
+      },
+      {
+        name: "grantPermission",
+        permission: PERMISSIONS.PERMISSION_GRANT,
+        run: (actor: Actor | null) =>
+          createGrantPermission(access())({
+            actor,
+            userId: TARGET,
+            input: {
+              permission: "event.manage",
+              scope: "CHAPTER",
+              chapterId: CHAPTER,
+            },
+          }),
+      },
+      {
+        name: "revokeGrant",
+        permission: PERMISSIONS.PERMISSION_GRANT,
+        run: (actor: Actor | null) =>
+          createRevokeGrant(access())({
+            actor,
+            userId: TARGET,
+            grantId: CHAPTER,
+          }),
+      },
+    ];
+  })(),
 ];
 
-/** Admin-tier permissions whose actions arrive in 12B. The list may only shrink (spec A12-10). */
-const NOT_YET_BUILT: readonly Permission[] = [
-  PERMISSIONS.USER_READ_ADMIN,
-  PERMISSIONS.USER_SUSPEND,
-  PERMISSIONS.USER_REACTIVATE,
-  PERMISSIONS.ROLE_ASSIGN,
-  PERMISSIONS.PERMISSION_GRANT,
-  PERMISSIONS.ANALYTICS_VIEW,
-];
+/** Admin-tier permissions with no action yet. The list may only shrink (spec A12-10). */
+const NOT_YET_BUILT: readonly Permission[] = [PERMISSIONS.ANALYTICS_VIEW];
 
 const matrix = readRoleMatrixFromDoc();
 const actorHolding = (held: ReadonlySet<string>): Actor => ({
