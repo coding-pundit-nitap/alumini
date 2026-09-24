@@ -1,4 +1,4 @@
-import { PERMISSIONS, type Permission } from "@nitap/database/permissions";
+import { PERMISSIONS } from "@nitap/database/permissions";
 
 import { ValidationError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
@@ -9,12 +9,8 @@ import {
   encodeAuditCursor,
 } from "../domain/audit-query";
 import type { AdminStore, AuditRow } from "./admin-store";
-
-export type Authorize = (
-  actor: Actor | null,
-  permission: Permission,
-  resource?: { concealed?: boolean }
-) => Actor;
+import type { Authorize } from "./authorize-port";
+import { toValidationError } from "./validation";
 
 /** FR-ADMIN-004, spec A12-7/A12-8. The audit log's existence is concealed from non-holders (404). */
 export function createListAuditLog(deps: {
@@ -28,15 +24,7 @@ export function createListAuditLog(deps: {
     deps.authorize(args.actor, PERMISSIONS.AUDIT_READ, { concealed: true });
 
     const parsed = auditQuerySchema.safeParse(args.query);
-    if (!parsed.success) {
-      throw new ValidationError({
-        details: parsed.error.issues.map((issue) => ({
-          field: issue.path.join(".") || "(query)",
-          code: "INVALID",
-          message: issue.message,
-        })),
-      });
-    }
+    if (!parsed.success) throw toValidationError(parsed.error);
     const { cursor, limit, ...filter } = parsed.data;
     const after = cursor ? decodeAuditCursor(cursor) : null;
     if (cursor && !after) throw new ValidationError({ code: "INVALID_CURSOR" });

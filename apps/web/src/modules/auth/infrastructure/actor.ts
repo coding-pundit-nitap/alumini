@@ -19,6 +19,10 @@ import { createPrismaGrantSource } from "./prisma-grant-source";
 
 const grantSource = createPrismaGrantSource(prisma);
 
+/** For admin checks on a target user (spec B12-8): role-derived ∪ live direct grants, regardless of state. */
+export const loadGrants = (userId: string, now: Date) =>
+  grantSource.loadGrants(userId, now);
+
 /**
  * The only way server code obtains the current caller (Data Access Layer; replaces getSession()).
  *
