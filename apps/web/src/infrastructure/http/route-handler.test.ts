@@ -120,6 +120,8 @@ describe("routeHandler", () => {
     expect(increment).toHaveBeenCalledWith("http_requests_total", {
       method: "GET",
       status: 201,
+      route: "/x",
+      status_class: "2xx",
     });
   });
 });
