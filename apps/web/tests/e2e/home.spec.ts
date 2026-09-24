@@ -14,16 +14,18 @@ test.describe("Landing (§5.1.1)", () => {
       "Stay connected with your NIT Arunachal Pradesh community"
     );
     await expect(
-      page.getByRole("link", { name: "Join the network" })
+      page.getByRole("link", { name: "Join the network" }).first()
     ).toHaveAttribute("href", "/register");
     await expect(
-      page.getByRole("main").getByRole("link", { name: "Log in" })
+      page.getByRole("main").getByRole("link", { name: "Log in" }).first()
     ).toHaveAttribute("href", "/login");
     for (const name of [
       "Directory",
       "Mentorship",
       "Jobs & internships",
       "Events",
+      "Messages",
+      "Achievements",
     ]) {
       await expect(page.getByRole("heading", { name, level: 3 })).toBeVisible();
     }
@@ -32,6 +34,15 @@ test.describe("Landing (§5.1.1)", () => {
     ).toBeVisible();
     await expect(page.locator("#privacy")).toBeVisible();
     await expect(page).toHaveTitle(/NIT Arunachal Pradesh Alumni Network/);
+  });
+
+  test("the landing does not scroll sideways on a phone", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
   });
 
   test("serves an Open Graph image", async ({ request }) => {

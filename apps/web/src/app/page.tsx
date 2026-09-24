@@ -1,26 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  Briefcase,
-  CalendarDays,
-  GraduationCap,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { Check, EyeOff, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
-import { buttonVariants } from "@nitap/ui/components/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@nitap/ui/components/card";
-
+import { DawnMark } from "@/components/brand/dawn-mark";
 import { PublicShell } from "@/components/common/public-shell";
 import { siteConfig } from "@/config/site";
 import { getActor } from "@/modules/auth";
 import { verifiedHome } from "@/lib/signed-in-redirect";
+
+import { Bento } from "./_landing/bento";
+import { CtaButtons } from "./_landing/cta-buttons";
+import { ScrollPreview } from "./_landing/scroll-preview";
 
 export const metadata: Metadata = {
   title: { absolute: siteConfig.name },
@@ -32,27 +22,10 @@ export const metadata: Metadata = {
   },
 };
 
-const VALUES = [
-  {
-    title: "Directory",
-    body: "Find batchmates by department, batch, company or city.",
-    icon: Users,
-  },
-  {
-    title: "Mentorship",
-    body: "Ask alumni who have walked the path before you.",
-    icon: GraduationCap,
-  },
-  {
-    title: "Jobs & internships",
-    body: "Openings shared by alumni and reviewed before they go live.",
-    icon: Briefcase,
-  },
-  {
-    title: "Events",
-    body: "Meetups, talks and reunions, online and in your city.",
-    icon: CalendarDays,
-  },
+const REASSURANCE = [
+  "Verified members only",
+  "You control your privacy",
+  "Free for the community",
 ];
 
 const STEPS = [
@@ -64,7 +37,13 @@ const STEPS = [
   { title: "Connect", body: "Reach people, mentors and opportunities." },
 ];
 
-/** §5.1.1. Anyone may view; signed-in visitors get "Go to dashboard" instead of Join (H-1). */
+const TRUST = [
+  { icon: ShieldCheck, label: "Institute-verified accounts" },
+  { icon: SlidersHorizontal, label: "Per-field visibility controls" },
+  { icon: EyeOff, label: "Contact details never shown" },
+];
+
+/** §5.1.1. Anyone may view; VERIFIED visitors go to the app, other signed-in states see "Go to dashboard". */
 export default async function LandingPage() {
   const actor = await getActor();
   const home = verifiedHome(actor);
@@ -72,97 +51,104 @@ export default async function LandingPage() {
   const signedIn = actor !== null;
   return (
     <PublicShell signedIn={signedIn}>
-      <section className="dawn-glow">
-        <div className="container mx-auto flex max-w-4xl flex-col items-center gap-6 px-4 py-20 text-center md:py-28">
-          <h1 className="font-display text-5xl tracking-tight text-balance md:text-6xl">
-            Stay connected with your NIT Arunachal Pradesh community
-          </h1>
-          <p className="text-muted-foreground max-w-2xl text-lg">
-            Find batchmates and mentors, discover opportunities, and come back
-            for events.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {signedIn ? (
-              <Link
-                href="/dashboard"
-                className={buttonVariants({ size: "lg" })}
-              >
-                Go to dashboard
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/register"
-                  className={buttonVariants({ size: "lg" })}
-                >
-                  Join the network
-                </Link>
-                <Link
-                  href="/login"
-                  className={buttonVariants({ size: "lg", variant: "outline" })}
-                >
-                  Log in
-                </Link>
-              </>
-            )}
+      <section className="dawn-glow relative overflow-hidden">
+        <div aria-hidden className="dot-grid absolute inset-0" />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-4 pt-16 pb-20 sm:px-8 lg:grid-cols-[1fr_1.05fr] lg:pt-24 lg:pb-28">
+          <div className="flex flex-col items-start gap-6">
+            <span className="bg-card/70 border-border flex items-center gap-2 rounded-full border py-1 pr-3 pl-1.5 text-xs font-medium backdrop-blur">
+              <DawnMark className="size-5" />
+              For NIT Arunachal Pradesh students &amp; alumni
+            </span>
+            <h1 className="font-display text-5xl leading-[1.05] tracking-tight text-balance sm:text-6xl lg:text-7xl">
+              Stay connected with your NIT Arunachal Pradesh{" "}
+              <em className="text-brand">community</em>
+            </h1>
+            <p className="text-muted-foreground max-w-xl text-lg">
+              Find batchmates and mentors, discover opportunities, and come back
+              for events.
+            </p>
+            <CtaButtons signedIn={signedIn} />
+            <ul className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              {REASSURANCE.map((r) => (
+                <li key={r} className="flex items-center gap-1.5">
+                  <Check aria-hidden className="text-success size-4" />
+                  {r}
+                </li>
+              ))}
+            </ul>
           </div>
+          <ScrollPreview />
         </div>
       </section>
 
-      <section aria-label="What you can do" className="bg-muted/40 py-16">
-        <div className="container mx-auto grid max-w-6xl gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4">
-          {VALUES.map(({ title, body, icon: Icon }) => (
-            <Link
-              key={title}
-              href={signedIn ? "/dashboard" : "/register"}
-              className="rounded-xl focus-visible:outline-2"
-            >
-              <Card className="h-full transition-shadow hover:shadow-md">
-                <CardHeader>
-                  <Icon aria-hidden className="text-primary mb-2 size-6" />
-                  <CardTitle>
-                    <h3>{title}</h3>
-                  </CardTitle>
-                  <CardDescription>{body}</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
+      <Bento signedIn={signedIn} />
+
+      <section id="how-it-works" className="border-border border-y py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-8">
+          <h2 className="font-display text-4xl tracking-tight">How it works</h2>
+          <ol className="relative mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
+            <span
+              aria-hidden
+              className="bg-border absolute top-5 bottom-5 left-5 w-px md:top-5 md:right-[16%] md:bottom-auto md:left-[16%] md:h-px md:w-auto"
+            />
+            {STEPS.map((step, i) => (
+              <li
+                key={step.title}
+                className="relative flex gap-5 md:flex-col md:items-center md:text-center"
+              >
+                <span className="bg-background border-brand text-brand font-display relative flex size-10 shrink-0 items-center justify-center rounded-full border text-xl">
+                  {i + 1}
+                </span>
+                <div>
+                  <div className="font-semibold">{step.title}</div>
+                  <div className="text-muted-foreground mt-1 text-sm">
+                    {step.body}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
       <section
-        id="how-it-works"
-        className="container mx-auto max-w-4xl px-4 py-16"
+        id="privacy"
+        className="dark bg-background text-foreground relative overflow-hidden"
       >
-        <h2 className="mb-8 text-center text-2xl font-semibold">
-          How it works
-        </h2>
-        <ol className="grid gap-6 sm:grid-cols-3">
-          {STEPS.map((step, i) => (
-            <li
-              key={step.title}
-              className="flex flex-col items-center gap-2 text-center"
-            >
-              <span className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-full font-semibold">
-                {i + 1}
-              </span>
-              <span className="font-medium">{step.title}</span>
-              <span className="text-muted-foreground text-sm">{step.body}</span>
-            </li>
-          ))}
-        </ol>
+        <div aria-hidden className="dawn-glow absolute inset-0 -scale-y-100" />
+        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-8 lg:grid-cols-2 lg:items-center">
+          <div className="space-y-4">
+            <ShieldCheck aria-hidden className="text-brand size-8" />
+            <h2 className="font-display text-4xl tracking-tight">
+              A trusted network
+            </h2>
+            <p className="text-muted-foreground max-w-lg">
+              Every member is verified by the institute. You choose who sees
+              your profile, and your email, phone and roll number are never
+              shown to other members.
+            </p>
+          </div>
+          <ul className="grid gap-3">
+            {TRUST.map(({ icon: Icon, label }) => (
+              <li
+                key={label}
+                className="bg-card border-border flex items-center gap-3 rounded-xl border px-4 py-3"
+              >
+                <Icon aria-hidden className="text-brand size-5" />
+                <span className="text-sm font-medium">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
-      <section id="privacy" className="bg-muted/40 py-16">
-        <div className="container mx-auto flex max-w-3xl flex-col items-center gap-3 px-4 text-center">
-          <ShieldCheck aria-hidden className="text-primary size-8" />
-          <h2 className="text-2xl font-semibold">A trusted network</h2>
-          <p className="text-muted-foreground">
-            Every member is verified by the institute. You choose who sees your
-            profile, and your email, phone and roll number are never shown to
-            other members.
+      <section className="px-4 py-20 sm:px-8">
+        <div className="dawn-glow bg-card border-border mx-auto flex max-w-5xl flex-col items-center gap-6 rounded-3xl border px-6 py-16 text-center">
+          <DawnMark className="size-10" />
+          <p className="font-display text-4xl tracking-tight text-balance sm:text-5xl">
+            Your batch is already here.
           </p>
+          <CtaButtons signedIn={signedIn} />
         </div>
       </section>
     </PublicShell>
