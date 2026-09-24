@@ -1,16 +1,15 @@
-import { LoadingSpinner } from "@/components/feedback/loading-spinner";
-import { PublicShell } from "@/components/common/public-shell";
+import { DawnMark } from "@/components/brand/dawn-mark";
 
+/** Root fallback: covers public, (app) and admin routes, so it carries no site chrome. */
 export default function Loading() {
   return (
-    <PublicShell signedIn={false}>
-      <div className="flex min-h-[60vh] flex-col items-center justify-center p-8">
-        <LoadingSpinner
-          size="lg"
-          label="Loading application..."
-          className="border-brand dark:border-brand border-t-transparent dark:border-t-transparent"
-        />
-      </div>
-    </PublicShell>
+    <div
+      role="status"
+      aria-label="Loading application..."
+      className="flex min-h-[60vh] flex-1 flex-col items-center justify-center gap-3 p-8"
+    >
+      <DawnMark className="size-12 motion-safe:animate-pulse" />
+      <p className="text-muted-foreground text-sm">Loading…</p>
+    </div>
   );
 }

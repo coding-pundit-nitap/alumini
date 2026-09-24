@@ -10,7 +10,7 @@ export default function AuthLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="grid min-h-svh lg:grid-cols-[1.1fr_1fr]">
-      <aside className="bg-primary text-primary-foreground relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-12">
+      <aside className="dark bg-background text-foreground relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-12">
         <div aria-hidden className="dawn-glow absolute inset-0 -scale-y-100" />
         <Link href="/" className={`relative self-start ${HOME_LINK}`}>
           <Wordmark />
@@ -19,7 +19,7 @@ export default function AuthLayout({
           Every sunrise in Arunachal starts a little earlier. So does your
           network.
         </blockquote>
-        <p className="text-primary-foreground/70 relative text-sm">
+        <p className="text-muted-foreground relative text-sm">
           Verified by NIT Arunachal Pradesh
         </p>
       </aside>
