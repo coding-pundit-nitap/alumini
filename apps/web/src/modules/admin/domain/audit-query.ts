@@ -3,7 +3,7 @@ import { z } from "zod";
 const ACTION = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/;
 
 /** A GET form sends "" for every untouched field; that means "no filter". */
-const dropEmpty = (input: unknown) =>
+export const dropEmpty = (input: unknown) =>
   input && typeof input === "object" && !Array.isArray(input)
     ? Object.fromEntries(Object.entries(input).filter(([, v]) => v !== ""))
     : input;
@@ -34,30 +34,9 @@ export const auditQuerySchema = z.preprocess(
 );
 
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
-export type AuditCursor = { createdAt: Date; id: string };
 
-const toBase64Url = (text: string) =>
-  btoa(text).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
-/** Opaque, URL-safe keyset cursor over (created_at, id). */
-export function encodeAuditCursor(cursor: AuditCursor): string {
-  return toBase64Url(
-    JSON.stringify({ c: cursor.createdAt.toISOString(), i: cursor.id })
-  );
-}
-
-const cursorShape = z.object({ c: z.iso.datetime(), i: z.uuid() });
-
-/** Null for anything that is not a cursor this module issued. */
-export function decodeAuditCursor(raw: string): AuditCursor | null {
-  try {
-    const padded = raw.replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(padded + "=".repeat((4 - (padded.length % 4)) % 4));
-    const parsed = cursorShape.safeParse(JSON.parse(json));
-    return parsed.success
-      ? { createdAt: new Date(parsed.data.c), id: parsed.data.i }
-      : null;
-  } catch {
-    return null;
-  }
-}
+export {
+  type KeysetCursor as AuditCursor,
+  encodeKeysetCursor as encodeAuditCursor,
+  decodeKeysetCursor as decodeAuditCursor,
+} from "./keyset-cursor";
