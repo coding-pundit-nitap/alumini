@@ -6,6 +6,8 @@ import {
   createClaimReport,
   createDismissReport,
   createFileContentReport,
+  createGetReport,
+  createListReports,
   createResolveReport,
 } from "@/modules/moderation";
 import { createPrismaModerationStore } from "@/modules/moderation/server";
@@ -22,3 +24,5 @@ export const fileContentReport = createFileContentReport(deps);
 export const claimReport = createClaimReport(deps);
 export const resolveReport = createResolveReport(deps);
 export const dismissReport = createDismissReport(deps);
+export const listReports = createListReports(deps);
+export const getReport = createGetReport(deps);

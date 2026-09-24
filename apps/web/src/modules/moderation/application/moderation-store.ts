@@ -5,6 +5,22 @@ import type {
   ReportTargetType,
   ResolveReason,
 } from "../domain/moderation";
+import type { KeysetCursor } from "../domain/keyset-cursor";
+
+/** One report as the queue shows it (spec C12-5). `preview` is null for MESSAGE: its text is only read through C12-6. */
+export type ReportView = {
+  id: string;
+  status: ReportState;
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: string;
+  createdAt: Date;
+  reporter: { id: string; name: string };
+  resolvedBy: { id: string; name: string } | null;
+  /** Author, sender or the user itself; null when the target is gone. Drives the self-review guard. */
+  targetOwnerId: string | null;
+  preview: { text: string; deleted: boolean } | null;
+};
 
 export type ReportRow = {
   id: string;
@@ -57,6 +73,14 @@ export type ModerationTx = {
   ): Promise<void>;
   /** Cross-module write: sets message.hidden_at once. True only when this call hid it. */
   hideMessage(messageId: string): Promise<boolean>;
+  /** The reports queue and single-report reads (spec C12-5, C12-7). `reportId` narrows to one report; `statuses: []` means any. */
+  listReports(input: {
+    reportId?: string;
+    statuses: readonly ReportState[];
+    targetType?: ReportTargetType;
+    after: KeysetCursor | null;
+    take: number;
+  }): Promise<ReportView[]>;
   enqueue(event: {
     type: "report.filed" | "report.resolved" | "content.removed";
     payload: unknown;

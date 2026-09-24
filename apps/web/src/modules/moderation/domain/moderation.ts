@@ -34,7 +34,7 @@ const refuse = (code: Refusal["code"]): { ok: false } & Refusal => ({
   code,
 });
 
-function isSelf(
+export function isSelf(
   actorId: string,
   reporterId: string,
   contentAuthorId: string

@@ -35,6 +35,8 @@ import { createListPendingJobs } from "@/modules/jobs/application/list-pending-j
 import { createRejectJob } from "@/modules/jobs/application/reject-job";
 import { createClaimReport } from "@/modules/moderation/application/claim-report";
 import { createDismissReport } from "@/modules/moderation/application/dismiss-report";
+import { createGetReport } from "@/modules/moderation/application/get-report";
+import { createListReports } from "@/modules/moderation/application/list-reports";
 import { createResolveReport } from "@/modules/moderation/application/resolve-report";
 import { createReplayNotifications } from "@/modules/notifications/application/replay-notifications";
 
@@ -135,6 +137,21 @@ const ADMIN_ACTIONS: ReadonlyArray<{
         actor,
         reportId: ID,
         input: { reason: "NO_VIOLATION" },
+      }),
+  },
+  {
+    name: "listReports",
+    permission: PERMISSIONS.REPORT_REVIEW,
+    run: (actor) =>
+      createListReports({ store: tripwire(), authorize })({ actor, query: {} }),
+  },
+  {
+    name: "getReport",
+    permission: PERMISSIONS.REPORT_REVIEW,
+    run: (actor) =>
+      createGetReport({ store: tripwire(), authorize })({
+        actor,
+        reportId: ID,
       }),
   },
   {

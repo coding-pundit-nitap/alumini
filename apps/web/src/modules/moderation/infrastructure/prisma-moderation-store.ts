@@ -5,12 +5,19 @@ import type { OutboxEvent } from "@nitap/jobs";
 
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
 
+import type { ReportTargetType } from "../domain/moderation";
 import type {
   ModerationStore,
   ModerationTx,
   ReportRow,
+  ReportView,
 } from "../application/moderation-store";
-import { findContentAuthor, hideMessageSql, softDeleteContentSql } from "./sql";
+import {
+  findContentAuthor,
+  hideMessageSql,
+  reportTargetsSql,
+  softDeleteContentSql,
+} from "./sql";
 
 const CONTENT_TARGET = {
   "post.removed": "post",
@@ -61,6 +68,68 @@ export function createPrismaModerationStore(deps: {
     },
     async hideMessage(messageId) {
       return (await db.$executeRaw(hideMessageSql(messageId))) === 1;
+    },
+    async listReports({ reportId, statuses, targetType, after, take }) {
+      const rows = await db.report.findMany({
+        where: {
+          AND: [
+            reportId ? { id: reportId } : {},
+            statuses.length ? { status: { in: [...statuses] } } : {},
+            targetType ? { targetType } : {},
+            after
+              ? {
+                  OR: [
+                    { createdAt: { lt: after.createdAt } },
+                    { createdAt: after.createdAt, id: { lt: after.id } },
+                  ],
+                }
+              : {},
+          ],
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take,
+        include: {
+          reporter: { select: { id: true, name: true } },
+          resolvedBy: { select: { id: true, name: true } },
+        },
+      });
+      const ids: Record<ReportTargetType, string[]> = {
+        POST: [],
+        COMMENT: [],
+        MESSAGE: [],
+        USER: [],
+      };
+      for (const r of rows) ids[r.targetType].push(r.targetId);
+      const targets = rows.length
+        ? await db.$queryRaw<
+            {
+              type: ReportTargetType;
+              id: string;
+              ownerId: string;
+              text: string | null;
+              deleted: boolean;
+            }[]
+          >(reportTargetsSql(ids))
+        : [];
+      const byKey = new Map(targets.map((t) => [`${t.type}:${t.id}`, t]));
+      return rows.map((r): ReportView => {
+        const t = byKey.get(`${r.targetType}:${r.targetId}`);
+        return {
+          id: r.id,
+          status: r.status,
+          targetType: r.targetType,
+          targetId: r.targetId,
+          reason: r.reason,
+          createdAt: r.createdAt,
+          reporter: r.reporter,
+          resolvedBy: r.resolvedBy,
+          targetOwnerId: t?.ownerId ?? null,
+          preview:
+            t && r.targetType !== "MESSAGE"
+              ? { text: t.text ?? "", deleted: t.deleted }
+              : null,
+        };
+      });
     },
     async enqueue(event) {
       await deps.outbox.add(db, event as OutboxEvent);

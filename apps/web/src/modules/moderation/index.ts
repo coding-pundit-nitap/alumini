@@ -11,6 +11,8 @@
 export { createClaimReport } from "./application/claim-report";
 export { createDismissReport } from "./application/dismiss-report";
 export { createFileContentReport } from "./application/file-content-report";
+export { createGetReport } from "./application/get-report";
+export { createListReports } from "./application/list-reports";
 export { createResolveReport } from "./application/resolve-report";
 export type { Authorize } from "./application/authz";
 export type {
@@ -18,6 +20,7 @@ export type {
   ModerationStore,
   ModerationTx,
   ReportRow,
+  ReportView,
 } from "./application/moderation-store";
 export type {
   DismissReason,
