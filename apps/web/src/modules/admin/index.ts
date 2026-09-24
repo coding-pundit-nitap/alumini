@@ -43,3 +43,16 @@ export type { AccessOptions } from "./domain/escalation";
 export { ESCALATION_MESSAGES } from "./domain/escalation";
 export { SUSPENSION_REASONS, TARGET_STATES } from "./domain/lifecycle";
 export { userListQuerySchema } from "./domain/user-query";
+export { AccessList } from "./presentation/ui/access-list";
+export { AccountStateDialog } from "./presentation/ui/account-state-dialog";
+export { AssignRoleDialog } from "./presentation/ui/assign-role-dialog";
+export { GrantPermissionDialog } from "./presentation/ui/grant-permission-dialog";
+export { UserFilters } from "./presentation/ui/user-filters";
+export { UsersTable } from "./presentation/ui/users-table";
+export {
+  LAST_SUPER_ADMIN_NOTE,
+  STATE_LABEL,
+  USER_FILTER_LABELS,
+} from "./presentation/ui/labels";
+export { canTransition } from "./domain/lifecycle";
+export type { AccountStateValue } from "./domain/lifecycle";

@@ -25,10 +25,13 @@ describe("admin access", () => {
     expect(hasAdminAccess(holding())).toBe(false);
   });
 
-  it("gives a moderator the dashboard with the report and members tiles, and no queue links", () => {
+  it("gives a moderator the dashboard with the report and members tiles, and the users page", () => {
     const can = holding(PERMISSIONS.REPORT_REVIEW, PERMISSIONS.USER_READ_ADMIN);
     expect(hasAdminAccess(can)).toBe(true);
-    expect(adminNavigation(can).map((i) => i.href)).toEqual(["/admin"]);
+    expect(adminNavigation(can).map((i) => i.href)).toEqual([
+      "/admin",
+      "/admin/users",
+    ]);
     expect(dashboardTiles(can)).toEqual(["openReports", "members"]);
   });
 
@@ -46,6 +49,11 @@ describe("admin access", () => {
       "/jobs/moderation",
       "/achievements",
     ]);
+  });
+
+  it("shows Users to user.read_admin holders", () => {
+    const nav = adminNavigation((p) => p === "user.read_admin");
+    expect(nav.map((i) => i.href)).toEqual(["/admin", "/admin/users"]);
   });
 
   it("lists every admin-tier permission exactly once", () => {

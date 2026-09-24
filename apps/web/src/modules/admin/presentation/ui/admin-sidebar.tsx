@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   ScrollText,
   UserCheck,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -26,6 +27,7 @@ import type { NavIcon, NavItem } from "../../domain/access";
 // The domain names icons as strings so it stays React-free; the UI maps them to components here.
 const ICONS: Record<NavIcon, LucideIcon> = {
   dashboard: LayoutDashboard,
+  users: Users,
   audit: ScrollText,
   verification: UserCheck,
   jobs: Briefcase,

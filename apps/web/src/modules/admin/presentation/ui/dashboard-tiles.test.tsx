@@ -27,6 +27,9 @@ describe("DashboardTiles", () => {
     // Reports have no queue page until 12C: no dead link.
     expect(screen.queryByRole("link", { name: /open reports/i })).toBeNull();
     expect(screen.getByText(/3 new this week/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /verified members/i })
+    ).toHaveAttribute("href", "/admin/users");
   });
 });
 

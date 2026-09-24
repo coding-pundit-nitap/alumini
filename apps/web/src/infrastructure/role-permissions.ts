@@ -5,6 +5,7 @@
  * role-matrix.integration.test.ts proves it matches the seeded database.
  */
 export {
+  ROLE_NAMES,
   ROLE_PERMISSIONS,
   SUPER_ADMIN_ROLE,
 } from "@nitap/database/role-permissions";

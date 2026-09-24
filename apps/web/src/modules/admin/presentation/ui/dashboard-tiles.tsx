@@ -24,7 +24,7 @@ const TILE_COPY: Record<TileKey, { label: string; href?: string }> = {
     href: "/achievements",
   },
   failedEmails: { label: "Failed notification emails" },
-  members: { label: "Verified members" },
+  members: { label: "Verified members", href: "/admin/users" },
 };
 
 function Value({ tile }: { tile: DashboardTile }) {

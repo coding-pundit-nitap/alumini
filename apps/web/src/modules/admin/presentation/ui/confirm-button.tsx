@@ -1,0 +1,109 @@
+"use client";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@nitap/ui/components/alert-dialog";
+import { Button } from "@nitap/ui/components/button";
+import { useRouter } from "next/navigation";
+import { useState, useTransition, type ReactNode } from "react";
+
+import type { ActionResult } from "@/lib/action-result";
+
+export type AccessAction = (
+  formData: FormData
+) => Promise<ActionResult<unknown>>;
+
+/**
+ * A trigger button that opens a confirmation, posts `fields` (undefined ones are left out) to a Server
+ * Action, and refreshes the page on success. The actor is never a field: the server takes the session's.
+ */
+export function ConfirmButton(props: {
+  label: string;
+  variant?: "default" | "destructive" | "outline";
+  title: string;
+  description: ReactNode;
+  confirmLabel: string;
+  fields: Record<string, string | undefined>;
+  /** False while a required input inside `children` is still empty. */
+  ready?: boolean;
+  disabledReason?: string | undefined;
+  action: AccessAction;
+  children?: ReactNode;
+}) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function submit() {
+    const form = new FormData();
+    for (const [key, value] of Object.entries(props.fields))
+      if (value !== undefined && value !== "") form.set(key, value);
+    startTransition(async () => {
+      const result = await props.action(form);
+      if (!result.ok) {
+        setError(
+          Object.values(result.error.fields ?? {})[0] ?? result.error.message
+        );
+        return;
+      }
+      setError(null);
+      setOpen(false);
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger
+          render={
+            <Button
+              type="button"
+              size="sm"
+              variant={props.variant ?? "outline"}
+              disabled={props.disabledReason !== undefined}
+            />
+          }
+        >
+          {props.label}
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{props.title}</AlertDialogTitle>
+            <AlertDialogDescription>{props.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          {props.children}
+          {error ? (
+            <p role="alert" className="text-destructive text-sm">
+              {error}
+            </p>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={
+                props.variant === "destructive" ? "destructive" : "default"
+              }
+              disabled={pending || props.ready === false}
+              onClick={submit}
+            >
+              {props.confirmLabel}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {props.disabledReason ? (
+        <p className="text-muted-foreground text-xs">{props.disabledReason}</p>
+      ) : null}
+    </div>
+  );
+}
