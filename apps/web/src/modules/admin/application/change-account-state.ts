@@ -83,6 +83,12 @@ export function createChangeAccountState(deps: {
             ? { previousState }
             : { reason: reason ?? null, previousState, sessionsRevoked },
       });
+      // Deactivation notifies nobody (spec D12-6).
+      if (to !== "DEACTIVATED")
+        await tx.enqueue({
+          type: to === "SUSPENDED" ? "user.suspended" : "user.reactivated",
+          payload: { v: 1, userId: args.userId, actorId: actor.userId },
+        });
       return { accountState: to };
     });
   };

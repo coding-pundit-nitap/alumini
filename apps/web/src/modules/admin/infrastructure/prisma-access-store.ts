@@ -1,5 +1,6 @@
 import { Prisma } from "@nitap/database";
 import type { AuditWriter } from "@nitap/database/audit";
+import type { OutboxWriter } from "@nitap/database/outbox";
 
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
 import { ConflictError } from "@/lib/errors";
@@ -40,7 +41,7 @@ const toGrant = (g: {
 
 /**
  * Identity writes for the admin module (overview AD-1): user state, sessions, roles and grants, each with its
- * audit row in the same transaction. Lock order is always the target user row, then the super-admin rows
+ * audit row (and its notice event) in the same transaction. Lock order is always the target user row, then the super-admin rows
  * (locked in a fixed `ORDER BY ur.id`), so two admin writes cannot deadlock.
  *
  * The user-row lock uses `FOR NO KEY UPDATE`, not `FOR UPDATE`: it still serializes concurrent admin
@@ -52,6 +53,7 @@ const toGrant = (g: {
 export function createPrismaAccessStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   audit: AuditWriter;
+  outbox: OutboxWriter;
   superAdminRole: string;
 }): AccessStore {
   const { superAdminRole } = deps;
@@ -160,6 +162,10 @@ export function createPrismaAccessStore(deps: {
         targetId: entry.targetUserId,
         metadata: entry.metadata,
       });
+    },
+
+    async enqueue(event) {
+      await deps.outbox.add(db, event);
     },
   });
 

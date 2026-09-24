@@ -71,6 +71,7 @@ describe("changeAccountState (spec B12-1, B12-5, B12-6)", () => {
       "setAccountState",
       "deleteSessions",
       "audit",
+      "enqueue",
     ]);
     expect(s.audits[0]).toEqual({
       action: "user.suspended",
@@ -82,6 +83,9 @@ describe("changeAccountState (spec B12-1, B12-5, B12-6)", () => {
         sessionsRevoked: 1,
       },
     });
+    expect(s.events).toEqual([
+      { type: "user.suspended", payload: { v: 1, userId: T, actorId: A } },
+    ]);
   });
   it("reactivates: picks user.reactivate, keeps sessions", async () => {
     const s = setup("SUSPENDED");
@@ -98,6 +102,9 @@ describe("changeAccountState (spec B12-1, B12-5, B12-6)", () => {
     expect(s.calls).not.toContain("deleteSessions");
     expect(s.audits[0]?.action).toBe("user.reactivated");
     expect(s.audits[0]?.metadata.previousState).toBe("SUSPENDED");
+    expect(s.events).toEqual([
+      { type: "user.reactivated", payload: { v: 1, userId: T, actorId: A } },
+    ]);
   });
   it("deactivates a suspended account", async () => {
     const s = setup("SUSPENDED");
@@ -171,5 +178,27 @@ describe("changeAccountState (spec B12-1, B12-5, B12-6)", () => {
       })
     ).rejects.toBeInstanceOf(AuthorizationError);
     expect(s.calls).toEqual([]);
+  });
+
+  it("deactivation notifies nobody (spec D12-6)", async () => {
+    const s = setup();
+    await s.change({
+      actor: actor(),
+      userId: T,
+      input: { accountState: "DEACTIVATED", reason: "OTHER" },
+    });
+    expect(s.events).toEqual([]);
+  });
+
+  it("enqueues nothing when the transition is refused", async () => {
+    const s = setup("SUSPENDED");
+    await expect(
+      s.change({
+        actor: actor(),
+        userId: T,
+        input: { accountState: "SUSPENDED", reason: "SPAM" },
+      })
+    ).rejects.toMatchObject({ code: "INVALID_STATE_TRANSITION" });
+    expect(s.events).toEqual([]);
   });
 });

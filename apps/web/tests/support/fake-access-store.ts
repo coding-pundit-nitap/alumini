@@ -2,6 +2,7 @@ import { ConflictError } from "@/lib/errors";
 import type {
   AccessAuditEntry,
   AccessStore,
+  AccountOutboxEvent,
   GrantRow,
   TargetUser,
 } from "@/modules/admin/application/access-store";
@@ -18,6 +19,7 @@ export function fakeAccessStore(seed: {
   );
   const grants = [...(seed.grants ?? [])];
   const audits: AccessAuditEntry[] = [];
+  const events: AccountOutboxEvent[] = [];
   const calls: string[] = [];
   let sessions = 1;
 
@@ -96,8 +98,12 @@ export function fakeAccessStore(seed: {
           calls.push("audit");
           audits.push(entry);
         },
+        async enqueue(event) {
+          calls.push("enqueue");
+          events.push(event);
+        },
       });
     },
   };
-  return { store, users, grants, audits, calls };
+  return { store, users, grants, audits, events, calls };
 }

@@ -1,6 +1,7 @@
 import { audit } from "@/infrastructure/audit";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { getMetrics, logger } from "@/infrastructure/observability";
+import { outbox } from "@/infrastructure/outbox";
 import {
   ROLE_PERMISSIONS,
   SUPER_ADMIN_ROLE,
@@ -40,6 +41,7 @@ export const listAuditLog = createListAuditLog({ store, authorize });
 const accessStore = createPrismaAccessStore({
   runner: transactionRunner,
   audit,
+  outbox,
   superAdminRole: SUPER_ADMIN_ROLE,
 });
 const access = { store: accessStore, authorize, loadGrants };

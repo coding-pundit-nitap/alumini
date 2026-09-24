@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createAuditWriter } from "@nitap/database/audit";
+import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import { createTestDatabase, type TestDatabase } from "@nitap/testing";
 
@@ -47,6 +48,7 @@ describe("PrismaAccessStore (spec B12-5, B12-6, B12-7)", () => {
     store = createPrismaAccessStore({
       runner: createTransactionRunner(db.prisma),
       audit: createAuditWriter(),
+      outbox: createOutboxWriter(),
       superAdminRole: "SUPER_ADMIN",
     });
   });
@@ -204,5 +206,36 @@ describe("PrismaAccessStore (spec B12-5, B12-6, B12-7)", () => {
       status: "rejected",
       reason: { code: "LAST_SUPER_ADMIN" },
     });
+  });
+
+  it("writes the notice event in the state-change transaction, and rolls it back with it", async () => {
+    const target = await user("target");
+    await store.transaction(async (tx) => {
+      await tx.setAccountState(target, "VERIFIED", "SUSPENDED", null);
+      await tx.enqueue({
+        type: "user.suspended",
+        payload: { v: 1, userId: target, actorId: grantor },
+      });
+    });
+    expect(
+      (
+        await db.prisma.outboxEvent.findMany({
+          where: { type: "user.suspended" },
+        })
+      ).map((e) => e.payload)
+    ).toEqual([{ v: 1, userId: target, actorId: grantor }]);
+
+    await expect(
+      store.transaction(async (tx) => {
+        await tx.enqueue({
+          type: "user.reactivated",
+          payload: { v: 1, userId: target, actorId: grantor },
+        });
+        throw new Error("boom");
+      })
+    ).rejects.toThrow("boom");
+    expect(
+      await db.prisma.outboxEvent.count({ where: { type: "user.reactivated" } })
+    ).toBe(0);
   });
 });

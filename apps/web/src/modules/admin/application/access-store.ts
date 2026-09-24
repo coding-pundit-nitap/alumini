@@ -1,6 +1,12 @@
+import type { AccountStatePayload } from "@nitap/jobs";
 import type { Permission } from "@nitap/database/permissions";
 
 import type { AccountStateValue } from "../domain/lifecycle";
+
+export type AccountOutboxEvent = {
+  type: "user.suspended" | "user.reactivated";
+  payload: AccountStatePayload;
+};
 
 export type TargetUser = {
   id: string;
@@ -62,6 +68,8 @@ export type AccessTx = {
   findGrant(userId: string, grantId: string): Promise<GrantRow | null>;
   deleteGrant(grantId: string): Promise<void>;
   audit(entry: AccessAuditEntry): Promise<void>;
+  /** Writes an outbox event in this transaction (spec D12-8). */
+  enqueue(event: AccountOutboxEvent): Promise<void>;
 };
 
 export type AccessStore = {
