@@ -16,7 +16,8 @@ export async function AppShell({ children }: { children: ReactNode }) {
   // Signed out: the page itself redirects to /login.
   if (!data) return <main>{children}</main>;
 
-  const bell = <NotificationBell />;
+  // Only VERIFIED members may read notifications; anyone else's bell would poll into 403s.
+  const bell = data.verified ? <NotificationBell /> : null;
   return (
     <div className="flex min-h-svh">
       <a

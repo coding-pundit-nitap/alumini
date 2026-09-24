@@ -12,6 +12,7 @@ import {
 } from "@nitap/ui/components/tooltip";
 
 import { DawnMark, Wordmark } from "@/components/brand/dawn-mark";
+import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 import { CreateMenu } from "./create-menu";
@@ -47,7 +48,7 @@ export function Rail({
       <div className="flex flex-col gap-3 px-3 pt-4 pb-3 md:items-center lg:items-stretch">
         <Link
           href="/dashboard"
-          aria-label="Home"
+          aria-label={`${siteConfig.shortName} home`}
           className={cn("flex h-10 items-center rounded-md lg:px-2", FOCUS)}
         >
           <span className="hidden lg:block">

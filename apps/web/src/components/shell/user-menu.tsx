@@ -66,8 +66,22 @@ export function UserMenu({
   const router = useRouter();
   const [theme, setTheme] = useState<ThemePref>(readTheme);
 
+  const [signOutState, setSignOutState] = useState<
+    "idle" | "pending" | "failed"
+  >("idle");
+
   async function signOut() {
-    await authClient.signOut();
+    if (signOutState === "pending") return;
+    setSignOutState("pending");
+    try {
+      const { error } = await authClient.signOut();
+      if (error) throw error;
+    } catch (error) {
+      // Stay put: pushing to /login with a live session would just bounce back.
+      console.error("Sign-out failed", error);
+      setSignOutState("failed");
+      return;
+    }
     router.push("/login");
     router.refresh();
   }
@@ -149,8 +163,13 @@ export function UserMenu({
           </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => void signOut()}>
-          Sign out
+        {/* closeOnClick off so the pending and failed states stay visible in the open menu. */}
+        <DropdownMenuItem closeOnClick={false} onClick={() => void signOut()}>
+          {signOutState === "pending"
+            ? "Signing out…"
+            : signOutState === "failed"
+              ? "Couldn't sign out. Try again"
+              : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

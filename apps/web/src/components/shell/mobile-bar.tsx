@@ -15,6 +15,7 @@ import {
 } from "@nitap/ui/components/sheet";
 
 import { DawnMark } from "@/components/brand/dawn-mark";
+import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 import { useCreateClick } from "./create-menu";
@@ -48,7 +49,7 @@ export function MobileBar({
       <header className="bg-background/85 sticky top-0 z-40 flex h-14 items-center gap-1 border-b px-4 backdrop-blur md:hidden">
         <Link
           href="/dashboard"
-          aria-label="Home"
+          aria-label={`${siteConfig.shortName} home`}
           className={cn("mr-auto rounded-md", FOCUS)}
         >
           <DawnMark />
