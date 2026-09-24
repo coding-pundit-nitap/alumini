@@ -24,6 +24,12 @@ const ABOUT = [
   { label: "Privacy", href: "/#privacy" },
 ];
 
+const ACCOUNT = [
+  { label: "Log in", href: "/login" },
+  { label: "Create account", href: "/register" },
+  { label: "Forgot password", href: "/forgot-password" },
+];
+
 /**
  * Header + footer for public pages (landing, 404, error, loading). Takes `signedIn` rather than
  * calling getActor itself, so client pages (error.tsx) can use it too.
@@ -85,9 +91,12 @@ export function PublicShell({
       <main className="flex-1">{children}</main>
 
       <footer className="border-border/60 border-t">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-8 md:grid-cols-[minmax(0,2fr)_1fr_1fr]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-8 md:grid-cols-[minmax(0,2fr)_repeat(3,1fr)]">
           <div className="max-w-sm space-y-3">
             <Wordmark />
+            <p className="font-display text-foreground text-xl italic">
+              Where the dawn-lit mountains keep in touch.
+            </p>
             <p className="text-muted-foreground text-sm leading-relaxed">
               {siteConfig.description}
             </p>
@@ -100,6 +109,7 @@ export function PublicShell({
             }))}
           />
           <FooterColumn title="About" links={ABOUT} />
+          {signedIn ? null : <FooterColumn title="Account" links={ACCOUNT} />}
         </div>
         <div className="border-border/60 border-t">
           <div className="text-muted-foreground mx-auto flex max-w-7xl flex-col gap-1 px-4 py-5 text-xs sm:flex-row sm:justify-between sm:px-8">

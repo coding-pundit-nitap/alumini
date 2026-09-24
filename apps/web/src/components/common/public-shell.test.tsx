@@ -72,4 +72,26 @@ describe("PublicShell", () => {
       "/jobs"
     );
   });
+
+  it("lists account links in the footer when signed out", () => {
+    render(<PublicShell signedIn={false}>body</PublicShell>);
+    const account = within(screen.getByRole("navigation", { name: "Account" }));
+    expect(account.getByRole("link", { name: "Log in" })).toHaveAttribute(
+      "href",
+      "/login"
+    );
+    expect(
+      account.getByRole("link", { name: "Create account" })
+    ).toHaveAttribute("href", "/register");
+    expect(
+      account.getByRole("link", { name: "Forgot password" })
+    ).toHaveAttribute("href", "/forgot-password");
+  });
+
+  it("hides the account column when signed in", () => {
+    render(<PublicShell signedIn>body</PublicShell>);
+    expect(
+      screen.queryByRole("navigation", { name: "Account" })
+    ).not.toBeInTheDocument();
+  });
 });
