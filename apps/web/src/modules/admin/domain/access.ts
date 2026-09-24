@@ -14,10 +14,16 @@ export const hasAdminAccess = (can: Can): boolean =>
   ADMIN_PERMISSIONS.some((permission) => can(permission));
 
 export type NavIcon =
-  "dashboard" | "users" | "audit" | "verification" | "jobs" | "achievements";
+  | "dashboard"
+  | "users"
+  | "audit"
+  | "verification"
+  | "reports"
+  | "jobs"
+  | "achievements"
+  | "notifications";
 export type NavItem = { href: string; label: string; icon: NavIcon };
 
-// Queues keep their current pages until 12C moves them under /admin (overview AD-3).
 const QUEUE_ITEMS: ReadonlyArray<NavItem & { permission: Permission }> = [
   {
     href: "/admin/users",
@@ -38,16 +44,28 @@ const QUEUE_ITEMS: ReadonlyArray<NavItem & { permission: Permission }> = [
     permission: PERMISSIONS.ALUMNI_VERIFY,
   },
   {
-    href: "/jobs/moderation",
+    href: "/admin/reports",
+    label: "Reports",
+    icon: "reports",
+    permission: PERMISSIONS.REPORT_REVIEW,
+  },
+  {
+    href: "/admin/jobs",
     label: "Jobs",
     icon: "jobs",
     permission: PERMISSIONS.JOB_APPROVE,
   },
   {
-    href: "/achievements",
+    href: "/admin/achievements",
     label: "Achievements",
     icon: "achievements",
     permission: PERMISSIONS.ACHIEVEMENT_REVIEW,
+  },
+  {
+    href: "/admin/notifications",
+    label: "Failed emails",
+    icon: "notifications",
+    permission: PERMISSIONS.NOTIFICATION_REPLAY,
   },
 ];
 

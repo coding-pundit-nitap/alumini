@@ -11,19 +11,21 @@ import type { MembersSummary } from "../../application/admin-store";
 import type { DashboardTile } from "../../application/get-dashboard";
 import type { TileKey } from "../../domain/access";
 
-// A tile whose queue has no page yet (reports, failed emails) is not a link until 12C adds it.
-const TILE_COPY: Record<TileKey, { label: string; href?: string }> = {
+const TILE_COPY: Record<TileKey, { label: string; href: string }> = {
   pendingVerifications: {
     label: "Verification requests pending",
     href: "/admin/verification",
   },
-  openReports: { label: "Open reports" },
-  pendingJobs: { label: "Jobs awaiting review", href: "/jobs/moderation" },
+  openReports: { label: "Open reports", href: "/admin/reports" },
+  pendingJobs: { label: "Jobs awaiting review", href: "/admin/jobs" },
   pendingAchievements: {
     label: "Achievements awaiting review",
-    href: "/achievements",
+    href: "/admin/achievements",
   },
-  failedEmails: { label: "Failed notification emails" },
+  failedEmails: {
+    label: "Failed notification emails",
+    href: "/admin/notifications",
+  },
   members: { label: "Verified members", href: "/admin/users" },
 };
 
@@ -54,27 +56,22 @@ export function DashboardTiles({ tiles }: { tiles: DashboardTile[] }) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {tiles.map((tile) => {
         const copy = TILE_COPY[tile.key];
-        const card = (
-          <Card className="h-full">
-            <CardHeader>
-              <CardDescription>{copy.label}</CardDescription>
-              <CardTitle>
-                <Value tile={tile} />
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        );
-        return copy.href ? (
+        return (
           <Link
             key={tile.key}
             href={copy.href}
             aria-label={copy.label}
             className="focus-visible:ring-ring/50 rounded-xl outline-none hover:opacity-90 focus-visible:ring-3"
           >
-            {card}
+            <Card className="h-full">
+              <CardHeader>
+                <CardDescription>{copy.label}</CardDescription>
+                <CardTitle>
+                  <Value tile={tile} />
+                </CardTitle>
+              </CardHeader>
+            </Card>
           </Link>
-        ) : (
-          <div key={tile.key}>{card}</div>
         );
       })}
     </div>

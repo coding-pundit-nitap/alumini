@@ -5,7 +5,7 @@ import { AuditTable } from "./audit-table";
 import { DashboardTiles } from "./dashboard-tiles";
 
 describe("DashboardTiles", () => {
-  it("renders counts, links queues that have a page, and shows an unavailable tile", () => {
+  it("renders counts, links every queue, and shows an unavailable tile", () => {
     render(
       <DashboardTiles
         tiles={[
@@ -21,11 +21,13 @@ describe("DashboardTiles", () => {
     );
     expect(
       screen.getByRole("link", { name: /jobs awaiting review/i })
-    ).toHaveAttribute("href", "/jobs/moderation");
+    ).toHaveAttribute("href", "/admin/jobs");
     expect(screen.getByText("4")).toBeInTheDocument();
     expect(screen.getByText(/unavailable/i)).toBeInTheDocument();
-    // Reports have no queue page until 12C: no dead link.
-    expect(screen.queryByRole("link", { name: /open reports/i })).toBeNull();
+    expect(screen.getByRole("link", { name: /open reports/i })).toHaveAttribute(
+      "href",
+      "/admin/reports"
+    );
     expect(screen.getByText(/3 new this week/i)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /verified members/i })

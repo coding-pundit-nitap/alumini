@@ -25,29 +25,32 @@ describe("admin access", () => {
     expect(hasAdminAccess(holding())).toBe(false);
   });
 
-  it("gives a moderator the dashboard with the report and members tiles, and the users page", () => {
+  it("gives a moderator the dashboard, the users page and the reports queue", () => {
     const can = holding(PERMISSIONS.REPORT_REVIEW, PERMISSIONS.USER_READ_ADMIN);
     expect(hasAdminAccess(can)).toBe(true);
     expect(adminNavigation(can).map((i) => i.href)).toEqual([
       "/admin",
       "/admin/users",
+      "/admin/reports",
     ]);
     expect(dashboardTiles(can)).toEqual(["openReports", "members"]);
   });
 
-  it("links each queue only for its permission", () => {
+  it("links each queue under /admin only for its permission (spec C12-12)", () => {
     const can = holding(
       PERMISSIONS.AUDIT_READ,
       PERMISSIONS.ALUMNI_VERIFY,
       PERMISSIONS.JOB_APPROVE,
-      PERMISSIONS.ACHIEVEMENT_REVIEW
+      PERMISSIONS.ACHIEVEMENT_REVIEW,
+      PERMISSIONS.NOTIFICATION_REPLAY
     );
     expect(adminNavigation(can).map((i) => i.href)).toEqual([
       "/admin",
       "/admin/audit",
       "/admin/verification",
-      "/jobs/moderation",
-      "/achievements",
+      "/admin/jobs",
+      "/admin/achievements",
+      "/admin/notifications",
     ]);
   });
 

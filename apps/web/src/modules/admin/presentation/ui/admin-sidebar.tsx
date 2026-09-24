@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import {
   Award,
   Briefcase,
+  Flag,
   LayoutDashboard,
+  MailWarning,
   ScrollText,
   UserCheck,
   Users,
@@ -30,8 +32,10 @@ const ICONS: Record<NavIcon, LucideIcon> = {
   users: Users,
   audit: ScrollText,
   verification: UserCheck,
+  reports: Flag,
   jobs: Briefcase,
   achievements: Award,
+  notifications: MailWarning,
 };
 
 const isActive = (pathname: string, href: string) =>
