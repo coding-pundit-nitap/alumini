@@ -235,6 +235,24 @@ export const ERROR_CATALOG: Record<
     message:
       "The operation could not complete because of a conflicting update. Please try again.",
   },
+  ACCESS_ESCALATION_FORBIDDEN: {
+    status: 403,
+    message:
+      "You can't make this change: it would give more access than you hold.",
+  },
+  LAST_SUPER_ADMIN: {
+    status: 409,
+    message:
+      "This is the last active Super Admin. Add another before removing this one.",
+  },
+  ROLE_ALREADY_HELD: {
+    status: 409,
+    message: "This user already has that role.",
+  },
+  GRANT_EXISTS: {
+    status: 409,
+    message: "This user already has that permission in that scope.",
+  },
 };
 
 export type ErrorKind =

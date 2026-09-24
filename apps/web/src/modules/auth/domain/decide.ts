@@ -6,7 +6,11 @@ import {
 } from "./permission";
 
 export type DenyReason =
-  "ACCOUNT_STATE" | "NO_GRANT" | "SCOPE_MISMATCH" | "SELF_DECISION";
+  | "ACCOUNT_STATE"
+  | "NO_GRANT"
+  | "SCOPE_MISMATCH"
+  | "SELF_DECISION"
+  | "SELF_SERVICE";
 
 export type Decision = { allow: true } | { allow: false; reason: DenyReason };
 
@@ -31,9 +35,23 @@ const separationOfDuties: Guardrail = ({ actor, permission, resource }) =>
     ? "SELF_DECISION"
     : undefined;
 
-// Ordered. Escalation, self-service and last-Super-Admin (RBAC §8.1, 8.2, 8.4) arrive in Phase 12
-// with role.assign / permission.grant, each with its own failing test first.
-const GUARDRAILS: readonly Guardrail[] = [separationOfDuties];
+const SELF_SERVICE_GUARDED: ReadonlySet<Permission> = new Set([
+  PERMISSIONS.ROLE_ASSIGN,
+  PERMISSIONS.PERMISSION_GRANT,
+  PERMISSIONS.USER_SUSPEND,
+  PERMISSIONS.USER_REACTIVATE,
+]);
+
+/** RBAC §8.2, extended to suspend/reactivate (spec B12-2): nobody changes their own access or state. */
+const noSelfService: Guardrail = ({ permission, actor, resource }) =>
+  SELF_SERVICE_GUARDED.has(permission) &&
+  resource.subjectUserId === actor.userId
+    ? "SELF_SERVICE"
+    : undefined;
+
+// Ordered. Escalation (§8.1) and last-Super-Admin (§8.4) need data about the target, so they live in the
+// admin use cases (spec B12-3, B12-5), not here.
+const GUARDRAILS: readonly Guardrail[] = [separationOfDuties, noSelfService];
 
 /**
  * What an account may do BECAUSE of its state, without any grant (RBAC §7). Everything else is denied

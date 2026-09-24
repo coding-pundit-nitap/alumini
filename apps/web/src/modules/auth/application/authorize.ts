@@ -17,6 +17,9 @@ export type AuthzEvent =
       userId: string;
       requestId: string;
       reason: DenyReason;
+      /** The user the action was about, when known; the audit target (spec B12-13). */
+      subjectUserId?: string;
+      chapterId?: string | null;
     }
   | { outcome: "unauthenticated"; permission: Permission };
 
@@ -67,6 +70,8 @@ export function createAuthorization(deps: {
         userId,
         requestId,
         reason: decision.reason,
+        subjectUserId: resource?.subjectUserId,
+        chapterId: resource?.chapterId,
       });
       // The reason goes to the observer only, never into the response.
       throw new AuthorizationError({

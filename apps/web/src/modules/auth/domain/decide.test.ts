@@ -174,3 +174,34 @@ describe("decide: guardrails (RBAC §8.3 separation of duties)", () => {
     });
   });
 });
+
+describe("decide: self-service guardrail (RBAC §8.2, spec B12-2)", () => {
+  const guarded = [
+    PERMISSIONS.ROLE_ASSIGN,
+    PERMISSIONS.PERMISSION_GRANT,
+    PERMISSIONS.USER_SUSPEND,
+    PERMISSIONS.USER_REACTIVATE,
+  ];
+
+  it.each(guarded)("%s on oneself is denied", (permission) => {
+    const a = actor({ grants: [globalGrant(permission)] });
+    expect(check(a, permission, { subjectUserId: ME })).toEqual({
+      allow: false,
+      reason: "SELF_SERVICE",
+    });
+  });
+
+  it.each(guarded)("%s on someone else is allowed", (permission) => {
+    const a = actor({ grants: [globalGrant(permission)] });
+    expect(check(a, permission, { subjectUserId: OTHER })).toEqual({
+      allow: true,
+    });
+  });
+
+  it("user.read_admin on oneself is allowed", () => {
+    const a = actor({ grants: [globalGrant(PERMISSIONS.USER_READ_ADMIN)] });
+    expect(
+      check(a, PERMISSIONS.USER_READ_ADMIN, { subjectUserId: ME })
+    ).toEqual({ allow: true });
+  });
+});

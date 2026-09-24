@@ -1,23 +1,14 @@
-import { PERMISSIONS, type Permission } from "@nitap/database/permissions";
+import {
+  ADMIN_TIER_PERMISSIONS,
+  PERMISSIONS,
+  type Permission,
+} from "@nitap/database/permissions";
 
 /** "Does the actor hold this permission globally?" — `can(actor, p)` with no resource (RBAC §5). */
 export type Can = (permission: Permission) => boolean;
 
-/** Permissions that make someone an operator of the platform (spec A12-2). */
-export const ADMIN_PERMISSIONS: readonly Permission[] = [
-  PERMISSIONS.ALUMNI_VERIFY,
-  PERMISSIONS.USER_READ_ADMIN,
-  PERMISSIONS.USER_SUSPEND,
-  PERMISSIONS.USER_REACTIVATE,
-  PERMISSIONS.ROLE_ASSIGN,
-  PERMISSIONS.PERMISSION_GRANT,
-  PERMISSIONS.JOB_APPROVE,
-  PERMISSIONS.ACHIEVEMENT_REVIEW,
-  PERMISSIONS.REPORT_REVIEW,
-  PERMISSIONS.NOTIFICATION_REPLAY,
-  PERMISSIONS.AUDIT_READ,
-  PERMISSIONS.ANALYTICS_VIEW,
-];
+/** Permissions that make someone an operator of the platform (spec A12-2); the list lives in the shared registry. */
+export const ADMIN_PERMISSIONS: readonly Permission[] = ADMIN_TIER_PERMISSIONS;
 
 export const hasAdminAccess = (can: Can): boolean =>
   ADMIN_PERMISSIONS.some((permission) => can(permission));
