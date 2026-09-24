@@ -19,5 +19,15 @@ export type {
   ModerationTx,
   ReportRow,
 } from "./application/moderation-store";
-export type { ModerationTarget } from "./domain/moderation";
+export type {
+  DismissReason,
+  ModerationTarget,
+  ReportTargetType,
+  ResolveReason,
+} from "./domain/moderation";
+export {
+  DISMISS_REASONS,
+  REPORT_TARGET_TYPES,
+  RESOLVE_REASONS,
+} from "./domain/moderation";
 export { ReportDialog } from "./presentation/ui/report-dialog";

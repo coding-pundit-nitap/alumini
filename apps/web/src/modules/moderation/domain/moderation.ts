@@ -6,7 +6,16 @@ import { z } from "zod";
  * the actor's own filing or their own content (RBAC matrix §8 guardrail 3).
  */
 export type ReportState = "OPEN" | "UNDER_REVIEW" | "RESOLVED" | "DISMISSED";
-export type ModerationTarget = "POST" | "COMMENT";
+
+export const REPORT_TARGET_TYPES = [
+  "POST",
+  "COMMENT",
+  "MESSAGE",
+  "USER",
+] as const;
+export type ReportTargetType = (typeof REPORT_TARGET_TYPES)[number];
+/** What `fileContentReport` accepts. Messages are filed by `messaging`; nothing files USER reports yet (spec C-4). */
+export type ModerationTarget = Extract<ReportTargetType, "POST" | "COMMENT">;
 
 export const reportContentInput = z
   .object({
@@ -58,3 +67,52 @@ export function decideResolve(
     return refuse("INVALID_STATE_TRANSITION");
   return { ok: true, to: outcome === "resolve" ? "RESOLVED" : "DISMISSED" };
 }
+
+/** Codes, never free text: they go into audit metadata (spec C-1). */
+export const RESOLVE_REASONS = [
+  "SPAM",
+  "HARASSMENT",
+  "HATE",
+  "MISINFORMATION",
+  "PRIVACY",
+  "OTHER",
+] as const;
+export const DISMISS_REASONS = [
+  "NO_VIOLATION",
+  "DUPLICATE",
+  "INSUFFICIENT_CONTEXT",
+] as const;
+export type ResolveReason = (typeof RESOLVE_REASONS)[number];
+export type DismissReason = (typeof DISMISS_REASONS)[number];
+export const resolveInput = z
+  .object({ reason: z.enum(RESOLVE_REASONS) })
+  .strict();
+export const dismissInput = z
+  .object({ reason: z.enum(DISMISS_REASONS) })
+  .strict();
+
+/** A GET form sends empty strings for untouched fields; they mean "absent". */
+const dropEmpty = (input: unknown) =>
+  input && typeof input === "object" && !Array.isArray(input)
+    ? Object.fromEntries(Object.entries(input).filter(([, v]) => v !== ""))
+    : input;
+
+export const REPORT_STATUS_FILTERS = ["open", "RESOLVED", "DISMISSED"] as const;
+export type ReportStatusFilter = (typeof REPORT_STATUS_FILTERS)[number];
+
+/** Filters for the reports queue (spec C12-5). Shared by `GET /api/v1/reports` and `/admin/reports`. */
+export const reportListQuerySchema = z.preprocess(
+  dropEmpty,
+  z
+    .object({
+      status: z.enum(REPORT_STATUS_FILTERS).default("open"),
+      targetType: z.enum(REPORT_TARGET_TYPES).optional(),
+      cursor: z.string().max(200).optional(),
+      limit: z.coerce.number().int().min(1).max(100).default(50),
+    })
+    .strict()
+);
+export type ReportListQuery = z.infer<typeof reportListQuerySchema>;
+
+export const statusesFor = (filter: ReportStatusFilter): ReportState[] =>
+  filter === "open" ? ["OPEN", "UNDER_REVIEW"] : [filter];
