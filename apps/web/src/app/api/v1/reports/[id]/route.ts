@@ -24,7 +24,7 @@ const body = z.discriminatedUnion("status", [
 /** PATCH /api/v1/reports/:id — claim, resolve or dismiss (spec C12-8). */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
-  const reportId = uuidParam((await ctx.params).id);
+  const reportId = uuidParam((await ctx.params).id); // 404 on a malformed id, before auth or the body
   const actor = await getActor();
   authorizeReportReview(actor); // 401/404 before the body is read
   const parsed = body.safeParse(await readJson(request));
