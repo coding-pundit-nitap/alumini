@@ -1,58 +1,35 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-test.describe("Home Page", () => {
-  test("loads landing page and renders heading and buttons", async ({
-    page,
-  }) => {
+test.describe("Landing (§5.1.1)", () => {
+  test("a visitor sees the pitch and can join", async ({ page }) => {
     await page.goto("/");
-
-    // Verify main heading
-    await expect(page.locator("h1")).toContainText("Next.js 16");
-
-    // Verify CTA button
-    const demoButton = page.getByRole("link", {
-      name: /try live interactive demo/i,
-    });
-    await expect(demoButton).toBeVisible();
-  });
-
-  test("renders TanStack Query demo and refetches data", async ({ page }) => {
-    await page.goto("/");
-
-    // Verify Query tab is active by default
-    await expect(
-      page.getByText("Live Server State (TanStack Query)")
-    ).toBeVisible();
-    await expect(page.getByText("GET /health/live")).toBeVisible();
-
-    // Click Refetch Query button
-    const refetchButton = page.getByRole("button", { name: /refetch query/i });
-    await expect(refetchButton).toBeVisible();
-    await refetchButton.click();
-  });
-
-  test("switches tabs and filters candidate list using search input", async ({
-    page,
-  }) => {
-    await page.goto("/");
-
-    // Switch to Candidate Search tab
-    const candidateTab = page.getByRole("tab", {
-      name: /candidate search demo/i,
-    });
-    await candidateTab.click();
-
-    // Find search input in candidate explorer
-    const searchInput = page.getByPlaceholder(
-      "Search by candidate name, role, or technology..."
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Stay connected with your NIT Arunachal Pradesh community"
     );
-    await expect(searchInput).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Join the network" })
+    ).toHaveAttribute("href", "/register");
+    await expect(
+      page.getByRole("main").getByRole("link", { name: "Log in" })
+    ).toHaveAttribute("href", "/login");
+    for (const name of [
+      "Directory",
+      "Mentorship",
+      "Jobs & internships",
+      "Events",
+    ]) {
+      await expect(page.getByRole("heading", { name, level: 3 })).toBeVisible();
+    }
+    await expect(
+      page.getByRole("heading", { name: "How it works" })
+    ).toBeVisible();
+    await expect(page.locator("#privacy")).toBeVisible();
+    await expect(page).toHaveTitle(/NIT Arunachal Pradesh Alumni Network/);
+  });
 
-    // Type query
-    await searchInput.fill("Sarah");
-
-    // Check filtered candidate visible
-    await expect(page.getByText("Sarah Chen")).toBeVisible();
-    await expect(page.getByText("David Kim")).not.toBeVisible();
+  test("serves an Open Graph image", async ({ request }) => {
+    const response = await request.get("/opengraph-image");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("image/png");
   });
 });

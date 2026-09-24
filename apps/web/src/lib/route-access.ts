@@ -18,6 +18,8 @@ const PUBLIC_PREFIXES = [
   "/api",
   // Guests may view a PUBLIC profile (FR-DIR-004); the page itself answers 404 for anything else.
   "/members",
+  // Social crawlers fetch this with no session cookie when a link is shared.
+  "/opengraph-image",
 ] as const;
 
 const FILE_EXTENSION = /\.[A-Za-z0-9]+$/;

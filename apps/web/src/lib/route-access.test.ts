@@ -18,6 +18,7 @@ describe("isPublicPath", () => {
     "/members/0b8f6f4e-8f7e-4c2a-9f57-3a2a1f6d5c11",
     "/robots.txt",
     "/images/logo.svg",
+    "/opengraph-image",
   ])("treats %s as public", (pathname) => {
     expect(isPublicPath(pathname)).toBe(true);
   });
