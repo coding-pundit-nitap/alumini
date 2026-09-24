@@ -12,8 +12,23 @@ import type { Actor } from "@/modules/auth";
 import { createClaimReport } from "@/modules/moderation/application/claim-report";
 import { createDismissReport } from "@/modules/moderation/application/dismiss-report";
 import { createFileContentReport } from "@/modules/moderation/application/file-content-report";
+import type { ModerationStore } from "@/modules/moderation/application/moderation-store";
 import { createResolveReport } from "@/modules/moderation/application/resolve-report";
 import { createPrismaModerationStore } from "@/modules/moderation/infrastructure/prisma-moderation-store";
+
+/** Resolves once `n` callers have reached it, so none proceeds before all have arrived. Can't deadlock: it runs before any lock is taken. */
+function barrier(n: number) {
+  let arrived = 0;
+  let release: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  return async () => {
+    arrived += 1;
+    if (arrived >= n) release();
+    await gate;
+  };
+}
 
 const actor = (userId: string): Actor => ({
   userId,
@@ -70,13 +85,19 @@ describe("moderation use cases against real PostgreSQL", () => {
     await db.drop();
   });
 
-  function build(reviewers: ReadonlySet<string> = new Set()) {
+  function build(
+    reviewers: ReadonlySet<string> = new Set(),
+    wrapStore?: (store: ModerationStore) => ModerationStore
+  ) {
     const store = createPrismaModerationStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
       audit: createAuditWriter(),
     });
-    const deps = { store, authorize: authorizeWith(reviewers) };
+    const deps = {
+      store: wrapStore ? wrapStore(store) : store,
+      authorize: authorizeWith(reviewers),
+    };
     return {
       file: createFileContentReport(deps),
       claim: createClaimReport(deps),
@@ -277,11 +298,23 @@ describe("moderation use cases against real PostgreSQL", () => {
       await member(db, "Meera"),
       await member(db, "Kiran"),
     ];
-    const m = build(new Set([meera, kiran]));
-    const { reportId } = await m.file({
+    const filer = build(new Set([meera, kiran]));
+    const { reportId } = await filer.file({
       actor: actor(ravi),
       input: { targetType: "POST", targetId: postId, reason: "spam" },
     });
+    // Barrier only around the two racing decisions, so filing (an earlier, unrelated
+    // transaction) isn't held up waiting for a second arrival that never comes.
+    const gate = barrier(2);
+    const m = build(new Set([meera, kiran]), (store) => ({
+      transaction: (work) =>
+        store.transaction(async (tx) => {
+          // Both resolutions must enter before either reaches findReport, so the
+          // race genuinely exercises the row lock instead of racing connection setup.
+          await gate();
+          return work(tx);
+        }),
+    }));
     const outcomes = await Promise.all([
       code(
         m.resolve({ actor: actor(meera), reportId, input: { reason: "SPAM" } })
