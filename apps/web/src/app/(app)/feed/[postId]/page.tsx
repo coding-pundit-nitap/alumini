@@ -2,11 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { addCommentAction, deleteCommentAction } from "../actions";
-import { listComments } from "@/composition/posts";
+import {
+  addCommentAction,
+  deleteCommentAction,
+  deletePostAndGoHomeAction,
+  dismissReportAction,
+  reactAction,
+  reportContentAction,
+  resolveReportAction,
+  unreactAction,
+} from "../actions";
+import { PageColumns } from "@/components/shell/page-columns";
+import { getPost, listComments } from "@/composition/posts";
 import { AppError } from "@/lib/errors";
-import { getActor } from "@/modules/auth";
-import { CommentThread } from "@/modules/posts";
+import { can, getActor, PERMISSIONS } from "@/modules/auth";
+import { CommentThread, PostCard } from "@/modules/posts";
 
 export const metadata: Metadata = { title: "Post" };
 
@@ -22,27 +32,50 @@ export default async function PostPage({
   const actor = await getActor();
   if (!actor) redirect(`/login?next=${encodeURIComponent(`/feed/${postId}`)}`);
 
-  let page;
+  let post, commentsPage;
   try {
-    page = await listComments({ actor, postId });
+    [post, commentsPage] = await Promise.all([
+      getPost({ actor, postId }),
+      listComments({ actor, postId }),
+    ]);
   } catch (error) {
     if (error instanceof AppError && error.status === 404) notFound();
     throw error;
   }
 
+  const canModerate =
+    can(actor, PERMISSIONS.POST_MODERATE) ||
+    can(actor, PERMISSIONS.REPORT_REVIEW);
+
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-12">
+    <PageColumns>
       <Link href="/dashboard" className="text-primary text-sm underline">
-        Back to feed
+        ← Home
       </Link>
-      <h1 className="text-2xl font-semibold">Comments</h1>
+      <div className="mt-4">
+        <PostCard
+          post={post}
+          currentUserId={actor.userId}
+          canModerate={canModerate}
+          expanded
+          onDelete={deletePostAndGoHomeAction}
+          onReact={reactAction}
+          onUnreact={unreactAction}
+          onReport={reportContentAction}
+          onResolve={resolveReportAction}
+          onDismiss={dismissReportAction}
+        />
+      </div>
+      <h2 className="mt-6 mb-3 text-lg font-semibold">
+        Comments ({post.commentCount})
+      </h2>
       <CommentThread
         postId={postId}
-        comments={page.comments}
+        comments={commentsPage.comments}
         currentUserId={actor.userId}
         onAddComment={addCommentAction}
         onDeleteComment={deleteCommentAction}
       />
-    </div>
+    </PageColumns>
   );
 }

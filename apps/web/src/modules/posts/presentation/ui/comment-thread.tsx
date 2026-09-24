@@ -8,6 +8,7 @@ import type { ActionResult } from "@/lib/action-result";
 
 import type { CommentRow } from "../../application/posts-store";
 import { MarkdownView } from "./markdown-view";
+import { PostAuthorLine } from "./post-author";
 
 type AddCommentAction = (
   postId: string,
@@ -58,31 +59,14 @@ export function CommentThread({
 
   return (
     <div className="space-y-4">
-      <ul className="space-y-3">
-        {comments.map((comment) => (
-          <li key={comment.id} className="border-border border-b pb-3 text-sm">
-            <MarkdownView content={comment.body} />
-            {currentUserId === comment.authorId ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                className="mt-1"
-                onClick={() => onDeleteComment(comment.id)}
-              >
-                Delete
-              </Button>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-
       <form onSubmit={onSubmit} className="space-y-1.5">
-        <label htmlFor={bodyId} className="text-sm font-medium">
+        <label htmlFor={bodyId} className="sr-only">
           Add a comment
         </label>
         <Textarea
           id={bodyId}
+          rows={2}
+          placeholder="Add a comment…"
           value={body}
           maxLength={MAX_BODY}
           onChange={(event) => setBody(event.target.value)}
@@ -92,10 +76,36 @@ export function CommentThread({
             {error}
           </p>
         ) : null}
-        <Button type="submit" size="sm" disabled={!canSubmit}>
-          Post comment
+        <Button type="submit" variant="brand" size="sm" disabled={!canSubmit}>
+          Comment
         </Button>
       </form>
+
+      <ul className="space-y-3">
+        {comments.map((comment) => (
+          <li key={comment.id} className="flex gap-3">
+            <PostAuthorLine
+              author={comment.author}
+              createdAt={comment.createdAt}
+              currentUserId={currentUserId}
+              size="sm"
+            />
+            <div className="bg-muted/60 rounded-2xl rounded-tl-sm px-3 py-2 text-sm">
+              <MarkdownView content={comment.body} />
+            </div>
+            {currentUserId === comment.authorId ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={() => onDeleteComment(comment.id)}
+              >
+                Delete
+              </Button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { runAction } from "@/app/_actions/run-action";
 import {
@@ -68,6 +69,22 @@ export async function deletePostAction(
     refresh();
     return {};
   });
+}
+
+/** Same as deletePostAction, but for the post's own page: after a successful delete there's nothing left to show, so send the caller home. */
+export async function deletePostAndGoHomeAction(
+  postId: string
+): Promise<ActionResult<Record<string, never>>> {
+  const result = await runAction(async () => {
+    await deletePost({
+      actor: await getActor(),
+      postId: parseId("postId", postId),
+    });
+    refresh();
+    return {};
+  });
+  if (result.ok) redirect("/dashboard");
+  return result;
 }
 
 export async function addCommentAction(

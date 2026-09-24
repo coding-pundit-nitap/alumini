@@ -72,7 +72,7 @@ export default async function DashboardPage({
       </Suspense>
       <nav
         aria-label="Home sections"
-        className="bg-background/85 sticky top-0 z-10 -mx-4 mb-4 flex gap-6 border-b px-4 backdrop-blur"
+        className="bg-background/85 sticky top-0 z-10 -mx-4 mb-4 flex gap-6 border-b px-4 backdrop-blur lg:-mx-8 lg:px-8"
       >
         <Link
           href="/dashboard"

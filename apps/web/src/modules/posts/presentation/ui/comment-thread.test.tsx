@@ -50,6 +50,36 @@ describe("CommentThread", () => {
     expect(document.querySelector("script")).toBeNull();
   });
 
+  it("shows the author's name, a time element and the body for each comment", () => {
+    render(
+      <CommentThread
+        postId={postId}
+        comments={comments}
+        currentUserId={otherId}
+        {...actions()}
+      />
+    );
+    expect(screen.getByText("Author")).toBeInTheDocument();
+    const time = document.querySelector("time");
+    expect(time).not.toBeNull();
+    expect(time).toHaveAttribute(
+      "dateTime",
+      comments[0]!.createdAt.toISOString()
+    );
+  });
+
+  it("uses the 'Add a comment…' placeholder on the composer", () => {
+    render(
+      <CommentThread
+        postId={postId}
+        comments={comments}
+        currentUserId={otherId}
+        {...actions()}
+      />
+    );
+    expect(screen.getByPlaceholderText("Add a comment…")).toBeInTheDocument();
+  });
+
   it("shows a delete affordance only for the caller's own comments", () => {
     const { rerender } = render(
       <CommentThread
@@ -99,7 +129,7 @@ describe("CommentThread", () => {
     );
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/add a comment/i), "Nice post!");
-    await user.click(screen.getByRole("button", { name: /post comment/i }));
+    await user.click(screen.getByRole("button", { name: /^comment$/i }));
     expect(a.onAddComment).toHaveBeenCalledWith(postId, {
       body: "Nice post!",
     });
