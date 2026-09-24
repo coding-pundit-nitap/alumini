@@ -57,7 +57,12 @@ export function SkillForm({
           </p>
         ) : null}
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button
+        type="submit"
+        variant="brand"
+        disabled={pending}
+        className="rounded-full px-5"
+      >
         {pending ? "Saving…" : id ? "Save" : "Add"}
       </Button>
       {formError(result) ? (

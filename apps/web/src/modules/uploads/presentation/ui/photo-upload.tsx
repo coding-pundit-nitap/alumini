@@ -145,20 +145,22 @@ export function PhotoUpload({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-wrap items-center gap-5">
       {photoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- a presigned, auth-checked route; not a static asset.
         <img
           src={photoUrl}
           alt="Profile photo"
-          className="size-24 rounded-full object-cover"
+          className="ring-border bg-muted size-20 rounded-full object-cover ring-1"
         />
       ) : (
-        <p className="text-muted-foreground text-sm">No photo yet.</p>
+        <span className="bg-muted text-muted-foreground flex size-20 items-center justify-center rounded-full border border-dashed text-center text-[11px] leading-tight">
+          No photo yet.
+        </span>
       )}
 
-      <div className="space-y-1.5">
-        <label htmlFor={inputId} className="text-sm font-medium">
+      <div className="min-w-0 flex-1 space-y-2">
+        <label htmlFor={inputId} className="block text-sm font-medium">
           Choose a photo
         </label>
         <input
@@ -168,24 +170,35 @@ export function PhotoUpload({
           accept="image/jpeg,image/png,image/webp"
           onChange={onFileChange}
           disabled={state.phase === "working"}
+          className="text-muted-foreground file:bg-muted file:text-foreground hover:file:bg-muted/70 block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:px-4 file:py-1.5 file:text-sm file:font-medium file:transition-colors disabled:opacity-60"
         />
-      </div>
+        <p className="text-muted-foreground text-xs">
+          JPEG, PNG or WebP. A square photo works best.
+        </p>
 
-      {state.phase === "working" ? (
-        <p role="status" className="text-muted-foreground text-sm">
-          Uploading…
-        </p>
-      ) : null}
-      {state.phase === "error" || state.phase === "rejected" ? (
-        <p role="alert" className="text-destructive text-sm">
-          {state.message}
-        </p>
-      ) : null}
-      {state.phase === "ready" ? (
-        <Button type="button" onClick={onSetPhoto} disabled={settingPhoto}>
-          {settingPhoto ? "Saving…" : "Set as profile photo"}
-        </Button>
-      ) : null}
+        {state.phase === "working" ? (
+          <p role="status" className="text-muted-foreground text-sm">
+            Uploading…
+          </p>
+        ) : null}
+        {state.phase === "error" || state.phase === "rejected" ? (
+          <p role="alert" className="text-destructive text-sm">
+            {state.message}
+          </p>
+        ) : null}
+        {state.phase === "ready" ? (
+          <Button
+            type="button"
+            variant="brand"
+            size="sm"
+            className="rounded-full"
+            onClick={onSetPhoto}
+            disabled={settingPhoto}
+          >
+            {settingPhoto ? "Saving…" : "Set as profile photo"}
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }

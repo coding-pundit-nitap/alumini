@@ -38,6 +38,8 @@ export function ConnectionButton({
       case "NONE":
         return (
           <Button
+            size="sm"
+            className="rounded-full"
             disabled={pending}
             onClick={() => run(() => requestAction(targetUserId))}
           >
@@ -47,8 +49,12 @@ export function ConnectionButton({
       case "OUTGOING":
         return (
           <>
-            <span className="text-muted-foreground text-sm">Request sent</span>
+            <span className="text-muted-foreground bg-muted rounded-full px-3 py-1 text-xs font-medium">
+              Request sent
+            </span>
             <Button
+              size="sm"
+              className="rounded-full"
               variant="outline"
               disabled={pending}
               onClick={() => run(() => removeAction(status.connectionId))}
@@ -61,6 +67,8 @@ export function ConnectionButton({
         return (
           <>
             <Button
+              size="sm"
+              className="rounded-full"
               disabled={pending}
               onClick={() =>
                 run(() => respondAction(status.connectionId, "ACCEPT"))
@@ -69,6 +77,8 @@ export function ConnectionButton({
               Accept
             </Button>
             <Button
+              size="sm"
+              className="rounded-full"
               variant="outline"
               disabled={pending}
               onClick={() =>
@@ -82,8 +92,12 @@ export function ConnectionButton({
       case "CONNECTED":
         return (
           <>
-            <span className="text-sm font-medium">Connected</span>
+            <span className="bg-success/10 text-success rounded-full px-3 py-1 text-xs font-medium">
+              Connected
+            </span>
             <Button
+              size="sm"
+              className="rounded-full"
               variant="outline"
               disabled={pending}
               onClick={() => run(() => removeAction(status.connectionId))}
@@ -95,6 +109,8 @@ export function ConnectionButton({
       case "BLOCKED_BY_ME":
         return (
           <Button
+            size="sm"
+            className="rounded-full"
             variant="outline"
             disabled={pending}
             onClick={() => run(() => removeAction(status.connectionId))}
@@ -113,18 +129,30 @@ export function ConnectionButton({
           confirmingBlock ? (
             <>
               <Button
+                size="sm"
+                className="rounded-full"
                 variant="destructive"
                 disabled={pending}
                 onClick={() => run(() => blockAction(targetUserId))}
               >
                 Confirm block
               </Button>
-              <Button variant="ghost" onClick={() => setConfirmingBlock(false)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="rounded-full"
+                onClick={() => setConfirmingBlock(false)}
+              >
                 Keep
               </Button>
             </>
           ) : (
-            <Button variant="ghost" onClick={() => setConfirmingBlock(true)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground hover:text-destructive rounded-full"
+              onClick={() => setConfirmingBlock(true)}
+            >
               Block
             </Button>
           )

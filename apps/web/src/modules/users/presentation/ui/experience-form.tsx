@@ -41,9 +41,20 @@ export function ExperienceForm({
   >((_previous, formData) => action(formData), null);
   const errors = fieldErrors(result);
   useReturnToListOnSavedEdit("experience", id, result);
+  // A successful add resets the form's uncontrolled fields; reset the two controlled ones with them, or the
+  // next entry would silently inherit "I currently work here" (and its disabled end date). Adjusted during
+  // render rather than in an effect, per the React-documented pattern.
+  const [seen, setSeen] = useState(result);
+  if (result !== seen) {
+    setSeen(result);
+    if (!id && result?.ok) {
+      setCurrent(false);
+      setEndDate("");
+    }
+  }
 
   return (
-    <form action={submit} className="space-y-3">
+    <form action={submit} className="grid gap-3 sm:grid-cols-2">
       {id ? <input type="hidden" name="id" value={id} /> : null}
       <div className="space-y-1.5">
         <label htmlFor={fieldId("company")} className="text-sm font-medium">
@@ -77,7 +88,7 @@ export function ExperienceForm({
           </p>
         ) : null}
       </div>
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 sm:col-span-2">
         <label htmlFor={fieldId("industry")} className="text-sm font-medium">
           Industry (optional)
         </label>
@@ -93,7 +104,7 @@ export function ExperienceForm({
           </p>
         ) : null}
       </div>
-      <div className="flex gap-3">
+      <div className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
         <div className="flex-1 space-y-1.5">
           <label htmlFor={fieldId("start")} className="text-sm font-medium">
             Start date
@@ -131,7 +142,7 @@ export function ExperienceForm({
       </div>
       <label
         htmlFor={fieldId("current")}
-        className="flex items-center gap-2 text-sm"
+        className="flex items-center gap-2 text-sm sm:col-span-2"
       >
         <input
           id={fieldId("current")}
@@ -146,11 +157,16 @@ export function ExperienceForm({
         I currently work here
       </label>
       {formError(result) ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive text-sm sm:col-span-2">
           {formError(result)}
         </p>
       ) : null}
-      <Button type="submit" disabled={pending}>
+      <Button
+        type="submit"
+        variant="brand"
+        disabled={pending}
+        className="justify-self-start rounded-full px-5 sm:col-span-2"
+      >
         {pending ? "Saving…" : id ? "Save" : "Add"}
       </Button>
     </form>

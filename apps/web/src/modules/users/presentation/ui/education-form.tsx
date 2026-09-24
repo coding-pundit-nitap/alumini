@@ -33,9 +33,9 @@ export function EducationForm({
   useReturnToListOnSavedEdit("education", id, result);
 
   return (
-    <form action={submit} className="space-y-3">
+    <form action={submit} className="grid gap-3 sm:grid-cols-2">
       {id ? <input type="hidden" name="id" value={id} /> : null}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 sm:col-span-2">
         <label htmlFor={fieldId("institution")} className="text-sm font-medium">
           Institution
         </label>
@@ -86,7 +86,7 @@ export function EducationForm({
           </p>
         ) : null}
       </div>
-      <div className="flex gap-3">
+      <div className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
         <div className="flex-1 space-y-1.5">
           <label htmlFor={fieldId("start")} className="text-sm font-medium">
             Start year
@@ -121,11 +121,16 @@ export function EducationForm({
         </div>
       </div>
       {formError(result) ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p role="alert" className="text-destructive text-sm sm:col-span-2">
           {formError(result)}
         </p>
       ) : null}
-      <Button type="submit" disabled={pending}>
+      <Button
+        type="submit"
+        variant="brand"
+        disabled={pending}
+        className="justify-self-start rounded-full px-5 sm:col-span-2"
+      >
         {pending ? "Saving…" : id ? "Save" : "Add"}
       </Button>
     </form>

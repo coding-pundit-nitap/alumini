@@ -48,7 +48,7 @@ export function LinkForm({
     <form action={submit} className="flex flex-wrap items-end gap-2">
       {id ? <input type="hidden" name="id" value={id} /> : null}
       <div className="space-y-1.5">
-        <label htmlFor={fieldId("type")} className="text-sm font-medium">
+        <label htmlFor={fieldId("type")} className="block text-sm font-medium">
           Type
         </label>
         <select
@@ -65,7 +65,7 @@ export function LinkForm({
         </select>
       </div>
       <div className="min-w-64 flex-1 space-y-1.5">
-        <label htmlFor={fieldId("url")} className="text-sm font-medium">
+        <label htmlFor={fieldId("url")} className="block text-sm font-medium">
           URL
         </label>
         <Input
@@ -81,7 +81,12 @@ export function LinkForm({
           </p>
         ) : null}
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button
+        type="submit"
+        variant="brand"
+        disabled={pending}
+        className="rounded-full px-5"
+      >
         {pending ? "Saving…" : id ? "Save" : "Add"}
       </Button>
       {formError(result) ? (

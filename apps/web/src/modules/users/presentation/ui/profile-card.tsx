@@ -1,163 +1,295 @@
+import {
+  ArrowUpRight,
+  CodeXml,
+  Globe,
+  GraduationCap,
+  Link2,
+  MapPin,
+} from "lucide-react";
+import type { ReactNode } from "react";
+
+import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
+
 import type { ProfileView } from "../../domain/profile";
+import { duration, hostPath, LINK_LABEL, monthYear } from "./format";
+import { ItemTile } from "./item-tile";
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-function monthYear(isoDate: string): string {
-  const [year, month] = isoDate.split("-");
-  const index = Number(month) - 1;
-  return MONTHS[index] ? `${MONTHS[index]} ${year}` : isoDate;
+/** A small mark per link type (the icon set has no brand logos). */
+function LinkMark({ type }: { type: string }) {
+  if (type === "LINKEDIN")
+    return (
+      <span aria-hidden className="text-[11px] leading-none font-bold">
+        in
+      </span>
+    );
+  if (type === "TWITTER")
+    return (
+      <span aria-hidden className="text-xs leading-none font-bold">
+        𝕏
+      </span>
+    );
+  const Icon = type === "GITHUB" ? CodeXml : type === "WEBSITE" ? Globe : Link2;
+  return <Icon aria-hidden className="size-3.5" />;
 }
 
-const TYPE_LABEL: Record<string, string> = {
-  LINKEDIN: "LinkedIn",
-  GITHUB: "GitHub",
-  TWITTER: "X (Twitter)",
-  WEBSITE: "Website",
-  OTHER: "Link",
-};
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="border-t px-4 py-6 sm:px-6">
+      <h2 className="mb-4 text-base font-semibold tracking-tight">{title}</h2>
+      {children}
+    </section>
+  );
+}
 
-/** Renders exactly the keys the visibility rule left in the view; a missing key renders nothing, and an
- * empty (but visible) list renders nothing either — there is nothing to show. Item ids are never present
- * on a `ProfileView` (they are stripped in `projectProfile`), so a viewer never sees one. */
-export function ProfileCard({ view }: { view: ProfileView }) {
+/** Low-poly ridges over a dawn wash, echoing the landing and the DawnMark. Decorative. */
+function Cover() {
+  return (
+    <div
+      aria-hidden
+      className="relative h-28 overflow-hidden sm:h-40"
+      style={{
+        background:
+          "radial-gradient(60% 120% at 70% 110%, color-mix(in oklch, var(--brand) 55%, transparent), transparent 70%), linear-gradient(135deg, color-mix(in oklch, var(--chart-5) 35%, var(--background)), color-mix(in oklch, var(--brand) 25%, var(--background)))",
+      }}
+    >
+      <svg
+        viewBox="0 0 1200 160"
+        preserveAspectRatio="none"
+        className="absolute inset-x-0 bottom-0 h-3/5 w-full"
+      >
+        <path
+          d="M0 110L120 70 210 95 330 40 440 85 560 55 680 100 800 45 930 90 1050 60 1200 95V160H0Z"
+          style={{
+            fill: "color-mix(in oklch, var(--foreground) 10%, transparent)",
+          }}
+        />
+        <path
+          d="M0 140L150 110 280 130 420 95 560 135 700 105 850 140 1000 110 1200 130V160H0Z"
+          style={{ fill: "var(--background)" }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * The member-facing profile. Renders exactly the keys the visibility rule left in the view; a missing key
+ * renders nothing, and an empty (but visible) list renders nothing either — there is nothing to show. Item
+ * ids are never present on a `ProfileView` (they are stripped in `projectProfile`), so a viewer never sees
+ * one. `actions` sits beside the avatar: Connect/Message for someone else, Edit profile for yourself.
+ */
+export function ProfileCard({
+  view,
+  actions,
+}: {
+  view: ProfileView;
+  actions?: ReactNode;
+}) {
   const { institution, experience, education, skills, links } = view;
+  const schooling =
+    institution &&
+    (institution.department || institution.degree || institution.graduationYear)
+      ? institution
+      : null;
 
   return (
-    <article className="border-border space-y-6 rounded-lg border p-6">
-      <header className="space-y-1">
-        {view.photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- a presigned, auth-checked route; not a static asset.
-          <img
-            src={view.photoUrl}
-            alt={view.fullName}
-            className="mb-2 size-20 rounded-full object-cover"
-          />
-        ) : null}
-        <h1 className="text-2xl font-semibold">{view.fullName}</h1>
+    <article>
+      <Cover />
+      <header className="px-4 pb-6 sm:px-6">
+        <div className="-mt-12 flex items-end justify-between gap-3 sm:-mt-14">
+          {view.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- a presigned, auth-checked route; not a static asset.
+            <img
+              src={view.photoUrl}
+              alt={view.fullName}
+              className="ring-background bg-muted size-24 rounded-full object-cover ring-4 sm:size-28"
+            />
+          ) : (
+            <InitialsAvatar
+              name={view.fullName}
+              seed={view.userId}
+              className="ring-background bg-background size-24 ring-4 sm:size-28 [&_[data-slot=avatar-fallback]]:text-3xl"
+            />
+          )}
+          {actions ? (
+            <div className="flex flex-wrap justify-end gap-2 pb-1">
+              {actions}
+            </div>
+          ) : null}
+        </div>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+          {view.fullName}
+        </h1>
         {view.headline ? (
-          <p className="text-muted-foreground">{view.headline}</p>
+          <p className="text-foreground/90 mt-1 text-[15px] leading-snug">
+            {view.headline}
+          </p>
         ) : null}
-        {view.location ? (
-          <p className="text-muted-foreground text-sm">{view.location}</p>
+        {view.location || schooling ? (
+          <ul className="text-muted-foreground mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+            {view.location ? (
+              <li className="flex items-center gap-1.5">
+                <MapPin aria-hidden className="size-4" />
+                <span>{view.location}</span>
+              </li>
+            ) : null}
+            {schooling ? (
+              <li className="flex items-center gap-1.5">
+                <GraduationCap aria-hidden className="size-4" />
+                {schooling.degree || schooling.department ? (
+                  <span>
+                    {[schooling.degree, schooling.department]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </span>
+                ) : null}
+                {schooling.graduationYear ? (
+                  <span className="bg-brand/10 text-brand rounded-full px-2 py-0.5 text-xs font-medium">
+                    Batch of {schooling.graduationYear}
+                  </span>
+                ) : null}
+              </li>
+            ) : null}
+          </ul>
         ) : null}
       </header>
 
-      {institution &&
-      (institution.department ||
-        institution.degree ||
-        institution.graduationYear) ? (
-        <p className="text-sm">
-          {[institution.degree, institution.department]
-            .filter(Boolean)
-            .join(", ")}
-          {institution.graduationYear
-            ? ` · Batch of ${institution.graduationYear}`
-            : ""}
+      {!view.bio &&
+      !experience?.length &&
+      !education?.length &&
+      !skills?.length &&
+      !links?.length ? (
+        // Empty and privacy-hidden look the same from here, so the note claims neither.
+        <p className="text-muted-foreground border-t px-4 py-10 text-center text-sm sm:px-6">
+          Nothing more to show here yet.
         </p>
       ) : null}
 
       {view.bio ? (
-        <section className="space-y-1">
-          <h2 className="text-sm font-medium">About</h2>
-          <p className="text-sm whitespace-pre-line">{view.bio}</p>
-        </section>
+        <Section title="About">
+          <p className="text-[15px] leading-relaxed whitespace-pre-line">
+            {view.bio}
+          </p>
+        </Section>
       ) : null}
 
       {experience && experience.length > 0 ? (
-        <section className="space-y-2">
-          <h2 className="text-sm font-medium">Experience</h2>
-          <ul className="space-y-2">
+        <Section title="Experience">
+          <ol className="space-y-5">
             {experience.map((item) => (
               <li
                 key={`${item.company}:${item.designation}:${item.startDate}`}
-                className="text-sm"
+                className="flex gap-3.5"
               >
-                <p className="font-medium">
-                  {item.designation} · {item.company}
-                </p>
-                <p className="text-muted-foreground">
-                  {monthYear(item.startDate)} –{" "}
-                  {item.isCurrent
-                    ? "Present"
-                    : item.endDate
-                      ? monthYear(item.endDate)
-                      : ""}
-                  {item.industry ? ` · ${item.industry}` : ""}
-                </p>
+                <ItemTile name={item.company} />
+                <div className="min-w-0 text-sm">
+                  <p className="text-[15px] font-semibold">
+                    {item.designation}
+                  </p>
+                  <p>
+                    {item.company}
+                    {item.industry ? (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · {item.industry}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="text-muted-foreground mt-0.5">
+                    {monthYear(item.startDate)} –{" "}
+                    {item.isCurrent ? (
+                      <span className="text-success font-medium">Present</span>
+                    ) : item.endDate ? (
+                      monthYear(item.endDate)
+                    ) : (
+                      ""
+                    )}
+                    {(item.isCurrent || item.endDate) &&
+                    duration(item.startDate, item.endDate) ? (
+                      <span>
+                        {" · "}
+                        {duration(item.startDate, item.endDate)}
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
               </li>
             ))}
-          </ul>
-        </section>
+          </ol>
+        </Section>
       ) : null}
 
       {education && education.length > 0 ? (
-        <section className="space-y-2">
-          <h2 className="text-sm font-medium">Education</h2>
-          <ul className="space-y-2">
+        <Section title="Education">
+          <ol className="space-y-5">
             {education.map((item) => (
               <li
                 key={`${item.institution}:${item.qualification}:${item.startYear}`}
-                className="text-sm"
+                className="flex gap-3.5"
               >
-                <p className="font-medium">{item.institution}</p>
-                <p className="text-muted-foreground">
-                  {item.qualification}
-                  {item.fieldOfStudy ? `, ${item.fieldOfStudy}` : ""} ·{" "}
-                  {item.startYear}–{item.endYear ?? "present"}
-                </p>
+                <ItemTile name={item.institution} />
+                <div className="min-w-0 text-sm">
+                  <p className="text-[15px] font-semibold">
+                    {item.institution}
+                  </p>
+                  <p>
+                    {item.qualification}
+                    {item.fieldOfStudy ? `, ${item.fieldOfStudy}` : ""}
+                  </p>
+                  <p className="text-muted-foreground mt-0.5">
+                    {item.startYear} – {item.endYear ?? "present"}
+                  </p>
+                </div>
               </li>
             ))}
-          </ul>
-        </section>
+          </ol>
+        </Section>
       ) : null}
 
       {skills && skills.length > 0 ? (
-        <section className="space-y-2">
-          <h2 className="text-sm font-medium">Skills</h2>
+        <Section title="Skills">
           <ul className="flex flex-wrap gap-2">
             {skills.map((item) => (
               <li
                 key={item.skill}
-                className="bg-muted rounded-full px-2.5 py-0.5 text-sm"
+                className="bg-muted/70 rounded-full border px-3 py-1 text-sm font-medium"
               >
                 {item.skill}
               </li>
             ))}
           </ul>
-        </section>
+        </Section>
       ) : null}
 
       {links && links.length > 0 ? (
-        <section className="space-y-2">
-          <h2 className="text-sm font-medium">Links</h2>
-          <ul className="space-y-1">
+        <Section title="Links">
+          <ul className="flex flex-wrap gap-2">
             {links.map((item) => (
-              <li key={item.url} className="text-sm">
+              <li key={item.url}>
                 <a
                   href={item.url}
                   rel="nofollow noopener ugc"
                   target="_blank"
-                  className="underline"
+                  className="hover:bg-muted/60 group/link flex max-w-full items-center gap-2 rounded-full border py-1.5 pr-3 pl-2 text-sm transition-colors duration-150"
                 >
-                  {TYPE_LABEL[item.type] ?? item.type}: {item.url}
+                  <span className="bg-muted flex size-6 shrink-0 items-center justify-center rounded-full">
+                    <LinkMark type={item.type} />
+                  </span>
+                  <span className="font-medium">
+                    {LINK_LABEL[item.type] ?? item.type}
+                  </span>
+                  <span className="text-muted-foreground min-w-0 truncate">
+                    {hostPath(item.url)}
+                  </span>
+                  <ArrowUpRight
+                    aria-hidden
+                    className="text-muted-foreground size-3.5 shrink-0 transition-transform duration-200 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+                  />
                 </a>
               </li>
             ))}
           </ul>
-        </section>
+        </Section>
       ) : null}
     </article>
   );

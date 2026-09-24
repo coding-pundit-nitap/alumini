@@ -1,6 +1,11 @@
+import { PencilLine } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { buttonVariants } from "@nitap/ui/components/button";
+
+import { PageColumns } from "@/components/shell/page-columns";
 import { getConnectionStatus } from "@/composition/connections";
 import { getProfileForViewer } from "@/composition/users";
 import { AppError } from "@/lib/errors";
@@ -46,25 +51,43 @@ export default async function MemberPage({
       ? await getConnectionStatus({ actor, otherUserId: userId })
       : null;
 
+  const own = actor?.userId === userId;
+
   return (
-    <div className="mx-auto w-full max-w-xl space-y-6 px-4 py-12">
-      <ProfileCard view={view} />
-      {status ? (
-        <div className="flex flex-wrap items-start gap-3">
-          <ConnectionButton
-            targetUserId={userId}
-            status={status}
-            requestAction={requestConnectionAction}
-            respondAction={respondToConnectionAction}
-            removeAction={removeConnectionAction}
-            blockAction={blockUserAction}
-          />
-          <MessageButton
-            recipientId={userId}
-            startAction={startConversationAction}
-          />
-        </div>
-      ) : null}
-    </div>
+    <PageColumns>
+      <ProfileCard
+        view={view}
+        actions={
+          own ? (
+            <Link
+              href="/profile"
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className: "rounded-full",
+              })}
+            >
+              <PencilLine aria-hidden />
+              Edit profile
+            </Link>
+          ) : status ? (
+            <>
+              <MessageButton
+                recipientId={userId}
+                startAction={startConversationAction}
+              />
+              <ConnectionButton
+                targetUserId={userId}
+                status={status}
+                requestAction={requestConnectionAction}
+                respondAction={respondToConnectionAction}
+                removeAction={removeConnectionAction}
+                blockAction={blockUserAction}
+              />
+            </>
+          ) : null
+        }
+      />
+    </PageColumns>
   );
 }

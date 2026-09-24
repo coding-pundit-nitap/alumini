@@ -117,6 +117,24 @@ describe("ExperienceForm", () => {
     expect(router.replace).not.toHaveBeenCalled();
   });
 
+  it("add mode: a successful add clears 'current role', so the next entry doesn't inherit it", async () => {
+    const action = vi.fn<ItemAction>(async () => ({
+      ok: true,
+      data: undefined,
+    }));
+    const user = userEvent.setup();
+    render(<ExperienceForm action={action} />);
+    await user.type(screen.getByLabelText("Company"), "Acme");
+    await user.click(screen.getByLabelText("I currently work here"));
+    expect(screen.getByLabelText("End date")).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: /add/i }));
+    await waitFor(() => expect(action).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect(screen.getByLabelText("I currently work here")).not.toBeChecked()
+    );
+    expect(screen.getByLabelText("End date")).toBeEnabled();
+  });
+
   it("shows the field error the action returns", async () => {
     const action = vi.fn(async () => ({
       ok: false as const,

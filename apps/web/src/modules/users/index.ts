@@ -55,6 +55,13 @@ export { EducationForm } from "./presentation/ui/education-form";
 export { ExperienceForm } from "./presentation/ui/experience-form";
 export { LinkForm } from "./presentation/ui/link-form";
 export { PrivacyForm } from "./presentation/ui/privacy-form";
+export { ItemTile } from "./presentation/ui/item-tile";
+export {
+  duration,
+  hostPath,
+  LINK_LABEL,
+  monthYear,
+} from "./presentation/ui/format";
 export { ProfileCard } from "./presentation/ui/profile-card";
 export { ProfileForm } from "./presentation/ui/profile-form";
 export { SkillForm } from "./presentation/ui/skill-form";
