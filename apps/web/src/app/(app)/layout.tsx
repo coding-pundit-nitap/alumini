@@ -1,6 +1,8 @@
-/** Temporary until the AppShell lands (UI-1 Task 5). Not an authorization boundary. */
+import { AppShell } from "@/components/shell/app-shell";
+
+/** Not an authorization boundary (spec U-1): pages keep their own redirects. */
 export default function MemberLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <main className="flex-1">{children}</main>;
+  return <AppShell>{children}</AppShell>;
 }
