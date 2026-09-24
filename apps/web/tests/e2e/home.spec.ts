@@ -74,12 +74,18 @@ test.describe("Dashboard (§5.3.1)", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Welcome back, E2E"
     );
-    await expect(page.getByText(/Profile \d+% complete/)).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Opportunities for you" })
+      page.getByText(/Profile \d+% complete/).filter({ visible: true })
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Upcoming events" })
+      page
+        .getByRole("heading", { name: "Opportunities for you" })
+        .filter({ visible: true })
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("heading", { name: "Upcoming events" })
+        .filter({ visible: true })
     ).toBeVisible();
     await page.goto("/");
     await expect(page).toHaveURL(/\/dashboard$/);
