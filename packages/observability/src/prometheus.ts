@@ -4,7 +4,7 @@ import {
   Histogram,
   Registry,
   collectDefaultMetrics,
-} from "prom-client";
+} from "@prometheus-io/client";
 
 import type { MetricLabels, Metrics } from "./metrics.ts";
 
@@ -34,9 +34,9 @@ const COLLECT_TIMEOUT_MS = 1_000;
 type Kind = "counter" | "histogram" | "gauge";
 type Values = Record<string, string | number>;
 type Entry =
-  | { kind: "counter"; metric: Counter }
-  | { kind: "histogram"; metric: Histogram }
-  | { kind: "gauge"; metric: Gauge };
+  | { kind: "counter"; metric: Counter<string> }
+  | { kind: "histogram"; metric: Histogram<string> }
+  | { kind: "gauge"; metric: Gauge<string> };
 
 const toValues = (labels: MetricLabels = {}): Values =>
   Object.fromEntries(
@@ -127,15 +127,15 @@ export function createPrometheusMetrics(options: {
     registry,
     increment: (name, labels, value = 1) =>
       use("counter", name, labels, (entry, values) =>
-        (entry.metric as Counter).inc(values, value)
+        (entry.metric as Counter<string>).inc(values, value)
       ),
     observe: (name, value, labels) =>
       use("histogram", name, labels, (entry, values) =>
-        (entry.metric as Histogram).observe(values, value)
+        (entry.metric as Histogram<string>).observe(values, value)
       ),
     gauge: (name, value, labels) =>
       use("gauge", name, labels, (entry, values) =>
-        (entry.metric as Gauge).set(values, value)
+        (entry.metric as Gauge<string>).set(values, value)
       ),
     onCollect: (name, hook) => void hooks.set(name, hook),
     async render() {
