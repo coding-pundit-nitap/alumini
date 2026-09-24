@@ -696,6 +696,8 @@ model Message {
   body            String
   clientMessageId String       @map("client_message_id") @db.Uuid
   createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  /// Set when a moderator resolves a report on this message (12C C12-4). One-way; reads return a tombstone.
+  hiddenAt        DateTime?    @map("hidden_at") @db.Timestamptz(3)
 
   @@unique([conversationId, senderId, clientMessageId], map: "uq_message_client_id")
   @@index([conversationId, seq(sort: Desc)], map: "ix_message_conversation_seq")

@@ -78,3 +78,25 @@ export function decideAddCapacity(currentCount: number): Decision {
     ? { ok: true }
     : { ok: false, code: "GROUP_FULL" };
 }
+
+/** A message as a member reads it. A hidden message keeps its place and loses its text (spec C12-4). */
+export type ListedMessage = {
+  id: string;
+  seq: string;
+  senderId: string;
+  createdAt: Date;
+} & ({ hidden: false; body: string } | { hidden: true; body: null });
+
+export function toListedMessage(row: {
+  id: string;
+  seq: string;
+  senderId: string;
+  body: string;
+  createdAt: Date;
+  hiddenAt: Date | null;
+}): ListedMessage {
+  const { id, seq, senderId, createdAt } = row;
+  return row.hiddenAt
+    ? { id, seq, senderId, createdAt, hidden: true, body: null }
+    : { id, seq, senderId, createdAt, hidden: false, body: row.body };
+}

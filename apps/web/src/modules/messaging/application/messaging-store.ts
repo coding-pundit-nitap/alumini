@@ -1,5 +1,9 @@
 import type { MessageSentPayload } from "@nitap/jobs";
 
+import type { ListedMessage } from "../domain/messaging";
+
+export type { ListedMessage };
+
 export type ConversationRow = {
   id: string;
   createdById: string;
@@ -100,13 +104,6 @@ export type ListedConversation = {
 export type ConversationDetail = ListedConversation & {
   createdById: string;
   lastReadSeq: string;
-};
-export type ListedMessage = {
-  id: string;
-  seq: string;
-  senderId: string;
-  body: string;
-  createdAt: Date;
 };
 export type MessagingQueries = {
   /** Conversations with at least one message, newest activity first. Hides 1:1s whose other side blocked the viewer. */

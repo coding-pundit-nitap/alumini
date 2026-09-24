@@ -17,9 +17,12 @@ export type ThreadMessage = {
   id: string;
   seq: string;
   senderId: string;
-  body: string;
+  body: string | null;
+  hidden?: boolean;
   createdAt: string;
 };
+
+export const TOMBSTONE_TEXT = "This message was removed by a moderator.";
 
 const BACKFILL_MS = 30_000;
 const JSON_HEADERS = { "content-type": "application/json" };
@@ -228,8 +231,14 @@ export function Thread(props: {
                   {new Date(m.createdAt).toLocaleString()}
                 </time>
               </p>
-              <p className="break-words whitespace-pre-wrap">{m.body}</p>
-              {!mine ? (
+              {m.hidden ? (
+                <p className="text-muted-foreground text-sm italic">
+                  {TOMBSTONE_TEXT}
+                </p>
+              ) : (
+                <p className="break-words whitespace-pre-wrap">{m.body}</p>
+              )}
+              {!mine && !m.hidden ? (
                 <button
                   type="button"
                   className="text-muted-foreground text-xs underline"

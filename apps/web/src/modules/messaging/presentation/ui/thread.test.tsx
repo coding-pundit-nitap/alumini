@@ -264,3 +264,54 @@ describe("Thread", () => {
     });
   });
 });
+
+describe("hidden messages (spec C12-4)", () => {
+  it("renders a tombstone without a Report button", () => {
+    render(
+      <Thread
+        conversationId="c1"
+        viewerId={ME}
+        people={people}
+        initialMessages={[
+          { ...message(2, "ravi", "ignored"), body: null, hidden: true },
+          message(1, "ravi", "first"),
+        ]}
+        initialNextCursor={null}
+      />
+    );
+    expect(
+      screen.getByText("This message was removed by a moderator.")
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", { name: /Report message from/ })
+    ).toHaveLength(1);
+  });
+
+  it("replaces an open message with the tombstone on the next refresh", async () => {
+    render(
+      <Thread
+        conversationId="c1"
+        viewerId={ME}
+        people={people}
+        initialMessages={[message(1, "ravi", "rude words")]}
+        initialNextCursor={null}
+      />
+    );
+    expect(screen.getByText("rude words")).toBeInTheDocument();
+    fetchMock.mockImplementation((url: string) =>
+      String(url).includes("/messages?")
+        ? respond({
+            data: [{ ...message(1, "ravi", ""), body: null, hidden: true }],
+            page: { nextCursor: null },
+          })
+        : respond({}, 204)
+    );
+    FakeEventSource.last.emit({ conversationId: "c1" });
+    await waitFor(() =>
+      expect(
+        screen.getByText("This message was removed by a moderator.")
+      ).toBeInTheDocument()
+    );
+    expect(screen.queryByText("rude words")).toBeNull();
+  });
+});

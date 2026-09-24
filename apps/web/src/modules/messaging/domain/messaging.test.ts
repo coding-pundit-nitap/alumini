@@ -11,6 +11,7 @@ import {
   messageInput,
   readInput,
   reportInput,
+  toListedMessage,
 } from "./messaging";
 
 const A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -118,6 +119,36 @@ describe("group management", () => {
     expect(decideAddCapacity(MAX_GROUP_SIZE)).toEqual({
       ok: false,
       code: "GROUP_FULL",
+    });
+  });
+});
+
+describe("toListedMessage (spec C12-4)", () => {
+  const row = {
+    id: "m1",
+    seq: "7",
+    senderId: "u1",
+    body: "hello",
+    createdAt: new Date("2026-09-24T10:00:00Z"),
+  };
+  it("passes a visible message through", () => {
+    expect(toListedMessage({ ...row, hiddenAt: null })).toEqual({
+      id: "m1",
+      seq: "7",
+      senderId: "u1",
+      createdAt: row.createdAt,
+      hidden: false,
+      body: "hello",
+    });
+  });
+  it("drops the body of a hidden message but keeps its place", () => {
+    expect(toListedMessage({ ...row, hiddenAt: new Date() })).toEqual({
+      id: "m1",
+      seq: "7",
+      senderId: "u1",
+      createdAt: row.createdAt,
+      hidden: true,
+      body: null,
     });
   });
 });

@@ -4,10 +4,10 @@ import { Prisma, type PrismaClient } from "@nitap/database";
 import type {
   ConversationDetail,
   ListedConversation,
-  ListedMessage,
   MessagingQueries,
   Person,
 } from "../application/messaging-store";
+import { toListedMessage } from "../domain/messaging";
 import { blockedBetween, col, uuid } from "./sql";
 
 type ConversationRaw = {
@@ -114,13 +114,17 @@ export function createPrismaMessagingQueries(
     async listMessages(viewerId, conversationId, { limit, before }) {
       if (!(await visible(viewerId, conversationId))) return null;
       // A sender is never paired with themselves (CHECK a_id < b_id), so the viewer's own messages always show.
-      return prisma.$queryRaw<ListedMessage[]>(Prisma.sql`
-        SELECT m.id, m.seq::text AS seq, m.sender_id AS "senderId", m.body, m.created_at AS "createdAt"
+      const rows = await prisma.$queryRaw<
+        Parameters<typeof toListedMessage>[0][]
+      >(Prisma.sql`
+        SELECT m.id, m.seq::text AS seq, m.sender_id AS "senderId", m.body, m.created_at AS "createdAt",
+          m.hidden_at AS "hiddenAt"
         FROM "message" m
         WHERE m.conversation_id = ${uuid(conversationId)}
           ${before ? Prisma.sql`AND m.seq < ${before}::bigint` : Prisma.empty}
           AND NOT ${blockedBetween(col('m."sender_id"'), uuid(viewerId))}
         ORDER BY m.seq DESC LIMIT ${limit}`);
+      return rows.map(toListedMessage);
     },
   };
 }
