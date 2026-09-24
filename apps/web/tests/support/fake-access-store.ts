@@ -66,11 +66,15 @@ export function fakeAccessStore(seed: {
           calls.push("findChapter");
           return seed.chapters?.find((c) => c.id === id) ?? null;
         },
-        async insertGrant({ grantedBy: _g, ...g }) {
+        async insertGrant(input) {
           calls.push("insertGrant");
-          const row = {
-            ...g,
+          const row: GrantRow = {
             id: `00000000-0000-4000-8000-${String(grants.length).padStart(12, "0")}`,
+            userId: input.userId,
+            permission: input.permission,
+            scope: input.scope,
+            chapterId: input.chapterId,
+            expiresAt: input.expiresAt,
           };
           grants.push(row);
           return row;
