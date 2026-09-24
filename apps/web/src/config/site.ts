@@ -1,32 +1,7 @@
-export interface NavItem {
-  title: string;
-  href: string;
-  disabled?: boolean;
-  external?: boolean;
-}
-
 export const siteConfig = {
-  name: "NextJs",
+  name: "NIT Arunachal Pradesh Alumni Network",
+  shortName: "NIT AP Alumni",
   description:
-    "Production-grade Next.js starter with TypeScript, Tailwind CSS, Vitest, React Testing Library, and Playwright.",
+    "Find batchmates and mentors, discover opportunities, and come back for events. Every member is verified by NIT Arunachal Pradesh.",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  ogImage: "https://og-image.vercel.app/NextJs.png",
-  mainNav: [
-    {
-      title: "Home",
-      href: "/",
-    },
-    {
-      title: "Features",
-      href: "/#features",
-    },
-    {
-      title: "Docs",
-      href: "/#docs",
-    },
-  ] as NavItem[],
-  links: {
-    github: "https://github.com",
-    twitter: "https://twitter.com",
-  },
 };
