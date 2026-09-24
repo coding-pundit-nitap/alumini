@@ -16,6 +16,12 @@ const comments = [
     body: "**bold** <script>alert(1)</script>",
     deleted: false,
     createdAt: new Date("2026-01-01"),
+    author: {
+      id: authorId,
+      fullName: "Author",
+      headline: null,
+      hasPhoto: false,
+    },
   },
 ];
 

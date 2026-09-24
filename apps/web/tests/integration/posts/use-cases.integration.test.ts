@@ -11,6 +11,8 @@ import { createAddComment } from "@/modules/posts/application/add-comment";
 import { createCreatePost } from "@/modules/posts/application/create-post";
 import { createDeleteComment } from "@/modules/posts/application/delete-comment";
 import { createDeletePost } from "@/modules/posts/application/delete-post";
+import { createGetPost } from "@/modules/posts/application/get-post";
+import { createGetPostImageKey } from "@/modules/posts/application/get-post-image-key";
 import { createListComments } from "@/modules/posts/application/list-comments";
 import { createListFeed } from "@/modules/posts/application/list-feed";
 import { createReact } from "@/modules/posts/application/react";
@@ -102,6 +104,8 @@ describe("posts use cases against real PostgreSQL", () => {
       createPost: createCreatePost(deps),
       deletePost: createDeletePost(deps),
       listFeed: createListFeed(deps),
+      getPost: createGetPost(deps),
+      getPostImageKey: createGetPostImageKey(deps),
       addComment: createAddComment(deps),
       deleteComment: createDeleteComment(deps),
       listComments: createListComments(deps),
@@ -229,6 +233,73 @@ describe("posts use cases against real PostgreSQL", () => {
       expect(await code(build().listFeed({ actor: null }))).toBe(
         "UNAUTHENTICATED"
       );
+    });
+
+    it("myReaction reflects the calling actor, not some other viewer", async () => {
+      const m = build();
+      const { postId } = await m.createPost({
+        actor: actor(asha),
+        input: { content: "post" },
+      });
+      await m.react({
+        actor: actor(ravi),
+        postId,
+        input: { type: "LIKE" },
+      });
+
+      const asAsha = await m.listFeed({ actor: actor(asha) });
+      expect(asAsha.posts.find((p) => p.id === postId)?.myReaction).toBeNull();
+
+      const asRavi = await m.listFeed({ actor: actor(ravi) });
+      expect(asRavi.posts.find((p) => p.id === postId)?.myReaction).toBe(
+        "LIKE"
+      );
+    });
+  });
+
+  describe("get-post / get-post-image-key", () => {
+    it("returns the post with its author", async () => {
+      const m = build();
+      const { postId } = await m.createPost({
+        actor: actor(asha),
+        input: { content: "hello" },
+      });
+      const post = await m.getPost({ actor: actor(ravi), postId });
+      expect(post.id).toBe(postId);
+      expect(post.author).toEqual({
+        id: asha,
+        fullName: "Asha",
+        headline: null,
+        hasPhoto: false,
+      });
+    });
+
+    it("throws NotFoundError for a deleted post and for a random uuid", async () => {
+      const m = build();
+      const { postId } = await m.createPost({
+        actor: actor(asha),
+        input: { content: "gone" },
+      });
+      await m.deletePost({ actor: actor(asha), postId });
+      expect(await code(m.getPost({ actor: actor(ravi), postId }))).toBe(
+        "NOT_FOUND"
+      );
+      expect(
+        await code(
+          m.getPost({
+            actor: actor(ravi),
+            postId: "00000000-0000-4000-8000-000000000000",
+          })
+        )
+      ).toBe("NOT_FOUND");
+    });
+
+    it("throws NotFoundError for an upload no live post references", async () => {
+      const m = build();
+      const upload = await readyUpload(db, asha);
+      expect(
+        await code(m.getPostImageKey({ actor: actor(asha), uploadId: upload }))
+      ).toBe("NOT_FOUND");
     });
   });
 

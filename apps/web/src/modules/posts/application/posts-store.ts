@@ -1,3 +1,5 @@
+import type { ReactionType } from "../domain/posts";
+
 export type PostRow = {
   id: string;
   authorId: string;
@@ -8,12 +10,27 @@ export type PostRow = {
   postType: "TEXT" | "ACHIEVEMENT";
   deleted: boolean;
   createdAt: Date;
-  /** The id of an OPEN/UNDER_REVIEW report against this post, or null; only `listFeed` populates it
-   * (other reads don't join it — optional, not "no report"). Backs the feed's Resolve/Dismiss
-   * affordance (`canModerate` actors only render it); not moderation-module state duplication —
-   * modules/posts reads the `report` table directly, the same cross-module-read-by-schema pattern
-   * `blockedBetween`/`uploadsReady` already use. */
-  openReportId?: string | null;
+};
+export type PostAuthor = {
+  id: string;
+  fullName: string;
+  headline: string | null;
+  hasPhoto: boolean;
+};
+/**
+ * The enriched read model `listFeed`/`findFeedPost` return: a post plus its author, per-type
+ * reaction counts (every `ReactionType` present, 0 when none), the live (non-deleted) comment
+ * count, the viewer's own reaction, and the id of an OPEN/UNDER_REVIEW report against it (or null).
+ * Backs the feed's Resolve/Dismiss affordance (`canModerate` actors only render it); not moderation-
+ * module state duplication — modules/posts reads the `report` table directly, the same
+ * cross-module-read-by-schema pattern `blockedBetween`/`uploadsReady` already use.
+ */
+export type FeedPost = PostRow & {
+  author: PostAuthor;
+  reactionCounts: Record<ReactionType, number>;
+  commentCount: number;
+  myReaction: ReactionType | null;
+  openReportId: string | null;
 };
 export type CommentRow = {
   id: string;
@@ -22,6 +39,7 @@ export type CommentRow = {
   body: string;
   deleted: boolean;
   createdAt: Date;
+  author: PostAuthor;
 };
 export type PostsTx = {
   blockedBetween(x: string, y: string): Promise<boolean>;
@@ -35,11 +53,16 @@ export type PostsTx = {
     postType: "TEXT" | "ACHIEVEMENT";
   }): Promise<PostRow>;
   findPost(id: string): Promise<PostRow | null>;
+  /** Null when missing or soft-deleted (deleted posts never resolve, C-9). */
+  findFeedPost(id: string, viewerId: string): Promise<FeedPost | null>;
+  /** Serves only a READY upload that a live post's `imageUrls` references; see get-post-image-key.ts. */
+  findPostImage(uploadId: string): Promise<{ objectKey: string } | null>;
   softDeletePost(id: string): Promise<void>;
   listFeed(args: {
     limit: number;
     after: { createdAt: Date; id: string } | null;
-  }): Promise<PostRow[]>;
+    viewerId: string;
+  }): Promise<FeedPost[]>;
   insertComment(input: {
     postId: string;
     authorId: string;

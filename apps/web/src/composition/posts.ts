@@ -6,6 +6,8 @@ import {
   createCreatePost,
   createDeleteComment,
   createDeletePost,
+  createGetPost,
+  createGetPostImageKey,
   createListComments,
   createListFeed,
   createPrismaPostsStore,
@@ -24,6 +26,8 @@ const deps = { store, authorize };
 export const createPost = createCreatePost(deps);
 export const deletePost = createDeletePost(deps);
 export const listFeed = createListFeed(deps);
+export const getPost = createGetPost(deps);
+export const getPostImageKey = createGetPostImageKey(deps);
 export const addComment = createAddComment(deps);
 export const deleteComment = createDeleteComment(deps);
 export const listComments = createListComments(deps);

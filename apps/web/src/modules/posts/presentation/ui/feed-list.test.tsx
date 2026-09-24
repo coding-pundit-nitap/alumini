@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "../../../../../tests/support/test-utils";
 import { FeedList } from "./feed-list";
 
+const noReactions = { LIKE: 0, CELEBRATE: 0, SUPPORT: 0, INSIGHTFUL: 0 };
+
 const posts = [
   {
     id: "11111111-1111-4111-8111-111111111111",
@@ -14,6 +16,16 @@ const posts = [
     postType: "TEXT" as const,
     deleted: false,
     createdAt: new Date("2026-01-02"),
+    author: {
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      fullName: "Author One",
+      headline: null,
+      hasPhoto: false,
+    },
+    reactionCounts: noReactions,
+    commentCount: 0,
+    myReaction: null,
+    openReportId: null,
   },
   {
     id: "22222222-2222-4222-8222-222222222222",
@@ -25,6 +37,16 @@ const posts = [
     postType: "TEXT" as const,
     deleted: false,
     createdAt: new Date("2026-01-01"),
+    author: {
+      id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      fullName: "Author Two",
+      headline: null,
+      hasPhoto: false,
+    },
+    reactionCounts: noReactions,
+    commentCount: 0,
+    myReaction: null,
+    openReportId: null,
   },
 ];
 

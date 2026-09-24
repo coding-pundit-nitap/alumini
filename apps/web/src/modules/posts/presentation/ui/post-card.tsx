@@ -11,7 +11,7 @@ import {
   type ModerationTarget,
 } from "@/modules/moderation";
 
-import type { PostRow } from "../../application/posts-store";
+import type { FeedPost } from "../../application/posts-store";
 import type { ReactionType } from "../../domain/posts";
 import { MarkdownView } from "./markdown-view";
 import { ReactionPicker } from "./reaction-picker";
@@ -55,7 +55,7 @@ export function PostCard({
   onResolve,
   onDismiss,
 }: {
-  post: PostRow;
+  post: FeedPost;
   currentUserId: string | null;
   canModerate: boolean;
   mine: ReactionType | null;

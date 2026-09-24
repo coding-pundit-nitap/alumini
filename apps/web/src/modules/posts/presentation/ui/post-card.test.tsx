@@ -17,6 +17,11 @@ const post = {
   postType: "TEXT" as const,
   deleted: false,
   createdAt: new Date("2026-01-01"),
+  author: { id: authorId, fullName: "Author", headline: null, hasPhoto: false },
+  reactionCounts: { LIKE: 0, CELEBRATE: 0, SUPPORT: 0, INSIGHTFUL: 0 },
+  commentCount: 0,
+  myReaction: null,
+  openReportId: null,
 };
 
 function actions(over: Record<string, unknown> = {}) {

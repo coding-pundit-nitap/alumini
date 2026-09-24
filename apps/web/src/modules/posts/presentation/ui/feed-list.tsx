@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ActionResult } from "@/lib/action-result";
 import type { ModerationTarget } from "@/modules/moderation";
 
-import type { PostRow } from "../../application/posts-store";
+import type { FeedPost } from "../../application/posts-store";
 import type { ReactionType } from "../../domain/posts";
 import { PostCard } from "./post-card";
 
@@ -44,7 +44,7 @@ export function FeedList({
   onResolve,
   onDismiss,
 }: {
-  posts: PostRow[];
+  posts: FeedPost[];
   nextCursor: string | null;
   currentUserId: string | null;
   canModerate: boolean;

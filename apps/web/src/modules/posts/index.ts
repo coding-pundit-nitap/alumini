@@ -3,6 +3,8 @@ export { createAddComment } from "./application/add-comment";
 export { createCreatePost } from "./application/create-post";
 export { createDeleteComment } from "./application/delete-comment";
 export { createDeletePost } from "./application/delete-post";
+export { createGetPost } from "./application/get-post";
+export { createGetPostImageKey } from "./application/get-post-image-key";
 export { createListComments } from "./application/list-comments";
 export { createListFeed } from "./application/list-feed";
 export { createReact } from "./application/react";
@@ -11,6 +13,8 @@ export { createPrismaPostsStore } from "./infrastructure/prisma-posts-store";
 export type { Authorize } from "./application/authz";
 export type {
   CommentRow,
+  FeedPost,
+  PostAuthor,
   PostRow,
   PostsStore,
   PostsTx,

@@ -4,7 +4,7 @@ import type { Actor } from "@/modules/auth";
 
 import { decodeFeedCursor, encodeFeedCursor } from "../domain/cursor";
 import type { Authorize } from "./authz";
-import type { PostRow, PostsStore } from "./posts-store";
+import type { FeedPost, PostsStore } from "./posts-store";
 
 export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 50;
@@ -24,12 +24,16 @@ export function createListFeed(deps: {
     actor: Actor | null;
     cursor?: string;
     limit?: number;
-  }): Promise<{ posts: PostRow[]; nextCursor: string | null }> {
-    deps.authorize(args.actor, PERMISSIONS.POST_INTERACT);
+  }): Promise<{ posts: FeedPost[]; nextCursor: string | null }> {
+    const caller = deps.authorize(args.actor, PERMISSIONS.POST_INTERACT);
     const limit = clampLimit(args.limit);
     const after = args.cursor ? decodeFeedCursor(args.cursor) : null;
     const rows = await deps.store.transaction((tx) =>
-      tx.listFeed({ limit: limit + 1, after })
+      tx.listFeed({
+        limit: limit + 1,
+        after,
+        viewerId: caller.userId.toLowerCase(),
+      })
     );
     const more = rows.length > limit;
     const posts = more ? rows.slice(0, limit) : rows;
