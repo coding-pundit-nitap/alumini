@@ -27,7 +27,13 @@ const row = (i: number): AuditRow => ({
 });
 
 function storeReturning(rows: AuditRow[]): AdminStore {
-  return { countTile: vi.fn(), listAuditLog: vi.fn(async () => rows) };
+  return {
+    countTile: vi.fn(),
+    listAuditLog: vi.fn(async () => rows),
+    listUsers: vi.fn(),
+    getUser: vi.fn(),
+    listChapters: vi.fn(),
+  };
 }
 
 describe("listAuditLog", () => {

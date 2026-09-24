@@ -152,4 +152,161 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
     expect(await store.countTile("pendingJobs", new Date())).toBe(1);
     expect(await store.countTile("openReports", new Date())).toBe(1);
   });
+
+  it("lists users by prefix, literally, case-insensitive, keyset-paged", async () => {
+    const base = Date.now();
+    const mkUser = (
+      name: string,
+      offsetMs: number,
+      accountState: "VERIFIED" | "SUSPENDED" = "VERIFIED"
+    ) =>
+      db.prisma.user.create({
+        data: {
+          name,
+          email: `${name.toLowerCase().replace(/[^a-z0-9]/g, "")}@example.test`,
+          accountState,
+          createdAt: new Date(base + offsetMs),
+        },
+      });
+    const giveRole = async (userId: string, role: string) => {
+      const { id: roleId } = await db.prisma.role.findUniqueOrThrow({
+        where: { name: role },
+      });
+      await db.prisma.userRole.create({
+        data: { userId, roleId, grantedBy: actorId },
+      });
+    };
+
+    const ann = await mkUser("Ann", 0);
+    const anna = await mkUser("anna", 1_000);
+    const bob = await mkUser("Bob", 2_000);
+    const percent = await mkUser("50%_off", 3_000);
+    const sue = await mkUser("Sue", 4_000, "SUSPENDED");
+    const stan = await mkUser("Stan", 5_000);
+    await giveRole(stan.id, "STAFF");
+    // Two rows sharing created_at, latest in the ordering, so paging must break the tie on id.
+    const zed1 = await mkUser("Zed1", 6_000);
+    const zed2 = await mkUser("Zed2", 6_000);
+
+    const store = createPrismaAdminStore(db.prisma);
+    const list = (filter: Parameters<typeof store.listUsers>[0]["filter"]) =>
+      store.listUsers({ filter, after: null, take: 50 });
+
+    const byAn = await list({ q: "an" });
+    expect(new Set(byAn.map((u) => u.id))).toEqual(new Set([ann.id, anna.id]));
+
+    const byPercent = await list({ q: "50%" });
+    expect(byPercent.map((u) => u.id)).toEqual([percent.id]);
+
+    expect(await list({ q: "_" })).toEqual([]);
+
+    const byState = await list({ state: "SUSPENDED" });
+    expect(byState.map((u) => u.id)).toEqual([sue.id]);
+
+    const byRole = await list({ role: "STAFF" });
+    expect(byRole.map((u) => u.id)).toEqual([stan.id]);
+
+    // Keyset paging over all 8 rows: take=2 at a time, no gaps or repeats, including the tie.
+    // actorId/otherId are created in beforeEach and also show up in an unfiltered listing.
+    const allIds = [
+      ann.id,
+      anna.id,
+      bob.id,
+      percent.id,
+      sue.id,
+      stan.id,
+      zed1.id,
+      zed2.id,
+      actorId,
+      otherId,
+    ];
+    const seen: string[] = [];
+    let after: { createdAt: Date; id: string } | null = null;
+    for (let page = 0; page < 10; page++) {
+      const rows = await store.listUsers({ filter: {}, after, take: 2 });
+      if (rows.length === 0) break;
+      seen.push(...rows.map((r) => r.id));
+      const last = rows[rows.length - 1]!;
+      after = { createdAt: last.createdAt, id: last.id };
+    }
+    expect(seen).toHaveLength(allIds.length);
+    expect(new Set(seen).size).toBe(allIds.length);
+    expect(new Set(seen)).toEqual(new Set(allIds));
+  });
+
+  it("getUser returns roles, grants with chapter slug and granter, and isLastSuperAdmin", async () => {
+    const giveRole = async (userId: string, role: string) => {
+      const { id: roleId } = await db.prisma.role.findUniqueOrThrow({
+        where: { name: role },
+      });
+      await db.prisma.userRole.create({
+        data: { userId, roleId, grantedBy: actorId },
+      });
+    };
+    const store = createPrismaAdminStore(db.prisma);
+
+    const solo = await db.prisma.user.create({
+      data: {
+        name: "solo",
+        email: "solo@example.test",
+        accountState: "VERIFIED",
+      },
+    });
+    await giveRole(solo.id, "SUPER_ADMIN");
+    const chapter = await db.prisma.chapter.create({
+      data: { slug: "ny-chapter" },
+    });
+    await db.prisma.permissionGrant.create({
+      data: {
+        userId: solo.id,
+        permission: "event.manage",
+        scopeType: "CHAPTER",
+        chapterId: chapter.id,
+        grantedBy: actorId,
+      },
+    });
+
+    const solo1 = await store.getUser(solo.id, "SUPER_ADMIN");
+    expect(solo1).toMatchObject({
+      id: solo.id,
+      name: "solo",
+      email: "solo@example.test",
+      accountState: "VERIFIED",
+      isLastSuperAdmin: true,
+    });
+    expect(solo1!.roles).toEqual([
+      {
+        name: "SUPER_ADMIN",
+        grantedAt: expect.any(Date),
+        grantedBy: { id: actorId, name: "admin" },
+      },
+    ]);
+    expect(solo1!.grants).toEqual([
+      {
+        id: expect.any(String),
+        permission: "event.manage",
+        scope: "CHAPTER",
+        chapterId: chapter.id,
+        chapterSlug: "ny-chapter",
+        grantedAt: expect.any(Date),
+        expiresAt: null,
+        grantedBy: { id: actorId, name: "admin" },
+      },
+    ]);
+
+    const second = await db.prisma.user.create({
+      data: {
+        name: "second",
+        email: "second@example.test",
+        accountState: "VERIFIED",
+      },
+    });
+    await giveRole(second.id, "SUPER_ADMIN");
+    const solo2 = await store.getUser(solo.id, "SUPER_ADMIN");
+    expect(solo2!.isLastSuperAdmin).toBe(false);
+
+    expect(
+      await store.getUser("00000000-0000-4000-8000-000000000000", "SUPER_ADMIN")
+    ).toBeNull();
+  });
 });

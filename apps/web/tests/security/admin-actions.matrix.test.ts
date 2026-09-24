@@ -225,6 +225,9 @@ describe("admin action × role matrix (RBAC §4)", () => {
             throw new ReachedStore("countTile");
           },
           listAuditLog: tripwire(),
+          listUsers: tripwire(),
+          getUser: tripwire(),
+          listChapters: tripwire(),
         },
         can,
         onTileFailed: (_key, error) => {

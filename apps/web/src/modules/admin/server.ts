@@ -3,3 +3,4 @@
  * because it reaches `@nitap/database`'s generated Prisma client at runtime (see modules/moderation/index.ts).
  */
 export { createPrismaAdminStore } from "./infrastructure/prisma-admin-store";
+export { createPrismaAccessStore } from "./infrastructure/prisma-access-store";

@@ -26,6 +26,9 @@ function store(counts: Partial<Record<string, number | Error>>): AdminStore {
       return v ?? 0;
     }),
     listAuditLog: vi.fn(),
+    listUsers: vi.fn(),
+    getUser: vi.fn(),
+    listChapters: vi.fn(),
   };
 }
 
