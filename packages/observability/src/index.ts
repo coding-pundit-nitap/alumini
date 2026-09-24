@@ -9,6 +9,7 @@ export {
   recordPoolStats,
 } from "./prometheus.ts";
 export type { PrometheusMetrics } from "./prometheus.ts";
+export { canSeeHealthDetails } from "./monitoring-access.ts";
 export {
   getRequestContext,
   runWithRequestContext,

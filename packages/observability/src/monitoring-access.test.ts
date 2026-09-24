@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { canSeeHealthDetails } from "./access";
+import { canSeeHealthDetails } from "./monitoring-access.ts";
 
 const request = (authorization?: string) =>
   new Request("http://localhost/health/ready", {

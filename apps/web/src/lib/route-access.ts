@@ -13,6 +13,8 @@ const PUBLIC_PREFIXES = [
   "/forgot-password",
   "/reset-password",
   "/health",
+  // Prometheus scrapes; the route gates itself (spec 13A A-6).
+  "/metrics",
   "/api",
   // Guests may view a PUBLIC profile (FR-DIR-004); the page itself answers 404 for anything else.
   "/members",

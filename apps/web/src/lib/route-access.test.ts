@@ -12,6 +12,7 @@ describe("isPublicPath", () => {
     "/reset-password",
     "/health/live",
     "/health",
+    "/metrics",
     "/api/auth/sign-in/email",
     "/api/v1/jobs",
     "/members/0b8f6f4e-8f7e-4c2a-9f57-3a2a1f6d5c11",
