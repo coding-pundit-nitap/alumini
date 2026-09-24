@@ -18,11 +18,11 @@ import { DawnMark } from "@/components/brand/dawn-mark";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
+import { openCommandPalette } from "./command-palette";
 import { useCreateClick } from "./create-menu";
 import type { ShellUser } from "./load-shell";
 import { activeHref, NavIcon } from "./nav-icon";
 import type { NavModel } from "./nav-model";
-import { openCommandPalette } from "./rail";
 import { UserMenu } from "./user-menu";
 
 const FOCUS = "focus-visible:ring-ring outline-none focus-visible:ring-2";

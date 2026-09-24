@@ -15,15 +15,12 @@ import { DawnMark, Wordmark } from "@/components/brand/dawn-mark";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
+import { openCommandPalette } from "./command-palette";
 import { CreateMenu } from "./create-menu";
 import type { ShellUser } from "./load-shell";
 import { activeHref, NavIcon } from "./nav-icon";
 import type { NavModel } from "./nav-model";
 import { UserMenu } from "./user-menu";
-
-export function openCommandPalette() {
-  window.dispatchEvent(new Event("open-command-palette"));
-}
 
 const FOCUS = "focus-visible:ring-ring outline-none focus-visible:ring-2";
 

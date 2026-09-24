@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { NotificationBell } from "@/modules/notifications";
 
+import { CommandPalette } from "./command-palette";
 import { loadShell } from "./load-shell";
 import { MobileBar } from "./mobile-bar";
 import { Rail } from "./rail";
@@ -27,6 +28,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <Rail nav={data.nav} user={data.user} bell={bell} />
+      <CommandPalette nav={data.nav} />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileBar nav={data.nav} user={data.user} bell={bell} />
         <main
