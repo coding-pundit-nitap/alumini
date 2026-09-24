@@ -1,7 +1,16 @@
+import { UserPlus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { buttonVariants } from "@nitap/ui/components/button";
+import {
+  Segmented,
+  segmentedItemVariants,
+} from "@nitap/ui/components/segmented";
+
+import { startConversationAction } from "@/app/(app)/messages/actions";
+import { PageColumns } from "@/components/shell/page-columns";
 import { listConnections } from "@/composition/connections";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
@@ -25,6 +34,9 @@ const QUERY = {
   blocked: { state: "BLOCKED" },
 } as const;
 
+/** The incoming badge reads at most this many; beyond it the exact number is unknown ("50+"). */
+const BADGE_CAP = 50;
+
 export default async function ConnectionsPage({
   searchParams,
 }: {
@@ -37,8 +49,15 @@ export default async function ConnectionsPage({
   if (!actor) redirect("/login?next=%2Fconnections");
 
   let page;
+  let incoming: number;
   try {
-    page = await listConnections({ actor, ...QUERY[tab], cursor });
+    // One capped read feeds the Requests badge (the list itself pages at 20, so it can't be the count).
+    [page, incoming] = await Promise.all([
+      listConnections({ actor, ...QUERY[tab], cursor }),
+      listConnections({ actor, ...QUERY.incoming, limit: BADGE_CAP }).then(
+        (p) => p.data.length
+      ),
+    ]);
   } catch (error) {
     if (error instanceof AppError && error.status === 403) {
       redirect("/account/status");
@@ -48,44 +67,76 @@ export default async function ConnectionsPage({
     }
     throw error;
   }
+  const badge = incoming;
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-12">
-      <h1 className="text-2xl font-semibold">Your connections</h1>
+    <PageColumns
+      header={
+        <>
+          <div className="min-w-0 flex-1 leading-tight">
+            <h1 className="truncate font-semibold tracking-tight">
+              Your connections
+            </h1>
+            <p className="text-muted-foreground truncate text-xs">
+              The people you know from NIT Arunachal Pradesh
+            </p>
+          </div>
+          <Link
+            href="/directory"
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "rounded-full",
+            })}
+          >
+            <UserPlus aria-hidden />
+            Find people
+          </Link>
+        </>
+      }
+    >
       <nav
         aria-label="Connection lists"
-        className="flex flex-wrap gap-4 text-sm"
+        className="scrollbar-none overflow-x-auto border-b px-4 py-3 sm:px-5"
       >
-        {TABS.map((t) => (
-          <Link
-            key={t.id}
-            href={`/connections?tab=${t.id}`}
-            aria-current={t.id === tab ? "page" : undefined}
-            className={
-              t.id === tab ? "font-semibold underline" : "text-muted-foreground"
-            }
-          >
-            {t.label}
-          </Link>
-        ))}
+        <Segmented>
+          {TABS.map((t) => (
+            <Link
+              key={t.id}
+              href={`/connections?tab=${t.id}`}
+              aria-current={t.id === tab ? "page" : undefined}
+              className={segmentedItemVariants({ active: t.id === tab })}
+            >
+              {t.label}
+              {t.id === "incoming" && badge ? (
+                <span
+                  aria-label={`${badge >= BADGE_CAP ? `${BADGE_CAP}+` : badge} waiting`}
+                  className="bg-brand text-brand-foreground flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums"
+                >
+                  {badge >= BADGE_CAP ? `${BADGE_CAP}+` : badge}
+                </span>
+              ) : null}
+            </Link>
+          ))}
+        </Segmented>
       </nav>
       <ConnectionList
+        key={tab}
         items={page.data}
         tab={tab}
         respondAction={respondToConnectionAction}
         removeAction={removeConnectionAction}
+        messageAction={
+          tab === "connections" ? startConversationAction : undefined
+        }
+        query={QUERY[tab]}
+        nextCursor={page.page.nextCursor}
+        nextHref={
+          page.page.nextCursor
+            ? `/connections?tab=${tab}&cursor=${encodeURIComponent(page.page.nextCursor)}`
+            : null
+        }
       />
-      {page.page.nextCursor ? (
-        <Link
-          href={`/connections?tab=${tab}&cursor=${encodeURIComponent(page.page.nextCursor)}`}
-          className="text-primary block text-center text-sm underline"
-        >
-          Next page
-        </Link>
-      ) : null}
-      <Link href="/directory" className="text-primary block text-sm underline">
-        Find people in the directory
-      </Link>
-    </div>
+    </PageColumns>
   );
 }
