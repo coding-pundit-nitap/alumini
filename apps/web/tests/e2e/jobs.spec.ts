@@ -154,6 +154,8 @@ test("alumni posts a job, a moderator rejects with a note, the alumnus edits and
   await moderator.page
     .getByRole("button", { name: "Submit rejection" })
     .click();
+  // The modal aria-hides <main>, so the row reads as hidden before the reject commits.
+  await expect(moderator.page.getByRole("dialog")).toBeHidden();
   await expect(pendingRow).toBeHidden();
 
   await alumnus.page.goto("/jobs/mine");
