@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 
-import { Bento } from "./bento";
+import { Features } from "./features";
 
 const TITLES = [
   "Directory",
@@ -12,9 +12,9 @@ const TITLES = [
   "Achievements",
 ];
 
-describe("Bento", () => {
-  it("renders six tiles linking to register when signed out", () => {
-    render(<Bento signedIn={false} />);
+describe("Features", () => {
+  it("renders six rows linking to register when signed out", () => {
+    render(<Features signedIn={false} />);
     const region = screen.getByRole("region", { name: "What you can do" });
     for (const name of TITLES) {
       expect(
@@ -27,7 +27,7 @@ describe("Bento", () => {
   });
 
   it("links to the dashboard when signed in", () => {
-    render(<Bento signedIn />);
+    render(<Features signedIn />);
     for (const l of screen.getAllByRole("link")) {
       expect(l).toHaveAttribute("href", "/dashboard");
     }

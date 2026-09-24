@@ -11,7 +11,7 @@ test.describe("Landing (§5.1.1)", () => {
   test("a visitor sees the pitch and can join", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Stay connected with your NIT Arunachal Pradesh community"
+      "Your batch, still within reach."
     );
     await expect(
       page.getByRole("link", { name: "Join the network" }).first()

@@ -164,25 +164,61 @@
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
+/* Landing dawn scene. --page-bg is resolved on :root, so it keeps the page colour inside forced-dark sections. */
+:root {
+  --page-bg: var(--background);
 }
 
-@utility animate-float {
-  animation: float 5s ease-in-out infinite;
+@utility landing-sky {
+  background:
+    radial-gradient(
+      60% 45% at 50% 100%,
+      color-mix(in oklch, var(--brand) 50%, transparent),
+      transparent 75%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--background) 0%,
+      oklch(0.19 0.04 285) 50%,
+      oklch(0.3 0.08 25) 100%
+    );
 }
 
-@utility dot-grid {
-  background-image: radial-gradient(
-    color-mix(in oklch, var(--foreground) 12%, transparent) 1px,
-    transparent 1px
+@utility landing-sun {
+  background: radial-gradient(
+    circle,
+    oklch(0.93 0.09 85) 0%,
+    var(--brand) 55%,
+    color-mix(in oklch, var(--brand) 0%, transparent) 72%
   );
-  background-size: 22px 22px;
-  mask-image: radial-gradient(70% 60% at 50% 30%, black, transparent);
+  filter: drop-shadow(
+    0 0 60px color-mix(in oklch, var(--brand) 60%, transparent)
+  );
+}
+
+@keyframes sunrise {
+  from {
+    transform: translateY(40%);
+    opacity: 0.4;
+  }
+}
+
+@utility animate-sunrise {
+  animation: sunrise 2.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes drift {
+  to {
+    transform: translateY(var(--drift));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .ridge-parallax {
+      animation: drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+  }
 }
