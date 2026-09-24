@@ -9,12 +9,14 @@ export { createGetConversation } from "./application/get-conversation";
 export { createListConversations } from "./application/list-conversations";
 export { createListMessages } from "./application/list-messages";
 export { createMarkRead } from "./application/mark-read";
+export { createReadReportedMessage } from "./application/read-reported-message";
 export { createReportMessage } from "./application/report-message";
 export { createSendMessage } from "./application/send-message";
 export { createPrismaMessagingQueries } from "./infrastructure/prisma-messaging-queries";
 export { createPrismaMessagingStore } from "./infrastructure/prisma-messaging-store";
 export { MAX_BODY, MAX_GROUP_SIZE } from "./domain/messaging";
 export type {
+  ContextMessage,
   ConversationDetail,
   ListedConversation,
   ListedMessage,
@@ -22,6 +24,7 @@ export type {
   MessagingOutcome,
   Page,
   Person,
+  ReportedMessageView,
 } from "./application/messaging-store";
 export { ConversationList } from "./presentation/ui/conversation-list";
 export { GroupForm } from "./presentation/ui/group-form";

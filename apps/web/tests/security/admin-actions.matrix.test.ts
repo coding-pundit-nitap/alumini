@@ -38,6 +38,7 @@ import { createDismissReport } from "@/modules/moderation/application/dismiss-re
 import { createGetReport } from "@/modules/moderation/application/get-report";
 import { createListReports } from "@/modules/moderation/application/list-reports";
 import { createResolveReport } from "@/modules/moderation/application/resolve-report";
+import { createReadReportedMessage } from "@/modules/messaging/application/read-reported-message";
 import { createReplayNotifications } from "@/modules/notifications/application/replay-notifications";
 
 import { readRoleMatrixFromDoc } from "../support/rbac-matrix-doc";
@@ -150,6 +151,15 @@ const ADMIN_ACTIONS: ReadonlyArray<{
     permission: PERMISSIONS.REPORT_REVIEW,
     run: (actor) =>
       createGetReport({ store: tripwire(), authorize })({
+        actor,
+        reportId: ID,
+      }),
+  },
+  {
+    name: "readReportedMessage",
+    permission: PERMISSIONS.MESSAGE_READ_REPORTED,
+    run: (actor) =>
+      createReadReportedMessage({ store: tripwire(), authorize })({
         actor,
         reportId: ID,
       }),

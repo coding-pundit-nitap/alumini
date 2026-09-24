@@ -6,6 +6,8 @@ import { z } from "zod";
  */
 export const MAX_GROUP_SIZE = 20;
 export const MAX_BODY = 4000;
+/** How many messages either side of a reported one a moderator sees (RBAC §6.1: bounded, never open-ended). */
+export const CONTEXT_EACH_SIDE = 5;
 
 export const messageInput = z
   .object({

@@ -58,6 +58,6 @@ describe("admin access", () => {
 
   it("lists every admin-tier permission exactly once", () => {
     expect(new Set(ADMIN_PERMISSIONS).size).toBe(ADMIN_PERMISSIONS.length);
-    expect(ADMIN_PERMISSIONS).toHaveLength(12);
+    expect(ADMIN_PERMISSIONS).toHaveLength(13);
   });
 });

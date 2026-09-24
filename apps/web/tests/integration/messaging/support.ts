@@ -1,3 +1,4 @@
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import type { TestDatabase } from "@nitap/testing";
 
@@ -37,6 +38,7 @@ export const storeFor = (db: TestDatabase) =>
   createPrismaMessagingStore({
     runner: createTransactionRunner(db.prisma),
     outbox: createOutboxWriter(),
+    audit: createAuditWriter(),
   });
 
 export async function member(

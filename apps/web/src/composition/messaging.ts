@@ -1,5 +1,6 @@
 import { debounceKeyFor } from "@nitap/jobs";
 
+import { audit } from "@/infrastructure/audit";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { getMetrics, logger } from "@/infrastructure/observability";
 import { outbox } from "@/infrastructure/outbox";
@@ -16,6 +17,7 @@ import {
   createMarkRead,
   createPrismaMessagingQueries,
   createPrismaMessagingStore,
+  createReadReportedMessage,
   createRemoveParticipant,
   createReportMessage,
   createSendMessage,
@@ -23,7 +25,11 @@ import {
 } from "@/modules/messaging";
 
 /** Wires the messaging module to PostgreSQL and the shared Redis rate limiter. */
-const store = createPrismaMessagingStore({ runner: transactionRunner, outbox });
+const store = createPrismaMessagingStore({
+  runner: transactionRunner,
+  outbox,
+  audit,
+});
 const queries = createPrismaMessagingQueries(prisma);
 /** One log line and one counter per committed outcome (ids only: never a body or a name). */
 const observe: MessagingObserver = (outcome, id) => {
@@ -74,3 +80,7 @@ export const listConversations = createListConversations({
 });
 export const getConversation = createGetConversation({ queries, authorize });
 export const listMessages = createListMessages({ queries, authorize });
+export const readReportedMessage = createReadReportedMessage({
+  store,
+  authorize,
+});

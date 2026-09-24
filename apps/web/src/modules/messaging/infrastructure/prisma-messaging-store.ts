@@ -1,9 +1,11 @@
 import { Prisma } from "@nitap/database";
+import type { AuditWriter } from "@nitap/database/audit";
 import type { OutboxWriter } from "@nitap/database/outbox";
 
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
 
 import type {
+  ContextMessage,
   ConversationRow,
   MessageRow,
   MessagingStore,
@@ -31,6 +33,7 @@ const toMessage = (row: {
 export function createPrismaMessagingStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;
+  audit: AuditWriter;
 }): MessagingStore {
   const forClient = (db: Prisma.TransactionClient): MessagingTx => ({
     async accountState(userId) {
@@ -203,6 +206,43 @@ export function createPrismaMessagingStore(deps: {
 
     async enqueue(event) {
       await deps.outbox.add(db, event);
+    },
+
+    async reportedMessage(reportId) {
+      const rows = await db.$queryRaw<
+        { messageId: string; conversationId: string; seq: string }[]
+      >`
+        SELECT m.id AS "messageId", m.conversation_id AS "conversationId", m.seq::text AS seq
+        FROM "report" r JOIN "message" m ON m.id = r.target_id
+        WHERE r.id = ${reportId}::uuid AND r.target_type = 'MESSAGE'`;
+      return rows[0] ?? null;
+    },
+
+    async messageContext(conversationId, seq, eachSide) {
+      // Both halves walk ix_message_conversation_seq; seq is global, so the conversation filter is what bounds it.
+      return db.$queryRaw<Omit<ContextMessage, "reported">[]>`
+        SELECT x.id, x.seq::text AS seq, x.sender_id AS "senderId", COALESCE(p.full_name, u.name) AS "senderName",
+          x.body, x.created_at AS "createdAt", (x.hidden_at IS NOT NULL) AS hidden
+        FROM (
+          (SELECT * FROM "message" WHERE conversation_id = ${conversationId}::uuid AND seq < ${seq}::bigint
+            ORDER BY seq DESC LIMIT ${eachSide})
+          UNION ALL
+          (SELECT * FROM "message" WHERE conversation_id = ${conversationId}::uuid AND seq >= ${seq}::bigint
+            ORDER BY seq ASC LIMIT ${eachSide + 1})
+        ) x
+        JOIN "user" u ON u.id = x.sender_id
+        LEFT JOIN "profile" p ON p.user_id = x.sender_id
+        ORDER BY x.seq ASC`;
+    },
+
+    async audit(entry) {
+      await deps.audit.record(db, {
+        actorId: entry.actorId,
+        action: entry.action,
+        targetType: "message",
+        targetId: entry.messageId,
+        metadata: { reportId: entry.reportId },
+      });
     },
   });
 

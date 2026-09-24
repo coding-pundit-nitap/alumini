@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import { createTestDatabase, type TestDatabase } from "@nitap/testing";
@@ -36,6 +37,7 @@ describe("messaging store against real PostgreSQL", () => {
     createPrismaMessagingStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
   const cid = (n: number) =>
     `00000000-0000-4000-8000-${n.toString().padStart(12, "0")}`;

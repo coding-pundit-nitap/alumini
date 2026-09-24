@@ -76,6 +76,22 @@ export type MessagingTx = {
     type: "message.sent";
     payload: MessageSentPayload;
   }): Promise<void>;
+  /** The MESSAGE report's message, or null (unknown report, other type, or the message is gone). */
+  reportedMessage(
+    reportId: string
+  ): Promise<{ messageId: string; conversationId: string; seq: string } | null>;
+  /** Oldest first: up to `eachSide` before `seq`, the message at `seq`, up to `eachSide` after. One conversation only. */
+  messageContext(
+    conversationId: string,
+    seq: string,
+    eachSide: number
+  ): Promise<Omit<ContextMessage, "reported">[]>;
+  audit(entry: {
+    action: "message.read_reported";
+    actorId: string;
+    messageId: string;
+    reportId: string;
+  }): Promise<void>;
 };
 
 export type MessagingStore = {
@@ -122,6 +138,24 @@ export type MessagingQueries = {
     filter: { limit: number; before?: string }
   ): Promise<ListedMessage[] | null>;
 };
+export type ContextMessage = {
+  id: string;
+  seq: string;
+  senderId: string;
+  senderName: string;
+  /** The real text, hidden or not: the moderator needs to see what was hidden (spec C12-6). */
+  body: string;
+  createdAt: Date;
+  hidden: boolean;
+  reported: boolean;
+};
+export type ReportedMessageView = {
+  reportId: string;
+  conversationId: string;
+  messageId: string;
+  messages: ContextMessage[];
+};
+
 export type Page<T> = {
   data: T[];
   page: { limit: number; nextCursor: string | null; hasMore: boolean };
