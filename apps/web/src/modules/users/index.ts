@@ -13,6 +13,7 @@ export { createPrismaProfileStore } from "./infrastructure/prisma-profile-store"
 export { createPrismaSkillCollection } from "./infrastructure/prisma-skill-collection";
 export { createProfileAudit } from "./infrastructure/profile-audit";
 export type { ProfileRecord, ProfileView } from "./domain/profile";
+export { profileCompleteness } from "./domain/profile-completeness";
 export {
   EDUCATION_FIELDS,
   educationClockProblems,
