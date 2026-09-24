@@ -12,12 +12,17 @@ const mocks = vi.hoisted(() => ({
   addParticipant: vi.fn(),
   removeParticipant: vi.fn(),
   reportMessage: vi.fn(),
+  listReports: vi.fn(),
 }));
 vi.mock("@/config/env", () => ({
   env: { BETTER_AUTH_URL: "https://alumni.example.test" },
 }));
 vi.mock("@/modules/auth", () => ({ getActor: mocks.getActor }));
 vi.mock("@/composition/messaging", () => mocks);
+// GET /api/v1/reports (in ../reports/route, imported below) now pulls in
+// composition/moderation for listReports; that module wires the real Prisma
+// client, so it must be doubled here too or this suite fails at import time.
+vi.mock("@/composition/moderation", () => mocks);
 
 import { AuthenticationError, NotFoundError } from "@/lib/errors";
 
