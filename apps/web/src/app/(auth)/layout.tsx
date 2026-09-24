@@ -12,6 +12,24 @@ export default function AuthLayout({
     <div className="grid min-h-svh lg:grid-cols-[1.1fr_1fr]">
       <aside className="dark bg-background text-foreground relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between lg:p-12">
         <div aria-hidden className="dawn-glow absolute inset-0 -scale-y-100" />
+        <svg
+          aria-hidden
+          viewBox="0 0 600 200"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 bottom-0 h-56 w-full"
+        >
+          <circle cx="400" cy="150" r="60" fill="var(--brand)" opacity="0.35" />
+          <polygon
+            points="0,200 0,130 120,60 220,140 300,90 420,160 520,80 600,120 600,200"
+            fill="currentColor"
+            opacity="0.06"
+          />
+          <polygon
+            points="0,200 0,170 90,120 200,175 330,110 460,180 560,140 600,160 600,200"
+            fill="currentColor"
+            opacity="0.1"
+          />
+        </svg>
         <Link href="/" className={`relative self-start ${HOME_LINK}`}>
           <Wordmark />
         </Link>
