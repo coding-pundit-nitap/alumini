@@ -269,16 +269,20 @@ export function PostComposer({
 
   if (!expanded) {
     return (
-      <div className="bg-card flex items-center gap-3 rounded-xl border p-3">
-        {author ? <PostAuthorAvatar author={author} /> : null}
+      <div className="flex items-center gap-3">
+        {author ? <PostAuthorAvatar author={author} size="lg" /> : null}
         <button
           id="compose"
           type="button"
           onClick={expand}
           onFocus={expand}
-          className="text-muted-foreground hover:bg-muted flex-1 rounded-lg px-3 py-1.5 text-left text-sm transition-colors"
+          className="text-muted-foreground hover:border-foreground/20 hover:text-foreground bg-muted/40 flex h-10 flex-1 items-center justify-between rounded-full border px-4 text-left text-sm transition-colors duration-150"
         >
           Share something with your batchmates…
+          <span className="flex items-center gap-2" aria-hidden>
+            <ImagePlus className="size-4" />
+            <Link2 className="size-4" />
+          </span>
         </button>
       </div>
     );
@@ -287,7 +291,7 @@ export function PostComposer({
   return (
     <form
       onSubmit={onFormSubmit}
-      className="bg-card space-y-3 rounded-xl border p-3"
+      className="animate-in fade-in space-y-3 duration-200"
     >
       <Textarea
         ref={textareaRef}

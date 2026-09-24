@@ -50,25 +50,26 @@ export function AttentionTiles({ counts }: { counts: AttentionCounts }) {
   if (shown.length === 0) return null;
   return (
     <Block title="Needs your attention">
-      <div className="mt-2 grid grid-cols-2 gap-2">
+      <ul className="-mx-2 flex flex-col">
         {shown.map((tile) => {
           const n = counts[tile.key];
           return (
-            <Link
-              key={tile.key}
-              href={tile.href}
-              className="hover:bg-muted/60 rounded-lg border px-3 py-2 transition-colors"
-            >
-              <span className="font-display text-brand block text-2xl leading-none tabular-nums">
-                {n >= COUNT_CAP ? `${COUNT_CAP}+` : n}
-              </span>{" "}
-              <span className="text-muted-foreground mt-1 block text-xs">
-                {n === 1 ? tile.one : tile.many}
-              </span>
-            </Link>
+            <li key={tile.key}>
+              <Link
+                href={tile.href}
+                className="hover:bg-muted/60 flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors duration-150"
+              >
+                <span className="bg-brand text-brand-foreground flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums">
+                  {n >= COUNT_CAP ? `${COUNT_CAP}+` : n}
+                </span>{" "}
+                <span className="text-muted-foreground">
+                  {n === 1 ? tile.one : tile.many}
+                </span>
+              </Link>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </Block>
   );
 }

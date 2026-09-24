@@ -13,7 +13,6 @@ import { listConversations } from "@/composition/messaging";
 import { getUnreadCount } from "@/composition/notifications";
 import { getOwnProfile } from "@/composition/users";
 import { can, PERMISSIONS, type Actor } from "@/modules/auth";
-import type { PostAuthor } from "@/modules/posts";
 import { profileCompleteness } from "@/modules/users";
 
 import { AttentionTiles, COUNT_CAP } from "./attention-tiles";
@@ -102,26 +101,16 @@ export async function Greeting({ actor }: { actor: Actor }) {
       ? result.value.fullName.trim().split(/\s+/)[0]
       : undefined;
   return (
-    <h1 className="font-display mb-4 text-3xl">
+    <h1 className="font-display truncate text-2xl leading-none">
       {first ? (
         <>
-          Welcome back, <em>{first}</em>
+          Welcome back, <em className="text-brand">{first}</em>
         </>
       ) : (
         "Welcome back"
       )}
     </h1>
   );
-}
-
-/** The composer's avatar and name; omitted (not an error) when the profile can't be read. */
-export async function composerAuthor(
-  actor: Actor
-): Promise<PostAuthor | undefined> {
-  const result = await loadProfile(actor);
-  if (result.status !== "ok") return undefined;
-  const { userId, fullName, headline, photoUploadId } = result.value;
-  return { id: userId, fullName, headline, hasPhoto: photoUploadId != null };
 }
 
 /** H-7 completeness. */
@@ -149,11 +138,12 @@ export function Widgets({ actor }: { actor: Actor }) {
 /** The same blocks below xl, as a horizontal snap strip above the feed. */
 export function WidgetStrip({ actor }: { actor: Actor }) {
   return (
-    <div className="-mx-4 flex snap-x snap-mandatory scrollbar-none items-start gap-3 overflow-x-auto px-4 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0">
+    // One swipeable row; each card shows at most two list rows so the feed stays near the top.
+    <div className="-mx-4 flex snap-x snap-mandatory scrollbar-none items-stretch gap-3 overflow-x-auto px-4 sm:-mx-5 sm:px-5 [&_li:nth-child(n+3)]:hidden">
       {BLOCKS.map((Block, i) => (
         <div
           key={i}
-          className="w-[85%] max-w-80 shrink-0 snap-start empty:hidden md:w-auto md:max-w-none"
+          className="w-[80%] max-w-72 shrink-0 snap-start *:h-full empty:hidden"
         >
           <Suspense fallback={<BlockSkeleton rows={2} />}>
             <Block actor={actor} />

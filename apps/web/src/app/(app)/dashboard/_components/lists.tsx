@@ -1,6 +1,7 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-/** The shared highlights-rail shell: hairline card, small header row, optional "See all". */
+/** The shared highlights-rail shell: a hairline card in the mobile strip, an open section in the xl rail. */
 export function Block({
   title,
   href,
@@ -13,16 +14,20 @@ export function Block({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-card rounded-xl border p-4">
-      <div className="mb-1 flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-semibold">{title}</h2>
+    <section className="bg-card rounded-xl border p-4 xl:rounded-none xl:border-0 xl:bg-transparent xl:p-0">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <h2 className="text-[15px] font-semibold tracking-tight">{title}</h2>
         {href ? (
           <Link
             href={href}
             aria-label={more}
-            className="text-muted-foreground hover:text-foreground shrink-0 text-xs"
+            className="text-muted-foreground hover:text-foreground group/more flex shrink-0 items-center gap-1 text-xs font-medium transition-colors"
           >
             See all
+            <ArrowRight
+              aria-hidden
+              className="size-3.5 transition-transform duration-200 group-hover/more:translate-x-0.5"
+            />
           </Link>
         ) : null}
       </div>
@@ -36,7 +41,16 @@ const Empty = ({ text }: { text: string }) => (
 );
 
 const Rows = ({ children }: { children: React.ReactNode }) => (
-  <ul className="divide-y">{children}</ul>
+  <ul className="-mx-2 flex flex-col">{children}</ul>
+);
+
+const ROW =
+  "hover:bg-muted/60 flex items-center gap-3 rounded-lg px-2 py-2 transition-colors duration-150";
+
+const Monogram = ({ text }: { text: string }) => (
+  <span className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg text-xs font-semibold uppercase">
+    {text.trim().slice(0, 2)}
+  </span>
 );
 
 export function JobList({
@@ -56,17 +70,19 @@ export function JobList({
       ) : (
         <Rows>
           {jobs.map((job) => (
-            <li key={job.id} className="py-2 text-sm">
-              <Link
-                href={`/jobs/${job.id}`}
-                className="block truncate font-medium hover:underline"
-              >
-                {job.title}
+            <li key={job.id}>
+              <Link href={`/jobs/${job.id}`} className={ROW}>
+                <Monogram text={job.company} />
+                <span className="min-w-0 text-sm">
+                  <span className="block truncate font-medium">
+                    {job.title}
+                  </span>
+                  <span className="text-muted-foreground block truncate text-xs">
+                    {job.company}
+                    {job.location ? ` · ${job.location}` : ""}
+                  </span>
+                </span>
               </Link>
-              <p className="text-muted-foreground truncate text-xs">
-                {job.company}
-                {job.location ? `, ${job.location}` : ""}
-              </p>
             </li>
           ))}
         </Rows>
@@ -94,23 +110,35 @@ export function EventList({
       ) : (
         <Rows>
           {events.map((event) => (
-            <li key={event.id} className="flex gap-3 py-2 text-sm">
-              <time
-                dateTime={event.startsAt.toISOString()}
-                className="text-brand w-12 shrink-0 text-xs leading-5 font-medium tabular-nums"
-              >
-                {event.startsAt.toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "short",
-                  timeZone: event.timezone,
-                })}
-              </time>
-              <Link
-                href={`/events/${event.id}`}
-                className="min-w-0 font-medium hover:underline"
-              >
-                {event.isOnline ? "Online: " : ""}
-                {event.title}
+            <li key={event.id}>
+              <Link href={`/events/${event.id}`} className={ROW}>
+                <time
+                  dateTime={event.startsAt.toISOString()}
+                  className="border-border bg-background flex w-10 shrink-0 flex-col items-center overflow-hidden rounded-lg border leading-none"
+                >
+                  <span className="bg-brand text-brand-foreground w-full py-0.5 text-center text-[9px] font-semibold tracking-wider uppercase">
+                    {event.startsAt.toLocaleDateString("en-IN", {
+                      month: "short",
+                      timeZone: event.timezone,
+                    })}
+                  </span>
+                  <span className="py-1 text-base font-semibold tabular-nums">
+                    {event.startsAt.toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      timeZone: event.timezone,
+                    })}
+                  </span>
+                </time>
+                <span className="min-w-0 text-sm">
+                  <span className="line-clamp-2 font-medium">
+                    {event.title}
+                  </span>
+                  <span className="text-muted-foreground block truncate text-xs">
+                    {event.isOnline
+                      ? "Online"
+                      : (event.location ?? "In person")}
+                  </span>
+                </span>
               </Link>
             </li>
           ))}
@@ -138,16 +166,23 @@ export function PeopleList({
       ) : (
         <Rows>
           {people.map((p) => (
-            <li key={p.id} className="py-2 text-sm">
-              <Link
-                href={`/members/${p.id}`}
-                className="block truncate font-medium hover:underline"
-              >
-                {p.name}
+            <li key={p.id}>
+              <Link href={`/members/${p.id}`} className={ROW}>
+                <span className="bg-brand/10 text-brand flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+                  {p.name
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((w) => w[0])
+                    .join("")
+                    .toUpperCase()}
+                </span>
+                <span className="min-w-0 text-sm">
+                  <span className="block truncate font-medium">{p.name}</span>
+                  <span className="text-muted-foreground block truncate text-xs">
+                    {p.detail}
+                  </span>
+                </span>
               </Link>
-              <p className="text-muted-foreground truncate text-xs">
-                {p.detail}
-              </p>
             </li>
           ))}
         </Rows>

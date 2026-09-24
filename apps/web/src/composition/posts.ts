@@ -1,6 +1,6 @@
 import { transactionRunner } from "@/infrastructure/database/client";
 import { outbox } from "@/infrastructure/outbox";
-import { authorize } from "@/modules/auth";
+import { authorize, type Actor } from "@/modules/auth";
 import {
   createAddComment,
   createCreatePost,
@@ -13,7 +13,10 @@ import {
   createPrismaPostsStore,
   createReact,
   createUnreact,
+  type PostAuthor,
 } from "@/modules/posts";
+
+import { getOwnProfile } from "./users";
 
 /**
  * Wires the posts module to PostgreSQL (mirrors composition/messaging.ts's shape: flat, pre-bound
@@ -33,3 +36,17 @@ export const deleteComment = createDeleteComment(deps);
 export const listComments = createListComments(deps);
 export const react = createReact(deps);
 export const unreact = createUnreact(deps);
+
+/** The signed-in member as a post/comment author (avatar and name); undefined when their profile can't be read. */
+export async function getViewerAuthor(
+  actor: Actor
+): Promise<PostAuthor | undefined> {
+  try {
+    const { userId, fullName, headline, photoUploadId } = await getOwnProfile({
+      actor,
+    });
+    return { id: userId, fullName, headline, hasPhoto: photoUploadId != null };
+  } catch {
+    return undefined;
+  }
+}

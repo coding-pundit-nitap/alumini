@@ -1,15 +1,14 @@
 "use client";
 
 import {
-  ChevronDown,
   HandHeart,
   Lightbulb,
   PartyPopper,
+  SmilePlus,
   ThumbsUp,
 } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@nitap/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +35,14 @@ const ICON: Record<ReactionType, typeof ThumbsUp> = {
   INSIGHTFUL: Lightbulb,
 };
 
+/** Text colour and hover tint per reaction, from the theme's chart palette. */
+const TONE: Record<ReactionType, string> = {
+  LIKE: "text-brand bg-brand/10",
+  CELEBRATE: "text-chart-5 bg-chart-5/10",
+  SUPPORT: "text-chart-3 bg-chart-3/10",
+  INSIGHTFUL: "text-chart-2 bg-chart-2/10",
+};
+
 type ReactAction = (
   postId: string,
   input: { type: ReactionType }
@@ -49,7 +56,7 @@ type State = {
   counts: Record<ReactionType, number>;
 };
 
-/** The reaction pill: a one-click Like toggle plus a "More reactions" menu for the other three (FR-FEED-003). */
+/** A one-click Like toggle plus a "More reactions" tray for the other three (FR-FEED-003). */
 export function ReactionPicker({
   postId,
   counts,
@@ -91,6 +98,10 @@ export function ReactionPicker({
     (sum, type) => sum + state.counts[type],
     0
   );
+  // Reactions others used, most popular first: a small social-proof stack next to the count.
+  const used = REACTION_TYPES.filter((t) => state.counts[t] > 0)
+    .sort((a, b) => state.counts[b] - state.counts[a])
+    .slice(0, 3);
 
   return (
     <div
@@ -98,47 +109,84 @@ export function ReactionPicker({
       role="group"
       aria-label="React to this post"
     >
-      <Button
+      <button
         type="button"
-        size="sm"
-        variant="ghost"
         aria-pressed={active !== null}
         onClick={() => apply(active ? null : "LIKE")}
         className={cn(
-          "rounded-r-none",
-          active && "text-brand bg-brand/10 hover:bg-brand/15 hover:text-brand"
+          "focus-visible:ring-ring flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[13px] font-medium tabular-nums transition-colors duration-150 outline-none focus-visible:ring-2",
+          active
+            ? TONE[active]
+            : "text-muted-foreground hover:bg-brand/10 hover:text-brand"
         )}
       >
-        <ActiveIcon />
-        {active ? LABEL[active] : "Like"}
+        <ActiveIcon
+          // Remount on change so the icon pops each time the reaction flips.
+          key={active ?? "none"}
+          aria-hidden
+          className={cn(
+            "size-[17px]",
+            active &&
+              "animate-in zoom-in-50 spin-in-12 fill-current/15 duration-300"
+          )}
+        />
+        <span className="sr-only">{active ? LABEL[active] : "Like"}</span>
         {total > 0 ? <span>{total}</span> : null}
-      </Button>
+      </button>
+      {used.length > 1 ? (
+        <span aria-hidden className="mr-1 flex -space-x-1">
+          {used.map((t) => {
+            const Icon = ICON[t];
+            return (
+              <span
+                key={t}
+                className={cn(
+                  "ring-background flex size-[18px] items-center justify-center rounded-full ring-2",
+                  TONE[t]
+                )}
+              >
+                <Icon className="size-2.5" />
+              </span>
+            );
+          })}
+        </span>
+      ) : null}
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="More reactions"
           render={
-            <Button
+            <button
               type="button"
-              size="icon-sm"
-              variant="ghost"
-              className={cn(
-                "rounded-l-none border-l",
-                active &&
-                  "text-brand bg-brand/10 hover:bg-brand/15 hover:text-brand"
-              )}
+              className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring data-[popup-open]:bg-muted flex size-8 items-center justify-center rounded-full transition-colors duration-150 outline-none focus-visible:ring-2"
             />
           }
         >
-          <ChevronDown />
+          <SmilePlus aria-hidden className="size-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          {REACTION_TYPES.map((type) => {
+        <DropdownMenuContent
+          align="start"
+          side="top"
+          className="flex w-auto min-w-0 flex-row gap-1 rounded-full p-1.5"
+        >
+          {REACTION_TYPES.map((type, i) => {
             const Icon = ICON[type];
             return (
-              <DropdownMenuItem key={type} onClick={() => apply(type)}>
-                <Icon />
-                {LABEL[type]}
-                <span className="text-muted-foreground ml-auto">
+              <DropdownMenuItem
+                key={type}
+                onClick={() => apply(type)}
+                title={LABEL[type]}
+                style={{ animationDelay: `${i * 40}ms` }}
+                className={cn(
+                  "animate-in fade-in slide-in-from-bottom-2 fill-mode-both group/reaction relative flex size-10 flex-col items-center justify-center gap-0 rounded-full p-0 duration-300 hover:-translate-y-1 hover:scale-110",
+                  state.mine === type && TONE[type]
+                )}
+              >
+                <Icon
+                  aria-hidden
+                  className={cn("size-5!", TONE[type].split(" ")[0])}
+                />
+                <span className="sr-only">{LABEL[type]}</span>
+                <span className="text-muted-foreground text-[9px] leading-none tabular-nums">
                   {state.counts[type]}
                 </span>
               </DropdownMenuItem>

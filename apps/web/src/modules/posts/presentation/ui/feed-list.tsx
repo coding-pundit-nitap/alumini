@@ -3,7 +3,7 @@
 import { useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { MessageSquareText } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   Empty,
@@ -115,11 +115,34 @@ export function FeedList({
     return true;
   });
   const lastCursor = pages.at(-1)?.nextCursor ?? null;
+  const moreRef = useRef<HTMLAnchorElement>(null);
+  const { fetchNextPage, isFetchingNextPage, isFetchNextPageError } = query;
+
+  // Infinite scroll: fetch the next page as the "Load more" row comes within a screen of view. A failed page
+  // stops the loop until "Try again"; the link stays as the keyboard / no-observer path.
+  useEffect(() => {
+    const el = moreRef.current;
+    if (
+      !el ||
+      isFetchingNextPage ||
+      isFetchNextPageError ||
+      typeof IntersectionObserver === "undefined"
+    )
+      return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) void fetchNextPage();
+      },
+      { rootMargin: "0px 0px 800px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [lastCursor, fetchNextPage, isFetchingNextPage, isFetchNextPageError]);
 
   return (
-    <div className="space-y-4">
+    <div>
       {dedupedPosts.length === 0 ? (
-        <Empty className="border">
+        <Empty className="py-16">
           <EmptyMedia variant="icon" className="bg-brand/10 text-brand">
             <MessageSquareText />
           </EmptyMedia>
@@ -129,28 +152,41 @@ export function FeedList({
           </EmptyDescription>
         </Empty>
       ) : (
-        <div className="space-y-3">
-          {dedupedPosts.map((post) => (
-            <PostCard
+        <div className="divide-border divide-y">
+          {dedupedPosts.map((post, i) => (
+            <div
               key={post.id}
-              post={post}
-              currentUserId={currentUserId}
-              canModerate={canModerate}
-              onDelete={onDelete}
-              onReact={onReact}
-              onUnreact={onUnreact}
-              onReport={onReport}
-              onResolve={onResolve}
-              onDismiss={onDismiss}
-            />
+              // Stagger only the first screenful; later pages just fade.
+              style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}
+              className="animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500"
+            >
+              <PostCard
+                post={post}
+                currentUserId={currentUserId}
+                canModerate={canModerate}
+                onDelete={onDelete}
+                onReact={onReact}
+                onUnreact={onUnreact}
+                onReport={onReport}
+                onResolve={onResolve}
+                onDismiss={onDismiss}
+              />
+            </div>
           ))}
         </div>
       )}
 
+      {!lastCursor && dedupedPosts.length > 0 ? (
+        <p className="text-muted-foreground border-border border-t py-8 text-center text-sm">
+          You&apos;re all caught up.
+        </p>
+      ) : null}
+
       {lastCursor ? (
         <Link
+          ref={moreRef}
           href={`${basePath}?cursor=${encodeURIComponent(lastCursor)}`}
-          className="text-primary block text-center text-sm underline"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted/40 border-border block border-t py-4 text-center text-sm font-medium transition-colors"
           onClick={(event) => {
             event.preventDefault();
             void query.fetchNextPage();
@@ -161,7 +197,7 @@ export function FeedList({
       ) : null}
 
       {query.isFetchNextPageError ? (
-        <div className="text-center">
+        <div className="py-4 text-center">
           <p className="text-muted-foreground text-sm">
             Couldn&apos;t load more posts.
           </p>

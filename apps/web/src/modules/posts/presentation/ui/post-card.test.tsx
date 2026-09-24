@@ -1,4 +1,5 @@
 import userEvent from "@testing-library/user-event";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { render, screen } from "../../../../../tests/support/test-utils";
@@ -236,5 +237,38 @@ describe("PostCard", () => {
       );
       expect(await screen.findByText("Link copied")).toBeInTheDocument();
     });
+  });
+
+  it("ships '…more' in the server HTML for an obviously long post, so it doesn't pop in after load", () => {
+    const html = (content: string) =>
+      renderToString(
+        <PostCard
+          post={{ ...basePost, content }}
+          currentUserId={otherId}
+          canModerate={false}
+          {...actions()}
+        />
+      );
+    expect(html("x ".repeat(400))).toContain("…more");
+    expect(
+      html(Array.from({ length: 8 }, (_, i) => `line ${i}`).join("\n\n"))
+    ).toContain("…more");
+    expect(html("A short post.")).not.toContain("…more");
+  });
+
+  it("on the post's own page, points the comment action at the comment box instead of itself", () => {
+    render(
+      <PostCard
+        post={{ ...basePost, commentCount: 2 }}
+        currentUserId={otherId}
+        canModerate={false}
+        expanded
+        {...actions()}
+      />
+    );
+    expect(screen.getByRole("link", { name: "2 comments" })).toHaveAttribute(
+      "href",
+      "#add-comment"
+    );
   });
 });

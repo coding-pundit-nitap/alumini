@@ -1,24 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@nitap/ui/components/avatar";
+import { buttonVariants } from "@nitap/ui/components/button";
+import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
 
 import { relativeTime } from "@/lib/relative-time";
+import { cn } from "@/lib/utils";
 
 import type { PostAuthor } from "../../application/posts-store";
-
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]!.toUpperCase())
-    .join("");
-}
 
 /** Avatar with photo or initials fallback — reused by PostAuthorLine and the composer's collapsed row. */
 export function PostAuthorAvatar({
@@ -29,12 +18,12 @@ export function PostAuthorAvatar({
   size?: "sm" | "default" | "lg";
 }) {
   return (
-    <Avatar size={size}>
-      {author.hasPhoto && (
-        <AvatarImage src={`/api/photos/${author.id}`} alt="" />
-      )}
-      <AvatarFallback>{initials(author.fullName)}</AvatarFallback>
-    </Avatar>
+    <InitialsAvatar
+      name={author.fullName}
+      seed={author.id}
+      src={author.hasPhoto ? `/api/photos/${author.id}` : null}
+      size={size}
+    />
   );
 }
 
@@ -54,37 +43,79 @@ export function PostAuthorLine({
 }) {
   const href =
     author.id === currentUserId ? "/profile" : `/members/${author.id}`;
-  const avatarSize = size === "sm" ? "sm" : "default";
+  const avatarSize = size === "sm" ? "default" : "lg";
 
   return (
-    <div className="flex min-w-0 items-center gap-2.5">
-      <Link href={href} className="shrink-0">
+    <div className="flex min-w-0 items-center gap-3">
+      {/* Same destination as the name link beside it, so it stays out of the tab order and a11y tree. */}
+      <Link href={href} className="shrink-0" tabIndex={-1} aria-hidden>
         <PostAuthorAvatar author={author} size={avatarSize} />
       </Link>
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
           <Link
             href={href}
-            className="text-foreground truncate font-medium hover:underline"
+            className="text-foreground truncate font-semibold tracking-tight hover:underline"
           >
             {author.fullName}
           </Link>
           {badge}
-        </div>
-        <div className="text-muted-foreground flex min-w-0 items-center gap-1 truncate text-sm">
-          {author.headline ? (
-            <span className="truncate">{author.headline}</span>
-          ) : null}
-          {author.headline ? <span aria-hidden>·</span> : null}
+          <span aria-hidden className="text-muted-foreground">
+            ·
+          </span>
           <time
             dateTime={createdAt.toISOString()}
             title={createdAt.toLocaleString()}
             suppressHydrationWarning
+            className="text-muted-foreground shrink-0 text-[13px]"
           >
             {relativeTime(createdAt)}
           </time>
         </div>
+        {author.headline ? (
+          <div className="text-muted-foreground truncate text-[13px]">
+            {author.headline}
+          </div>
+        ) : null}
       </div>
     </div>
+  );
+}
+
+/** The post page's right-rail card: who wrote this, with a way to their profile. */
+export function PostAuthorCard({
+  author,
+  currentUserId,
+}: {
+  author: PostAuthor;
+  currentUserId: string | null;
+}) {
+  const own = author.id === currentUserId;
+  return (
+    <section aria-label="About the author">
+      <h2 className="text-[15px] font-semibold tracking-tight">
+        About the author
+      </h2>
+      <div className="mt-3 flex items-center gap-3">
+        <PostAuthorAvatar author={author} size="lg" />
+        <div className="min-w-0">
+          <p className="truncate font-semibold tracking-tight">
+            {author.fullName}
+          </p>
+          <p className="text-muted-foreground truncate text-[13px]">
+            {author.headline ?? "Member of the network"}
+          </p>
+        </div>
+      </div>
+      <Link
+        href={own ? "/profile" : `/members/${author.id}`}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "sm" }),
+          "mt-4 w-full rounded-full"
+        )}
+      >
+        {own ? "View your profile" : "View profile"}
+      </Link>
+    </section>
   );
 }

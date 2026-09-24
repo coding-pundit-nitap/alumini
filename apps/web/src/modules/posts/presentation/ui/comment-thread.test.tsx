@@ -135,4 +135,58 @@ describe("CommentThread", () => {
     });
     expect(screen.getByLabelText(/add a comment/i)).toHaveValue("");
   });
+
+  it("pages in older comments by cursor, skips ones it already shows, and drops a deleted older one", async () => {
+    const older = (n: number) => ({
+      ...comments[0]!,
+      id: `55555555-5555-4555-8555-55555555555${n}`,
+      authorId: otherId,
+      body: `older ${n}`,
+      createdAt: new Date(2025, 0, n).toISOString(),
+      author: { ...comments[0]!.author, id: otherId },
+    });
+    const fetchMock = vi.fn<(url: string) => Promise<Response>>(
+      async () =>
+        new Response(
+          JSON.stringify({
+            // The first row repeats page one's last comment (pushed down by a newer one): shown once.
+            comments: [
+              { ...comments[0]!, createdAt: "2026-01-01T00:00:00Z" },
+              older(1),
+              { ...older(2), authorId: otherId },
+            ],
+            nextCursor: null,
+          })
+        )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const a = actions();
+    render(
+      <CommentThread
+        postId={postId}
+        comments={comments}
+        nextCursor="CUR"
+        currentUserId={otherId}
+        {...a}
+      />
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Load more comments" })
+    );
+    expect(await screen.findByText("older 2")).toBeInTheDocument();
+    expect(String(fetchMock.mock.calls[0]![0])).toBe(
+      `/api/v1/posts/${postId}/comments?cursor=CUR`
+    );
+    expect(screen.getAllByText("bold")).toHaveLength(1);
+    expect(
+      screen.queryByRole("button", { name: "Load more comments" })
+    ).toBeNull();
+
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Delete comment" })[0]!
+    );
+    expect(a.onDeleteComment).toHaveBeenCalledWith(older(1).id);
+    await vi.waitFor(() => expect(screen.queryByText("older 1")).toBeNull());
+    vi.unstubAllGlobals();
+  });
 });
