@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
     "@nitap/search",
   ],
   poweredByHeader: false,
+  experimental: {
+    // The dev FS cache (.next/dev/cache/turbopack) never shrinks; after a day of restarts it hit 11 GB
+    // and reloading it OOM-killed next-server. Cold dev compiles are the price.
+    turbopackFileSystemCacheForDev: false,
+  },
 };
 
 export default nextConfig;
