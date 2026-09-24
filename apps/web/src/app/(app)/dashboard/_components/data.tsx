@@ -149,9 +149,12 @@ export function Widgets({ actor }: { actor: Actor }) {
 /** The same blocks below xl, as a horizontal snap strip above the feed. */
 export function WidgetStrip({ actor }: { actor: Actor }) {
   return (
-    <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
+    <div className="-mx-4 flex snap-x snap-mandatory scrollbar-none items-start gap-3 overflow-x-auto px-4 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0">
       {BLOCKS.map((Block, i) => (
-        <div key={i} className="w-72 shrink-0 snap-start empty:hidden">
+        <div
+          key={i}
+          className="w-[85%] max-w-80 shrink-0 snap-start empty:hidden md:w-auto md:max-w-none"
+        >
           <Suspense fallback={<BlockSkeleton rows={2} />}>
             <Block actor={actor} />
           </Suspense>
