@@ -128,7 +128,7 @@ test.describe("alumni verification (J-03)", () => {
     // (Next.js docs, "Calling notFound() after streaming has started"). A real 404 needs the check
     // before streaming, and the only pre-stream hook, proxy.ts, must never authorize (ADR-005, TDS §7).
     await page.goto("/admin/verification");
-    await expect(page.getByText("Page Not Found (404)")).toBeVisible();
+    await expect(page.getByText("Page not found")).toBeVisible();
     await expect(page.getByText("Verification requests")).toHaveCount(0);
 
     const anonymous = await browser.newContext({ baseURL: BASE_URL });

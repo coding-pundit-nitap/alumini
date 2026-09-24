@@ -9,13 +9,13 @@ import { ConnectionButton } from "@/modules/connections";
 import { MessageButton } from "@/modules/messaging";
 import { ProfileCard } from "@/modules/users";
 
-import { startConversationAction } from "@/app/messages/actions";
+import { startConversationAction } from "@/app/(app)/messages/actions";
 import {
   blockUserAction,
   removeConnectionAction,
   requestConnectionAction,
   respondToConnectionAction,
-} from "@/app/connections/actions";
+} from "@/app/(app)/connections/actions";
 
 export const metadata: Metadata = { title: "Member profile" };
 

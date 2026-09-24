@@ -57,7 +57,7 @@ test("J-04 a member edits their profile and controls who sees it", async ({
   // PRIVATE: the same member now gets the not-found page (never a "forbidden").
   await setLevel(owner, "Only me");
   await viewer.goto(memberUrl!);
-  await expect(viewer.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(viewer.getByText("Page not found")).toBeVisible();
 
   // The owner still sees their own profile.
   await owner.goto(memberUrl!);

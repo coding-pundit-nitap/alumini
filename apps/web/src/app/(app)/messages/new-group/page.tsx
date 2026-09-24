@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { createGroupAction } from "@/app/messages/actions";
+import { createGroupAction } from "@/app/(app)/messages/actions";
 import { listConnections } from "@/composition/connections";
 import { getActor } from "@/modules/auth";
 import { GroupForm } from "@/modules/messaging";

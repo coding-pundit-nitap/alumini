@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@nitap/ui/components/button";
 import { AlertTriangle } from "lucide-react";
 
+import { PublicShell } from "@/components/common/public-shell";
+
 export default function Error({
   error,
   reset,
@@ -21,15 +23,13 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center p-4">
-      <div className="flex max-w-md flex-col items-center text-center">
-        <div className="bg-destructive/10 text-destructive mb-4 rounded-full p-4">
-          <AlertTriangle className="size-10" />
-        </div>
-        <h2 className="text-foreground text-2xl font-bold tracking-tight">
-          Something went wrong!
-        </h2>
-        <p className="text-muted-foreground mt-2 text-sm">
+    <PublicShell signedIn={false}>
+      <section className="dawn-glow flex min-h-[70vh] flex-col items-center justify-center px-4 py-20 text-center">
+        <AlertTriangle aria-hidden className="text-brand size-10" />
+        <h1 className="font-display mt-4 text-4xl tracking-tight md:text-5xl">
+          Something went wrong
+        </h1>
+        <p className="text-muted-foreground mt-3 max-w-md">
           An unexpected error occurred. Please try again.
         </p>
         {error.digest && (
@@ -37,7 +37,7 @@ export default function Error({
             Reference: {error.digest}. Quote this if you contact support.
           </p>
         )}
-        <div className="mt-6 flex gap-4">
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button onClick={() => reset()} variant="default">
             Try again
           </Button>
@@ -45,7 +45,7 @@ export default function Error({
             Go to Homepage
           </Button>
         </div>
-      </div>
-    </div>
+      </section>
+    </PublicShell>
   );
 }

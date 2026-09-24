@@ -65,7 +65,7 @@ test("J-06 members connect, see connections-only profiles, block and unblock", a
   await asha.goto(`/directory?q=${token}`);
   await expect(asha.getByText("No members match these filters.")).toBeVisible();
   await asha.goto(raviPath);
-  await expect(asha.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(asha.getByText("Page not found")).toBeVisible();
 
   // Members can still ask: a request from the profile of a member they can see. Ravi loosens it just
   // enough for Asha to find him, asks nothing of her, and Asha sends the request.
@@ -100,17 +100,17 @@ test("J-06 members connect, see connections-only profiles, block and unblock", a
     outsider.getByText("No members match these filters.")
   ).toBeVisible();
   await outsider.goto(raviPath);
-  await expect(outsider.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(outsider.getByText("Page not found")).toBeVisible();
 
   // Blocking ends the connection and hides each member from the other.
   await asha.goto(raviPath);
   await asha.getByRole("button", { name: "Block" }).click();
   await asha.getByRole("button", { name: "Confirm block" }).click();
-  await expect(asha.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(asha.getByText("Page not found")).toBeVisible();
   await asha.goto(`/directory?q=${token}`);
   await expect(asha.getByText("No members match these filters.")).toBeVisible();
   await ravi.goto(ashaPath);
-  await expect(ravi.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(ravi.getByText("Page not found")).toBeVisible();
 
   // Only the blocker can lift it, from their blocked list.
   await ravi.goto("/connections?tab=blocked");
@@ -121,7 +121,7 @@ test("J-06 members connect, see connections-only profiles, block and unblock", a
   // Unblocking does not restore the connection: Ravi's profile is still connections-only, so it stays
   // closed to Asha until he opens it up; then she can ask again.
   await asha.goto(raviPath);
-  await expect(asha.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(asha.getByText("Page not found")).toBeVisible();
   await setLevel(ravi, "Verified members");
   await asha.goto(raviPath);
   await expect(asha.getByRole("button", { name: "Connect" })).toBeVisible();

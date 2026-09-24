@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { approveJobAction, rejectJobAction } from "@/app/jobs/actions";
+import { approveJobAction, rejectJobAction } from "@/app/(app)/jobs/actions";
 import { listPendingJobs } from "@/composition/jobs";
 import { AppError } from "@/lib/errors";
 import { can, getActor, PERMISSIONS } from "@/modules/auth";

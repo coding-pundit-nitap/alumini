@@ -133,7 +133,7 @@ test("a member sees no Admin link and gets not-found at /admin and /admin/audit"
   // verification.spec.ts). The API answers a real 404 (admin-audit-log.security.integration.test.ts).
   for (const path of ["/admin", "/admin/audit"]) {
     await page.goto(path);
-    await expect(page.getByText("Page Not Found (404)")).toBeVisible();
+    await expect(page.getByText("Page not found")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Dashboard" })).toHaveCount(
       0
     );

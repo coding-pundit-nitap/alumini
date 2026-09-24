@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@nitap/ui/components/card";
 
+import { PublicShell } from "@/components/common/public-shell";
 import { siteConfig } from "@/config/site";
 import { getActor } from "@/modules/auth";
 
@@ -65,33 +66,41 @@ const STEPS = [
 export default async function LandingPage() {
   const signedIn = (await getActor()) !== null;
   return (
-    <div className="flex flex-col">
-      <section className="container mx-auto flex max-w-4xl flex-col items-center gap-6 px-4 py-20 text-center md:py-28">
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-          Stay connected with your NIT Arunachal Pradesh community
-        </h1>
-        <p className="text-muted-foreground max-w-2xl text-lg">
-          Find batchmates and mentors, discover opportunities, and come back for
-          events.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          {signedIn ? (
-            <Link href="/dashboard" className={buttonVariants({ size: "lg" })}>
-              Go to dashboard
-            </Link>
-          ) : (
-            <>
-              <Link href="/register" className={buttonVariants({ size: "lg" })}>
-                Join the network
-              </Link>
+    <PublicShell signedIn={signedIn}>
+      <section className="dawn-glow">
+        <div className="container mx-auto flex max-w-4xl flex-col items-center gap-6 px-4 py-20 text-center md:py-28">
+          <h1 className="font-display text-5xl tracking-tight text-balance md:text-6xl">
+            Stay connected with your NIT Arunachal Pradesh community
+          </h1>
+          <p className="text-muted-foreground max-w-2xl text-lg">
+            Find batchmates and mentors, discover opportunities, and come back
+            for events.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {signedIn ? (
               <Link
-                href="/login"
-                className={buttonVariants({ size: "lg", variant: "outline" })}
+                href="/dashboard"
+                className={buttonVariants({ size: "lg" })}
               >
-                Log in
+                Go to dashboard
               </Link>
-            </>
-          )}
+            ) : (
+              <>
+                <Link
+                  href="/register"
+                  className={buttonVariants({ size: "lg" })}
+                >
+                  Join the network
+                </Link>
+                <Link
+                  href="/login"
+                  className={buttonVariants({ size: "lg", variant: "outline" })}
+                >
+                  Log in
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </section>
 
@@ -151,6 +160,6 @@ export default async function LandingPage() {
           </p>
         </div>
       </section>
-    </div>
+    </PublicShell>
   );
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { reviewAchievementAction } from "@/app/achievements/actions";
+import { reviewAchievementAction } from "@/app/(app)/achievements/actions";
 import { listPendingAchievements } from "@/composition/achievements";
 import { AppError } from "@/lib/errors";
 import { AchievementList } from "@/modules/achievements";

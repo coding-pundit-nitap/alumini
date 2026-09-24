@@ -116,7 +116,7 @@ test("J-10 members message each other, see unread counts, report and block", asy
 
   // Someone outside the conversation gets the not-found page.
   await outsider.goto(threadUrl);
-  await expect(outsider.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(outsider.getByText("Page not found")).toBeVisible();
 
   // Asha blocks Ravi: she is told to unblock, he no longer sees the thread.
   await asha.goto(raviPath);
@@ -124,7 +124,7 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await asha.getByRole("button", { name: "Confirm block" }).click();
   // The block is a Server Action: wait for its refresh to land, or the send below outruns it. Blocking
   // hides the pair both ways, so the blocker's own view of the profile turns into the not-found page.
-  await expect(asha.getByText("Page Not Found (404)")).toBeVisible({
+  await expect(asha.getByText("Page not found")).toBeVisible({
     timeout: 15_000,
   });
   await asha.goto(threadUrl);
@@ -134,7 +134,7 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await asha.getByRole("button", { name: "Send" }).click();
   await expect(asha.getByText("You have blocked this member")).toBeVisible();
   await ravi.goto(threadUrl);
-  await expect(ravi.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(ravi.getByText("Page not found")).toBeVisible();
 
   for (const page of [asha, ravi]) expect(hydrationErrors(page)).toEqual([]);
 });
@@ -192,7 +192,7 @@ test("J-11 a member starts a group from their connections and manages it", async
   await ravi.getByRole("button", { name: "Leave group" }).click();
   await expect(ravi).toHaveURL(/\/messages$/);
   await ravi.goto(groupUrl);
-  await expect(ravi.getByText("Page Not Found (404)")).toBeVisible();
+  await expect(ravi.getByText("Page not found")).toBeVisible();
   await asha.reload();
   await expect(asha.getByRole("button", { name: "Leave group" })).toHaveCount(
     0

@@ -7,7 +7,7 @@ import { getConversation, listMessages } from "@/composition/messaging";
 import {
   addParticipantAction,
   removeParticipantAction,
-} from "@/app/messages/actions";
+} from "@/app/(app)/messages/actions";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import { GroupMembers, Thread } from "@/modules/messaging";

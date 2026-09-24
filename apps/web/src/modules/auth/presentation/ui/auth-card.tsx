@@ -20,14 +20,16 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md lg:border-0 lg:bg-transparent">
       <CardHeader>
-        <CardTitle className="text-xl">{title}</CardTitle>
+        <CardTitle className="font-display text-3xl font-normal">
+          {title}
+        </CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
       <CardContent className="space-y-4">{children}</CardContent>
       {footer ? (
-        <CardFooter className="text-muted-foreground text-sm">
+        <CardFooter className="text-muted-foreground text-sm lg:bg-transparent">
           {footer}
         </CardFooter>
       ) : null}

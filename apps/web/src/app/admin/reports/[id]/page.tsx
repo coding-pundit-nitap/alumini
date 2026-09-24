@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 
 import { Badge } from "@nitap/ui/components/badge";
 
-import { dismissReportAction, resolveReportAction } from "@/app/feed/actions";
+import {
+  dismissReportAction,
+  resolveReportAction,
+} from "@/app/(app)/feed/actions";
 import { readReportedMessage } from "@/composition/messaging";
 import { getReport } from "@/composition/moderation";
 import { AppError } from "@/lib/errors";
