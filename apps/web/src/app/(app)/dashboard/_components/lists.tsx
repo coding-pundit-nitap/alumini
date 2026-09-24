@@ -1,29 +1,42 @@
 import Link from "next/link";
 
-function Block({
+/** The shared highlights-rail shell: hairline card, small header row, optional "See all". */
+export function Block({
   title,
   href,
   more,
   children,
 }: {
-  title: string;
-  href: string;
-  more: string;
+  title: React.ReactNode;
+  href?: string;
+  more?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{title}</h2>
+    <section className="bg-card rounded-xl border p-4">
+      <div className="mb-1 flex items-baseline justify-between gap-3">
+        <h2 className="text-sm font-semibold">{title}</h2>
+        {href ? (
+          <Link
+            href={href}
+            aria-label={more}
+            className="text-muted-foreground hover:text-foreground shrink-0 text-xs"
+          >
+            See all
+          </Link>
+        ) : null}
+      </div>
       {children}
-      <Link href={href} className="text-sm underline">
-        {more}
-      </Link>
     </section>
   );
 }
 
 const Empty = ({ text }: { text: string }) => (
-  <p className="text-muted-foreground text-sm">{text}</p>
+  <p className="text-muted-foreground py-2 text-sm">{text}</p>
+);
+
+const Rows = ({ children }: { children: React.ReactNode }) => (
+  <ul className="divide-y">{children}</ul>
 );
 
 export function JobList({
@@ -41,23 +54,22 @@ export function JobList({
       {jobs.length === 0 ? (
         <Empty text="No open roles right now." />
       ) : (
-        <ul className="flex flex-col gap-2">
+        <Rows>
           {jobs.map((job) => (
-            <li key={job.id}>
+            <li key={job.id} className="py-2 text-sm">
               <Link
                 href={`/jobs/${job.id}`}
-                className="font-medium hover:underline"
+                className="block truncate font-medium hover:underline"
               >
                 {job.title}
               </Link>
-              <span className="text-muted-foreground">
-                {" "}
-                — {job.company}
-                {job.location ? ` · ${job.location}` : ""}
-              </span>
+              <p className="text-muted-foreground truncate text-xs">
+                {job.company}
+                {job.location ? `, ${job.location}` : ""}
+              </p>
             </li>
           ))}
-        </ul>
+        </Rows>
       )}
     </Block>
   );
@@ -80,12 +92,12 @@ export function EventList({
       {events.length === 0 ? (
         <Empty text="No upcoming events yet." />
       ) : (
-        <ul className="flex flex-col gap-2">
+        <Rows>
           {events.map((event) => (
-            <li key={event.id} className="flex gap-3">
+            <li key={event.id} className="flex gap-3 py-2 text-sm">
               <time
                 dateTime={event.startsAt.toISOString()}
-                className="text-muted-foreground w-16 shrink-0 tabular-nums"
+                className="text-brand w-12 shrink-0 text-xs leading-5 font-medium tabular-nums"
               >
                 {event.startsAt.toLocaleDateString("en-IN", {
                   day: "2-digit",
@@ -95,14 +107,14 @@ export function EventList({
               </time>
               <Link
                 href={`/events/${event.id}`}
-                className="font-medium hover:underline"
+                className="min-w-0 font-medium hover:underline"
               >
                 {event.isOnline ? "Online: " : ""}
                 {event.title}
               </Link>
             </li>
           ))}
-        </ul>
+        </Rows>
       )}
     </Block>
   );
@@ -120,23 +132,25 @@ export function PeopleList({
   empty: string;
 }) {
   return (
-    <Block title={title} href={href} more="See more">
+    <Block title={title} href={href} more={`See all: ${title}`}>
       {people.length === 0 ? (
         <Empty text={empty} />
       ) : (
-        <ul className="flex flex-col gap-2">
+        <Rows>
           {people.map((p) => (
-            <li key={p.id}>
+            <li key={p.id} className="py-2 text-sm">
               <Link
                 href={`/members/${p.id}`}
-                className="font-medium hover:underline"
+                className="block truncate font-medium hover:underline"
               >
                 {p.name}
               </Link>
-              <span className="text-muted-foreground"> — {p.detail}</span>
+              <p className="text-muted-foreground truncate text-xs">
+                {p.detail}
+              </p>
             </li>
           ))}
-        </ul>
+        </Rows>
       )}
     </Block>
   );

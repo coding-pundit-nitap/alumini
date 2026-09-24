@@ -32,7 +32,7 @@ export default async function PostPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-12">
-      <Link href="/feed" className="text-primary text-sm underline">
+      <Link href="/dashboard" className="text-primary text-sm underline">
         Back to feed
       </Link>
       <h1 className="text-2xl font-semibold">Comments</h1>

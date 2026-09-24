@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 
 import { listConnections } from "@/composition/connections";
 import { listDepartments } from "@/composition/directory";
@@ -12,13 +11,14 @@ import {
 } from "@/composition/mentorship";
 import { listConversations } from "@/composition/messaging";
 import { getUnreadCount } from "@/composition/notifications";
-import { listFeed } from "@/composition/posts";
 import { getOwnProfile } from "@/composition/users";
 import { can, PERMISSIONS, type Actor } from "@/modules/auth";
+import type { PostAuthor } from "@/modules/posts";
 import { profileCompleteness } from "@/modules/users";
 
 import { AttentionTiles, COUNT_CAP } from "./attention-tiles";
 import { BlockError } from "./block-error";
+import { BlockSkeleton } from "./block-skeleton";
 import { CompletenessCard } from "./completeness-card";
 import { Guidance } from "./guidance";
 import { EventList, JobList, PeopleList } from "./lists";
@@ -94,21 +94,69 @@ const loadCounts = cache(async (actor: Actor) => {
   });
 });
 
-/** H-12 greeting and H-7 completeness. */
-export async function ProfileHeader({ actor }: { actor: Actor }) {
+/** H-12 greeting: the home page's one display-type moment. */
+export async function Greeting({ actor }: { actor: Actor }) {
   const result = await loadProfile(actor);
-  const profile = result.status === "ok" ? result.value : null;
-  const first = profile?.fullName.trim().split(/\s+/)[0];
+  const first =
+    result.status === "ok"
+      ? result.value.fullName.trim().split(/\s+/)[0]
+      : undefined;
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">
-        {first ? `Welcome back, ${first}` : "Welcome back"}
-      </h1>
-      {result.status === "error" ? (
-        <BlockError what="your profile" />
+    <h1 className="font-display mb-4 text-3xl">
+      {first ? (
+        <>
+          Welcome back, <em>{first}</em>
+        </>
       ) : (
-        <CompletenessCard {...profileCompleteness(profile)} />
+        "Welcome back"
       )}
+    </h1>
+  );
+}
+
+/** The composer's avatar and name; omitted (not an error) when the profile can't be read. */
+export async function composerAuthor(
+  actor: Actor
+): Promise<PostAuthor | undefined> {
+  const result = await loadProfile(actor);
+  if (result.status !== "ok") return undefined;
+  const { userId, fullName, headline, photoUploadId } = result.value;
+  return { id: userId, fullName, headline, hasPhoto: photoUploadId != null };
+}
+
+/** H-7 completeness. */
+export async function Completeness({ actor }: { actor: Actor }) {
+  const result = await loadProfile(actor);
+  if (result.status === "error") return <BlockError what="your profile" />;
+  return (
+    <CompletenessCard
+      {...profileCompleteness(result.status === "ok" ? result.value : null)}
+    />
+  );
+}
+
+const BLOCKS = [Completeness, Attention, Events, Jobs, RoleBlock];
+
+/** The home page's right rail (≥xl): every block streams on its own (H-6). */
+export function Widgets({ actor }: { actor: Actor }) {
+  return BLOCKS.map((Block, i) => (
+    <Suspense key={i} fallback={<BlockSkeleton rows={2} />}>
+      <Block actor={actor} />
+    </Suspense>
+  ));
+}
+
+/** The same blocks below xl, as a horizontal snap strip above the feed. */
+export function WidgetStrip({ actor }: { actor: Actor }) {
+  return (
+    <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
+      {BLOCKS.map((Block, i) => (
+        <div key={i} className="w-72 shrink-0 snap-start empty:hidden">
+          <Suspense fallback={<BlockSkeleton rows={2} />}>
+            <Block actor={actor} />
+          </Suspense>
+        </div>
+      ))}
     </div>
   );
 }
@@ -139,7 +187,8 @@ export async function Events({ actor }: { actor: Actor }) {
 
 /**
  * H-10: mentors see their mentees; members who may request mentorship see suggested mentors; others see
- * the feed. A denied branch falls through to the next one, never to an error.
+ * nothing (the feed is the page itself). A denied branch falls through to the next one, never to an
+ * error.
  */
 export async function RoleBlock({ actor }: { actor: Actor }) {
   const mentor = await loadMentorProfile(actor);
@@ -207,30 +256,7 @@ export async function RoleBlock({ actor }: { actor: Actor }) {
     }
   }
 
-  const result = await loadBlock(() => listFeed({ actor, limit: 3 }));
-  if (result.status === "absent") return null;
-  if (result.status === "error") return <BlockError what="community posts" />;
-  return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Latest from the community</h2>
-      {result.value.posts.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No posts yet.</p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {result.value.posts.map((post) => (
-            <li key={post.id} className="line-clamp-2 text-sm">
-              <Link href={`/feed/${post.id}`} className="hover:underline">
-                {post.content}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-      <Link href="/feed" className="text-sm underline">
-        See the feed
-      </Link>
-    </section>
-  );
+  return null;
 }
 
 /** H-11: only when the profile is incomplete and the attention, jobs and events blocks are all empty. */

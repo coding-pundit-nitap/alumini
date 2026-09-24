@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Card, CardHeader, CardTitle } from "@nitap/ui/components/card";
+import { Block } from "./lists";
 
 export type AttentionCounts = {
   connectionRequests: number;
@@ -49,29 +49,26 @@ export function AttentionTiles({ counts }: { counts: AttentionCounts }) {
   const shown = TILES.filter((tile) => counts[tile.key] > 0);
   if (shown.length === 0) return null;
   return (
-    <section aria-labelledby="attention" className="flex flex-col gap-3">
-      <h2 id="attention" className="text-lg font-semibold">
-        Needs your attention
-      </h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <Block title="Needs your attention">
+      <div className="mt-2 grid grid-cols-2 gap-2">
         {shown.map((tile) => {
           const n = counts[tile.key];
           return (
-            <Link key={tile.key} href={tile.href}>
-              <Card className="hover:bg-muted/50 h-full transition-colors">
-                <CardHeader>
-                  <CardTitle className="text-base">
-                    <span className="text-2xl tabular-nums">
-                      {n >= COUNT_CAP ? `${COUNT_CAP}+` : n}
-                    </span>{" "}
-                    {n === 1 ? tile.one : tile.many}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
+            <Link
+              key={tile.key}
+              href={tile.href}
+              className="hover:bg-muted/60 rounded-lg border px-3 py-2 transition-colors"
+            >
+              <span className="font-display text-brand block text-2xl leading-none tabular-nums">
+                {n >= COUNT_CAP ? `${COUNT_CAP}+` : n}
+              </span>{" "}
+              <span className="text-muted-foreground mt-1 block text-xs">
+                {n === 1 ? tile.one : tile.many}
+              </span>
             </Link>
           );
         })}
       </div>
-    </section>
+    </Block>
   );
 }

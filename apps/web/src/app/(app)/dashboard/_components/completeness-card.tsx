@@ -1,13 +1,6 @@
 import Link from "next/link";
 
-import { buttonVariants } from "@nitap/ui/components/button";
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@nitap/ui/components/card";
+import { Block } from "./lists";
 
 /** H-7: hides once the profile is complete. */
 export function CompletenessCard({
@@ -19,29 +12,26 @@ export function CompletenessCard({
 }) {
   if (percent >= 100) return null;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Profile {percent}% complete</CardTitle>
-        <CardDescription>Still missing: {missing.join(", ")}</CardDescription>
-        <CardAction>
-          <Link
-            href="/profile/details"
-            className={buttonVariants({ size: "sm" })}
-          >
-            Finish profile
-          </Link>
-        </CardAction>
-        <div
-          role="progressbar"
-          aria-label="Profile completeness"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={percent}
-          className="bg-muted col-span-full mt-2 h-2 overflow-hidden rounded-full"
-        >
-          <div className="bg-primary h-full" style={{ width: `${percent}%` }} />
-        </div>
-      </CardHeader>
-    </Card>
+    <Block title={`Profile ${percent}% complete`}>
+      <div
+        role="progressbar"
+        aria-label="Profile completeness"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        className="bg-muted mt-2 h-1.5 overflow-hidden rounded-full"
+      >
+        <div className="bg-brand h-full" style={{ width: `${percent}%` }} />
+      </div>
+      <p className="text-muted-foreground py-2 text-xs">
+        Still missing: {missing.join(", ")}
+      </p>
+      <Link
+        href="/profile/details"
+        className="text-brand text-sm font-medium hover:underline"
+      >
+        Finish profile
+      </Link>
+    </Block>
   );
 }
