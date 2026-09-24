@@ -20,6 +20,24 @@ function initials(name: string) {
     .join("");
 }
 
+/** Avatar with photo or initials fallback — reused by PostAuthorLine and the composer's collapsed row. */
+export function PostAuthorAvatar({
+  author,
+  size = "default",
+}: {
+  author: PostAuthor;
+  size?: "sm" | "default" | "lg";
+}) {
+  return (
+    <Avatar size={size}>
+      {author.hasPhoto && (
+        <AvatarImage src={`/api/photos/${author.id}`} alt="" />
+      )}
+      <AvatarFallback>{initials(author.fullName)}</AvatarFallback>
+    </Avatar>
+  );
+}
+
 /** Author avatar, name, headline and a relative timestamp — the standard header for a post/comment. */
 export function PostAuthorLine({
   author,
@@ -41,12 +59,7 @@ export function PostAuthorLine({
   return (
     <div className="flex min-w-0 items-center gap-2.5">
       <Link href={href} className="shrink-0">
-        <Avatar size={avatarSize}>
-          {author.hasPhoto && (
-            <AvatarImage src={`/api/photos/${author.id}`} alt="" />
-          )}
-          <AvatarFallback>{initials(author.fullName)}</AvatarFallback>
-        </Avatar>
+        <PostAuthorAvatar author={author} size={avatarSize} />
       </Link>
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
