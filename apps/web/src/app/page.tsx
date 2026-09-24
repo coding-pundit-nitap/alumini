@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   Briefcase,
   CalendarDays,
@@ -19,6 +20,7 @@ import {
 import { PublicShell } from "@/components/common/public-shell";
 import { siteConfig } from "@/config/site";
 import { getActor } from "@/modules/auth";
+import { verifiedHome } from "@/lib/signed-in-redirect";
 
 export const metadata: Metadata = {
   title: { absolute: siteConfig.name },
@@ -64,7 +66,10 @@ const STEPS = [
 
 /** §5.1.1. Anyone may view; signed-in visitors get "Go to dashboard" instead of Join (H-1). */
 export default async function LandingPage() {
-  const signedIn = (await getActor()) !== null;
+  const actor = await getActor();
+  const home = verifiedHome(actor);
+  if (home) redirect(home);
+  const signedIn = actor !== null;
   return (
     <PublicShell signedIn={signedIn}>
       <section className="dawn-glow">

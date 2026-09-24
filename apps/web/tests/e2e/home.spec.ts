@@ -47,7 +47,7 @@ test.describe("Dashboard (§5.3.1)", () => {
     await expect(page).toHaveURL(/\/login\?next=%2Fdashboard$/);
   });
 
-  test("a verified member lands on the dashboard and the landing offers a way back", async ({
+  test("a verified member lands on the dashboard and is sent back from the landing and login", async ({
     browser,
   }) => {
     const context = await browser.newContext({
@@ -71,12 +71,9 @@ test.describe("Dashboard (§5.3.1)", () => {
       page.getByRole("heading", { name: "Upcoming events" })
     ).toBeVisible();
     await page.goto("/");
-    await expect(
-      page.getByRole("link", { name: "Go to dashboard" })
-    ).toHaveAttribute("href", "/dashboard");
-    await expect(
-      page.getByRole("link", { name: "Join the network" })
-    ).toHaveCount(0);
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await page.goto("/login");
+    await expect(page).toHaveURL(/\/dashboard$/);
     await context.close();
   });
 });
