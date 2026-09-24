@@ -47,7 +47,7 @@ test.describe("alumni verification (J-03)", () => {
     await decide(reviewer, roll, "Approve");
 
     await page.goto("/onboarding");
-    await expect(page).toHaveURL(/\/$/); // verified accounts are sent home
+    await expect(page).toHaveURL(/\/dashboard$/); // verified accounts are sent home
     const mail = await waitForEmail(email, { subject: /account is verified/i });
     expect(mail.text).not.toMatch(/https?:\/\//);
   });

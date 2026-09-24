@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Verify your affiliation" };
 export default async function OnboardingPage() {
   const actor = await getActor();
   if (!actor) redirect("/login?next=%2Fonboarding");
-  if (actor.accountState === "VERIFIED") redirect("/");
+  if (actor.accountState === "VERIFIED") redirect("/dashboard");
   if (actor.accountState !== "PENDING" && actor.accountState !== "REJECTED") {
     redirect("/account/status");
   }

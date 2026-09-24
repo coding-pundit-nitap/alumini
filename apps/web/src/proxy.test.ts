@@ -83,6 +83,6 @@ describe("proxy optimistic auth redirect (ADR-005 §2, TDS §7.5)", () => {
     const response = callAnonymous("http://localhost//evil.com/x");
     const location = new URL(response.headers.get("location")!);
     expect(location.origin).toBe("http://localhost");
-    expect(location.searchParams.get("next")).toBe("/");
+    expect(location.searchParams.get("next")).toBe("/dashboard");
   });
 });

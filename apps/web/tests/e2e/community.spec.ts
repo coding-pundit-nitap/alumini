@@ -49,7 +49,7 @@ async function member(
   await register(page, email);
   await confirmEmail(page, email);
   await signIn(page, email);
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
   return { page, email };
 }
 

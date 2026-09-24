@@ -60,7 +60,12 @@ describe("safeNextPath (open-redirect guard)", () => {
     "",
     null,
     undefined,
-  ])("falls back to / for %j", (input) => {
-    expect(safeNextPath(input)).toBe("/");
+  ])("falls back to /dashboard for %j", (input) => {
+    expect(safeNextPath(input)).toBe("/dashboard");
+  });
+
+  it("falls back to the dashboard when next is missing (H-3)", () => {
+    expect(safeNextPath(undefined)).toBe("/dashboard");
+    expect(safeNextPath("//evil.com")).toBe("/dashboard");
   });
 });

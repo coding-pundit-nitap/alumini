@@ -33,8 +33,10 @@ describe("safeNextPath open-redirect cases", () => {
     [null],
     [undefined],
     [""],
-  ])("turns %s into /", (candidate) => {
-    expect(safeNextPath(candidate as string | null | undefined)).toBe("/");
+  ])("turns %s into /dashboard", (candidate) => {
+    expect(safeNextPath(candidate as string | null | undefined)).toBe(
+      "/dashboard"
+    );
   });
 
   it("keeps a same-origin path with a query", () => {

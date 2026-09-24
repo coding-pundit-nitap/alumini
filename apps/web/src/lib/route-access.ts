@@ -31,17 +31,21 @@ export function isPublicPath(pathname: string): boolean {
   );
 }
 
+/** H-3: where a signed-in person goes when `next` is absent or unsafe. */
+const FALLBACK = "/dashboard";
+
 /**
  * Validates a post-login `next` target. Only a same-origin absolute path is kept; anything a browser
  * could read as another origin (`//host`, `/\host`, a scheme, control characters that browsers strip
- * from URLs) becomes `/`.
+ * from URLs) becomes `FALLBACK`.
  */
 export function safeNextPath(candidate: string | null | undefined): string {
-  if (!candidate) return "/";
-  if (!candidate.startsWith("/")) return "/";
-  if (candidate.startsWith("//") || candidate.startsWith("/\\")) return "/";
+  if (!candidate) return FALLBACK;
+  if (!candidate.startsWith("/")) return FALLBACK;
+  if (candidate.startsWith("//") || candidate.startsWith("/\\"))
+    return FALLBACK;
   if ([...candidate].some((character) => character.charCodeAt(0) < 0x20)) {
-    return "/";
+    return FALLBACK;
   }
   return candidate;
 }

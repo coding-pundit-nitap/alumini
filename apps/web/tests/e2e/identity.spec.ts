@@ -42,7 +42,7 @@ test.describe("identity flows", () => {
     await confirmEmail(page, email);
     await signIn(page, email);
 
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page).not.toHaveURL(/account\/status/);
   });
 

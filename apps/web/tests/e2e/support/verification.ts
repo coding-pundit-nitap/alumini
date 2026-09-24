@@ -32,7 +32,7 @@ export async function coordinator(browser: Browser): Promise<Page> {
   });
   const page = await context.newPage();
   await signIn(page, COORDINATOR_EMAIL!, COORDINATOR_PASSWORD!);
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
   return page;
 }
 
