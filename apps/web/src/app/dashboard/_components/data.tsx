@@ -17,16 +17,13 @@ import { getOwnProfile } from "@/composition/users";
 import { can, PERMISSIONS, type Actor } from "@/modules/auth";
 import { profileCompleteness } from "@/modules/users";
 
-import {
-  AttentionTiles,
-  COUNT_CAP,
-  type AttentionCounts,
-} from "./attention-tiles";
+import { AttentionTiles, COUNT_CAP } from "./attention-tiles";
 import { BlockError } from "./block-error";
 import { CompletenessCard } from "./completeness-card";
 import { Guidance } from "./guidance";
 import { EventList, JobList, PeopleList } from "./lists";
 import { loadBlock } from "./load-block";
+import { summarizeCounts } from "./summarize-counts";
 
 // Per-request memos (keyed on the one `actor` object the page passes down), so FirstRun reuses the
 // reads the other blocks already made instead of repeating them.
@@ -43,23 +40,22 @@ const loadMentorProfile = cache((actor: Actor) =>
   loadBlock(() => getMentorProfile({ actor }))
 );
 
-const count = async (load: () => Promise<number>) => {
-  const result = await loadBlock(load);
-  return result.status === "ok" ? result.value : 0;
-};
-
 /**
  * H-8. ponytail: each count reads ≤ 50 rows and shows "50+" at the cap; add count queries if members
  * routinely exceed it (spec O-2).
+ *
+ * H-6: a real failure in one of the four reads must not read as "0 requests" with no signal — it's
+ * excluded from its tile and `failed` tells `Attention` to render an inline error alongside whatever
+ * tiles did load (spec Errors and states).
  */
-const loadCounts = cache(async (actor: Actor): Promise<AttentionCounts> => {
+const loadCounts = cache(async (actor: Actor) => {
   const [
     connectionRequests,
     unreadMessages,
     mentorshipRequests,
     unreadNotifications,
   ] = await Promise.all([
-    count(
+    loadBlock(
       async () =>
         (
           await listConnections({
@@ -70,13 +66,13 @@ const loadCounts = cache(async (actor: Actor): Promise<AttentionCounts> => {
           })
         ).data.length
     ),
-    count(async () =>
+    loadBlock(async () =>
       (await listConversations({ actor, limit: COUNT_CAP })).data.reduce(
         (sum, c) => sum + c.unreadCount,
         0
       )
     ),
-    count(async () => {
+    loadBlock(async () => {
       const mentor = await loadMentorProfile(actor);
       if (mentor.status !== "ok" || !mentor.value) return 0;
       return (
@@ -88,14 +84,14 @@ const loadCounts = cache(async (actor: Actor): Promise<AttentionCounts> => {
         })
       ).data.length;
     }),
-    count(() => getUnreadCount({ actor })),
+    loadBlock(() => getUnreadCount({ actor })),
   ]);
-  return {
+  return summarizeCounts({
     connectionRequests,
-    unreadMessages: Math.min(unreadMessages, COUNT_CAP),
+    unreadMessages,
     mentorshipRequests,
     unreadNotifications,
-  };
+  });
 });
 
 /** H-12 greeting and H-7 completeness. */
@@ -118,7 +114,13 @@ export async function ProfileHeader({ actor }: { actor: Actor }) {
 }
 
 export async function Attention({ actor }: { actor: Actor }) {
-  return <AttentionTiles counts={await loadCounts(actor)} />;
+  const { counts, failed } = await loadCounts(actor);
+  return (
+    <>
+      <AttentionTiles counts={counts} />
+      {failed && <BlockError what="some of what needs your attention" />}
+    </>
+  );
 }
 
 export async function Jobs({ actor }: { actor: Actor }) {
@@ -233,7 +235,7 @@ export async function RoleBlock({ actor }: { actor: Actor }) {
 
 /** H-11: only when the profile is incomplete and the attention, jobs and events blocks are all empty. */
 export async function FirstRun({ actor }: { actor: Actor }) {
-  const [profile, jobs, events, counts] = await Promise.all([
+  const [profile, jobs, events, attention] = await Promise.all([
     loadProfile(actor),
     loadJobs(actor),
     loadEvents(actor),
@@ -243,6 +245,8 @@ export async function FirstRun({ actor }: { actor: Actor }) {
   if (profileCompleteness(record).percent >= 100) return null;
   if (jobs.status === "ok" && jobs.value.data.length > 0) return null;
   if (events.status === "ok" && events.value.data.length > 0) return null;
-  if (Object.values(counts).some((n) => n > 0)) return null;
+  // A failed count is unknown, not zero — never claim "nothing to do" over an error (H-6).
+  if (attention.failed) return null;
+  if (Object.values(attention.counts).some((n) => n > 0)) return null;
   return <Guidance batch={record?.graduationYear ?? null} />;
 }
