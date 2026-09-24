@@ -1,7 +1,6 @@
-import type { AccountState } from "@nitap/database/enums";
-
+/** The same five states as the auth module's ACCOUNT_STATES; kept local so domain/ stays Prisma-free. */
 export type AccountStateValue =
-  (typeof AccountState)[keyof typeof AccountState];
+  "PENDING" | "VERIFIED" | "REJECTED" | "SUSPENDED" | "DEACTIVATED";
 
 /** The states an admin can move an account to (spec B12-1). */
 export const TARGET_STATES = ["SUSPENDED", "DEACTIVATED", "VERIFIED"] as const;

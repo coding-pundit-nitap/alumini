@@ -47,6 +47,7 @@ describe("PrismaAccessStore (spec B12-5, B12-6, B12-7)", () => {
     store = createPrismaAccessStore({
       runner: createTransactionRunner(db.prisma),
       audit: createAuditWriter(),
+      superAdminRole: "SUPER_ADMIN",
     });
   });
   afterEach(() => db.drop());

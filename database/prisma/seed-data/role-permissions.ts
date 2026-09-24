@@ -33,6 +33,9 @@ export const ONBOARDING_ROLE_NAMES = [
  */
 export const VERIFIED_ALUMNI_ROLE = "ALUMNI" as const satisfies RoleName;
 
+/** The role guarded by RBAC §8.4 (the last active Super Admin can't be removed); injected into admin use cases. */
+export const SUPER_ADMIN_ROLE = "SUPER_ADMIN" as const satisfies RoleName;
+
 const P = PERMISSIONS;
 
 /** Member baseline shared by every role that is a member (rbac-permission-matrix.md §2). */

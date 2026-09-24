@@ -52,9 +52,9 @@ const toGrant = (g: {
 export function createPrismaAccessStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   audit: AuditWriter;
-  superAdminRole?: string;
+  superAdminRole: string;
 }): AccessStore {
-  const superAdminRole = deps.superAdminRole ?? "SUPER_ADMIN";
+  const { superAdminRole } = deps;
 
   const forClient = (db: Prisma.TransactionClient): AccessTx => ({
     async findUserForUpdate(id) {
