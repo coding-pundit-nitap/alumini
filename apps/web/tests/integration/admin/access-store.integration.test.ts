@@ -160,17 +160,47 @@ describe("PrismaAccessStore (spec B12-5, B12-6, B12-7)", () => {
     const [s1, s2] = [await user("s1"), await user("s2")];
     await giveRole(s1, "SUPER_ADMIN");
     await giveRole(s2, "SUPER_ADMIN");
-    const demote = (target: string) =>
+
+    const demote = (
+      target: string,
+      opts?: { onLocked?: () => void; gate?: Promise<void> }
+    ) =>
       store.transaction(async (tx) => {
         await tx.findUserForUpdate(target);
         const active = await tx.lockSuperAdmins();
+        opts?.onLocked?.();
+        await opts?.gate;
         if (active.length <= 1 && active.includes(target))
           throw new ConflictError("LAST_SUPER_ADMIN");
         await tx.deleteUserRole(target, "SUPER_ADMIN");
       });
-    const results = await Promise.allSettled([demote(s1), demote(s2)]);
-    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
-    expect(results.find((r) => r.status === "rejected")).toMatchObject({
+
+    // Deterministic instead of racing both transactions freely: T1 (s1) is forced to acquire
+    // lockSuperAdmins' FOR UPDATE first and then pause on a gate. Only once T1 has signalled that
+    // it holds the lock do we start T2 (s2); T2's own lockSuperAdmins() call then has to block in
+    // Postgres behind T1's lock. We give that blocked query a moment to actually reach Postgres
+    // before releasing T1, so T1 provably finishes (and commits its delete) before T2's lock can be
+    // granted. Without the FOR UPDATE lock, T2 would read the stale active=[s1,s2] immediately,
+    // both transactions would delete their own role unopposed, and both would fulfill.
+    let releaseT1: () => void;
+    const t1Gate = new Promise<void>((resolve) => {
+      releaseT1 = resolve;
+    });
+    let signalT1Locked: () => void;
+    const t1Locked = new Promise<void>((resolve) => {
+      signalT1Locked = resolve;
+    });
+
+    const t1 = demote(s1, { onLocked: () => signalT1Locked(), gate: t1Gate });
+    await t1Locked;
+    const t2 = demote(s2);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    releaseT1!();
+
+    const [r1, r2] = await Promise.allSettled([t1, t2]);
+    expect(r1).toMatchObject({ status: "fulfilled" });
+    expect(r2).toMatchObject({
+      status: "rejected",
       reason: { code: "LAST_SUPER_ADMIN" },
     });
   });

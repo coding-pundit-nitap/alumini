@@ -40,8 +40,14 @@ const toGrant = (g: {
 
 /**
  * Identity writes for the admin module (overview AD-1): user state, sessions, roles and grants, each with its
- * audit row in the same transaction. Lock order is always the target user row, then the super-admin rows,
- * so two admin writes cannot deadlock.
+ * audit row in the same transaction. Lock order is always the target user row, then the super-admin rows
+ * (locked in a fixed `ORDER BY ur.id`), so two admin writes cannot deadlock.
+ *
+ * The user-row lock uses `FOR NO KEY UPDATE`, not `FOR UPDATE`: it still serializes concurrent admin
+ * writes to the same user row against each other, but — unlike `FOR UPDATE` — it doesn't conflict with
+ * the FK `KEY SHARE` lock an unrelated insert referencing this user takes (e.g. an `audit_log` row with
+ * this user as `actor_id`, or a `user_role`/`permission_grant` row this user is `granted_by`), so those
+ * inserts are never blocked behind an in-progress admin write.
  */
 export function createPrismaAccessStore(deps: {
   runner: Pick<TransactionRunner, "run">;
@@ -53,7 +59,7 @@ export function createPrismaAccessStore(deps: {
   const forClient = (db: Prisma.TransactionClient): AccessTx => ({
     async findUserForUpdate(id) {
       const rows = await db.$queryRaw<{ account_state: string }[]>`
-        SELECT account_state FROM "user" WHERE id = ${id}::uuid FOR UPDATE`;
+        SELECT account_state FROM "user" WHERE id = ${id}::uuid FOR NO KEY UPDATE`;
       const row = rows[0];
       if (!row) return null;
       const roles = await db.userRole.findMany({
@@ -82,7 +88,7 @@ export function createPrismaAccessStore(deps: {
     async lockSuperAdmins() {
       await db.$queryRaw`
         SELECT ur.id FROM user_role ur JOIN role r ON r.id = ur.role_id
-        WHERE r.name = ${superAdminRole} FOR UPDATE OF ur`;
+        WHERE r.name = ${superAdminRole} ORDER BY ur.id FOR UPDATE OF ur`;
       // A separate statement: under READ COMMITTED it sees what a concurrent holder of the lock committed.
       const rows = await db.userRole.findMany({
         where: {
