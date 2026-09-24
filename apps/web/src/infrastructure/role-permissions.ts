@@ -8,4 +8,3 @@ export {
   ROLE_PERMISSIONS,
   SUPER_ADMIN_ROLE,
 } from "@nitap/database/role-permissions";
-export type { RoleName } from "@nitap/database/role-permissions";

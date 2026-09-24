@@ -26,7 +26,10 @@ export function checkRole(
   role: string,
   now: Date
 ) {
-  const permissions = deps.roles[role];
+  // Own keys only: a path segment like `constructor` must not resolve through the prototype chain.
+  const permissions = Object.hasOwn(deps.roles, role)
+    ? deps.roles[role]
+    : undefined;
   if (!permissions)
     throw new ValidationError({
       details: [{ field: "role", code: "INVALID", message: "Unknown role." }],

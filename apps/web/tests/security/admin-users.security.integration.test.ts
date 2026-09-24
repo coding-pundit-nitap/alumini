@@ -185,11 +185,13 @@ describe("admin users routes (security)", () => {
 
       await vi.waitFor(async () =>
         expect(
-          await db.prisma.auditLog.count({ where: { action: "authz.denied" } })
+          await db.prisma.auditLog.count({
+            where: { action: "authz.denied", actorId: alumnus.userId },
+          })
         ).toBe(1)
       );
       const [row] = await db.prisma.auditLog.findMany({
-        where: { action: "authz.denied" },
+        where: { action: "authz.denied", actorId: alumnus.userId },
       });
       expect(row!.actorId).toBe(alumnus.userId);
       expect(row!.targetId).toBe(target.userId);
@@ -384,8 +386,8 @@ describe("admin users routes (security)", () => {
 
       const adminY = await withRole("adminy", "SUPER_ADMIN");
 
-      // Two active (VERIFIED, role-holding) super admins besides the acting user: superA (created above,
-      // still VERIFIED and never touched) and adminY. Revoking one of the two is fine.
+      // At least two active (VERIFIED, role-holding) super admins besides the acting user, including
+      // superA and adminY. Revoking one of them is fine.
       const firstRevoke = await deleteRole(
         jsonRequest(
           `${ORIGIN}/api/v1/admin/users/${superA.userId}/roles/SUPER_ADMIN`,

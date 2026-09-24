@@ -77,15 +77,18 @@ describe("assignRole (spec B12-3, B12-9)", () => {
     });
   });
 
-  it("400s an unknown role with field 'role'", async () => {
-    const s = setup();
-    await expect(
-      s.assign({ actor: actor(), userId: T, input: { role: "OVERLORD" } })
-    ).rejects.toMatchObject({
-      code: "VALIDATION_FAILED",
-      details: [{ field: "role" }],
-    });
-  });
+  it.each(["OVERLORD", "constructor", "__proto__"])(
+    "400s an unknown role %s with field 'role'",
+    async (role) => {
+      const s = setup();
+      await expect(
+        s.assign({ actor: actor(), userId: T, input: { role } })
+      ).rejects.toMatchObject({
+        code: "VALIDATION_FAILED",
+        details: [{ field: "role" }],
+      });
+    }
+  );
 
   it("403s INSTITUTE_ADMIN without system.configure (E1) and never opens the transaction", async () => {
     const s = setup();
