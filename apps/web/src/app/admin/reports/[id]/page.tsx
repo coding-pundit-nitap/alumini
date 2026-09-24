@@ -46,10 +46,8 @@ export default async function ReportPage({
   const { report, selfReview } = view;
 
   let context: ReportedMessageView | null = null;
-  if (
-    report.targetType === "MESSAGE" &&
-    can(actor, PERMISSIONS.MESSAGE_READ_REPORTED)
-  ) {
+  const canReadMessage = can(actor, PERMISSIONS.MESSAGE_READ_REPORTED);
+  if (report.targetType === "MESSAGE" && canReadMessage) {
     try {
       context = await readReportedMessage({ actor, reportId: id });
     } catch (error) {
@@ -109,7 +107,9 @@ export default async function ReportPage({
           <ReportedMessageContext view={context} />
         ) : (
           <p className="text-muted-foreground text-sm">
-            The reported message no longer exists.
+            {canReadMessage
+              ? "The reported message no longer exists."
+              : "You cannot view private messages."}
           </p>
         )
       ) : null}
