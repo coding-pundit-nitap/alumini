@@ -140,11 +140,15 @@ export function createDeliverNotification(deps: {
     }
 
     if (!input.emailTo) return;
-    const preference = await deps.getPreference(
-      input.recipientId,
-      domainFor(input.type),
-      "EMAIL"
-    );
+    // decideChannel ignores the row for TRANSACTIONAL, so do not look it up (spec D12-4).
+    const preference =
+      input.category === "TRANSACTIONAL"
+        ? null
+        : await deps.getPreference(
+            input.recipientId,
+            domainFor(input.type),
+            "EMAIL"
+          );
     if (
       !decideChannel({
         category: input.category,

@@ -31,6 +31,9 @@ import {
   reportResolved,
   uploadScan,
   uploadSweep,
+  userReactivated,
+  userSuspended,
+  verificationDecided,
 } from "@nitap/jobs";
 import type {
   EmailSendPayload,
@@ -75,6 +78,10 @@ import {
   createReportFiledProcessor,
   createReportResolvedProcessor,
 } from "./processors/community-event.ts";
+import {
+  createAccountStateProcessor,
+  createVerificationDecidedProcessor,
+} from "./processors/account-event.ts";
 import { createConnectionEventProcessor } from "./processors/connection-event.ts";
 import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.ts";
 import { createEmailSendProcessor } from "./processors/email-send.ts";
@@ -202,11 +209,14 @@ export function composeWorker(
       : { increment: async () => {} },
     logger,
   });
-  /** Current email of a VERIFIED account; null for anything else (no mail to suspended/deactivated users). */
-  const findEmail = async (userId: string) =>
+  /** Current email of an account in `accountState` (default VERIFIED); null otherwise (no mail to suspended/deactivated users unless asked). */
+  const findEmail = async (
+    userId: string,
+    accountState: "VERIFIED" | "SUSPENDED" = "VERIFIED"
+  ) =>
     (
       await prisma.user.findFirst({
-        where: { id: userId, accountState: "VERIFIED" },
+        where: { id: userId, accountState },
         select: { email: true },
       })
     )?.email ?? null;
@@ -320,6 +330,9 @@ export function composeWorker(
       [reportResolved.name]: reportResolved,
       [contentRemoved.name]: contentRemoved,
       [jobExpired.name]: jobExpired,
+      [verificationDecided.name]: verificationDecided,
+      [userSuspended.name]: userSuspended,
+      [userReactivated.name]: userReactivated,
       ...Object.fromEntries(
         Object.values(jobEvents).map((job) => [job.name, job])
       ),
@@ -419,6 +432,18 @@ export function composeWorker(
       registerJob(
         contentRemoved,
         createContentRemovedProcessor({ deliver, findEmail, findContentAuthor })
+      ),
+      registerJob(
+        verificationDecided,
+        createVerificationDecidedProcessor({ deliver })
+      ),
+      registerJob(
+        userSuspended,
+        createAccountStateProcessor("user.suspended", { deliver, findEmail })
+      ),
+      registerJob(
+        userReactivated,
+        createAccountStateProcessor("user.reactivated", { deliver, findEmail })
       ),
       ...[...Object.values(jobEvents), jobExpired].map((job) =>
         registerJob(

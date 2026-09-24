@@ -17,8 +17,8 @@ export type EventActivityDeps = {
 };
 
 /**
- * Handles event.*. Only cancelled (fan-out to registrants) and registered (confirmation to the registrant)
- * notify; both email. Ids only in logs.
+ * Handles event.*. cancelled (fan-out) and registered (confirmation) notify with email; registration-cancelled
+ * by someone else notifies in-app. Ids only in logs.
  */
 export function createEventActivityProcessor(
   action: string,
@@ -54,6 +54,20 @@ export function createEventActivityProcessor(
     } else if (action === "registered" && "userId" in payload) {
       // Self-registration still confirms (no actor skip).
       await send(payload.userId, "event.registered");
+    } else if (
+      action === "registration-cancelled" &&
+      "userId" in payload &&
+      payload.actorId !== payload.userId
+    ) {
+      // In-app only (catalogue, spec D12-7). No producer sets another actor yet; self-cancellation needs no notice.
+      if (await deps.blocked(payload.actorId, payload.userId)) return;
+      await deps.deliver({
+        eventId,
+        type: "event.registration-cancelled",
+        category: "ENGAGEMENT",
+        recipientId: payload.userId,
+        payload: { eventId: payload.eventId },
+      });
     }
   };
 }

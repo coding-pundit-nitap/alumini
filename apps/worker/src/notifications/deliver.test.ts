@@ -472,4 +472,28 @@ describe("deliverNotification", () => {
     expect(store.ensureEmailPending).not.toHaveBeenCalled();
     expect(enqueueEmail).not.toHaveBeenCalled();
   });
+
+  it("TRANSACTIONAL never asks for a preference and still emails (spec D12-4)", async () => {
+    const getPreference = vi.fn(async () => ({ enabled: false }));
+    const enqueueEmail = vi.fn(async () => {});
+    const deliver = createDeliverNotification({
+      store: fakeStore() as never,
+      getPreference,
+      enqueueEmail,
+      hintPublisher: null,
+      unreadCounter: { increment: vi.fn() },
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+      appUrl: "https://alumni.example",
+    });
+    await deliver({
+      eventId: "e1",
+      type: "user.suspended",
+      category: "TRANSACTIONAL",
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    });
+    expect(getPreference).not.toHaveBeenCalled();
+    expect(enqueueEmail).toHaveBeenCalledTimes(1);
+  });
 });

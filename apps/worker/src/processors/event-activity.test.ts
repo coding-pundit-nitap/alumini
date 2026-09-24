@@ -73,7 +73,7 @@ describe("event activity processor", () => {
     expect(b).toEqual(a);
   });
 
-  it.each(["created", "registration-cancelled", "attendance-marked"])(
+  it.each(["created", "attendance-marked"])(
     "%s notifies no one",
     async (name) => {
       const d = deps();
@@ -95,5 +95,39 @@ describe("event activity processor", () => {
       type: "event.registered",
       emailTo: "e@nitap.ac.in",
     });
+  });
+
+  it("registration-cancelled by the registrant notifies no one", async () => {
+    const d = deps();
+    await createEventActivityProcessor("registration-cancelled", d)(
+      registration,
+      ctx()
+    );
+    expect(d.deliver).not.toHaveBeenCalled();
+  });
+
+  it("registration-cancelled by someone else notifies the registrant in-app (spec D12-7)", async () => {
+    const d = deps();
+    await createEventActivityProcessor("registration-cancelled", d)(
+      { ...registration, actorId: "organizer-1" },
+      ctx()
+    );
+    expect(d.deliver).toHaveBeenCalledWith({
+      eventId: "j1",
+      type: "event.registration-cancelled",
+      category: "ENGAGEMENT",
+      recipientId: "user-1",
+      payload: { eventId: "ev1" },
+    });
+    expect(d.findEmail).not.toHaveBeenCalled();
+  });
+
+  it("registration-cancelled skips a registrant who blocked the actor", async () => {
+    const d = deps([], () => true);
+    await createEventActivityProcessor("registration-cancelled", d)(
+      { ...registration, actorId: "organizer-1" },
+      ctx()
+    );
+    expect(d.deliver).not.toHaveBeenCalled();
   });
 });
