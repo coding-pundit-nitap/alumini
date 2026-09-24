@@ -71,3 +71,26 @@ export function noteProblem(
   }
   return null;
 }
+
+export type HistoryEntry = {
+  status: VerificationStatus;
+  decidedAt: Date | null;
+  note: string | null;
+};
+
+/** Earlier requests shown per applicant in the review queue (spec C12-10). */
+export const HISTORY_LIMIT = 5;
+
+/** Earlier requests per applicant for the review queue (spec C12-10). Input newest first per user. */
+export function groupHistory(
+  rows: readonly (HistoryEntry & { userId: string })[],
+  limit = HISTORY_LIMIT
+): Map<string, HistoryEntry[]> {
+  const byUser = new Map<string, HistoryEntry[]>();
+  for (const { userId, ...entry } of rows) {
+    const list = byUser.get(userId) ?? [];
+    if (list.length < limit) list.push(entry);
+    byUser.set(userId, list);
+  }
+  return byUser;
+}

@@ -2,6 +2,7 @@ import type { EmailSendPayload } from "@nitap/jobs";
 
 import type {
   CrossCheck,
+  HistoryEntry,
   VerificationDecision,
   VerificationStatus,
 } from "../domain/verification-request";
@@ -55,6 +56,7 @@ export type AuditRecord = {
 };
 export type PendingVerification = {
   id: string;
+  userId: string;
   submittedAt: Date;
   applicantName: string;
   applicantEmail: string;
@@ -64,6 +66,7 @@ export type PendingVerification = {
   graduationYear: number;
   supportingInfo: string | null;
   crossCheck: CrossCheck;
+  history: HistoryEntry[];
 };
 export type VerificationTx = {
   findAccount(userId: string): Promise<AccountRecord | null>;

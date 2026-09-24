@@ -11,6 +11,7 @@ import { ReviewQueue } from "./review-queue";
 
 const item = (n: number) => ({
   id: `11111111-1111-4111-8111-11111111111${n}`,
+  userId: `u${n}`,
   submittedAt: new Date("2026-09-20T10:00:00Z"),
   applicantName: `Applicant ${n}`,
   applicantEmail: `a${n}@gmail.test`,
@@ -20,6 +21,7 @@ const item = (n: number) => ({
   graduationYear: 2019,
   supportingInfo: n === 1 ? "Batch of 2019" : null,
   crossCheck: "NOT_CHECKED" as const,
+  history: [],
 });
 
 const action = vi.fn();
@@ -61,5 +63,32 @@ describe("ReviewQueue", () => {
       "href",
       "/admin/verification?cursor=abc"
     );
+  });
+
+  it("shows earlier rejections with their notes", () => {
+    const page: PendingPage = {
+      items: [
+        {
+          ...item(1),
+          history: [
+            {
+              status: "REJECTED",
+              decidedAt: new Date("2026-09-01T00:00:00Z"),
+              note: "Roll number mismatch",
+            },
+            {
+              status: "REJECTED",
+              decidedAt: new Date("2026-08-01T00:00:00Z"),
+              note: null,
+            },
+          ],
+        },
+      ],
+      nextCursor: null,
+    };
+    render(<ReviewQueue page={page} action={action} nextHref={null} />);
+    const card = screen.getByTestId("request-ROLL-1");
+    expect(card).toHaveTextContent("Previously rejected ×2");
+    expect(card).toHaveTextContent("Roll number mismatch");
   });
 });

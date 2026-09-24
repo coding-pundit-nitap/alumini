@@ -63,6 +63,31 @@ export function ReviewQueue({
             {item.supportingInfo ? (
               <p className="text-sm">{item.supportingInfo}</p>
             ) : null}
+            {item.history.length > 0 ? (
+              <details className="text-sm">
+                <summary className="cursor-pointer">
+                  {(() => {
+                    const rejected = item.history.filter(
+                      (h) => h.status === "REJECTED"
+                    ).length;
+                    return rejected > 0
+                      ? `Previously rejected ×${rejected}`
+                      : `${item.history.length} earlier request${item.history.length === 1 ? "" : "s"}`;
+                  })()}
+                </summary>
+                <ul className="mt-2 space-y-1">
+                  {item.history.map((h, i) => (
+                    <li key={i}>
+                      {h.status === "REJECTED" ? "Rejected" : "Approved"}
+                      {h.decidedAt
+                        ? ` on ${h.decidedAt.toISOString().slice(0, 10)}`
+                        : ""}
+                      {h.note ? `: ${h.note}` : ""}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
             <DecisionForm requestId={item.id} action={action} />
           </li>
         ))}

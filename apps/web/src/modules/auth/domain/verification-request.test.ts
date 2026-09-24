@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { EmailPolicy } from "./email-policy";
 import {
+  groupHistory,
   MAX_REJECTED_SUBMISSIONS,
   normaliseNote,
   noteProblem,
@@ -114,5 +115,35 @@ describe("review notes", () => {
     const long = "x".repeat(REVIEW_NOTE_MAX + 1);
     expect(noteProblem("APPROVED", long)).toMatch(/at most/i);
     expect(noteProblem("REJECTED", long)).toMatch(/at most/i);
+  });
+});
+
+describe("groupHistory (spec C12-10)", () => {
+  const entry = (userId: string, n: number) => ({
+    userId,
+    status: "REJECTED" as const,
+    decidedAt: new Date(Date.UTC(2026, 0, n)),
+    note: `n${n}`,
+  });
+  it("groups per user, keeps order, caps at the limit, drops userId", () => {
+    const rows = [6, 5, 4, 3, 2, 1]
+      .map((n) => entry("a", n))
+      .concat([entry("b", 9)]);
+    const map = groupHistory(rows);
+    expect(map.get("a")!.map((h) => h.note)).toEqual([
+      "n6",
+      "n5",
+      "n4",
+      "n3",
+      "n2",
+    ]);
+    expect(map.get("b")).toEqual([
+      {
+        status: "REJECTED",
+        decidedAt: new Date(Date.UTC(2026, 0, 9)),
+        note: "n9",
+      },
+    ]);
+    expect(map.get("c")).toBeUndefined();
   });
 });

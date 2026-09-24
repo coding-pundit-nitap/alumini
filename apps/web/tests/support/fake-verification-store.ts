@@ -174,6 +174,7 @@ export function createFakeVerificationStore(
         const applicant = state.accounts.get(r.userId);
         return {
           id: r.id,
+          userId: r.userId,
           submittedAt: r.createdAt,
           applicantName: applicant?.name ?? "",
           applicantEmail: applicant?.email ?? "",
@@ -183,6 +184,7 @@ export function createFakeVerificationStore(
           graduationYear: r.graduationYear,
           supportingInfo: r.supportingInfo,
           crossCheck: r.crossCheck,
+          history: [],
         };
       });
     },

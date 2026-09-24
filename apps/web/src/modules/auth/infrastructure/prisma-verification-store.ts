@@ -11,6 +11,7 @@ import type {
   VerificationStore,
   VerificationTx,
 } from "../application/verification-store";
+import { groupHistory } from "../domain/verification-request";
 
 type Deps = {
   runner: Pick<TransactionRunner, "run">;
@@ -189,8 +190,32 @@ export function createPrismaVerificationStore(deps: Deps): VerificationStore {
           degree: { select: { name: true } },
         },
       });
+      const userIds = [...new Set(rows.map((r) => r.userId))];
+      // One query for the page (ix_verification_user_history). Rejections are capped at 3 per applicant, so it is small.
+      const previous = userIds.length
+        ? await deps.prisma.verificationRequest.findMany({
+            where: { userId: { in: userIds }, status: { not: "PENDING" } },
+            orderBy: [{ userId: "asc" }, { createdAt: "desc" }],
+            select: {
+              userId: true,
+              status: true,
+              reviewedAt: true,
+              reviewNote: true,
+            },
+          })
+        : [];
+      const history = groupHistory(
+        previous.map((p) => ({
+          userId: p.userId,
+          status: p.status,
+          decidedAt: p.reviewedAt,
+          note: p.reviewNote,
+        }))
+      );
+
       return rows.map((row): PendingVerification => ({
         id: row.id,
+        userId: row.userId,
         submittedAt: row.createdAt,
         applicantName: row.user.name,
         applicantEmail: row.user.email,
@@ -200,6 +225,7 @@ export function createPrismaVerificationStore(deps: Deps): VerificationStore {
         graduationYear: row.graduationYear,
         supportingInfo: row.supportingInfo,
         crossCheck: row.crossCheck,
+        history: history.get(row.userId) ?? [],
       }));
     },
   };
