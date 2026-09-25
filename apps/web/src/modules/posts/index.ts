@@ -24,6 +24,7 @@ export type {
   PostsTx,
 } from "./application/posts-store";
 export type { ReactionType } from "./domain/posts";
+export { AnnouncementComposer } from "./presentation/ui/announcement-composer";
 export { CommentThread } from "./presentation/ui/comment-thread";
 export { FeedList } from "./presentation/ui/feed-list";
 export { MarkdownView } from "./presentation/ui/markdown-view";

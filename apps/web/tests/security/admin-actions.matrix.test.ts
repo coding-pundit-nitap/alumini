@@ -40,6 +40,8 @@ import { createListReports } from "@/modules/moderation/application/list-reports
 import { createResolveReport } from "@/modules/moderation/application/resolve-report";
 import { createReadReportedMessage } from "@/modules/messaging/application/read-reported-message";
 import { createReplayNotifications } from "@/modules/notifications/application/replay-notifications";
+import { createPublishAnnouncement } from "@/modules/posts/application/publish-announcement";
+import { createRemoveAnnouncement } from "@/modules/posts/application/remove-announcement";
 import { createListFailedDeliveries } from "@/modules/notifications/application/list-failed-deliveries";
 
 import { readRoleMatrixFromDoc } from "../support/rbac-matrix-doc";
@@ -214,6 +216,24 @@ const ADMIN_ACTIONS: ReadonlyArray<{
         query: {},
       }),
   },
+  {
+    name: "publishAnnouncement",
+    permission: PERMISSIONS.ANNOUNCEMENT_PUBLISH,
+    run: (actor) =>
+      createPublishAnnouncement({ store: tripwire(), authorize })({
+        actor,
+        input: { title: "Notice", content: "Body" },
+      }),
+  },
+  {
+    name: "removeAnnouncement",
+    permission: PERMISSIONS.ANNOUNCEMENT_PUBLISH,
+    run: (actor) =>
+      createRemoveAnnouncement({ store: tripwire(), authorize })({
+        actor,
+        postId: ID,
+      }),
+  },
   ...(() => {
     const TARGET = "00000000-0000-4000-8000-0000000000bb";
     const CHAPTER = "00000000-0000-4000-8000-0000000000c1";
@@ -331,10 +351,7 @@ const ADMIN_ACTIONS: ReadonlyArray<{
 ];
 
 /** Admin-tier permissions with no action yet. The list may only shrink (spec A12-10). */
-const NOT_YET_BUILT: readonly Permission[] = [
-  PERMISSIONS.ANALYTICS_VIEW,
-  PERMISSIONS.ANNOUNCEMENT_PUBLISH,
-];
+const NOT_YET_BUILT: readonly Permission[] = [PERMISSIONS.ANALYTICS_VIEW];
 
 const matrix = readRoleMatrixFromDoc();
 const actorHolding = (held: ReadonlySet<string>): Actor => ({

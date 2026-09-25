@@ -8,6 +8,7 @@ import {
   Flag,
   GraduationCap,
   House,
+  Megaphone,
   MessageCircle,
   ScrollText,
   Search,
@@ -37,6 +38,7 @@ const ICONS: Record<NavIconName, LucideIcon> = {
   status: CircleAlert,
   users: UserCog,
   audit: ScrollText,
+  announcements: Megaphone,
 };
 
 export function NavIcon({

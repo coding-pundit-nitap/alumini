@@ -10,6 +10,7 @@ import {
   Flag,
   LayoutDashboard,
   MailWarning,
+  Megaphone,
   Menu,
   ScrollText,
   UserCheck,
@@ -40,6 +41,7 @@ const ICONS: Record<NavIcon, LucideIcon> = {
   jobs: Briefcase,
   achievements: Award,
   notifications: MailWarning,
+  announcements: Megaphone,
 };
 
 const isActive = (pathname: string, href: string) =>

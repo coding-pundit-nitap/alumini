@@ -21,7 +21,8 @@ export type NavIcon =
   | "reports"
   | "jobs"
   | "achievements"
-  | "notifications";
+  | "notifications"
+  | "announcements";
 export type NavItem = { href: string; label: string; icon: NavIcon };
 
 const QUEUE_ITEMS: ReadonlyArray<NavItem & { permission: Permission }> = [
@@ -67,6 +68,12 @@ const QUEUE_ITEMS: ReadonlyArray<NavItem & { permission: Permission }> = [
     icon: "notifications",
     permission: PERMISSIONS.NOTIFICATION_REPLAY,
   },
+  {
+    href: "/admin/announcements",
+    label: "Announcements",
+    icon: "announcements",
+    permission: PERMISSIONS.ANNOUNCEMENT_PUBLISH,
+  },
 ];
 
 export function adminNavigation(can: Can): NavItem[] {
@@ -103,7 +110,7 @@ export const dashboardTiles = (can: Can): TileKey[] =>
   );
 
 export type NavGroup = {
-  label: "Overview" | "Queues" | "People" | "System";
+  label: "Overview" | "Queues" | "Content" | "People" | "System";
   items: NavItem[];
 };
 
@@ -113,6 +120,7 @@ const GROUP_OF: Record<string, NavGroup["label"]> = {
   "/admin/reports": "Queues",
   "/admin/jobs": "Queues",
   "/admin/achievements": "Queues",
+  "/admin/announcements": "Content",
   "/admin/users": "People",
   "/admin/audit": "System",
   "/admin/notifications": "System",
@@ -120,6 +128,7 @@ const GROUP_OF: Record<string, NavGroup["label"]> = {
 const GROUP_ORDER: NavGroup["label"][] = [
   "Overview",
   "Queues",
+  "Content",
   "People",
   "System",
 ];

@@ -90,3 +90,26 @@ describe("groupAdminNav", () => {
     expect(groupAdminNav([])).toEqual([]);
   });
 });
+
+describe("announcements navigation (12E)", () => {
+  it("shows Announcements under Content to announcement.publish holders", () => {
+    const groups = groupAdminNav(
+      adminNavigation(holding(PERMISSIONS.ANNOUNCEMENT_PUBLISH))
+    );
+    expect(groups.map((g) => g.label)).toEqual(["Overview", "Content"]);
+    expect(groups[1]!.items).toEqual([
+      {
+        href: "/admin/announcements",
+        label: "Announcements",
+        icon: "announcements",
+      },
+    ]);
+  });
+
+  it("hides it from a moderator", () => {
+    const items = adminNavigation(
+      holding(PERMISSIONS.REPORT_REVIEW, PERMISSIONS.USER_READ_ADMIN)
+    );
+    expect(items.some((i) => i.href === "/admin/announcements")).toBe(false);
+  });
+});
