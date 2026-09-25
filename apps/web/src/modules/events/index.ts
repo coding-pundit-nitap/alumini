@@ -32,4 +32,9 @@ export { EventList } from "./presentation/ui/event-list";
 export { EventBadges } from "./presentation/ui/event-badges";
 export { RegistrationButton } from "./presentation/ui/registration-button";
 export { OrganizerPanel } from "./presentation/ui/organizer-panel";
-export { formatEventTime, spotsLabel } from "./presentation/format";
+export { dateBlock, formatEventTime, spotsLabel } from "./presentation/format";
+export {
+  DateBlock,
+  EventPlace,
+  SpotsMeter,
+} from "./presentation/ui/event-parts";

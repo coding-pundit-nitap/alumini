@@ -26,9 +26,7 @@ const event = (over: Partial<EventSummary> = {}): EventSummary => ({
 });
 
 const card = (title: string) =>
-  screen
-    .getByRole("link", { name: title })
-    .closest<HTMLElement>("[data-slot=card]")!;
+  screen.getByRole("link", { name: title }).closest<HTMLElement>("li")!;
 
 describe("EventList", () => {
   it("renders one card per event, the title linking to its detail page", () => {
@@ -119,6 +117,23 @@ describe("EventList", () => {
     expect(screen.getByRole("link", { name: "Load more" })).toHaveAttribute(
       "href",
       "/events?tab=past&cursor=abc"
+    );
+  });
+
+  it("shows the date block in the event's zone", () => {
+    render(<EventList events={[event()]} loadMoreHref={null} />);
+    const c = within(card("Alumni reunion"));
+    expect(c.getByText("Oct")).toBeInTheDocument();
+    expect(c.getByText("1")).toBeInTheDocument();
+  });
+
+  it("offers Create event on the empty state only to creators", () => {
+    const { rerender } = render(<EventList events={[]} loadMoreHref={null} />);
+    expect(screen.queryByRole("link", { name: "Create event" })).toBeNull();
+    rerender(<EventList events={[]} loadMoreHref={null} canCreate />);
+    expect(screen.getByRole("link", { name: "Create event" })).toHaveAttribute(
+      "href",
+      "/events/new"
     );
   });
 });

@@ -1,7 +1,12 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { buttonVariants } from "@nitap/ui/components/button";
+
+import { PageColumns } from "@/components/shell/page-columns";
 import { can, getActor } from "@/modules/auth";
 import { EventForm } from "@/modules/events";
 
@@ -15,9 +20,31 @@ export default async function NewEventPage() {
   if (!can(actor, PERMISSIONS.EVENT_CREATE)) redirect("/events");
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-12">
-      <h1 className="text-2xl font-semibold">Create event</h1>
-      <EventForm createAction={createEventAction} />
-    </div>
+    <PageColumns
+      header={
+        <Link
+          href="/events"
+          className={buttonVariants({
+            variant: "ghost",
+            size: "sm",
+            className: "-ml-2 rounded-full",
+          })}
+        >
+          <ArrowLeft aria-hidden />
+          Events
+        </Link>
+      }
+    >
+      <div className="space-y-1 border-b px-4 py-6 sm:px-5">
+        <h1 className="text-2xl font-semibold tracking-tight">Create event</h1>
+        <p className="text-muted-foreground text-sm">
+          Members can register as soon as you publish. Times are in the zone you
+          pick.
+        </p>
+      </div>
+      <div className="px-4 py-6 sm:px-5">
+        <EventForm createAction={createEventAction} />
+      </div>
+    </PageColumns>
   );
 }

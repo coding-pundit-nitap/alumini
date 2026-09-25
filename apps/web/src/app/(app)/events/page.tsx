@@ -1,9 +1,16 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
-import { buttonVariants } from "@nitap/ui/components/button";
+import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { buttonVariants } from "@nitap/ui/components/button";
+import {
+  Segmented,
+  segmentedItemVariants,
+} from "@nitap/ui/components/segmented";
+
+import { PageColumns } from "@/components/shell/page-columns";
 import { listEvents } from "@/composition/events";
 import { AppError } from "@/lib/errors";
 import { can, getActor } from "@/modules/auth";
@@ -39,36 +46,56 @@ export default async function EventsPage({
   }
 
   const next = page.page.nextCursor;
+  const canCreate = can(actor, PERMISSIONS.EVENT_CREATE);
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-12">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Events</h1>
-        {can(actor, PERMISSIONS.EVENT_CREATE) ? (
-          <Link href="/events/new" className={buttonVariants()}>
-            Create event
-          </Link>
-        ) : null}
-      </div>
-      <nav aria-label="Events" className="flex flex-wrap gap-4 text-sm">
-        {(Object.keys(TABS) as Tab[]).map((t) => (
-          <Link
-            key={t}
-            href={`/events?tab=${t}`}
-            aria-current={t === tab ? "page" : undefined}
-            className={
-              t === tab ? "font-semibold underline" : "text-muted-foreground"
-            }
-          >
-            {TABS[t]}
-          </Link>
-        ))}
+    <PageColumns
+      header={
+        <>
+          <div className="min-w-0 flex-1 leading-tight">
+            <h1 className="truncate font-semibold tracking-tight">Events</h1>
+            <p className="text-muted-foreground truncate text-xs">
+              Reunions, talks and meetups from the NIT AP community
+            </p>
+          </div>
+          {canCreate ? (
+            <Link
+              href="/events/new"
+              className={buttonVariants({
+                size: "sm",
+                className: "rounded-full",
+              })}
+            >
+              <Plus aria-hidden />
+              Create event
+            </Link>
+          ) : null}
+        </>
+      }
+    >
+      <nav
+        aria-label="Events"
+        className="scrollbar-none overflow-x-auto border-b px-4 py-3 sm:px-5"
+      >
+        <Segmented>
+          {(Object.keys(TABS) as Tab[]).map((t) => (
+            <Link
+              key={t}
+              href={`/events?tab=${t}`}
+              aria-current={t === tab ? "page" : undefined}
+              className={segmentedItemVariants({ active: t === tab })}
+            >
+              {TABS[t]}
+            </Link>
+          ))}
+        </Segmented>
       </nav>
       <EventList
         events={page.data}
+        canCreate={canCreate}
         loadMoreHref={
           next ? `/events?tab=${tab}&cursor=${encodeURIComponent(next)}` : null
         }
       />
-    </div>
+    </PageColumns>
   );
 }

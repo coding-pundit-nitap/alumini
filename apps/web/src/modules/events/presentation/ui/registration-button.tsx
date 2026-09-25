@@ -99,6 +99,7 @@ export function RegistrationButton({
       {state.mode === "register" ? (
         <Button
           type="button"
+          className="rounded-full px-6 sm:self-start"
           disabled={pending || !!state.disabledReason}
           onClick={() => run(registerAction)}
         >
@@ -112,6 +113,7 @@ export function RegistrationButton({
               <Button
                 type="button"
                 variant="outline"
+                className="rounded-full px-6 sm:self-start"
                 disabled={pending || !!state.disabledReason}
               >
                 {pending ? <Spinner data-icon="inline-start" /> : null}

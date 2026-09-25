@@ -112,15 +112,17 @@ export function OrganizerPanel({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border p-4">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Organizer tools</h2>
+        <h2 className="font-semibold tracking-tight">Organizer tools</h2>
         <AlertDialog>
           <AlertDialogTrigger
             render={
               <Button
                 type="button"
                 variant="destructive"
+                size="sm"
+                className="rounded-full"
                 disabled={pending || cancelled}
               >
                 {pending ? <Spinner data-icon="inline-start" /> : null}

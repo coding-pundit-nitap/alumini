@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatEventTime, spotsLabel } from "./format";
+import { dateBlock, formatEventTime, spotsLabel } from "./format";
 
 describe("formatEventTime", () => {
   const instant = new Date("2026-10-01T12:30:00Z");
@@ -28,5 +28,17 @@ describe("spotsLabel", () => {
     [42, 100, "42 of 100 spots left"],
   ])("%i of %i", (remaining, capacity, label) => {
     expect(spotsLabel(remaining, capacity)).toBe(label);
+  });
+});
+
+describe("dateBlock", () => {
+  it("reads the month and day in the event's zone, not UTC", () => {
+    // 20:00 UTC on 30 Sep is already 1 Oct in Kolkata.
+    const instant = new Date("2026-09-30T20:00:00Z");
+    expect(dateBlock(instant, "Asia/Kolkata")).toEqual({
+      month: "Oct",
+      day: "1",
+    });
+    expect(dateBlock(instant, "UTC")).toEqual({ month: "Sep", day: "30" });
   });
 });
