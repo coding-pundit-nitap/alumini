@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { silentLogger } from "../../tests/support.ts";
+import { createAnnouncementPublishedProcessor } from "./announcement-published.ts";
 import {
   createAchievementSubmittedProcessor,
   createReportFiledProcessor,
@@ -86,5 +87,19 @@ describe("fan-out loops stop when the job's signal aborts", () => {
           findModerators: async () => recipients,
         }) as never,
       { v: 1, jobId: "j", postedBy: "actor", actorId: "actor" }
+    ));
+
+  it("announcement.published", () =>
+    run(
+      (deliver) =>
+        createAnnouncementPublishedProcessor({
+          deliver,
+          postIsLive: async () => true,
+          listRecipients: async (afterId) =>
+            afterId
+              ? []
+              : recipients.map((id) => ({ id, email: `${id}@x.in` })),
+        }) as never,
+      { v: 1, postId: "p1", authorId: "someone-else" }
     ));
 });

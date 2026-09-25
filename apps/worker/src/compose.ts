@@ -11,6 +11,7 @@ import {
   achievementApproved,
   achievementRejected,
   achievementSubmitted,
+  announcementPublished,
   commentCreated,
   connectionAccepted,
   connectionRequested,
@@ -79,6 +80,7 @@ import {
   createReportFiledProcessor,
   createReportResolvedProcessor,
 } from "./processors/community-event.ts";
+import { createAnnouncementPublishedProcessor } from "./processors/announcement-published.ts";
 import {
   createAccountStateProcessor,
   createVerificationDecidedProcessor,
@@ -270,6 +272,20 @@ export function composeWorker(
         select: { authorId: true },
       })
     )?.authorId ?? null;
+  const announcementIsLive = async (postId: string) =>
+    (await prisma.post.count({
+      where: { id: postId, postType: "ANNOUNCEMENT", deleted: false },
+    })) > 0;
+  const listVerifiedMembers = async (afterId: string | null, limit: number) =>
+    prisma.user.findMany({
+      where: {
+        accountState: "VERIFIED",
+        ...(afterId ? { id: { gt: afterId } } : {}),
+      },
+      orderBy: { id: "asc" },
+      take: limit,
+      select: { id: true, email: true },
+    });
   // ponytail: first 200 distinct prior commenters (by id); raise or chunk if threads outgrow it.
   const findPriorCommenters = async (postId: string, excludeUserId: string) =>
     (
@@ -411,6 +427,14 @@ export function composeWorker(
       registerJob(
         contentRemoved,
         createContentRemovedProcessor({ deliver, findEmail, findContentAuthor })
+      ),
+      registerJob(
+        announcementPublished,
+        createAnnouncementPublishedProcessor({
+          deliver,
+          postIsLive: announcementIsLive,
+          listRecipients: listVerifiedMembers,
+        })
       ),
       registerJob(
         verificationDecided,
