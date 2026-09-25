@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import {
@@ -7,8 +6,12 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@nitap/ui/components/alert";
-import { buttonVariants } from "@nitap/ui/components/button";
 
+import {
+  AdminPageHeader,
+  AdminPager,
+  AdminPanel,
+} from "@/components/admin/admin-surface";
 import { listReports } from "@/composition/moderation";
 import { AppError } from "@/lib/errors";
 import {
@@ -68,27 +71,21 @@ export default async function ReportsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Reports</h1>
-      <ReportFilters values={values} />
-      {invalid ? (
-        <Alert variant="destructive">
-          <AlertTitle>These filters are not valid</AlertTitle>
-          <AlertDescription>Check {invalid.join(", ")}.</AlertDescription>
-        </Alert>
-      ) : (
-        <ReportsTable rows={page?.data ?? []} />
-      )}
-      {older ? (
-        <Link
-          href={older}
-          className={buttonVariants({
-            variant: "outline",
-            className: "self-start",
-          })}
-        >
-          Older reports
-        </Link>
-      ) : null}
+      <AdminPageHeader
+        title="Reports"
+        description="Posts, comments, messages and members people flagged."
+      />
+      <AdminPanel toolbar={<ReportFilters values={values} />}>
+        {invalid ? (
+          <Alert variant="destructive" className="m-4">
+            <AlertTitle>These filters are not valid</AlertTitle>
+            <AlertDescription>Check {invalid.join(", ")}.</AlertDescription>
+          </Alert>
+        ) : (
+          <ReportsTable rows={page?.data ?? []} />
+        )}
+      </AdminPanel>
+      <AdminPager href={older} label="Older reports" />
     </div>
   );
 }

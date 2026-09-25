@@ -8,6 +8,7 @@ import {
   dismissReportAction,
   resolveReportAction,
 } from "@/app/(app)/feed/actions";
+import { AdminPageHeader, AdminPanel } from "@/components/admin/admin-surface";
 import { readReportedMessage } from "@/composition/messaging";
 import { getReport } from "@/composition/moderation";
 import { AppError } from "@/lib/errors";
@@ -66,100 +67,120 @@ export default async function ReportPage({
   const disabled = blocked === undefined ? undefined : "";
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <Link href="/admin/reports" className="text-primary text-sm underline">
-        All reports
-      </Link>
-      <h1 className="flex items-center gap-3 text-2xl font-semibold">
-        {TARGET_LABELS[report.targetType]} report
-        <Badge variant="secondary">{STATUS_LABELS[report.status]}</Badge>
-      </h1>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-        <dt className="text-muted-foreground">Reporter</dt>
-        <dd>{report.reporter.name}</dd>
-        <dt className="text-muted-foreground">Reporter&apos;s reason</dt>
-        <dd className="whitespace-pre-wrap">{report.reason}</dd>
-        <dt className="text-muted-foreground">Filed</dt>
-        <dd>
-          {report.createdAt.toLocaleString("en-IN", {
-            timeZone: "Asia/Kolkata",
-          })}
-        </dd>
-        {report.resolvedBy ? (
+    <div className="flex flex-col gap-6">
+      <AdminPageHeader
+        back={{ href: "/admin/reports", label: "All reports" }}
+        title={
           <>
-            <dt className="text-muted-foreground">Decided by</dt>
-            <dd>{report.resolvedBy.name}</dd>
+            {TARGET_LABELS[report.targetType]} report
+            <Badge variant="secondary">{STATUS_LABELS[report.status]}</Badge>
           </>
-        ) : null}
-      </dl>
-
-      {report.targetType === "POST" || report.targetType === "COMMENT" ? (
-        <p className="rounded-lg border p-3 text-sm whitespace-pre-wrap">
-          {report.preview
-            ? report.preview.text
-            : "The reported content no longer exists."}
-          {report.preview?.deleted ? (
-            <Badge variant="outline" className="ml-2">
-              Removed
-            </Badge>
+        }
+      />
+      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+        <AdminPanel title="Reported content">
+          {report.targetType === "POST" || report.targetType === "COMMENT" ? (
+            <p className="p-4 text-sm whitespace-pre-wrap">
+              {report.preview
+                ? report.preview.text
+                : "The reported content no longer exists."}
+              {report.preview?.deleted ? (
+                <Badge variant="outline" className="ml-2">
+                  Removed
+                </Badge>
+              ) : null}
+            </p>
           ) : null}
-        </p>
-      ) : null}
-      {report.targetType === "MESSAGE" ? (
-        context ? (
-          <ReportedMessageContext view={context} />
-        ) : (
-          <p className="text-muted-foreground text-sm">
-            {canReadMessage
-              ? "The reported message no longer exists."
-              : "You cannot view private messages."}
-          </p>
-        )
-      ) : null}
-      {report.targetType === "USER" ? (
-        <p className="text-sm">
-          Reported user: {report.preview?.text ?? "no longer exists"}.{" "}
-          {can(actor, PERMISSIONS.USER_READ_ADMIN) && report.preview ? (
-            <Link
-              href={`/admin/users/${report.targetId}`}
-              className="text-primary underline"
-            >
-              Open their admin page to suspend them
-            </Link>
+          {report.targetType === "MESSAGE" ? (
+            <div className="p-4">
+              {context ? (
+                <ReportedMessageContext view={context} />
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  {canReadMessage
+                    ? "The reported message no longer exists."
+                    : "You cannot view private messages."}
+                </p>
+              )}
+            </div>
           ) : null}
-        </p>
-      ) : null}
-
-      {live && blocked ? (
-        <p className="text-muted-foreground text-sm">{blocked}</p>
-      ) : null}
-      {live ? (
-        <div className="flex flex-wrap items-start gap-2">
-          {report.status === "OPEN" ? (
-            <ConfirmButton
-              label="Claim"
-              title="Claim this report?"
-              description="Other moderators will see it as under review."
-              confirmLabel="Claim report"
-              fields={{ reportId: report.id }}
-              action={claimReportFormAction}
-              disabledReason={disabled}
-            />
+          {report.targetType === "USER" ? (
+            <p className="p-4 text-sm">
+              Reported user: {report.preview?.text ?? "no longer exists"}.{" "}
+              {can(actor, PERMISSIONS.USER_READ_ADMIN) && report.preview ? (
+                <Link
+                  href={`/admin/users/${report.targetId}`}
+                  className="text-primary underline"
+                >
+                  Open their admin page to suspend them
+                </Link>
+              ) : null}
+            </p>
           ) : null}
-          <ReportDecisionDialog
-            outcome="resolve"
-            reportId={report.id}
-            action={resolveReportAction}
-            disabledReason={disabled}
-          />
-          <ReportDecisionDialog
-            outcome="dismiss"
-            reportId={report.id}
-            action={dismissReportAction}
-            disabledReason={disabled}
-          />
+        </AdminPanel>
+        <div className="flex flex-col gap-6">
+          <AdminPanel title="Report">
+            <dl className="grid grid-cols-1 gap-y-3 p-4 text-sm">
+              <div>
+                <dt className="text-muted-foreground">Reporter</dt>
+                <dd>{report.reporter.name}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">
+                  Reporter&apos;s reason
+                </dt>
+                <dd className="whitespace-pre-wrap">{report.reason}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Filed</dt>
+                <dd>
+                  {report.createdAt.toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                  })}
+                </dd>
+              </div>
+              {report.resolvedBy ? (
+                <div>
+                  <dt className="text-muted-foreground">Decided by</dt>
+                  <dd>{report.resolvedBy.name}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </AdminPanel>
+          {live ? (
+            <AdminPanel title="Actions">
+              <div className="flex flex-col gap-3 p-4">
+                {blocked ? (
+                  <p className="text-muted-foreground text-sm">{blocked}</p>
+                ) : null}
+                {report.status === "OPEN" ? (
+                  <ConfirmButton
+                    label="Claim"
+                    title="Claim this report?"
+                    description="Other moderators will see it as under review."
+                    confirmLabel="Claim report"
+                    fields={{ reportId: report.id }}
+                    action={claimReportFormAction}
+                    disabledReason={disabled}
+                  />
+                ) : null}
+                <ReportDecisionDialog
+                  outcome="resolve"
+                  reportId={report.id}
+                  action={resolveReportAction}
+                  disabledReason={disabled}
+                />
+                <ReportDecisionDialog
+                  outcome="dismiss"
+                  reportId={report.id}
+                  action={dismissReportAction}
+                  disabledReason={disabled}
+                />
+              </div>
+            </AdminPanel>
+          ) : null}
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }

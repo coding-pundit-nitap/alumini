@@ -81,6 +81,7 @@ export function ReportDecisionDialog(props: {
               type="button"
               size="sm"
               variant={props.outcome === "resolve" ? "outline" : "ghost"}
+              className="rounded-full"
               disabled={props.disabledReason !== undefined}
               aria-describedby={props.disabledReason ? noteId : undefined}
             />
@@ -102,7 +103,7 @@ export function ReportDecisionDialog(props: {
               id={selectId}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="border-input bg-background h-9 rounded-lg border px-2.5 text-sm"
+              className="border-input bg-background h-9 w-full rounded-lg border px-2.5 text-sm"
             >
               <option value="" disabled>
                 Choose a reason
