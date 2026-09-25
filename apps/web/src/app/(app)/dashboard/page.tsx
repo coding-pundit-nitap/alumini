@@ -21,7 +21,11 @@ import {
 } from "@nitap/ui/components/segmented";
 
 import { PageColumns } from "@/components/shell/page-columns";
-import { getViewerAuthor, listFeed } from "@/composition/posts";
+import {
+  getPinnedAnnouncement,
+  getViewerAuthor,
+  listFeed,
+} from "@/composition/posts";
 import { AppError } from "@/lib/errors";
 import { can, getActor, PERMISSIONS } from "@/modules/auth";
 import { FeedList, PostComposer } from "@/modules/posts";
@@ -63,6 +67,11 @@ export default async function DashboardPage({
     can(actor, PERMISSIONS.REPORT_REVIEW);
   const canPost = can(actor, PERMISSIONS.POST_CREATE);
   const author = canPost ? await getViewerAuthor(actor) : undefined;
+
+  // The pinned slot is a nicety: a failure hides it, never the feed (SRS §44).
+  const pinned = cursor
+    ? null
+    : await getPinnedAnnouncement({ actor }).catch(() => null);
 
   return (
     <PageColumns
@@ -122,6 +131,7 @@ export default async function DashboardPage({
         onReport={reportContentAction}
         onResolve={resolveReportAction}
         onDismiss={dismissReportAction}
+        pinned={pinned}
       />
     </PageColumns>
   );

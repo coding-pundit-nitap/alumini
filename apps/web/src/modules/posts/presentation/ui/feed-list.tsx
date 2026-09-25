@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
-import { MessageSquareText } from "lucide-react";
+import { MessageSquareText, Pin } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
@@ -66,6 +66,7 @@ export function FeedList({
   onResolve,
   onDismiss,
   basePath = "/dashboard",
+  pinned = null,
 }: {
   posts: FeedPost[];
   nextCursor: string | null;
@@ -78,6 +79,7 @@ export function FeedList({
   onResolve: ResolveAction;
   onDismiss: ResolveAction;
   basePath?: string;
+  pinned?: FeedPost | null;
 }) {
   const queryClient = useQueryClient();
   const queryKey = ["feed", currentUserId];
@@ -107,7 +109,7 @@ export function FeedList({
   }, [posts, nextCursor]);
 
   const pages = query.data?.pages ?? [];
-  const seen = new Set<string>();
+  const seen = new Set<string>(pinned ? [pinned.id] : []);
   const allPosts = pages.flatMap((page) => page.posts);
   const dedupedPosts = allPosts.filter((post) => {
     if (seen.has(post.id)) return false;
@@ -141,7 +143,27 @@ export function FeedList({
 
   return (
     <div>
-      {dedupedPosts.length === 0 ? (
+      {pinned ? (
+        <section aria-label="Pinned announcement" className="border-b">
+          <p className="text-muted-foreground flex items-center gap-1.5 px-4 pt-3 text-[11px] font-medium tracking-wide uppercase sm:px-5">
+            <Pin aria-hidden className="size-3" />
+            Pinned
+          </p>
+          <PostCard
+            post={pinned}
+            currentUserId={currentUserId}
+            canModerate={canModerate}
+            onDelete={onDelete}
+            onReact={onReact}
+            onUnreact={onUnreact}
+            onReport={onReport}
+            onResolve={onResolve}
+            onDismiss={onDismiss}
+          />
+        </section>
+      ) : null}
+
+      {dedupedPosts.length === 0 && !pinned ? (
         <Empty className="py-16">
           <EmptyMedia variant="icon" className="bg-brand/10 text-brand">
             <MessageSquareText />

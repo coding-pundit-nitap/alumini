@@ -76,6 +76,25 @@ describe("PostCard", () => {
     expect(screen.getByText("Achievement")).toBeInTheDocument();
   });
 
+  it("renders an announcement with its badge and title as a heading", () => {
+    render(
+      <PostCard
+        post={{
+          ...basePost,
+          postType: "ANNOUNCEMENT",
+          title: "Convocation 2026",
+        }}
+        currentUserId={otherId}
+        canModerate={false}
+        {...actions()}
+      />
+    );
+    expect(screen.getByText("Announcement")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Convocation 2026" })
+    ).toBeInTheDocument();
+  });
+
   it("renders one img per attached image, served through /api/uploads/{id}", () => {
     const imageUrls = ["a1", "a2", "a3"];
     render(

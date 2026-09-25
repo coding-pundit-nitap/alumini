@@ -5,6 +5,7 @@ import {
   Check,
   ImageOff,
   Link2,
+  Megaphone,
   MessageCircle,
   MoreHorizontal,
   Share,
@@ -234,7 +235,7 @@ export function PostCard({
   const isOwn = currentUserId === post.authorId;
   const reportId = post.openReportId ?? null;
   const showReport = canModerate && !reportId;
-  const hasMenu = isOwn;
+  const hasMenu = isOwn && post.postType !== "ANNOUNCEMENT";
 
   if (deleted) return null;
 
@@ -267,6 +268,11 @@ export function PostCard({
       <span className="bg-chart-2/15 text-chart-2 inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium">
         <Trophy className="size-3" />
         Achievement
+      </span>
+    ) : post.postType === "ANNOUNCEMENT" ? (
+      <span className="bg-brand/10 text-brand inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium">
+        <Megaphone className="size-3" />
+        Announcement
       </span>
     ) : undefined;
 
@@ -319,6 +325,17 @@ export function PostCard({
             </span>
             <div
               className={`text-muted-foreground first-line:text-foreground min-w-0 pt-1.5 leading-relaxed first-line:font-semibold ${bodySize}`}
+            >
+              <PostBody content={post.content} expanded={expanded} />
+            </div>
+          </div>
+        ) : post.postType === "ANNOUNCEMENT" ? (
+          <div className="border-brand/20 from-brand/5 mt-3 rounded-xl border bg-gradient-to-br to-transparent to-60% p-4">
+            <h3 className="text-foreground text-[17px] leading-snug font-semibold text-balance">
+              {post.title}
+            </h3>
+            <div
+              className={`text-muted-foreground mt-1.5 leading-relaxed ${bodySize}`}
             >
               <PostBody content={post.content} expanded={expanded} />
             </div>

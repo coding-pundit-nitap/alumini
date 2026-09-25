@@ -62,6 +62,28 @@ function actions() {
 }
 
 describe("FeedList", () => {
+  it("shows the pinned announcement first and not again in the list", () => {
+    const pinned = {
+      ...makePost("99999999-9999-4999-8999-999999999999", "Body", "2026-01-03"),
+      postType: "ANNOUNCEMENT" as const,
+      title: "Pinned one",
+    };
+    render(
+      <FeedList
+        posts={[pinned, ...posts]}
+        nextCursor={null}
+        currentUserId={null}
+        canModerate={false}
+        pinned={pinned}
+        {...actions()}
+      />
+    );
+    expect(screen.getByText("Pinned")).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "Pinned one" })).toHaveLength(
+      1
+    );
+  });
+
   it("renders posts newest-first with Markdown-rendered content and no raw HTML", () => {
     render(
       <FeedList
