@@ -5,6 +5,8 @@ import { Button, buttonVariants } from "@nitap/ui/components/button";
 import { Field, FieldLabel } from "@nitap/ui/components/field";
 import { Input } from "@nitap/ui/components/input";
 
+import { cn } from "@/lib/utils";
+
 import { SELECT_CLASS, STATE_LABEL } from "./labels";
 
 /** A plain GET form, like the audit filters: works without JavaScript and gives a shareable URL. */
@@ -38,7 +40,7 @@ export function UserFilters({
           id="state"
           name="state"
           defaultValue={values.state ?? ""}
-          className={`${SELECT_CLASS} rounded-full px-3`}
+          className={cn(SELECT_CLASS, "rounded-full px-3")}
         >
           <option value="">Any</option>
           {Object.entries(STATE_LABEL).map(([value, label]) => (
@@ -54,7 +56,7 @@ export function UserFilters({
           id="role"
           name="role"
           defaultValue={values.role ?? ""}
-          className={`${SELECT_CLASS} rounded-full px-3`}
+          className={cn(SELECT_CLASS, "rounded-full px-3")}
         >
           <option value="">Any</option>
           {roles.map((r) => (
