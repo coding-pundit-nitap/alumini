@@ -199,7 +199,7 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
 
     const byAn = await list({ q: "an" });
     expect(new Set(byAn.map((u) => u.id))).toEqual(
-      new Set([ann.id, anna.id, mid.id])
+      new Set([ann.id, anna.id, mid.id, stan.id])
     );
 
     const byMid = await list({ q: "ANN" }); // matches ann, anna, joanna (middle of the name)
@@ -212,7 +212,8 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
     const byPercent = await list({ q: "50%" });
     expect(byPercent.map((u) => u.id)).toEqual([percent.id]);
 
-    expect(await list({ q: "_" })).toEqual([]);
+    expect((await list({ q: "_" })).map((u) => u.id)).toEqual([percent.id]); // literal underscore; as a LIKE wildcard it would match every user
+    expect((await list({ q: "%" })).map((u) => u.id)).toEqual([percent.id]);
 
     const byState = await list({ state: "SUSPENDED" });
     expect(byState.map((u) => u.id)).toEqual([sue.id]);
