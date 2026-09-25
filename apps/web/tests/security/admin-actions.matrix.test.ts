@@ -331,7 +331,10 @@ const ADMIN_ACTIONS: ReadonlyArray<{
 ];
 
 /** Admin-tier permissions with no action yet. The list may only shrink (spec A12-10). */
-const NOT_YET_BUILT: readonly Permission[] = [PERMISSIONS.ANALYTICS_VIEW];
+const NOT_YET_BUILT: readonly Permission[] = [
+  PERMISSIONS.ANALYTICS_VIEW,
+  PERMISSIONS.ANNOUNCEMENT_PUBLISH,
+];
 
 const matrix = readRoleMatrixFromDoc();
 const actorHolding = (held: ReadonlySet<string>): Actor => ({

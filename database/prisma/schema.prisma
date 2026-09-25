@@ -729,6 +729,7 @@ model Report {
 enum PostType {
   TEXT
   ACHIEVEMENT
+  ANNOUNCEMENT
 }
 
 enum AchievementCategory {
@@ -761,6 +762,8 @@ model Post {
   chapterId   String?      @map("chapter_id") @db.Uuid
   chapter     Chapter?     @relation(fields: [chapterId], references: [id], onDelete: SetNull)
   content     String
+  /// Phase 12E: required for ANNOUNCEMENT, null for every other type (ck_post_title_announcement).
+  title       String?
   imageUrls   String[]     @map("image_urls")
   linkUrl     String?      @map("link_url")
   postType    PostType     @default(TEXT) @map("post_type")
@@ -902,6 +905,7 @@ enum NotificationDomain {
   POST
   ACHIEVEMENT
   MODERATION
+  ANNOUNCEMENT
 }
 
 enum NotificationChannel {

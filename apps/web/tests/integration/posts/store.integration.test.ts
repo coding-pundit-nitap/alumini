@@ -7,6 +7,20 @@ import { createTestDatabase, type TestDatabase } from "@nitap/testing";
 import { createTransactionRunner } from "@/infrastructure/database/transaction-runner";
 import { createPrismaPostsStore } from "@/modules/posts/infrastructure/prisma-posts-store";
 
+async function member(db: TestDatabase, name: string) {
+  const user = await db.prisma.user.create({
+    data: {
+      name,
+      email: `${name.toLowerCase().replace(/\W/g, "")}@example.test`,
+      accountState: "VERIFIED",
+    },
+  });
+  await db.prisma.profile.create({
+    data: { userId: user.id, fullName: name },
+  });
+  return user.id;
+}
+
 describe("posts store against real PostgreSQL", () => {
   let db: TestDatabase;
   let a: string;
@@ -363,5 +377,40 @@ describe("posts store against real PostgreSQL", () => {
     ).rejects.toThrow("boom");
     expect(await db.prisma.outboxEvent.count()).toBe(0);
     expect(await db.prisma.post.count()).toBe(0);
+  });
+});
+
+describe("announcement columns (Phase 12E)", () => {
+  let db: TestDatabase;
+
+  beforeEach(async () => {
+    db = await createTestDatabase();
+    await runSeed(db.prisma);
+  });
+  afterEach(async () => {
+    await db.drop();
+  });
+
+  it("rejects a TEXT post with a title and an ANNOUNCEMENT without one", async () => {
+    const authorId = await member(db, "Titled Author");
+    await expect(
+      db.prisma.post.create({
+        data: { authorId, content: "x", title: "Nope", postType: "TEXT" },
+      })
+    ).rejects.toThrow(/ck_post_title_announcement/);
+    await expect(
+      db.prisma.post.create({
+        data: { authorId, content: "x", postType: "ANNOUNCEMENT" },
+      })
+    ).rejects.toThrow(/ck_post_title_announcement/);
+    const ok = await db.prisma.post.create({
+      data: {
+        authorId,
+        content: "Body",
+        title: "Exam schedule",
+        postType: "ANNOUNCEMENT",
+      },
+    });
+    expect(ok.title).toBe("Exam schedule");
   });
 });
