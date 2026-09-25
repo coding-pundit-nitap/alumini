@@ -11,4 +11,7 @@ export {
   createPostgresSearch,
 } from "./infrastructure/postgres-search";
 export { AlumniList } from "./presentation/ui/alumni-list";
-export { DirectoryFilters } from "./presentation/ui/directory-filters";
+export {
+  clearFiltersHref,
+  DirectoryFilters,
+} from "./presentation/ui/directory-filters";

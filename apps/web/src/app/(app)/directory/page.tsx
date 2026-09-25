@@ -1,12 +1,20 @@
+import { UsersRound } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { InvalidCursorError, parseDirectoryQuery } from "@nitap/search";
 
+import { buttonVariants } from "@nitap/ui/components/button";
+
+import { PageColumns } from "@/components/shell/page-columns";
 import { listDepartments, searchDirectory } from "@/composition/directory";
 import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
-import { AlumniList, DirectoryFilters } from "@/modules/directory";
+import {
+  AlumniList,
+  clearFiltersHref,
+  DirectoryFilters,
+} from "@/modules/directory";
 
 export const metadata: Metadata = { title: "Alumni directory" };
 
@@ -42,42 +50,70 @@ export default async function DirectoryPage({
     }
   }
 
-  // The next page keeps every filter; only the cursor changes.
-  const next = new URLSearchParams();
+  // Later pages keep every filter; only the cursor changes.
+  const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (key === "cursor") continue;
     for (const v of Array.isArray(value) ? value : value ? [value] : []) {
-      next.append(key, v);
+      search.append(key, v);
     }
   }
-  if (page?.page.nextCursor) next.set("cursor", page.page.nextCursor);
+  const nextCursor = page?.page.nextCursor ?? null;
+  const nextHref = nextCursor
+    ? `/directory?${new URLSearchParams([...search, ["cursor", nextCursor]])}`
+    : null;
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-12">
-      <div className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Alumni directory</h1>
-        <Link href="/connections" className="text-primary text-sm underline">
-          Your connections
-        </Link>
-      </div>
+    <PageColumns
+      header={
+        <>
+          <div className="min-w-0 flex-1 leading-tight">
+            <h1 className="truncate font-semibold tracking-tight">
+              Alumni directory
+            </h1>
+            <p className="text-muted-foreground truncate text-xs">
+              Find batchmates, seniors and juniors from NIT Arunachal Pradesh
+            </p>
+          </div>
+          <Link
+            href="/connections"
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "rounded-full",
+            })}
+          >
+            <UsersRound aria-hidden />
+            Your connections
+          </Link>
+        </>
+      }
+    >
       <DirectoryFilters
-        query={parsed.ok ? parsed.query : {}}
+        params={params}
         departments={departments}
+        open={!parsed.ok}
       />
       {problem ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p
+          role="alert"
+          className="border-destructive/30 bg-destructive/5 text-destructive mx-4 mt-4 rounded-lg border px-3 py-2 text-sm sm:mx-5"
+        >
           {problem}
         </p>
       ) : null}
-      {page ? <AlumniList people={page.data} /> : null}
-      {page?.page.hasMore ? (
-        <Link
-          href={`/directory?${next.toString()}`}
-          className="text-primary block text-center text-sm underline"
-        >
-          Next page
-        </Link>
+      {page ? (
+        <AlumniList
+          // A new search starts a fresh list (and drops any pages loaded in place).
+          key={search.toString()}
+          people={page.data}
+          viewerId={actor.userId}
+          query={search.toString()}
+          nextCursor={nextCursor}
+          nextHref={nextHref}
+          clearHref={clearFiltersHref(params)}
+        />
       ) : null}
-    </div>
+    </PageColumns>
   );
 }
