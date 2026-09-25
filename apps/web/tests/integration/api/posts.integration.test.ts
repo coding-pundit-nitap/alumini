@@ -377,11 +377,13 @@ describe("GET /api/v1/posts and /api/v1/posts/:id/comments", () => {
       expect(res.status).toBe(404);
     });
 
-    it("rejects with 401 when signed out, rather than swallowing it as 404", async () => {
+    it("answers 401 when signed out, rather than swallowing it as 404", async () => {
       mocks.getActor.mockResolvedValue(null);
-      await expect(
-        getUploadImage(req(`/api/uploads/${NONEXISTENT}`), ctx(NONEXISTENT))
-      ).rejects.toMatchObject({ status: 401 });
+      const res = await getUploadImage(
+        req(`/api/uploads/${NONEXISTENT}`),
+        ctx(NONEXISTENT)
+      );
+      expect(res.status).toBe(401);
     });
   });
 });

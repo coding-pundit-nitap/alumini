@@ -29,7 +29,9 @@ export async function GET(
       headers: { Location: url, "Cache-Control": "private, no-store" },
     });
   } catch (error) {
-    if (error instanceof AppError && error.status === 404) return notFound();
+    // 401/403/404 keep their status; only real failures become a 500.
+    if (error instanceof AppError)
+      return new Response(null, { status: error.status });
     throw error;
   }
 }
