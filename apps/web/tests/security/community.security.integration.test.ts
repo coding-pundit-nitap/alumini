@@ -137,6 +137,7 @@ describe("community security", () => {
     const store = createPrismaPostsStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
     return {
       store,
@@ -213,6 +214,7 @@ describe("community security", () => {
           content: "hi",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         })
       );
@@ -251,6 +253,7 @@ describe("community security", () => {
           content: "post by a",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         })
       );
@@ -261,6 +264,7 @@ describe("community security", () => {
           content: "post by b",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         })
       );
@@ -288,6 +292,7 @@ describe("community security", () => {
           content: "mine",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         })
       );
@@ -313,6 +318,7 @@ describe("community security", () => {
           content: "mine",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         })
       );
@@ -462,6 +468,7 @@ describe("community security", () => {
           content: "reported",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         })
       );

@@ -15,6 +15,7 @@ function makePost(id: string, content: string, createdAt: string) {
     authorId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     chapterId: null,
     content,
+    title: null,
     imageUrls: [],
     linkUrl: null,
     postType: "TEXT" as const,

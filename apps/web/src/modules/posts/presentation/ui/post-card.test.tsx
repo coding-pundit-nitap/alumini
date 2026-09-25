@@ -15,6 +15,7 @@ const basePost: FeedPost = {
   authorId,
   chapterId: null,
   content: "**Hello** <script>alert(1)</script> world",
+  title: null,
   imageUrls: [],
   linkUrl: null,
   postType: "TEXT",

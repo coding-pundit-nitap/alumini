@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { createAuditWriter } from "@nitap/database/audit";
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { runSeed } from "@nitap/database/seed";
 import { createTestDatabase, type TestDatabase } from "@nitap/testing";
@@ -46,6 +47,7 @@ describe("posts store against real PostgreSQL", () => {
     createPrismaPostsStore({
       runner: createTransactionRunner(db.prisma),
       outbox: createOutboxWriter(),
+      audit: createAuditWriter(),
     });
 
   it("upsertReaction replaces the prior reaction rather than adding a second row", async () => {
@@ -57,6 +59,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "hi",
         imageUrls: [],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -82,6 +85,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "hi",
         imageUrls: [],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -107,6 +111,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "hi",
         imageUrls: [],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -127,6 +132,7 @@ describe("posts store against real PostgreSQL", () => {
           content: "reported",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         }),
         tx.insertPost({
@@ -135,6 +141,7 @@ describe("posts store against real PostgreSQL", () => {
           content: "clean",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         }),
       ])
@@ -165,6 +172,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "hi",
         imageUrls: [],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -196,6 +204,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "hi",
         imageUrls: [],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -243,6 +252,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "x",
         imageUrls: [],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -267,6 +277,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "x",
         imageUrls: [],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -304,6 +315,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "x",
         imageUrls: [used.id, pending.id],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -338,6 +350,7 @@ describe("posts store against real PostgreSQL", () => {
         content: "x",
         imageUrls: [],
         linkUrl: null,
+        title: null,
         postType: "TEXT",
       })
     );
@@ -366,6 +379,7 @@ describe("posts store against real PostgreSQL", () => {
           content: "hi",
           imageUrls: [],
           linkUrl: null,
+          title: null,
           postType: "TEXT",
         });
         await tx.enqueue({

@@ -1,29 +1,29 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
-import type { PostCreatedPayload } from "@nitap/jobs";
+import type { AnnouncementPublishedPayload } from "@nitap/jobs";
 
 import { ConflictError } from "@/lib/errors";
 import type { Actor } from "@/modules/auth";
 
-import { postInput } from "../domain/posts";
+import { announcementInput } from "../domain/posts";
 import type { Authorize } from "./authz";
 import type { PostsStore } from "./posts-store";
 import { parse } from "./validation";
 
 /**
- * FR-FEED-001. Every `imageUrls` id must be a READY upload owned by the caller (C-4, mirrors
- * uploads' set-profile-photo.ts); an id that isn't refuses UPLOAD_NOT_READY. `postType` is always
- * `TEXT` here — `ACHIEVEMENT` is set only by `modules/achievements`' own publish path.
+ * Phase 12E (spec E-2, E-4, E-5). The only path that writes an ANNOUNCEMENT post. GLOBAL
+ * `announcement.publish` only: a chapter-scoped grant does not match a resource-less check (XD-1).
+ * Post, audit row and outbox event commit together; no `post.created` is emitted.
  */
-export function createCreatePost(deps: {
+export function createPublishAnnouncement(deps: {
   store: PostsStore;
   authorize: Authorize;
 }) {
-  return async function createPost(args: {
+  return async function publishAnnouncement(args: {
     actor: Actor | null;
     input: unknown;
   }): Promise<{ postId: string }> {
-    const caller = deps.authorize(args.actor, PERMISSIONS.POST_CREATE);
-    const input = parse(postInput, args.input);
+    const caller = deps.authorize(args.actor, PERMISSIONS.ANNOUNCEMENT_PUBLISH);
+    const input = parse(announcementInput, args.input);
     const authorId = caller.userId.toLowerCase();
     const imageUrls = input.imageUrls ?? [];
 
@@ -37,19 +37,24 @@ export function createCreatePost(deps: {
       const row = await tx.insertPost({
         authorId,
         chapterId: null,
-        title: null,
+        title: input.title,
         content: input.content,
         imageUrls,
         linkUrl: input.linkUrl ?? null,
-        postType: "TEXT",
+        postType: "ANNOUNCEMENT",
+      });
+      await tx.audit({
+        action: "announcement.published",
+        actorId: authorId,
+        postId: row.id,
       });
       await tx.enqueue({
-        type: "post.created",
+        type: "announcement.published",
         payload: {
           v: 1,
           postId: row.id,
           authorId,
-        } satisfies PostCreatedPayload,
+        } satisfies AnnouncementPublishedPayload,
       });
       return row;
     });

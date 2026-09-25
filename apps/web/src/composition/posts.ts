@@ -1,4 +1,5 @@
 import { addTicks } from "./ticks";
+import { audit } from "@/infrastructure/audit";
 import { transactionRunner } from "@/infrastructure/database/client";
 import { outbox } from "@/infrastructure/outbox";
 import { authorize, type Actor } from "@/modules/auth";
@@ -7,12 +8,16 @@ import {
   createCreatePost,
   createDeleteComment,
   createDeletePost,
+  createGetPinnedAnnouncement,
   createGetPost,
   createGetPostImageKey,
+  createListAnnouncements,
   createListComments,
   createListFeed,
   createPrismaPostsStore,
+  createPublishAnnouncement,
   createReact,
+  createRemoveAnnouncement,
   createUnreact,
   type PostAuthor,
 } from "@/modules/posts";
@@ -24,11 +29,31 @@ import { getOwnProfile } from "./users";
  * exports off one store/authorize pair — messaging.ts itself exports each use case as a top-level
  * const, not a single bundled object, despite how some task prose describes it).
  */
-const store = createPrismaPostsStore({ runner: transactionRunner, outbox });
+const store = createPrismaPostsStore({
+  runner: transactionRunner,
+  outbox,
+  audit,
+});
 const deps = { store, authorize };
 
 export const createPost = createCreatePost(deps);
 export const deletePost = createDeletePost(deps);
+export const publishAnnouncement = createPublishAnnouncement(deps);
+export const removeAnnouncement = createRemoveAnnouncement(deps);
+export const listAnnouncements = createListAnnouncements(deps);
+const getPinnedAnnouncementBare = createGetPinnedAnnouncement(deps);
+export const getPinnedAnnouncement: typeof getPinnedAnnouncementBare = async (
+  args
+) => {
+  const post = await getPinnedAnnouncementBare(args);
+  if (post)
+    await addTicks(
+      [post],
+      (p) => p.author.id,
+      (p) => p.author
+    );
+  return post;
+};
 const listFeedBare = createListFeed(deps);
 export const listFeed: typeof listFeedBare = async (args) => {
   const page = await listFeedBare(args);

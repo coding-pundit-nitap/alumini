@@ -21,7 +21,10 @@ export function createDeletePost(deps: {
     const actorId = caller.userId.toLowerCase();
     await deps.store.transaction(async (tx) => {
       const post = await tx.findPost(args.postId);
-      if (!post || post.deleted) throw new NotFoundError();
+      // Announcements are removed only through removeAnnouncement, which audits (spec E-3).
+      if (!post || post.deleted || post.postType === "ANNOUNCEMENT") {
+        throw new NotFoundError();
+      }
       const decision = decideOwn(post.authorId, actorId);
       if (!decision.ok) refuse(decision);
       await tx.softDeletePost(post.id);

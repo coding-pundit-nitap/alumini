@@ -1,4 +1,5 @@
 import { Prisma, type Post } from "@nitap/database";
+import type { AuditWriter } from "@nitap/database/audit";
 import type { OutboxWriter } from "@nitap/database/outbox";
 import type { OutboxEvent } from "@nitap/jobs";
 
@@ -47,6 +48,7 @@ const toAuthor = (u: AuthorJoin): PostAuthor => ({
 export function createPrismaPostsStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;
+  audit: AuditWriter;
 }): PostsStore {
   const forClient = (db: Prisma.TransactionClient): PostsTx => {
     /**
@@ -163,8 +165,58 @@ export function createPrismaPostsStore(deps: {
         return db.post.create({ data: input });
       },
 
-      async findPost(id) {
+      async findPost(id, opts) {
+        if (opts?.forUpdate) {
+          await db.$queryRaw`SELECT 1 FROM "post" WHERE "id" = ${id}::uuid FOR UPDATE`;
+        }
         return db.post.findUnique({ where: { id } });
+      },
+
+      async audit(entry) {
+        await deps.audit.record(db, {
+          actorId: entry.actorId,
+          action: entry.action,
+          targetType: "post",
+          targetId: entry.postId,
+          metadata: {},
+        });
+      },
+
+      async listAnnouncements({ limit, after }) {
+        const rows = await db.post.findMany({
+          where: {
+            postType: "ANNOUNCEMENT",
+            deleted: false,
+            ...(after
+              ? {
+                  OR: [
+                    { createdAt: { lt: after.createdAt } },
+                    { createdAt: after.createdAt, id: { lt: after.id } },
+                  ],
+                }
+              : {}),
+          },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          take: limit,
+          include: { author: authorSelect },
+        });
+        return rows.map(({ author, ...post }) => ({
+          ...post,
+          author: toAuthor(author),
+        }));
+      },
+
+      async findPinnedAnnouncement({ since, viewerId }) {
+        const post = await db.post.findFirst({
+          where: {
+            postType: "ANNOUNCEMENT",
+            deleted: false,
+            createdAt: { gte: since },
+          },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          include: { author: authorSelect },
+        });
+        return post ? (await enrich([post], viewerId))[0]! : null;
       },
 
       async findFeedPost(id, viewerId) {

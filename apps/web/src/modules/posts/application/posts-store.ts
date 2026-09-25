@@ -6,9 +6,10 @@ export type PostRow = {
   authorId: string;
   chapterId: string | null;
   content: string;
+  title: string | null;
   imageUrls: string[];
   linkUrl: string | null;
-  postType: "TEXT" | "ACHIEVEMENT";
+  postType: "TEXT" | "ACHIEVEMENT" | "ANNOUNCEMENT";
   deleted: boolean;
   createdAt: Date;
 };
@@ -51,11 +52,12 @@ export type PostsTx = {
     authorId: string;
     chapterId: string | null;
     content: string;
+    title: string | null;
     imageUrls: string[];
     linkUrl: string | null;
-    postType: "TEXT" | "ACHIEVEMENT";
+    postType: "TEXT" | "ACHIEVEMENT" | "ANNOUNCEMENT";
   }): Promise<PostRow>;
-  findPost(id: string): Promise<PostRow | null>;
+  findPost(id: string, opts?: { forUpdate?: boolean }): Promise<PostRow | null>;
   /** Null when missing or soft-deleted (deleted posts never resolve, C-9). */
   findFeedPost(id: string, viewerId: string): Promise<FeedPost | null>;
   /** Serves only a READY upload that a live post's `imageUrls` references; see get-post-image-key.ts. */
@@ -85,9 +87,29 @@ export type PostsTx = {
   }): Promise<{ id: string }>;
   deleteReaction(postId: string, userId: string): Promise<void>;
   enqueue(event: {
-    type: "post.created" | "comment.created" | "reaction.added";
+    type:
+      | "post.created"
+      | "comment.created"
+      | "reaction.added"
+      | "announcement.published";
     payload: unknown;
   }): Promise<void>;
+  /** Phase 12E: announcement writes leave an audit row in the same transaction (spec E-4). Ids only. */
+  audit(entry: {
+    action: "announcement.published" | "announcement.removed";
+    actorId: string;
+    postId: string;
+  }): Promise<void>;
+  /** Live announcements, newest first, keyset after `after`. */
+  listAnnouncements(args: {
+    limit: number;
+    after: { createdAt: Date; id: string } | null;
+  }): Promise<(PostRow & { author: PostAuthor })[]>;
+  /** The newest live announcement created at or after `since`, enriched for the viewer; null when none. */
+  findPinnedAnnouncement(args: {
+    since: Date;
+    viewerId: string;
+  }): Promise<FeedPost | null>;
 };
 export type PostsStore = {
   transaction<T>(work: (tx: PostsTx) => Promise<T>): Promise<T>;

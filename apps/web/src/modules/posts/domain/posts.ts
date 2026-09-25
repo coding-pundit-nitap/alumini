@@ -23,6 +23,11 @@ export const postInput = z
   })
   .strict();
 
+/** Phase 12E (spec E-1): an announcement is a post with a title; body and attachments follow the post rules. */
+export const announcementInput = postInput.extend({
+  title: z.string().trim().min(1).max(120),
+});
+
 export const commentInput = z
   .object({ body: z.string().trim().min(1).max(2000) })
   .strict();
