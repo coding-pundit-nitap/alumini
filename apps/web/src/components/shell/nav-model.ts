@@ -162,6 +162,8 @@ export function buildNav(input: NavInput): NavModel {
     create.push({ href: "/dashboard#compose", label: "Post" });
   if (can(P.JOB_CREATE)) create.push({ href: "/jobs/new", label: "Job" });
   if (can(P.EVENT_CREATE)) create.push({ href: "/events/new", label: "Event" });
+  if (can(P.ACHIEVEMENT_SUBMIT))
+    create.push({ href: "/achievements#share", label: "Achievement" });
 
   const allEntries = groups.flatMap((g) => g.entries);
   const tabOrder = ["/dashboard", "/directory", "/messages", "/jobs"];

@@ -65,7 +65,11 @@ describe("buildNav", () => {
     expect(labels(m)).toEqual(
       expect.arrayContaining(["Mentoring", "My job posts", "Achievements"])
     );
-    expect(m.create.map((c) => c.label)).toEqual(["Post", "Job"]);
+    expect(m.create.map((c) => c.label)).toEqual([
+      "Post",
+      "Job",
+      "Achievement",
+    ]);
   });
   it("alumni not yet a mentor sees Mentorship", () => {
     expect(labels(nav([...BASE, P.MENTOR_OPT_IN]))).toContain("Mentorship");

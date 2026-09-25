@@ -1,7 +1,11 @@
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { render, screen } from "../../../../../tests/support/test-utils";
+import {
+  render,
+  screen,
+  within,
+} from "../../../../../tests/support/test-utils";
 import { AchievementList } from "./achievement-list";
 
 const achievement = () => ({
@@ -22,7 +26,8 @@ describe("AchievementList", () => {
   it("renders each achievement's title and status badge", () => {
     render(<AchievementList achievements={achievements} isReviewer={false} />);
     expect(screen.getByText("Best Paper")).toBeInTheDocument();
-    expect(screen.getByText("SUBMITTED")).toBeInTheDocument();
+    expect(screen.getByText("Awaiting review")).toBeInTheDocument();
+    expect(screen.getByText(/Award ·/)).toBeInTheDocument();
   });
 
   it("hides the approve/reject affordance from a non-reviewer", () => {
@@ -79,5 +84,49 @@ describe("AchievementList", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Already reviewed."
     );
+  });
+
+  it("lets the owner withdraw a submission after confirming", async () => {
+    const user = userEvent.setup();
+    const onWithdraw = vi.fn(async () => ({ ok: true as const, data: {} }));
+    render(
+      <AchievementList
+        achievements={achievements}
+        isReviewer={false}
+        onWithdraw={onWithdraw}
+      />
+    );
+    await user.click(screen.getByRole("button", { name: "Withdraw" }));
+    await user.click(screen.getByRole("button", { name: "Keep it" }));
+    expect(onWithdraw).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Withdraw" }));
+    await user.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", {
+        name: "Withdraw",
+      })
+    );
+    expect(onWithdraw).toHaveBeenCalledWith(achievements[0]!.id);
+  });
+
+  it("links a published achievement to its post and offers no withdraw", () => {
+    render(
+      <AchievementList
+        achievements={[
+          {
+            ...achievement(),
+            status: "PUBLISHED" as const,
+            publishedPostId: "p1",
+          },
+        ]}
+        isReviewer={false}
+        onWithdraw={vi.fn()}
+      />
+    );
+    expect(screen.getByText("Published")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /View post/ })).toHaveAttribute(
+      "href",
+      "/feed/p1"
+    );
+    expect(screen.queryByRole("button", { name: "Withdraw" })).toBeNull();
   });
 });

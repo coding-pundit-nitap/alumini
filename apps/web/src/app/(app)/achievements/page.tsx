@@ -1,8 +1,17 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
+import { ClipboardCheck, Trophy } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { reviewAchievementAction, submitAchievementAction } from "./actions";
+import { buttonVariants } from "@nitap/ui/components/button";
+
+import {
+  reviewAchievementAction,
+  submitAchievementAction,
+  withdrawAchievementAction,
+} from "./actions";
+import { PageColumns } from "@/components/shell/page-columns";
 import {
   listOwnAchievements,
   listPendingAchievements,
@@ -12,6 +21,14 @@ import { can, getActor } from "@/modules/auth";
 import { AchievementForm, AchievementList } from "@/modules/achievements";
 
 export const metadata: Metadata = { title: "Your achievements" };
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="px-4 pt-6 pb-1 font-semibold tracking-tight sm:px-5">
+      {children}
+    </h2>
+  );
+}
 
 export default async function AchievementsPage({
   searchParams,
@@ -39,11 +56,39 @@ export default async function AchievementsPage({
   const pending = isReviewer ? await listPendingAchievements({ actor }) : null;
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-12">
-      <h1 className="text-2xl font-semibold">Your achievements</h1>
-      {canSubmit ? (
+    <PageColumns
+      header={
         <>
-          <AchievementForm onSubmit={submitAchievementAction} />
+          <div className="min-w-0 flex-1 leading-tight">
+            <h1 className="truncate font-semibold tracking-tight">
+              Achievements
+            </h1>
+            <p className="text-muted-foreground truncate text-xs">
+              Wins from the NIT AP community, shared on the feed
+            </p>
+          </div>
+          {isReviewer ? (
+            <Link
+              href="/admin/achievements"
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className: "rounded-full",
+              })}
+            >
+              <ClipboardCheck aria-hidden />
+              <span className="hidden sm:inline">Open review queue</span>
+              <span className="sm:hidden">Queue</span>
+            </Link>
+          ) : null}
+        </>
+      }
+    >
+      {canSubmit && page ? (
+        <>
+          <div id="share" className="scroll-mt-28 border-b px-4 py-5 sm:px-5">
+            <AchievementForm onSubmit={submitAchievementAction} />
+          </div>
           {/*
            * `listOwnAchievements` only ever returns the caller's own submissions, and a reviewer may
            * never review their own (SELF_REVIEW_FORBIDDEN, C-7) — so this list never shows the review
@@ -51,28 +96,57 @@ export default async function AchievementsPage({
            * of their own to submit or list, so this section is skipped entirely for them rather than
            * calling `listOwnAchievements`, which would 403.
            */}
-          <AchievementList
-            achievements={page!.achievements}
-            isReviewer={false}
-          />
+          <section className="border-b">
+            <SectionTitle>Your achievements</SectionTitle>
+            <AchievementList
+              achievements={page.achievements}
+              isReviewer={false}
+              onWithdraw={withdrawAchievementAction}
+              emptyText="No achievements yet. Share your first one above."
+              olderHref={
+                page.nextCursor
+                  ? `/achievements?cursor=${encodeURIComponent(page.nextCursor)}`
+                  : null
+              }
+            />
+          </section>
         </>
       ) : null}
 
       {pending ? (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Pending review</h2>
-          {/*
-           * There is no dedicated reviewer queue page this phase (plan's explicit design intent) — the
-           * review affordance lives inline on the same /achievements page everyone sees, backed by
-           * `listPendingAchievements` (every SUBMITTED achievement, any user).
-           */}
+        <section className="border-b">
+          <SectionTitle>Pending review</SectionTitle>
+          {/* The full queue, with paging, is /admin/achievements; this is its first page inline. */}
           <AchievementList
             achievements={pending.achievements}
             isReviewer={true}
             onReview={reviewAchievementAction}
+            emptyText="Nothing is waiting for review."
           />
         </section>
       ) : null}
-    </div>
+
+      {!canSubmit && !isReviewer ? (
+        <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
+          <span className="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
+            <Trophy aria-hidden className="size-5" />
+          </span>
+          <p className="text-muted-foreground max-w-xs text-sm">
+            Alumni share their wins here. Approved achievements appear in your
+            feed.
+          </p>
+          <Link
+            href="/dashboard"
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "rounded-full",
+            })}
+          >
+            Go to your feed
+          </Link>
+        </div>
+      ) : null}
+    </PageColumns>
   );
 }

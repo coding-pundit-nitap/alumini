@@ -180,7 +180,7 @@ test.describe("community journey", () => {
     await asha.page.getByLabel("Description").fill(description);
     await asha.page.getByRole("button", { name: "Submit" }).click();
     await expect(asha.page.getByText(title)).toBeVisible({ timeout: 15_000 });
-    await expect(asha.page.getByText("SUBMITTED")).toBeVisible();
+    await expect(asha.page.getByText("Awaiting review")).toBeVisible();
 
     // The moderator opens the same page (there is no dedicated reviewer queue this phase) and sees
     // Asha's submission under "Pending review".
@@ -191,6 +191,9 @@ test.describe("community journey", () => {
       .filter({ has: moderator.page.getByRole("button", { name: "Approve" }) });
     await expect(pendingCard).toBeVisible({ timeout: 15_000 });
     await pendingCard.getByRole("button", { name: "Approve" }).click();
+    await moderator.page
+      .getByRole("button", { name: "Approve achievement" })
+      .click();
     await expect(pendingCard).toHaveCount(0, { timeout: 15_000 });
 
     // Approving publishes the achievement as an ACHIEVEMENT post (C-12); it shows up in the feed.

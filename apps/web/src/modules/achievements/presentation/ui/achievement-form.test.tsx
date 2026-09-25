@@ -28,12 +28,13 @@ describe("AchievementForm", () => {
       screen.getByLabelText(/description/i),
       "Won at the conference"
     );
-    await user.selectOptions(screen.getByLabelText(/category/i), "AWARD");
+    await user.click(screen.getByRole("radio", { name: "Publication" }));
     await user.click(screen.getByRole("button", { name: /submit/i }));
     expect(a.onSubmit).toHaveBeenCalledWith({
       title: "Best Paper Award",
       description: "Won at the conference",
-      category: "AWARD",
+      category: "PUBLICATION",
     });
+    expect(await screen.findByRole("status")).toHaveTextContent("Submitted");
   });
 });

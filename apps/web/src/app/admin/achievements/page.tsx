@@ -38,11 +38,13 @@ export default async function AdminAchievementsPage({
         title="Achievements awaiting review"
         description="Member wins waiting to be published."
       />
-      <AchievementList
-        achievements={page.achievements}
-        isReviewer={true}
-        onReview={reviewAchievementAction}
-      />
+      <div className="bg-card overflow-hidden rounded-xl border">
+        <AchievementList
+          achievements={page.achievements}
+          isReviewer={true}
+          onReview={reviewAchievementAction}
+        />
+      </div>
       <AdminPager
         href={
           page.nextCursor
