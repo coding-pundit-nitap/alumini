@@ -6,9 +6,10 @@ export {
   ADMIN_PERMISSIONS,
   adminNavigation,
   dashboardTiles,
+  groupAdminNav,
   hasAdminAccess,
 } from "./domain/access";
-export type { Can, NavIcon, NavItem, TileKey } from "./domain/access";
+export type { Can, NavGroup, NavIcon, NavItem, TileKey } from "./domain/access";
 export { createGetDashboard } from "./application/get-dashboard";
 export type { DashboardTile, GetDashboard } from "./application/get-dashboard";
 export { createListAuditLog } from "./application/list-audit-log";
@@ -21,7 +22,6 @@ export type {
   TileCount,
 } from "./application/admin-store";
 export { auditQuerySchema } from "./domain/audit-query";
-export { AdminSidebar } from "./presentation/ui/admin-sidebar";
 export {
   AUDIT_FILTER_LABELS,
   AuditFilters,

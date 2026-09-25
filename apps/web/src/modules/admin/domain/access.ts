@@ -101,3 +101,33 @@ export const dashboardTiles = (can: Can): TileKey[] =>
   (Object.keys(TILE_PERMISSIONS) as TileKey[]).filter((key) =>
     can(TILE_PERMISSIONS[key])
   );
+
+export type NavGroup = {
+  label: "Overview" | "Queues" | "People" | "System";
+  items: NavItem[];
+};
+
+const GROUP_OF: Record<string, NavGroup["label"]> = {
+  "/admin": "Overview",
+  "/admin/verification": "Queues",
+  "/admin/reports": "Queues",
+  "/admin/jobs": "Queues",
+  "/admin/achievements": "Queues",
+  "/admin/users": "People",
+  "/admin/audit": "System",
+  "/admin/notifications": "System",
+};
+const GROUP_ORDER: NavGroup["label"][] = [
+  "Overview",
+  "Queues",
+  "People",
+  "System",
+];
+
+/** The rail's sections, in a fixed order; only entries the actor was given, so empty groups vanish. */
+export function groupAdminNav(items: NavItem[]): NavGroup[] {
+  return GROUP_ORDER.map((label) => ({
+    label,
+    items: items.filter((i) => (GROUP_OF[i.href] ?? "System") === label),
+  })).filter((g) => g.items.length > 0);
+}

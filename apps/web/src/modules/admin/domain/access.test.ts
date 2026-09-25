@@ -5,6 +5,7 @@ import {
   ADMIN_PERMISSIONS,
   adminNavigation,
   dashboardTiles,
+  groupAdminNav,
   hasAdminAccess,
 } from "./access";
 
@@ -62,5 +63,30 @@ describe("admin access", () => {
   it("lists every admin-tier permission exactly once", () => {
     expect(new Set(ADMIN_PERMISSIONS).size).toBe(ADMIN_PERMISSIONS.length);
     expect(ADMIN_PERMISSIONS).toHaveLength(13);
+  });
+});
+
+describe("groupAdminNav", () => {
+  const item = (href: string, label: string) =>
+    ({ href, label, icon: "dashboard" }) as const;
+
+  it("puts each entry in its group, in a fixed order, and drops empty groups", () => {
+    const groups = groupAdminNav([
+      item("/admin", "Dashboard"),
+      item("/admin/users", "Users"),
+      item("/admin/audit", "Audit log"),
+      item("/admin/reports", "Reports"),
+      item("/admin/jobs", "Jobs"),
+    ]);
+    expect(groups.map((g) => [g.label, g.items.map((i) => i.label)])).toEqual([
+      ["Overview", ["Dashboard"]],
+      ["Queues", ["Reports", "Jobs"]],
+      ["People", ["Users"]],
+      ["System", ["Audit log"]],
+    ]);
+  });
+
+  it("returns nothing for no entries (a non-admin)", () => {
+    expect(groupAdminNav([])).toEqual([]);
   });
 });
