@@ -8,15 +8,8 @@ import type { ActionResult } from "@/lib/action-result";
 
 import type { ListedJob } from "../../application/job-queries";
 import type { JobStatus } from "../../domain/job";
+import { STATUS_LABEL } from "../labels";
 import { useJobAction } from "./use-job-action";
-
-const STATUS_LABEL: Record<JobStatus, string> = {
-  PENDING_REVIEW: "Pending review",
-  PUBLISHED: "Published",
-  REJECTED: "Rejected",
-  EXPIRED: "Expired",
-  CLOSED: "Closed",
-};
 
 const WITHDRAWABLE: readonly JobStatus[] = ["PENDING_REVIEW", "PUBLISHED"];
 

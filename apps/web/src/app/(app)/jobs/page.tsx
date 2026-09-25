@@ -1,31 +1,27 @@
+import { PERMISSIONS } from "@nitap/database/permissions";
+import { FileText, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
+import { buttonVariants } from "@nitap/ui/components/button";
+
+import { PageColumns } from "@/components/shell/page-columns";
 import { listPublishedJobs } from "@/composition/jobs";
-import { getActor } from "@/modules/auth";
+import { AppError } from "@/lib/errors";
+import { can, getActor } from "@/modules/auth";
 import {
   EMPLOYMENT_TYPES,
+  JobFilters,
   JobList,
+  jobsHref,
   WORK_MODES,
   type EmploymentType,
+  type JobFilterValues,
   type WorkMode,
 } from "@/modules/jobs";
 
 export const metadata: Metadata = { title: "Jobs & internships" };
-
-const EMPLOYMENT_LABEL: Record<EmploymentType, string> = {
-  FULL_TIME: "Full-time",
-  PART_TIME: "Part-time",
-  INTERNSHIP: "Internship",
-  CONTRACT: "Contract",
-};
-const WORK_MODE_LABEL: Record<WorkMode, string> = {
-  ONSITE: "On-site",
-  REMOTE: "Remote",
-  HYBRID: "Hybrid",
-};
-const SELECT_CLASS =
-  "border-input bg-background h-9 rounded-md border px-2 text-sm";
 
 export default async function JobsPage({
   searchParams,
@@ -34,12 +30,15 @@ export default async function JobsPage({
     employmentType?: string;
     workMode?: string;
     location?: string;
+    cursor?: string;
   }>;
 }) {
-  const { employmentType, workMode, location } = await searchParams;
+  const { employmentType, workMode, location, cursor } = await searchParams;
   const actor = await getActor();
-  const page = await listPublishedJobs({
-    actor,
+  if (!actor) redirect("/login?next=%2Fjobs");
+
+  // Unknown enum values in the URL are ignored.
+  const filters: JobFilterValues = {
     employmentType: (EMPLOYMENT_TYPES as readonly string[]).includes(
       employmentType ?? ""
     )
@@ -48,55 +47,80 @@ export default async function JobsPage({
     workMode: (WORK_MODES as readonly string[]).includes(workMode ?? "")
       ? (workMode as WorkMode)
       : undefined,
-    location,
-  });
+    location: location?.trim() || undefined,
+  };
+
+  let page;
+  try {
+    page = await listPublishedJobs({ actor, ...filters, cursor });
+  } catch (error) {
+    if (error instanceof AppError && error.status === 403) {
+      redirect("/account/status");
+    }
+    if (error instanceof AppError && error.code === "INVALID_CURSOR") {
+      redirect(jobsHref(filters));
+    }
+    throw error;
+  }
+
+  const base = jobsHref(filters);
+  const query = base.split("?")[1] ?? "";
+  const nextCursor = page.page.nextCursor;
+  const nextHref = nextCursor
+    ? `${base}${query ? "&" : "?"}cursor=${encodeURIComponent(nextCursor)}`
+    : null;
+  const canCreate = can(actor, PERMISSIONS.JOB_CREATE);
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-12">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Jobs & internships</h1>
-        {actor ? (
-          <Link href="/jobs/mine" className="text-sm underline">
-            My postings
+    <PageColumns
+      header={
+        <>
+          <div className="min-w-0 flex-1 leading-tight">
+            <h1 className="truncate font-semibold tracking-tight">
+              Jobs & internships
+            </h1>
+            <p className="text-muted-foreground truncate text-xs">
+              Roles shared by alumni and the placement cell
+            </p>
+          </div>
+          <Link
+            href="/jobs/mine"
+            aria-label="My postings"
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className: "rounded-full",
+            })}
+          >
+            <FileText aria-hidden />
+            <span className="hidden sm:inline">My postings</span>
           </Link>
-        ) : null}
-      </div>
-      <form className="flex flex-wrap gap-3" aria-label="Filter jobs">
-        <select
-          name="employmentType"
-          defaultValue={employmentType ?? ""}
-          className={SELECT_CLASS}
-        >
-          <option value="">Any employment type</option>
-          {EMPLOYMENT_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {EMPLOYMENT_LABEL[t]}
-            </option>
-          ))}
-        </select>
-        <select
-          name="workMode"
-          defaultValue={workMode ?? ""}
-          className={SELECT_CLASS}
-        >
-          <option value="">Any work mode</option>
-          {WORK_MODES.map((m) => (
-            <option key={m} value={m}>
-              {WORK_MODE_LABEL[m]}
-            </option>
-          ))}
-        </select>
-        <input
-          name="location"
-          defaultValue={location ?? ""}
-          placeholder="Location"
-          className={SELECT_CLASS}
-        />
-        <button type="submit" className="text-sm underline underline-offset-2">
-          Apply filters
-        </button>
-      </form>
-      <JobList items={page.data} />
-    </div>
+          {canCreate ? (
+            <Link
+              href="/jobs/new"
+              className={buttonVariants({
+                size: "sm",
+                className: "rounded-full",
+              })}
+            >
+              <Plus aria-hidden />
+              Post a job
+            </Link>
+          ) : null}
+        </>
+      }
+    >
+      <JobFilters filters={filters} />
+      <JobList
+        // New filters start a fresh list (and drop any pages loaded in place).
+        key={query}
+        items={page.data}
+        query={query}
+        nextCursor={nextCursor}
+        nextHref={nextHref}
+        clearHref={base === "/jobs" ? null : "/jobs"}
+        canCreate={canCreate}
+      />
+    </PageColumns>
   );
 }
