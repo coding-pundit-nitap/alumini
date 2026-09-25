@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Badge } from "@nitap/ui/components/badge";
+import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
 import {
   Tabs,
   TabsContent,
@@ -9,17 +10,19 @@ import {
   TabsTrigger,
 } from "@nitap/ui/components/tabs";
 
+import { AdminPageHeader, AdminPanel } from "@/components/admin/admin-surface";
 import { getUser, listAuditLog } from "@/composition/admin";
 import { SUPER_ADMIN_ROLE } from "@/infrastructure/role-permissions";
 import { AppError } from "@/lib/errors";
 import {
-  AccessList,
   AccountStateDialog,
   AssignRoleDialog,
   AuditTable,
   ESCALATION_MESSAGES,
   GrantPermissionDialog,
+  GrantsTable,
   LAST_SUPER_ADMIN_NOTE,
+  RolesTable,
   STATE_LABEL,
   TARGET_STATES,
   canTransition,
@@ -39,6 +42,17 @@ import {
 export const metadata: Metadata = { title: "User" };
 
 const SELF_NOTE = "You can't change your own access.";
+
+const STATE_BADGE: Record<string, "success" | "brand" | "destructive"> = {
+  VERIFIED: "success",
+  PENDING: "brand",
+  REJECTED: "destructive",
+  SUSPENDED: "destructive",
+  DEACTIVATED: "destructive",
+};
+
+const date = (d: Date) =>
+  d.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
 
 /** FR-ADMIN-003: one user's state, roles, grants and history, with the actions the viewer may take. */
 export default async function UserPage({
@@ -84,99 +98,139 @@ export default async function UserPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="flex items-center gap-3 text-2xl font-semibold">
-          {user.name}
-          <Badge
-            variant={
-              user.accountState === "SUSPENDED" ||
-              user.accountState === "DEACTIVATED"
-                ? "destructive"
-                : "secondary"
-            }
-          >
-            {STATE_LABEL[user.accountState] ?? user.accountState}
-          </Badge>
-        </h1>
-        <p className="text-muted-foreground text-sm">{user.email}</p>
-      </div>
+      <AdminPageHeader
+        back={{ href: "/admin/users", label: "All users" }}
+        title={
+          <>
+            {user.name}
+            <Badge variant={STATE_BADGE[user.accountState] ?? "secondary"}>
+              {STATE_LABEL[user.accountState] ?? user.accountState}
+            </Badge>
+          </>
+        }
+        description={user.email}
+      >
+        <div className="mt-3 flex items-center gap-3">
+          <InitialsAvatar name={user.name} seed={user.id} size="lg" />
+          <div className="text-muted-foreground flex flex-wrap gap-2 text-xs">
+            <span className="bg-muted rounded-full border px-2.5 py-1">
+              Joined {date(user.createdAt)}
+            </span>
+            {user.deactivatedAt ? (
+              <span className="bg-muted rounded-full border px-2.5 py-1">
+                Deactivated {date(user.deactivatedAt)}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </AdminPageHeader>
       <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="access">Roles &amp; access</TabsTrigger>
+        <TabsList className="bg-muted/70 rounded-full border p-0.5">
+          <TabsTrigger
+            value="overview"
+            className="h-7 rounded-full px-3.5 text-xs"
+          >
+            Overview
+          </TabsTrigger>
+          <TabsTrigger
+            value="access"
+            className="h-7 rounded-full px-3.5 text-xs"
+          >
+            Roles &amp; access
+          </TabsTrigger>
           {activity ? (
-            <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger
+              value="activity"
+              className="h-7 rounded-full px-3.5 text-xs"
+            >
+              Activity
+            </TabsTrigger>
           ) : null}
         </TabsList>
         <TabsContent value="overview" className="flex flex-col gap-4 pt-4">
-          <p className="text-sm">
-            Joined{" "}
-            {user.createdAt.toLocaleDateString("en-IN", {
-              timeZone: "Asia/Kolkata",
-            })}
-            {user.deactivatedAt
-              ? ` · deactivated ${user.deactivatedAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}`
-              : ""}
-          </p>
-          {isSelf ? (
-            <p className="text-muted-foreground text-sm">{SELF_NOTE}</p>
-          ) : transitions.length > 0 ? (
-            <div className="flex flex-wrap items-start gap-3">
-              {transitions.map((to) => (
-                <AccountStateDialog
-                  key={to}
-                  userId={user.id}
-                  userName={user.name}
-                  to={to}
-                  action={changeAccountStateAction}
-                  disabledReason={
-                    blocked ?? (to !== "VERIFIED" ? lastSuper : undefined)
-                  }
-                />
-              ))}
+          <AdminPanel
+            title="Account state"
+            description="Suspend, deactivate or reinstate this account."
+          >
+            <div className="p-4">
+              {isSelf ? (
+                <p className="text-muted-foreground text-sm">{SELF_NOTE}</p>
+              ) : transitions.length > 0 ? (
+                <div className="flex flex-wrap items-start gap-3">
+                  {transitions.map((to) => (
+                    <AccountStateDialog
+                      key={to}
+                      userId={user.id}
+                      userName={user.name}
+                      to={to}
+                      action={changeAccountStateAction}
+                      disabledReason={
+                        blocked ?? (to !== "VERIFIED" ? lastSuper : undefined)
+                      }
+                    />
+                  ))}
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </AdminPanel>
         </TabsContent>
         <TabsContent value="access" className="flex flex-col gap-4 pt-4">
           {isSelf ? (
             <p className="text-muted-foreground text-sm">{SELF_NOTE}</p>
           ) : (
             <>
-              <div className="flex flex-wrap items-start gap-3">
-                {canRoles ? (
-                  <AssignRoleDialog
-                    userId={user.id}
-                    current={user.roles.map((r) => r.name)}
-                    options={options}
-                    disabledReason={blocked}
-                    action={assignRoleAction}
-                  />
-                ) : null}
-                {canGrants ? (
-                  <GrantPermissionDialog
-                    userId={user.id}
-                    options={options}
-                    chapters={chapters}
-                    disabledReason={blocked}
-                    action={grantPermissionAction}
-                  />
-                ) : null}
-              </div>
-              <AccessList
-                user={user}
-                options={options}
-                superAdminRole={SUPER_ADMIN_ROLE}
-                blocked={blocked}
-                now={new Date()}
-                {...(canRoles ? { revokeRole: revokeRoleAction } : {})}
-                {...(canGrants ? { revokeGrant: revokeGrantAction } : {})}
-              />
+              <AdminPanel
+                title="Roles"
+                actions={
+                  canRoles ? (
+                    <AssignRoleDialog
+                      userId={user.id}
+                      current={user.roles.map((r) => r.name)}
+                      options={options}
+                      disabledReason={blocked}
+                      action={assignRoleAction}
+                    />
+                  ) : null
+                }
+              >
+                <RolesTable
+                  user={user}
+                  options={options}
+                  superAdminRole={SUPER_ADMIN_ROLE}
+                  blocked={blocked}
+                  {...(canRoles ? { revokeRole: revokeRoleAction } : {})}
+                />
+              </AdminPanel>
+              <AdminPanel
+                title="Permission grants"
+                actions={
+                  canGrants ? (
+                    <GrantPermissionDialog
+                      userId={user.id}
+                      options={options}
+                      chapters={chapters}
+                      disabledReason={blocked}
+                      action={grantPermissionAction}
+                    />
+                  ) : null
+                }
+              >
+                <GrantsTable
+                  user={user}
+                  options={options}
+                  blocked={blocked}
+                  now={new Date()}
+                  {...(canGrants ? { revokeGrant: revokeGrantAction } : {})}
+                />
+              </AdminPanel>
             </>
           )}
         </TabsContent>
         {activity ? (
           <TabsContent value="activity" className="pt-4">
-            <AuditTable rows={activity} />
+            <AdminPanel>
+              <AuditTable rows={activity} />
+            </AdminPanel>
           </TabsContent>
         ) : null}
       </Tabs>

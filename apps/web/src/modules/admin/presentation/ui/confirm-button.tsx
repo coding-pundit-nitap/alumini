@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState, useTransition, type ReactNode } from "react";
 
 import type { ActionResult } from "@/lib/action-result";
+import { cn } from "@/lib/utils";
 
 export type AccessAction = (
   formData: FormData
@@ -78,7 +79,16 @@ export function ConfirmButton(props: {
             <Button
               type="button"
               size="sm"
-              variant={props.variant ?? "outline"}
+              variant={
+                props.variant === "destructive"
+                  ? "outline"
+                  : (props.variant ?? "outline")
+              }
+              className={cn(
+                "rounded-full",
+                props.variant === "destructive" &&
+                  "text-destructive hover:bg-destructive/10"
+              )}
               disabled={props.disabledReason !== undefined}
               aria-describedby={props.disabledReason ? reasonId : undefined}
             />

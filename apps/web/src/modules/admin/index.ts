@@ -43,7 +43,11 @@ export type { AccessOptions } from "./domain/escalation";
 export { ESCALATION_MESSAGES } from "./domain/escalation";
 export { SUSPENSION_REASONS, TARGET_STATES } from "./domain/lifecycle";
 export { isUuid, userListQuerySchema } from "./domain/user-query";
-export { AccessList } from "./presentation/ui/access-list";
+export {
+  AccessList,
+  GrantsTable,
+  RolesTable,
+} from "./presentation/ui/access-list";
 export { AccountStateDialog } from "./presentation/ui/account-state-dialog";
 export { ConfirmButton } from "./presentation/ui/confirm-button";
 export { AssignRoleDialog } from "./presentation/ui/assign-role-dialog";

@@ -19,18 +19,14 @@ import { LAST_SUPER_ADMIN_NOTE } from "./labels";
 const date = (d: Date) =>
   d.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
 
-/**
- * The user's roles and grants. A remove/revoke action is passed only when the viewer may use it; a
- * blocked one is disabled with its reason (spec B12-3, B12-5).
- */
-export function AccessList(props: {
+/** The user's roles. A remove action is passed only when the viewer may use it; a blocked one is
+ * disabled with its reason (spec B12-3, B12-5). */
+export function RolesTable(props: {
   user: UserDetail;
   options: AccessOptions;
   superAdminRole: string;
   blocked: string | undefined;
-  now: Date;
   revokeRole?: AccessAction;
-  revokeGrant?: AccessAction;
 }) {
   const { user } = props;
   const names = user.roles.map((r) => r.name);
@@ -44,6 +40,58 @@ export function AccessList(props: {
       : undefined;
   };
 
+  if (user.roles.length === 0)
+    return <p className="text-muted-foreground p-4 text-sm">No roles.</p>;
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Role</TableHead>
+          <TableHead>Granted by</TableHead>
+          <TableHead>Since</TableHead>
+          {props.revokeRole ? <TableHead /> : null}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {user.roles.map((r) => (
+          <TableRow key={r.name}>
+            <TableCell>{r.name}</TableCell>
+            <TableCell>{r.grantedBy.name}</TableCell>
+            <TableCell>{date(r.grantedAt)}</TableCell>
+            {props.revokeRole ? (
+              <TableCell>
+                <ConfirmButton
+                  label="Remove"
+                  variant="destructive"
+                  title={`Remove ${r.name}?`}
+                  description={`Roles: ${names.join(", ")} → ${
+                    names.filter((n) => n !== r.name).join(", ") || "none"
+                  }`}
+                  confirmLabel="Remove"
+                  fields={{ userId: user.id, role: r.name }}
+                  disabledReason={roleBlock(r.name)}
+                  action={props.revokeRole}
+                />
+              </TableCell>
+            ) : null}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+/** The user's direct permission grants. Same revoke/blocked contract as {@link RolesTable}. */
+export function GrantsTable(props: {
+  user: UserDetail;
+  options: AccessOptions;
+  blocked: string | undefined;
+  now: Date;
+  revokeGrant?: AccessAction;
+}) {
+  const { user } = props;
+
   // E2 applies to revoking as to granting: the same scope the grant sits in.
   const grantBlock = (g: UserDetail["grants"][number]) => {
     if (props.blocked) return props.blocked;
@@ -56,104 +104,94 @@ export function AccessList(props: {
       : ESCALATION_MESSAGES[reason];
   };
 
+  if (user.grants.length === 0)
+    return (
+      <p className="text-muted-foreground p-4 text-sm">No direct grants.</p>
+    );
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Permission</TableHead>
+          <TableHead>Scope</TableHead>
+          <TableHead>Granted by</TableHead>
+          <TableHead>Expires</TableHead>
+          {props.revokeGrant ? <TableHead /> : null}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {user.grants.map((g) => (
+          <TableRow key={g.id}>
+            <TableCell className="font-mono text-xs">{g.permission}</TableCell>
+            <TableCell>
+              {g.scope === "GLOBAL" ? "Global" : `Chapter: ${g.chapterSlug}`}
+            </TableCell>
+            <TableCell>{g.grantedBy.name}</TableCell>
+            <TableCell>
+              <span className="flex items-center gap-2">
+                {g.expiresAt ? date(g.expiresAt) : "Never"}
+                {g.expiresAt && g.expiresAt <= props.now ? (
+                  <Badge variant="destructive">Expired</Badge>
+                ) : null}
+              </span>
+            </TableCell>
+            {props.revokeGrant ? (
+              <TableCell>
+                <ConfirmButton
+                  label="Revoke"
+                  variant="destructive"
+                  title={`Revoke ${g.permission}?`}
+                  description="They lose this permission on their next request."
+                  confirmLabel="Revoke"
+                  fields={{ userId: user.id, grantId: g.id }}
+                  disabledReason={grantBlock(g)}
+                  action={props.revokeGrant}
+                />
+              </TableCell>
+            ) : null}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+/**
+ * The user's roles and grants together. A remove/revoke action is passed only when the viewer may
+ * use it; a blocked one is disabled with its reason (spec B12-3, B12-5). Kept as a thin wrapper over
+ * {@link RolesTable} and {@link GrantsTable} for callers that want both without separate panels.
+ */
+export function AccessList(props: {
+  user: UserDetail;
+  options: AccessOptions;
+  superAdminRole: string;
+  blocked: string | undefined;
+  now: Date;
+  revokeRole?: AccessAction;
+  revokeGrant?: AccessAction;
+}) {
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Roles</h2>
-        {user.roles.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No roles.</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Role</TableHead>
-                <TableHead>Granted by</TableHead>
-                <TableHead>Since</TableHead>
-                {props.revokeRole ? <TableHead /> : null}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {user.roles.map((r) => (
-                <TableRow key={r.name}>
-                  <TableCell>{r.name}</TableCell>
-                  <TableCell>{r.grantedBy.name}</TableCell>
-                  <TableCell>{date(r.grantedAt)}</TableCell>
-                  {props.revokeRole ? (
-                    <TableCell>
-                      <ConfirmButton
-                        label="Remove"
-                        variant="destructive"
-                        title={`Remove ${r.name}?`}
-                        description={`Roles: ${names.join(", ")} → ${
-                          names.filter((n) => n !== r.name).join(", ") || "none"
-                        }`}
-                        confirmLabel="Remove"
-                        fields={{ userId: user.id, role: r.name }}
-                        disabledReason={roleBlock(r.name)}
-                        action={props.revokeRole}
-                      />
-                    </TableCell>
-                  ) : null}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <RolesTable
+          user={props.user}
+          options={props.options}
+          superAdminRole={props.superAdminRole}
+          blocked={props.blocked}
+          {...(props.revokeRole ? { revokeRole: props.revokeRole } : {})}
+        />
       </section>
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Permission grants</h2>
-        {user.grants.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No direct grants.</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Permission</TableHead>
-                <TableHead>Scope</TableHead>
-                <TableHead>Granted by</TableHead>
-                <TableHead>Expires</TableHead>
-                {props.revokeGrant ? <TableHead /> : null}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {user.grants.map((g) => (
-                <TableRow key={g.id}>
-                  <TableCell className="font-mono text-xs">
-                    {g.permission}
-                  </TableCell>
-                  <TableCell>
-                    {g.scope === "GLOBAL"
-                      ? "Global"
-                      : `Chapter: ${g.chapterSlug}`}
-                  </TableCell>
-                  <TableCell>{g.grantedBy.name}</TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-2">
-                      {g.expiresAt ? date(g.expiresAt) : "Never"}
-                      {g.expiresAt && g.expiresAt <= props.now ? (
-                        <Badge variant="destructive">Expired</Badge>
-                      ) : null}
-                    </span>
-                  </TableCell>
-                  {props.revokeGrant ? (
-                    <TableCell>
-                      <ConfirmButton
-                        label="Revoke"
-                        variant="destructive"
-                        title={`Revoke ${g.permission}?`}
-                        description="They lose this permission on their next request."
-                        confirmLabel="Revoke"
-                        fields={{ userId: user.id, grantId: g.id }}
-                        disabledReason={grantBlock(g)}
-                        action={props.revokeGrant}
-                      />
-                    </TableCell>
-                  ) : null}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <GrantsTable
+          user={props.user}
+          options={props.options}
+          blocked={props.blocked}
+          now={props.now}
+          {...(props.revokeGrant ? { revokeGrant: props.revokeGrant } : {})}
+        />
       </section>
     </div>
   );
