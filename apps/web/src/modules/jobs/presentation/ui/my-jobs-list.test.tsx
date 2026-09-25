@@ -77,4 +77,17 @@ describe("MyJobsList", () => {
       screen.queryByRole("button", { name: "Withdraw" })
     ).not.toBeInTheDocument();
   });
+
+  it("hides Edit on closed postings and links older pages", () => {
+    render(
+      <MyJobsList
+        items={[row({ status: "CLOSED" })]}
+        nextHref="/jobs/mine?cursor=C"
+      />
+    );
+    expect(screen.queryByRole("link", { name: "Edit" })).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Older postings" })
+    ).toHaveAttribute("href", "/jobs/mine?cursor=C");
+  });
 });
