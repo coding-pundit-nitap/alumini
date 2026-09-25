@@ -40,6 +40,14 @@ function wrapFailure(error: unknown, key: string): never {
  * S3-compatible provider later are the same code (TDS §13); only `env` changes.
  */
 export function createS3StoragePort(env: StorageEnv): StoragePort {
+  // ponytail: assumes path-style URLs (bucket in the path), which is what MinIO uses; a virtual-hosted
+  // bucket would lose its host here.
+  const toBrowserUrl = (url: string) => {
+    if (!env.publicPath) return url;
+    const { pathname, search } = new URL(url);
+    return env.publicPath + pathname + search;
+  };
+
   const client = new S3Client({
     endpoint: env.endpoint,
     region: env.region,
@@ -64,7 +72,7 @@ export function createS3StoragePort(env: StorageEnv): StoragePort {
           Fields: { "Content-Type": input.contentType },
           Expires: 300,
         });
-        return { url, fields };
+        return { url: toBrowserUrl(url), fields };
       } catch (error) {
         wrapFailure(error, input.key);
       }
@@ -126,10 +134,12 @@ export function createS3StoragePort(env: StorageEnv): StoragePort {
       expiresInSeconds: number;
     }): Promise<string> {
       try {
-        return await getSignedUrl(
-          client,
-          new GetObjectCommand({ Bucket: env.bucket, Key: input.key }),
-          { expiresIn: input.expiresInSeconds }
+        return toBrowserUrl(
+          await getSignedUrl(
+            client,
+            new GetObjectCommand({ Bucket: env.bucket, Key: input.key }),
+            { expiresIn: input.expiresInSeconds }
+          )
         );
       } catch (error) {
         wrapFailure(error, input.key);

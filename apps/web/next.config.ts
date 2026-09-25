@@ -23,6 +23,18 @@ const nextConfig: NextConfig = {
     "@nitap/search",
   ],
   poweredByHeader: false,
+  // Keeps object storage off the browser: presigned URLs point at S3_PUBLIC_PATH on this origin and are
+  // proxied to S3_ENDPOINT (Host is rewritten to the endpoint, so the signatures still match).
+  async rewrites() {
+    const { S3_PUBLIC_PATH, S3_ENDPOINT } = process.env;
+    if (!S3_PUBLIC_PATH || !S3_ENDPOINT) return [];
+    return [
+      {
+        source: `${S3_PUBLIC_PATH}/:path*`,
+        destination: `${S3_ENDPOINT.replace(/\/$/, "")}/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
