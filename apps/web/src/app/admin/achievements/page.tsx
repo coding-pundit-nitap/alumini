@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { reviewAchievementAction } from "@/app/(app)/achievements/actions";
+import { AdminPageHeader, AdminPager } from "@/components/admin/admin-surface";
 import { listPendingAchievements } from "@/composition/achievements";
 import { AppError } from "@/lib/errors";
 import { AchievementList } from "@/modules/achievements";
@@ -34,20 +34,23 @@ export default async function AdminAchievementsPage({
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Achievements awaiting review</h1>
+      <AdminPageHeader
+        title="Achievements awaiting review"
+        description="Member wins waiting to be published."
+      />
       <AchievementList
         achievements={page.achievements}
         isReviewer={true}
         onReview={reviewAchievementAction}
       />
-      {page.nextCursor ? (
-        <Link
-          href={`/admin/achievements?cursor=${encodeURIComponent(page.nextCursor)}`}
-          className="text-sm underline"
-        >
-          Next
-        </Link>
-      ) : null}
+      <AdminPager
+        href={
+          page.nextCursor
+            ? `/admin/achievements?cursor=${encodeURIComponent(page.nextCursor)}`
+            : null
+        }
+        label="Next"
+      />
     </div>
   );
 }

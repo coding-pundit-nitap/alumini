@@ -15,6 +15,10 @@ export type AchievementRow = {
   publishedPostId: string | null;
   createdAt: Date;
 };
+/** Reviewer-queue row: the owner (submitter) identity, joined from the `AchievementOwner` relation. */
+export type PendingAchievementRow = AchievementRow & {
+  owner: { id: string; name: string };
+};
 /** Review decisions leave an audit row in the same transaction (FR-MOD-004, spec A12-9). Ids only. */
 export type AchievementAuditEntry = {
   action: "achievement.approved" | "achievement.rejected";
@@ -52,7 +56,7 @@ export type AchievementsTx = {
   listPending(args: {
     limit: number;
     after: { createdAt: Date; id: string } | null;
-  }): Promise<AchievementRow[]>;
+  }): Promise<PendingAchievementRow[]>;
   enqueue(event: {
     type:
       "achievement.submitted" | "achievement.approved" | "achievement.rejected";

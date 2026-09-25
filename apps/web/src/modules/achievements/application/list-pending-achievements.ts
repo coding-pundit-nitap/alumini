@@ -7,7 +7,10 @@ import {
   encodeAchievementCursor,
 } from "../domain/cursor";
 import type { Authorize } from "./authz";
-import type { AchievementRow, AchievementsStore } from "./achievements-store";
+import type {
+  AchievementsStore,
+  PendingAchievementRow,
+} from "./achievements-store";
 
 export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 50;
@@ -29,7 +32,10 @@ export function createListPendingAchievements(deps: {
     actor: Actor | null;
     cursor?: string;
     limit?: number;
-  }): Promise<{ achievements: AchievementRow[]; nextCursor: string | null }> {
+  }): Promise<{
+    achievements: PendingAchievementRow[];
+    nextCursor: string | null;
+  }> {
     deps.authorize(args.actor, PERMISSIONS.ACHIEVEMENT_REVIEW);
     const limit = clampLimit(args.limit);
     const after = args.cursor ? decodeAchievementCursor(args.cursor) : null;

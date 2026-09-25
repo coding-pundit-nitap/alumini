@@ -68,7 +68,7 @@ export function createPrismaAchievementsStore(deps: {
       });
     },
     async listPending({ limit, after }) {
-      return db.achievement.findMany({
+      const rows = await db.achievement.findMany({
         where: {
           status: "SUBMITTED",
           ...(after
@@ -82,7 +82,9 @@ export function createPrismaAchievementsStore(deps: {
         },
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: limit,
+        include: { user: { select: { id: true, name: true } } },
       });
+      return rows.map(({ user, ...row }) => ({ ...row, owner: user }));
     },
     async enqueue(event) {
       await deps.outbox.add(db, event as OutboxEvent);

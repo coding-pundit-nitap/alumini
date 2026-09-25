@@ -94,4 +94,23 @@ describe("achievements store against real PostgreSQL", () => {
     });
     expect(reloaded.publishedPostId).toBe(posts[0]?.id);
   });
+
+  it("listPending joins the submitter's identity as owner", async () => {
+    const submitter = await db.prisma.user.create({
+      data: { name: "Asha Rao", email: "asha@example.test" },
+    });
+    const s = store();
+    await s.transaction((tx) =>
+      tx.insertAchievement({
+        userId: submitter.id,
+        title: "t",
+        description: "d",
+        category: "AWARD",
+      })
+    );
+    const rows = await s.transaction((tx) =>
+      tx.listPending({ limit: 10, after: null })
+    );
+    expect(rows[0]?.owner).toEqual({ id: submitter.id, name: "Asha Rao" });
+  });
 });
