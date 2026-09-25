@@ -5,6 +5,9 @@ import { render, screen } from "../../../../../tests/support/test-utils";
 import type { ListedMentorship } from "../../application/mentorship-store";
 import { MentorshipList } from "./mentorship-list";
 
+const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
+
 type MentorshipTab = Parameters<typeof MentorshipList>[0]["tab"];
 
 const item = (over: Partial<ListedMentorship> = {}): ListedMentorship => ({
@@ -156,5 +159,32 @@ describe("MentorshipList", () => {
     expect(button("Accept")).toBeDisabled();
     expect(button("Decline")).toBeDisabled();
     release();
+  });
+
+  it("offers Message only on accepted and active mentorships, and opens the conversation", async () => {
+    const messageAction = vi.fn(async () => ({
+      ok: true as const,
+      data: { conversationId: "conv1" },
+    }));
+    const { rerender } = render(
+      <MentorshipList
+        items={[item()]}
+        tab="my-requests"
+        transitionAction={vi.fn(ok) as never}
+        messageAction={messageAction}
+      />
+    );
+    noButton("Message");
+    rerender(
+      <MentorshipList
+        items={[item({ state: "ACTIVE" })]}
+        tab="mentees"
+        transitionAction={vi.fn(ok) as never}
+        messageAction={messageAction}
+      />
+    );
+    await userEvent.click(button("Message"));
+    expect(messageAction).toHaveBeenCalledWith("u1");
+    expect(router.push).toHaveBeenCalledWith("/messages/conv1");
   });
 });

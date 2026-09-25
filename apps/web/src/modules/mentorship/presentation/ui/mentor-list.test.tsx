@@ -75,4 +75,11 @@ describe("MentorList", () => {
     ).toBeInTheDocument();
     expect(requestSlot).toHaveBeenCalledTimes(2);
   });
+
+  it("links each topic to a search for it", () => {
+    render(<MentorList items={[mentor()]} />);
+    expect(
+      screen.getByRole("link", { name: "career switching" })
+    ).toHaveAttribute("href", "/mentorship?tab=find&topic=career+switching");
+  });
 });

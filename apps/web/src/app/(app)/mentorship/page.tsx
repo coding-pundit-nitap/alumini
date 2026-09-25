@@ -1,8 +1,17 @@
 import { PERMISSIONS } from "@nitap/database/permissions";
+import { Building2, Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Button, buttonVariants } from "@nitap/ui/components/button";
+import {
+  Segmented,
+  segmentedItemVariants,
+} from "@nitap/ui/components/segmented";
+
+import { startConversationAction } from "@/app/(app)/messages/actions";
+import { PageColumns } from "@/components/shell/page-columns";
 import {
   getMentorProfile,
   listMentors,
@@ -35,6 +44,15 @@ const LABELS: Record<MentorshipTab, string> = {
   mentees: "My mentees",
   settings: "Your mentor settings",
 };
+
+/** The Requests badge reads at most this many; beyond it the exact number is unknown ("50+"). */
+const BADGE_CAP = 50;
+
+const NEXT_LINK = buttonVariants({
+  variant: "ghost",
+  size: "sm",
+  className: "text-muted-foreground rounded-full",
+});
 
 /** What each list tab asks `listMentorships` for. */
 const QUERY: Record<
@@ -70,22 +88,56 @@ export default async function MentorshipPage({
   if (mayOptIn) tabs.push("settings");
   const tab = tabs.find((t) => t === rawTab) ?? tabs[0] ?? "find";
 
+  const isMentor = tabs.includes("requests");
+  // One capped read feeds the badge; the Requests tab's own list is the count when it is open.
+  let waiting = 0;
+  if (isMentor && tab !== "requests") {
+    try {
+      waiting = (
+        await listMentorships({ actor, ...QUERY.requests, limit: BADGE_CAP })
+      ).data.length;
+    } catch {
+      // The badge is a nicety; the tab itself reports real errors.
+    }
+  }
+
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-12">
-      <h1 className="text-2xl font-semibold">Mentorship</h1>
-      <nav aria-label="Mentorship" className="flex flex-wrap gap-4 text-sm">
-        {tabs.map((t) => (
-          <Link
-            key={t}
-            href={`/mentorship?tab=${t}`}
-            aria-current={t === tab ? "page" : undefined}
-            className={
-              t === tab ? "font-semibold underline" : "text-muted-foreground"
-            }
-          >
-            {LABELS[t]}
-          </Link>
-        ))}
+    <PageColumns
+      header={
+        <div className="min-w-0 flex-1 leading-tight">
+          <h1 className="truncate font-semibold tracking-tight">Mentorship</h1>
+          <p className="text-muted-foreground truncate text-xs">
+            {isMentor
+              ? "Guide students from your department and beyond"
+              : "Learn from alumni who have been there"}
+          </p>
+        </div>
+      }
+    >
+      <nav
+        aria-label="Mentorship"
+        className="scrollbar-none overflow-x-auto border-b px-4 py-3 sm:px-5"
+      >
+        <Segmented>
+          {tabs.map((t) => (
+            <Link
+              key={t}
+              href={`/mentorship?tab=${t}`}
+              aria-current={t === tab ? "page" : undefined}
+              className={segmentedItemVariants({ active: t === tab })}
+            >
+              {LABELS[t]}
+              {t === "requests" && waiting ? (
+                <span
+                  aria-label={`${waiting >= BADGE_CAP ? `${BADGE_CAP}+` : waiting} waiting`}
+                  className="bg-brand text-brand-foreground flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums"
+                >
+                  {waiting >= BADGE_CAP ? `${BADGE_CAP}+` : waiting}
+                </span>
+              ) : null}
+            </Link>
+          ))}
+        </Segmented>
       </nav>
       {tab === "settings" ? (
         <SettingsTab actor={actor} />
@@ -99,7 +151,7 @@ export default async function MentorshipPage({
       ) : (
         <ListTab actor={actor} tab={tab} cursor={cursor} />
       )}
-    </div>
+    </PageColumns>
   );
 }
 
@@ -160,34 +212,37 @@ async function FindTab({
 
   return (
     <>
-      <form method="get" className="flex flex-wrap gap-2" role="search">
+      <form
+        method="get"
+        role="search"
+        className="flex flex-wrap items-center gap-2 border-b px-4 py-3 sm:px-5"
+      >
         <input type="hidden" name="tab" value="find" />
-        <label className="flex-1 space-y-1 text-sm">
+        <label className="bg-muted/60 focus-within:ring-ring/60 flex h-10 min-w-40 flex-1 items-center gap-2 rounded-full px-4 focus-within:ring-2">
+          <Search aria-hidden className="text-muted-foreground size-4" />
           <span className="sr-only">Topic</span>
           <input
             name="topic"
             defaultValue={topic ?? ""}
             placeholder="Topic"
             maxLength={40}
-            className="border-input bg-background h-9 w-full rounded-md border px-2.5 text-sm"
+            className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none"
           />
         </label>
-        <label className="flex-1 space-y-1 text-sm">
+        <label className="bg-muted/60 focus-within:ring-ring/60 flex h-10 min-w-40 flex-1 items-center gap-2 rounded-full px-4 focus-within:ring-2">
+          <Building2 aria-hidden className="text-muted-foreground size-4" />
           <span className="sr-only">Company</span>
           <input
             name="company"
             defaultValue={company ?? ""}
             placeholder="Company"
             maxLength={100}
-            className="border-input bg-background h-9 w-full rounded-md border px-2.5 text-sm"
+            className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none"
           />
         </label>
-        <button
-          type="submit"
-          className="bg-primary text-primary-foreground h-9 rounded-md px-4 text-sm font-medium"
-        >
+        <Button type="submit" className="h-10 rounded-full px-5">
           Search
-        </button>
+        </Button>
       </form>
       <MentorList
         items={page.data}
@@ -203,12 +258,14 @@ async function FindTab({
         }
       />
       {page.page.nextCursor ? (
-        <Link
-          href={`/mentorship?${next.toString()}&cursor=${encodeURIComponent(page.page.nextCursor)}`}
-          className="text-primary block text-center text-sm underline"
-        >
-          Next page
-        </Link>
+        <div className="flex justify-center border-t py-4">
+          <Link
+            href={`/mentorship?${next.toString()}&cursor=${encodeURIComponent(page.page.nextCursor)}`}
+            className={NEXT_LINK}
+          >
+            Next page
+          </Link>
+        </div>
       ) : null}
     </>
   );
@@ -242,14 +299,17 @@ async function ListTab({
         items={page.data}
         tab={tab}
         transitionAction={transitionMentorshipAction}
+        messageAction={startConversationAction}
       />
       {page.page.nextCursor ? (
-        <Link
-          href={`/mentorship?tab=${tab}&cursor=${encodeURIComponent(page.page.nextCursor)}`}
-          className="text-primary block text-center text-sm underline"
-        >
-          Next page
-        </Link>
+        <div className="flex justify-center border-t py-4">
+          <Link
+            href={`/mentorship?tab=${tab}&cursor=${encodeURIComponent(page.page.nextCursor)}`}
+            className={NEXT_LINK}
+          >
+            Next page
+          </Link>
+        </div>
       ) : null}
     </>
   );

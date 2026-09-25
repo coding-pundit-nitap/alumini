@@ -2,7 +2,7 @@
 
 import { Button } from "@nitap/ui/components/button";
 import { Input } from "@nitap/ui/components/input";
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 
 import type { ActionResult } from "@/lib/action-result";
 
@@ -12,10 +12,40 @@ import {
   type MentorProfileInput,
 } from "../../domain/mentor-profile";
 
-const TEXTAREA_CLASS =
-  "border-input bg-background min-h-24 w-full rounded-lg border px-2.5 py-2 text-sm";
-const SELECT_CLASS =
-  "border-input bg-background h-9 w-full rounded-md border px-2";
+const FOCUS =
+  "focus-visible:border-ring focus-visible:ring-ring/50 outline-none focus-visible:ring-[3px]";
+const TEXTAREA_CLASS = `border-input bg-background min-h-28 w-full resize-y rounded-lg border px-3 py-2 text-sm ${FOCUS}`;
+const SELECT_CLASS = `border-input bg-background h-9 w-full rounded-md border px-2 text-sm ${FOCUS}`;
+
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <fieldset className="space-y-4 border-b px-4 py-5 sm:px-5">
+      <legend className="float-left mb-4 w-full">
+        <span className="block font-semibold">{title}</span>
+        <span className="text-muted-foreground block text-xs">
+          {description}
+        </span>
+      </legend>
+      {children}
+    </fieldset>
+  );
+}
+
+function Hint({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <span id={id} className="text-muted-foreground block text-xs">
+      {children}
+    </span>
+  );
+}
 
 const CONTACT_LABEL: Record<(typeof CONTACT_METHODS)[number], string> = {
   IN_APP: "In-app message",
@@ -75,92 +105,155 @@ export function MentorSettingsForm({
     });
   }
 
+  const id = useId();
+  const topicList = [
+    ...new Set(
+      topics
+        .split(",")
+        .map((topic) => topic.trim().toLowerCase())
+        .filter(Boolean)
+    ),
+  ];
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-muted-foreground text-sm">
-        Mentees see your name, photo, headline, expertise, topics and
-        availability.
-      </p>
-      {listedNote ? (
-        <p role="status" className="text-sm">
-          {listedNote}
+    <form onSubmit={handleSubmit}>
+      <div className="space-y-2 border-b px-4 py-4 sm:px-5">
+        <p className="text-muted-foreground text-sm">
+          Mentees see your name, photo, headline, expertise, topics and
+          availability.
         </p>
-      ) : null}
-      <label className="block space-y-1.5 text-sm">
-        <span className="font-medium">Expertise</span>
-        <textarea
-          value={expertise}
-          onChange={(event) => setExpertise(event.target.value)}
-          maxLength={1000}
-          required
-          className={TEXTAREA_CLASS}
-        />
-      </label>
-      <label className="block space-y-1.5 text-sm">
-        <span className="font-medium">Topics</span>
-        <Input
-          value={topics}
-          onChange={(event) => setTopics(event.target.value)}
-          placeholder="career switching, resumes, system design"
-        />
-      </label>
-      <label className="block space-y-1.5 text-sm">
-        <span className="font-medium">Availability</span>
-        <Input
-          value={availability}
-          onChange={(event) => setAvailability(event.target.value)}
-          maxLength={200}
-        />
-      </label>
-      <label className="block space-y-1.5 text-sm">
-        <span className="font-medium">Preferred contact method</span>
-        <select
-          value={preferredContactMethod}
-          onChange={(event) =>
-            setPreferredContactMethod(
-              event.target.value as MentorProfileInput["preferredContactMethod"]
-            )
-          }
-          className={SELECT_CLASS}
-        >
-          {CONTACT_METHODS.map((method) => (
-            <option key={method} value={method}>
-              {CONTACT_LABEL[method]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="block space-y-1.5 text-sm">
-        <span className="font-medium">Maximum mentees</span>
-        <Input
-          type="number"
-          min={1}
-          max={20}
-          value={maxMentees}
-          onChange={(event) => setMaxMentees(event.target.value)}
-        />
-      </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={!accepting}
-          onChange={(event) => setAccepting(!event.target.checked)}
-        />
-        <span>Not accepting new mentees</span>
-      </label>
-      {error ? (
-        <p role="alert" className="text-destructive text-sm">
-          {error}
-        </p>
-      ) : null}
-      {saved ? (
-        <p role="status" className="text-sm">
-          Saved.
-        </p>
-      ) : null}
-      <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save"}
-      </Button>
+        {listedNote ? (
+          <p
+            role="status"
+            className="bg-brand/10 text-foreground rounded-lg px-3 py-2 text-sm"
+          >
+            {listedNote}
+          </p>
+        ) : null}
+      </div>
+      <Section
+        title="Your offer"
+        description="What you can help with, so the right students find you."
+      >
+        <label className="block space-y-1.5 text-sm">
+          <span className="font-medium">Expertise</span>
+          <textarea
+            value={expertise}
+            onChange={(event) => setExpertise(event.target.value)}
+            maxLength={1000}
+            required
+            placeholder="Ten years in backend systems; happy to talk careers in product companies."
+            className={TEXTAREA_CLASS}
+          />
+        </label>
+        <div className="space-y-1.5 text-sm">
+          <label className="block space-y-1.5">
+            <span className="font-medium">Topics</span>
+            <Input
+              value={topics}
+              onChange={(event) => setTopics(event.target.value)}
+              placeholder="career switching, resumes, system design"
+              aria-describedby={`${id}-topics`}
+            />
+          </label>
+          <Hint id={`${id}-topics`}>
+            Separate with commas. Up to 10; students search by these.
+          </Hint>
+        </div>
+        {topicList.length ? (
+          <ul aria-label="Topics preview" className="flex flex-wrap gap-1.5">
+            {topicList.map((topic) => (
+              <li
+                key={topic}
+                className="bg-muted inline-flex h-6 items-center rounded-full px-2.5 text-xs"
+              >
+                {topic}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <label className="block space-y-1.5 text-sm">
+          <span className="font-medium">Availability</span>
+          <Input
+            value={availability}
+            onChange={(event) => setAvailability(event.target.value)}
+            maxLength={200}
+            placeholder="Weekends, 30 minutes"
+          />
+        </label>
+      </Section>
+      <Section
+        title="How you mentor"
+        description="How students should reach you and how many you can take on."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block space-y-1.5 text-sm">
+            <span className="font-medium">Preferred contact method</span>
+            <select
+              value={preferredContactMethod}
+              onChange={(event) =>
+                setPreferredContactMethod(
+                  event.target
+                    .value as MentorProfileInput["preferredContactMethod"]
+                )
+              }
+              className={SELECT_CLASS}
+            >
+              {CONTACT_METHODS.map((method) => (
+                <option key={method} value={method}>
+                  {CONTACT_LABEL[method]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block space-y-1.5 text-sm">
+            <span className="font-medium">Maximum mentees</span>
+            <Input
+              type="number"
+              min={1}
+              max={20}
+              value={maxMentees}
+              onChange={(event) => setMaxMentees(event.target.value)}
+            />
+          </label>
+        </div>
+        <div className="flex items-start gap-3 rounded-lg border px-3 py-2.5 text-sm">
+          <input
+            id={`${id}-paused`}
+            type="checkbox"
+            checked={!accepting}
+            onChange={(event) => setAccepting(!event.target.checked)}
+            aria-describedby={`${id}-paused-hint`}
+            className="accent-brand mt-0.5 size-4 cursor-pointer"
+          />
+          <span>
+            <label
+              htmlFor={`${id}-paused`}
+              className="block cursor-pointer font-medium"
+            >
+              Not accepting new mentees
+            </label>
+            <Hint id={`${id}-paused-hint`}>
+              Pauses your offer; current mentees are not affected.
+            </Hint>
+          </span>
+        </div>
+      </Section>
+      <div className="flex flex-wrap items-center justify-end gap-3 px-4 py-4 sm:px-5">
+        {error ? (
+          <p role="alert" className="text-destructive mr-auto text-sm">
+            {error}
+          </p>
+        ) : null}
+        {saved ? (
+          <p role="status" className="text-success mr-auto text-sm">
+            Saved.
+          </p>
+        ) : null}
+        <Button type="submit" className="rounded-full px-5" disabled={pending}>
+          {pending ? "Saving…" : "Save"}
+        </Button>
+      </div>
     </form>
   );
 }
