@@ -64,7 +64,8 @@ export type NotificationStore = {
       | "MESSAGE"
       | "POST"
       | "ACHIEVEMENT"
-      | "MODERATION";
+      | "MODERATION"
+      | "ANNOUNCEMENT";
     channel: "IN_APP" | "EMAIL";
     enabled: boolean;
   }): Promise<void>;

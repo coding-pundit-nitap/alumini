@@ -18,4 +18,8 @@ describe("domainFor", () => {
   it("throws on an unmapped type rather than silently defaulting", () => {
     expect(() => domainFor("nonsense.event")).toThrow();
   });
+
+  it("maps announcement.published to ANNOUNCEMENT", () => {
+    expect(domainFor("announcement.published")).toBe("ANNOUNCEMENT");
+  });
 });

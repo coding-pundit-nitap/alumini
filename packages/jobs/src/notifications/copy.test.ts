@@ -119,4 +119,16 @@ describe("renderNotificationCopy", () => {
   it("throws on an unknown type rather than sending a blank email", () => {
     expect(() => renderNotificationCopy("nonsense.event", {})).toThrow();
   });
+
+  it("announcement.published links to the post", () => {
+    expect(
+      renderNotificationCopy("announcement.published", {
+        postId: "11111111-1111-4111-8111-111111111111",
+      })
+    ).toEqual({
+      title: "New announcement",
+      body: "The institute published an announcement.",
+      actionPath: "/feed/11111111-1111-4111-8111-111111111111",
+    });
+  });
 });

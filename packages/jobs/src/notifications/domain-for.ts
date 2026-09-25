@@ -6,7 +6,8 @@ export type NotificationDomain =
   | "MESSAGE"
   | "POST"
   | "ACHIEVEMENT"
-  | "MODERATION";
+  | "MODERATION"
+  | "ANNOUNCEMENT";
 
 const EVENT_TYPE_TO_DOMAIN: Record<string, NotificationDomain> = {
   "connection.requested": "CONNECTION",
@@ -33,6 +34,7 @@ const EVENT_TYPE_TO_DOMAIN: Record<string, NotificationDomain> = {
   "report.filed": "MODERATION",
   "report.resolved": "MODERATION",
   "content.removed": "MODERATION",
+  "announcement.published": "ANNOUNCEMENT",
 };
 
 /** Single source of truth for "which preferences-UI toggle governs this event type" (N-14). Every

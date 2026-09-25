@@ -1,4 +1,5 @@
 import type { PayloadOf } from "./define-job.ts";
+import { announcementPublished } from "./announcement.ts";
 import { connectionAccepted, connectionRequested } from "./connection.ts";
 import { idempotencySweep } from "./idempotency.ts";
 import { notificationRetentionSweep } from "./notification-retention.ts";
@@ -47,6 +48,7 @@ export const OUTBOX_EVENTS = {
   "verification.decided": verificationDecided,
   "user.suspended": userSuspended,
   "user.reactivated": userReactivated,
+  "announcement.published": announcementPublished,
   ...mentorshipJobs,
   ...jobEvents,
   ...eventJobs,

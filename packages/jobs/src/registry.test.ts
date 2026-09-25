@@ -92,6 +92,7 @@ describe("registry", () => {
       "report.filed",
       "job.submitted",
       "achievement.submitted",
+      "announcement.published",
     ];
     expect(FANOUT_TIMEOUT_MS).toBeGreaterThanOrEqual(60_000);
     for (const [type, job] of Object.entries(OUTBOX_EVENTS)) {
@@ -104,5 +105,12 @@ describe("registry", () => {
     for (const job of Object.values(OUTBOX_EVENTS)) {
       expect(job.idempotency, job.name).not.toMatch(/only reads and logs/);
     }
+  });
+
+  it("registers announcement.published as an outbox event with the fan-out timeout", () => {
+    expect(isOutboxEventType("announcement.published")).toBe(true);
+    expect(OUTBOX_EVENTS["announcement.published"].timeoutMs).toBe(
+      FANOUT_TIMEOUT_MS
+    );
   });
 });

@@ -1,3 +1,5 @@
+export { announcementPublished } from "./announcement.ts";
+export type { AnnouncementPublishedPayload } from "./announcement.ts";
 export { QUEUES } from "./queues.ts";
 export type { QueueName } from "./queues.ts";
 export { defineJob } from "./define-job.ts";

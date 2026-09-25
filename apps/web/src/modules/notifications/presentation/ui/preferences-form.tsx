@@ -34,6 +34,10 @@ const DOMAIN_COPY: Record<string, { title: string; description: string }> = {
     title: "Moderation",
     description: "When a moderator removes something of yours",
   },
+  ANNOUNCEMENT: {
+    title: "Announcements",
+    description: "Institute announcements",
+  },
 };
 
 const ROW = "flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5";

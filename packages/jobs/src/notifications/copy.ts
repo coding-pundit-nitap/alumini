@@ -199,6 +199,12 @@ export function renderNotificationCopy(
         "Your registration for an event was cancelled.",
         under("/events", "eventId")
       );
+    case "announcement.published":
+      return copy(
+        "New announcement",
+        "The institute published an announcement.",
+        under("/feed", "postId")
+      );
     default:
       throw new Error(`No notification copy for type "${type}".`);
   }
