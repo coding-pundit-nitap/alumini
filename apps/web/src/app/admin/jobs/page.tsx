@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { approveJobAction, rejectJobAction } from "@/app/(app)/jobs/actions";
+import { AdminPageHeader, AdminPager } from "@/components/admin/admin-surface";
 import { listPendingJobs } from "@/composition/jobs";
 import { AppError } from "@/lib/errors";
 import { can, getActor, PERMISSIONS } from "@/modules/auth";
@@ -34,20 +34,23 @@ export default async function AdminJobsPage({
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Job moderation queue</h1>
+      <AdminPageHeader
+        title="Job moderation queue"
+        description="Posts waiting before they go live."
+      />
       <ModerationQueue
         items={page.data}
         approveAction={approveJobAction}
         rejectAction={rejectJobAction}
       />
-      {page.page.nextCursor ? (
-        <Link
-          href={`/admin/jobs?cursor=${encodeURIComponent(page.page.nextCursor)}`}
-          className="text-sm underline"
-        >
-          Next
-        </Link>
-      ) : null}
+      <AdminPager
+        href={
+          page.page.nextCursor
+            ? `/admin/jobs?cursor=${encodeURIComponent(page.page.nextCursor)}`
+            : null
+        }
+        label="Next"
+      />
     </div>
   );
 }

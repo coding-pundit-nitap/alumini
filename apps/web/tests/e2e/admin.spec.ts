@@ -100,6 +100,7 @@ test("an admin sees a pending job on the dashboard, approves it, and an auditor 
     .getByRole("listitem")
     .filter({ hasText: title });
   await pendingRow.getByRole("button", { name: "Approve" }).click();
+  await moderator.page.getByRole("button", { name: "Approve job" }).click();
   await expect(pendingRow).toBeHidden();
 
   await auditor.page.goto("/admin/audit?action=job.approved");

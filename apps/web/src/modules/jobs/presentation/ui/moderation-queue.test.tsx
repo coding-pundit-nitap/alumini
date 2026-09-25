@@ -55,7 +55,23 @@ describe("ModerationQueue", () => {
       />
     );
     await userEvent.click(screen.getByRole("button", { name: "Approve" }));
+    await userEvent.click(screen.getByRole("button", { name: "Approve job" }));
     await waitFor(() => expect(approveAction).toHaveBeenCalledWith("job-1"));
+  });
+
+  it("does not approve until confirmed", async () => {
+    const approve = vi.fn(async () => ({ ok: true as const, data: {} }));
+    render(
+      <ModerationQueue
+        items={[row()]}
+        approveAction={approve}
+        rejectAction={vi.fn()}
+      />
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Approve" }));
+    expect(approve).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(approve).not.toHaveBeenCalled();
   });
 
   it("the Reject dialog's submit is disabled until a note is entered, then submits", async () => {

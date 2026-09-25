@@ -101,6 +101,7 @@ test("alumni posts a job, a moderator approves it, it appears in /jobs, then exp
     .filter({ hasText: title });
   await expect(pendingRow).toBeVisible();
   await pendingRow.getByRole("button", { name: "Approve" }).click();
+  await moderator.page.getByRole("button", { name: "Approve job" }).click();
   await expect(pendingRow).toBeHidden();
 
   await alumnus.page.goto("/jobs");
@@ -180,6 +181,7 @@ test("alumni posts a job, a moderator rejects with a note, the alumnus edits and
     .getByRole("listitem")
     .filter({ hasText: title });
   await resubmittedRow.getByRole("button", { name: "Approve" }).click();
+  await moderator.page.getByRole("button", { name: "Approve job" }).click();
   await expect(resubmittedRow).toBeHidden();
 
   await alumnus.page.goto("/jobs");
