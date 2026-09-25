@@ -153,7 +153,7 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
     expect(await store.countTile("openReports", new Date())).toBe(1);
   });
 
-  it("lists users by prefix, literally, case-insensitive, keyset-paged", async () => {
+  it("lists users by substring, literally, case-insensitive, keyset-paged", async () => {
     const base = Date.now();
     const mkUser = (
       name: string,
@@ -181,6 +181,7 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
     const anna = await mkUser("anna", 1_000);
     const bob = await mkUser("Bob", 2_000);
     const percent = await mkUser("50%_off", 3_000);
+    const mid = await mkUser("joanna", 3_500);
     const sue = await mkUser("Sue", 4_000, "SUSPENDED");
     const stan = await mkUser("Stan", 5_000);
     await giveRole(stan.id, "STAFF");
@@ -197,7 +198,16 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
       store.listUsers({ filter, after: null, take: 50 });
 
     const byAn = await list({ q: "an" });
-    expect(new Set(byAn.map((u) => u.id))).toEqual(new Set([ann.id, anna.id]));
+    expect(new Set(byAn.map((u) => u.id))).toEqual(
+      new Set([ann.id, anna.id, mid.id])
+    );
+
+    const byMid = await list({ q: "ANN" }); // matches ann, anna, joanna (middle of the name)
+    expect(new Set(byMid.map((u) => u.id))).toEqual(
+      new Set([ann.id, anna.id, mid.id])
+    );
+    const byDomain = await list({ q: "example.test" }); // middle of the email
+    expect(byDomain.length).toBeGreaterThan(0);
 
     const byPercent = await list({ q: "50%" });
     expect(byPercent.map((u) => u.id)).toEqual([percent.id]);
@@ -218,6 +228,7 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
       anna.id,
       bob.id,
       percent.id,
+      mid.id,
       sue.id,
       stan.id,
       zed1.id,

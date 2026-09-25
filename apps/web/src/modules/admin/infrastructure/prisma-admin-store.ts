@@ -87,8 +87,8 @@ export function createPrismaAdminStore(db: PrismaClient): AdminStore {
       }));
     },
 
-    // ponytail: ILIKE prefix seq-scan on user; add a lower(name) text_pattern_ops index if the list
-    // exceeds ~10^5 rows.
+    // ponytail: ILIKE '%q%' seq-scans user; add a pg_trgm GIN index on lower(name), lower(email) if the
+    // list exceeds ~10^5 rows.
     async listUsers({ filter, after, take }) {
       const rows = await db.user.findMany({
         where: {
@@ -98,13 +98,13 @@ export function createPrismaAdminStore(db: PrismaClient): AdminStore {
                   OR: [
                     {
                       email: {
-                        startsWith: escapeLike(filter.q),
+                        contains: escapeLike(filter.q),
                         mode: "insensitive",
                       },
                     },
                     {
                       name: {
-                        startsWith: escapeLike(filter.q),
+                        contains: escapeLike(filter.q),
                         mode: "insensitive",
                       },
                     },

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import {
@@ -7,8 +6,12 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@nitap/ui/components/alert";
-import { buttonVariants } from "@nitap/ui/components/button";
 
+import {
+  AdminPageHeader,
+  AdminPager,
+  AdminPanel,
+} from "@/components/admin/admin-surface";
 import { listUsers } from "@/composition/admin";
 import { ROLE_NAMES } from "@/infrastructure/role-permissions";
 import { AppError } from "@/lib/errors";
@@ -65,27 +68,21 @@ export default async function UsersPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Users</h1>
-      <UserFilters values={values} roles={ROLE_NAMES} />
-      {invalid ? (
-        <Alert variant="destructive">
-          <AlertTitle>These filters are not valid</AlertTitle>
-          <AlertDescription>Check {invalid.join(", ")}.</AlertDescription>
-        </Alert>
-      ) : (
-        <UsersTable rows={page?.data ?? []} />
-      )}
-      {more ? (
-        <Link
-          href={more}
-          className={buttonVariants({
-            variant: "outline",
-            className: "self-start",
-          })}
-        >
-          More users
-        </Link>
-      ) : null}
+      <AdminPageHeader
+        title="Users"
+        description="Everyone with an account, by newest first."
+      />
+      <AdminPanel toolbar={<UserFilters values={values} roles={ROLE_NAMES} />}>
+        {invalid ? (
+          <Alert variant="destructive" className="m-4">
+            <AlertTitle>These filters are not valid</AlertTitle>
+            <AlertDescription>Check {invalid.join(", ")}.</AlertDescription>
+          </Alert>
+        ) : (
+          <UsersTable rows={page?.data ?? []} />
+        )}
+      </AdminPanel>
+      <AdminPager href={more} label="More users" />
     </div>
   );
 }
