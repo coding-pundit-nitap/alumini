@@ -135,15 +135,18 @@ export function Widgets({ actor }: { actor: Actor }) {
   ));
 }
 
-/** The same blocks below xl, as a horizontal snap strip above the feed. */
+/**
+ * The same blocks below xl, above the feed: a swipeable snap row on phones (scroll-padding keeps each card off
+ * the screen edge), a 2- then 3-column grid from sm up. Each card shows at most two list rows so the feed
+ * stays near the top.
+ */
 export function WidgetStrip({ actor }: { actor: Actor }) {
   return (
-    // One swipeable row; each card shows at most two list rows so the feed stays near the top.
-    <div className="-mx-4 flex snap-x snap-mandatory scrollbar-none items-stretch gap-3 overflow-x-auto px-4 sm:-mx-5 sm:px-5 [&_li:nth-child(n+3)]:hidden">
+    <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 scrollbar-none items-stretch gap-3 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&_li:nth-child(n+3)]:hidden">
       {BLOCKS.map((Block, i) => (
         <div
           key={i}
-          className="w-[80%] max-w-72 shrink-0 snap-start *:h-full empty:hidden"
+          className="w-[85%] max-w-80 min-w-0 shrink-0 snap-start *:h-full empty:hidden sm:w-auto sm:max-w-none"
         >
           <Suspense fallback={<BlockSkeleton rows={2} />}>
             <Block actor={actor} />
