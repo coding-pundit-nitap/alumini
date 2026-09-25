@@ -91,7 +91,7 @@ test("disabling email preference for a category results in in-app-only delivery"
 
   // Asha turns connection emails off before anything happens.
   await asha.goto("/settings/notifications");
-  const connectionToggle = asha.getByRole("switch", { name: "connection" });
+  const connectionToggle = asha.getByRole("switch", { name: "Connections" });
   await connectionToggle.click();
   await expect(connectionToggle).not.toBeChecked();
 

@@ -69,7 +69,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, Permission[]> = {
     P.ACHIEVEMENT_SUBMIT,
   ],
 
-  FACULTY: [...MEMBER_BASELINE],
+  FACULTY: [...MEMBER_BASELINE, P.ACHIEVEMENT_SUBMIT],
 
   STAFF: [...MEMBER_BASELINE],
 

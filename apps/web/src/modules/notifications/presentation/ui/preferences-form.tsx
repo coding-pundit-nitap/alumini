@@ -44,7 +44,8 @@ const ROW = "flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5";
 
 /** Email toggle per ENGAGEMENT domain. A domain with no preference row still arrives here as `email: true`
  * (the API defaults a missing row to enabled, N-10) — this form just renders whatever it is given. Each
- * switch is named by the lowercased domain (`aria-label`), which tests and E2E rely on. */
+ * switch is named by its row title via `aria-labelledby`: Base UI puts `id` on a hidden input, so the
+ * `<Label htmlFor>` alone names nothing on the visible `role="switch"`. */
 export function PreferencesForm({
   preferences,
   onChange,
@@ -68,17 +69,30 @@ export function PreferencesForm({
         </h2>
         <div className={ROW}>
           <div className="min-w-0">
-            <Label htmlFor="account-security" className="font-medium">
+            <Label
+              id="account-security-title"
+              htmlFor="account-security"
+              className="font-medium"
+            >
               Account &amp; security emails
             </Label>
-            <p className="text-muted-foreground mt-0.5 text-xs">
+            <p
+              id="account-security-hint"
+              className="text-muted-foreground mt-0.5 text-xs"
+            >
               Sign-in, verification and account status. These can&apos;t be
               turned off.
             </p>
           </div>
           <span className="flex items-center gap-2">
             <Lock aria-hidden className="text-muted-foreground size-3.5" />
-            <Switch id="account-security" checked disabled />
+            <Switch
+              id="account-security"
+              aria-labelledby="account-security-title"
+              aria-describedby="account-security-hint"
+              checked
+              disabled
+            />
           </span>
         </div>
       </section>
@@ -97,20 +111,27 @@ export function PreferencesForm({
               <li key={pref.domain} className={ROW}>
                 <div className="min-w-0">
                   <Label
+                    id={`pref-${pref.domain}-title`}
                     htmlFor={`pref-${pref.domain}`}
                     className="font-medium capitalize"
                   >
                     {copy?.title ?? name}
                   </Label>
                   {copy ? (
-                    <p className="text-muted-foreground mt-0.5 text-xs">
+                    <p
+                      id={`pref-${pref.domain}-hint`}
+                      className="text-muted-foreground mt-0.5 text-xs"
+                    >
                       {copy.description}
                     </p>
                   ) : null}
                 </div>
                 <Switch
                   id={`pref-${pref.domain}`}
-                  aria-label={name}
+                  aria-labelledby={`pref-${pref.domain}-title`}
+                  aria-describedby={
+                    copy ? `pref-${pref.domain}-hint` : undefined
+                  }
                   checked={pref.email}
                   disabled={pendingDomains?.has(pref.domain)}
                   onCheckedChange={(checked) => onChange(pref.domain, checked)}

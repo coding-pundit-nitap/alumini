@@ -54,7 +54,7 @@ Column abbreviations: **Gst** Guest · **Stu** Student · **Alu** Alumni · **Fa
 | `post.interact`                |     |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●   |  ●  |
 | `post.moderate`                |     |     |     |     |     |  ●  |     |     |  ●  |  ●   |  ◐  |
 | `announcement.publish`         |     |     |     |     |     |     |  ●  |     |  ●  |  ●   |  ◐  |
-| `achievement.submit`           |     |     |  ●  |     |     |     |     |     |     |      |     |
+| `achievement.submit`           |     |     |  ●  |  ●  |     |     |     |     |     |      |     |
 | `achievement.review`           |     |     |     |     |     |     |  ●  |     |  ●  |  ●   |     |
 | `report.create`                |     |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●  |  ●   |  ●  |
 | `report.review`                |     |     |     |     |     |  ●  |     |     |  ●  |  ●   |  ◐  |

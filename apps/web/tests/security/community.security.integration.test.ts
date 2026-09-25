@@ -45,7 +45,7 @@ import { createPrismaPostsStore } from "@/modules/posts/infrastructure/prisma-po
  *
  * Every permission grant below comes from `database/prisma/seed-data/role-permissions.ts`, not from the
  * task brief's paraphrase of it (which the seed data disagrees with in two places: `achievement.submit` is
- * ALUMNI-only, not the general member baseline, and `achievement.review` sits on
+ * ALUMNI and FACULTY only, not the general member baseline, and `achievement.review` sits on
  * ALUMNI_COORDINATOR/INSTITUTE_ADMIN/SUPER_ADMIN — MODERATOR does not hold it. `report.review` and
  * `post.moderate` do match: MODERATOR/INSTITUTE_ADMIN/SUPER_ADMIN.)
  */
@@ -340,19 +340,24 @@ describe("community security", () => {
   });
 
   describe("achievement.submit", () => {
-    it("ALUMNI (the role holding achievement.submit) may submit", async () => {
-      const { submit } = buildAchievements();
-      const { actor } = await actorWithRole("ALUMNI");
-      const { achievementId } = await submit({
-        actor,
-        input: { title: "Award", description: "d", category: "AWARD" },
-      });
-      expect(
-        await db.prisma.achievement.findUnique({ where: { id: achievementId } })
-      ).not.toBeNull();
-    });
+    it.each(["ALUMNI", "FACULTY"] as const)(
+      "%s holds achievement.submit and may submit",
+      async (roleName) => {
+        const { submit } = buildAchievements();
+        const { actor } = await actorWithRole(roleName);
+        const { achievementId } = await submit({
+          actor,
+          input: { title: "Award", description: "d", category: "AWARD" },
+        });
+        expect(
+          await db.prisma.achievement.findUnique({
+            where: { id: achievementId },
+          })
+        ).not.toBeNull();
+      }
+    );
 
-    it.each(["STUDENT", "FACULTY", "STAFF"] as const)(
+    it.each(["STUDENT", "STAFF"] as const)(
       "%s does not hold achievement.submit and is refused",
       async (roleName) => {
         const { submit } = buildAchievements();

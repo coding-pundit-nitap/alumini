@@ -3,11 +3,17 @@ import { hashPassword } from "better-auth/crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "@nitap/database";
-import { seedDevAdmin, seedDevCoordinator } from "@nitap/database/seed";
+import { ROLE_NAMES } from "@nitap/database/role-permissions";
+import {
+  seedAdminUser,
+  seedDevAdmin,
+  seedDevCoordinator,
+} from "@nitap/database/seed";
 
 /**
  * Development-only accounts (TASK.md Phase 1, Phase 2D): a super admin and an alumni coordinator, each
- * seeded only when its email and password are set. Lives in apps/web because Better Auth's password
+ * seeded only when its email and password are set. With DEV_ROLES_PASSWORD set, also one verified account
+ * per role, `dev-<role>@example.test` (e.g. dev-tp-admin@example.test), all sharing that password. Lives in apps/web because Better Auth's password
  * hashing does; @nitap/database only receives the finished hash. Run through `pnpm db:seed`, after the
  * database package has seeded the roles.
  */
@@ -32,6 +38,11 @@ async function main() {
     },
   ] as const;
 
+  const rolesPassword = process.env.DEV_ROLES_PASSWORD;
+  if (!rolesPassword) {
+    console.log("Skipping per-role dev accounts: DEV_ROLES_PASSWORD not set.");
+  }
+
   const wanted = accounts.filter((a) => a.email && a.password);
   for (const a of accounts) {
     if (!(a.email && a.password)) {
@@ -40,7 +51,7 @@ async function main() {
       );
     }
   }
-  if (wanted.length === 0) return;
+  if (wanted.length === 0 && !rolesPassword) return;
   if (!connectionString) throw new Error("DATABASE_URL is not set");
 
   const prisma = new PrismaClient({
@@ -53,6 +64,20 @@ async function main() {
         passwordHash: await hashPassword(a.password!),
       });
       console.log(`Dev ${a.label} ready: ${a.email}`);
+    }
+    if (rolesPassword) {
+      const passwordHash = await hashPassword(rolesPassword);
+      for (const roleName of ROLE_NAMES) {
+        const slug = roleName.toLowerCase().replaceAll("_", "-");
+        const email = `dev-${slug}@example.test`;
+        await seedAdminUser(prisma, {
+          email,
+          name: `Dev ${slug.replaceAll("-", " ")}`,
+          roleName,
+          passwordHash,
+        });
+        console.log(`Dev ${roleName} ready: ${email}`);
+      }
     }
   } finally {
     await prisma.$disconnect();
