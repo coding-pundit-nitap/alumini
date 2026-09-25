@@ -35,6 +35,27 @@ describe("DashboardTiles", () => {
   });
 });
 
+describe("DashboardTiles attention states", () => {
+  it("flags a queue with work waiting and says all clear for an empty one", () => {
+    render(
+      <DashboardTiles
+        tiles={
+          [
+            { key: "openReports", status: "ok", value: 3 },
+            { key: "pendingJobs", status: "ok", value: 0 },
+          ] as never
+        }
+      />
+    );
+    expect(
+      screen.getByRole("link", { name: "Open reports" })
+    ).toHaveTextContent("Needs attention");
+    expect(
+      screen.getByRole("link", { name: "Jobs awaiting review" })
+    ).toHaveTextContent("All clear");
+  });
+});
+
 describe("AuditTable", () => {
   it("shows an empty state when nothing matches", () => {
     render(<AuditTable rows={[]} />);

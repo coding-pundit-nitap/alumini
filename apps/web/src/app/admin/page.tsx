@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { AdminPageHeader } from "@/components/admin/admin-surface";
 import { getDashboard } from "@/composition/admin";
 import { AppError } from "@/lib/errors";
 import { DashboardTiles } from "@/modules/admin";
@@ -19,7 +20,10 @@ export default async function AdminDashboardPage() {
   }
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <AdminPageHeader
+        title="Dashboard"
+        description="What needs you now, and how the network is doing."
+      />
       <DashboardTiles tiles={tiles} />
     </div>
   );
