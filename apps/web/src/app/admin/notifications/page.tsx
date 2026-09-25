@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { Clock, MailCheck } from "lucide-react";
 
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@nitap/ui/components/empty";
+import { Badge } from "@nitap/ui/components/badge";
 import {
   Table,
   TableBody,
@@ -17,8 +12,15 @@ import {
   TableRow,
 } from "@nitap/ui/components/table";
 
+import {
+  AdminEmpty,
+  AdminPager,
+  AdminPageHeader,
+  AdminPanel,
+} from "@/components/admin/admin-surface";
 import { listFailedDeliveries } from "@/composition/notifications";
 import { AppError } from "@/lib/errors";
+import { relativeTime } from "@/lib/relative-time";
 import { ConfirmButton } from "@/modules/admin";
 import { getActor } from "@/modules/auth";
 import type { EmailDeliveryRow } from "@/modules/notifications";
@@ -30,7 +32,7 @@ export const metadata: Metadata = { title: "Failed emails" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-const when = (d: Date) =>
+const fullTime = (d: Date) =>
   d.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
 function DeliveriesTable({
@@ -59,14 +61,30 @@ function DeliveriesTable({
       <TableBody>
         {rows.map((d) => (
           <TableRow key={d.id}>
-            <TableCell>{d.type}</TableCell>
+            <TableCell>
+              <Badge variant="outline" className="font-mono text-[11px]">
+                {d.type}
+              </Badge>
+            </TableCell>
             <TableCell>{d.recipient.email}</TableCell>
-            <TableCell>{d.attempts}</TableCell>
-            <TableCell className="text-muted-foreground max-w-xs break-all">
+            <TableCell>
+              <Badge variant="secondary" className="tabular-nums">
+                {d.attempts}
+              </Badge>
+            </TableCell>
+            <TableCell
+              className="text-muted-foreground line-clamp-2 max-w-xs truncate font-mono text-[11px] break-all"
+              title={d.lastError ?? undefined}
+            >
               {d.lastError}
             </TableCell>
             <TableCell className="whitespace-nowrap">
-              {when(d.updatedAt)}
+              <time
+                dateTime={d.updatedAt.toISOString()}
+                title={fullTime(d.updatedAt)}
+              >
+                {relativeTime(d.updatedAt)}
+              </time>
             </TableCell>
             {withAction ? (
               <TableCell>
@@ -106,42 +124,39 @@ export default async function AdminNotificationsPage({
   }
 
   const next = page.nextCursor;
+  const nextHref = next
+    ? `/admin/notifications?cursor=${encodeURIComponent(next)}`
+    : null;
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Failed emails</h1>
-      {page.failed.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>No failed emails</EmptyTitle>
-            <EmptyDescription>Nothing needs a replay.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <DeliveriesTable rows={page.failed} withAction={true} />
-      )}
-      {next ? (
-        <Link
-          href={`/admin/notifications?cursor=${encodeURIComponent(next)}`}
-          className="text-sm underline"
-        >
-          Next
-        </Link>
-      ) : null}
+      <AdminPageHeader
+        title="Failed emails"
+        description="Emails that could not be delivered, and ones stuck in the queue."
+      />
+      <AdminPanel title="Failed" description="Replay queues the email again.">
+        {page.failed.length === 0 ? (
+          <AdminEmpty
+            icon={MailCheck}
+            title="No failed emails"
+            description="Nothing needs a replay."
+          />
+        ) : (
+          <DeliveriesTable rows={page.failed} withAction={true} />
+        )}
+      </AdminPanel>
+      <AdminPager href={nextHref} label="Next" />
 
-      <h2 className="text-xl font-semibold">Stuck: not replayable</h2>
-      <p className="text-muted-foreground text-sm">
-        Pending for over an hour. Replay covers failed emails only.
-      </p>
-      {page.stuck.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>Nothing is stuck.</EmptyTitle>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <DeliveriesTable rows={page.stuck} withAction={false} />
-      )}
+      <AdminPanel
+        title="Stuck: not replayable"
+        description="Pending for over an hour. Replay covers failed emails only."
+      >
+        {page.stuck.length === 0 ? (
+          <AdminEmpty icon={Clock} title="Nothing is stuck." />
+        ) : (
+          <DeliveriesTable rows={page.stuck} withAction={false} />
+        )}
+      </AdminPanel>
     </div>
   );
 }
