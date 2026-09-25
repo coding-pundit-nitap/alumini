@@ -47,5 +47,6 @@ export async function decide(
   await expect(row).toBeVisible();
   if (note) await row.getByLabel(/note/i).fill(note);
   await row.getByRole("button", { name: decision }).click();
+  await reviewer.getByRole("button", { name: `${decision} request` }).click();
   await expect(row).toBeHidden();
 }

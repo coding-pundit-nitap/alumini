@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@nitap/ui/components/alert-dialog";
 import { Button } from "@nitap/ui/components/button";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -14,9 +24,26 @@ import {
 import { DECISION_FIELDS } from "../api/verification-schemas";
 import { FormMessage } from "./form-field";
 
+const CONFIRM_COPY: Record<
+  VerificationDecision,
+  { title: string; description: string; action: string }
+> = {
+  APPROVED: {
+    title: "Approve this request?",
+    description: "They become a verified alumnus and get the member network.",
+    action: "Approve request",
+  },
+  REJECTED: {
+    title: "Reject this request?",
+    description: "They are told it was not approved, with your note.",
+    action: "Reject request",
+  },
+};
+
 /**
  * Approve or reject one request. Rejecting needs a note (mirroring the server rule); the reviewer is
- * never a form field: the server takes them from the session.
+ * never a form field: the server takes them from the session. Each decision is confirmed before it is
+ * sent.
  */
 export function DecisionForm({
   requestId,
@@ -31,9 +58,12 @@ export function DecisionForm({
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<VerificationDecision | null>(
+    null
+  );
   const [pending, startTransition] = useTransition();
 
-  function decide(decision: VerificationDecision) {
+  function check(decision: VerificationDecision) {
     const problem = noteProblem(decision, normaliseNote(note));
     if (problem) {
       setError(problem);
@@ -42,7 +72,10 @@ export function DecisionForm({
     }
     setError(null);
     setInfo(null);
+    setConfirming(decision);
+  }
 
+  function send(decision: VerificationDecision) {
     const values: Record<(typeof DECISION_FIELDS)[number], string> = {
       requestId,
       decision,
@@ -64,6 +97,8 @@ export function DecisionForm({
     });
   }
 
+  const copy = confirming ? CONFIRM_COPY[confirming] : null;
+
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
@@ -72,7 +107,7 @@ export function DecisionForm({
           value={note}
           onChange={(event) => setNote(event.target.value)}
           rows={2}
-          className="border-input bg-background mt-1 w-full rounded-lg border px-2.5 py-1 text-sm"
+          className="border-input bg-background mt-1 min-h-16 w-full rounded-lg border px-2.5 py-1 text-sm"
         />
       </label>
       {error ? <FormMessage tone="error">{error}</FormMessage> : null}
@@ -80,20 +115,46 @@ export function DecisionForm({
       <div className="flex gap-2">
         <Button
           type="button"
+          variant="brand"
+          className="rounded-full"
           disabled={pending}
-          onClick={() => decide("APPROVED")}
+          onClick={() => check("APPROVED")}
         >
           Approve
         </Button>
         <Button
           type="button"
           variant="outline"
+          className="text-destructive rounded-full"
           disabled={pending}
-          onClick={() => decide("REJECTED")}
+          onClick={() => check("REJECTED")}
         >
           Reject
         </Button>
       </div>
+      <AlertDialog
+        open={confirming !== null}
+        onOpenChange={(open) => !open && setConfirming(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{copy?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{copy?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={confirming === "REJECTED" ? "destructive" : "default"}
+              onClick={() => {
+                if (confirming) send(confirming);
+                setConfirming(null);
+              }}
+            >
+              {copy?.action}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

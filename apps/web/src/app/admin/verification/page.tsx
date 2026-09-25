@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
+import { AdminPageHeader } from "@/components/admin/admin-surface";
 import { AppError } from "@/lib/errors";
 import {
   ReviewQueue,
@@ -35,7 +36,10 @@ export default async function VerificationQueuePage({
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Verification requests</h1>
+      <AdminPageHeader
+        title="Verification requests"
+        description="Alumni waiting for you to confirm who they are, oldest first."
+      />
       <ReviewQueue
         page={page}
         action={decideVerificationAction}
