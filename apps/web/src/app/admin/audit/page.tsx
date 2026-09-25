@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import {
@@ -7,8 +6,12 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@nitap/ui/components/alert";
-import { buttonVariants } from "@nitap/ui/components/button";
 
+import {
+  AdminPageHeader,
+  AdminPager,
+  AdminPanel,
+} from "@/components/admin/admin-surface";
 import { listAuditLog } from "@/composition/admin";
 import { AppError } from "@/lib/errors";
 import { AUDIT_FILTER_LABELS, AuditFilters, AuditTable } from "@/modules/admin";
@@ -64,30 +67,26 @@ export default async function AuditLogPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Audit log</h1>
-      <AuditFilters values={values} />
-      {invalid ? (
-        <Alert variant="destructive">
-          <AlertTitle>These filters are not valid</AlertTitle>
-          <AlertDescription>
-            Check {invalid.join(", ")}. Ids are UUIDs, actions look like
-            job.approved, and From must be before To.
-          </AlertDescription>
-        </Alert>
-      ) : (
-        <AuditTable rows={page?.data ?? []} />
-      )}
-      {older ? (
-        <Link
-          href={older}
-          className={buttonVariants({
-            variant: "outline",
-            className: "self-start",
-          })}
-        >
-          Older entries
-        </Link>
-      ) : null}
+      <AdminPageHeader
+        title="Audit log"
+        description="Every sensitive change, who made it and when."
+      />
+      <AdminPanel toolbar={<AuditFilters values={values} />}>
+        {invalid ? (
+          <div className="p-4">
+            <Alert variant="destructive">
+              <AlertTitle>These filters are not valid</AlertTitle>
+              <AlertDescription>
+                Check {invalid.join(", ")}. Ids are UUIDs, actions look like
+                job.approved, and From must be before To.
+              </AlertDescription>
+            </Alert>
+          </div>
+        ) : (
+          <AuditTable rows={page?.data ?? []} />
+        )}
+      </AdminPanel>
+      <AdminPager href={older} label="Older entries" />
     </div>
   );
 }

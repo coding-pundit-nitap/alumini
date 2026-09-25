@@ -28,7 +28,7 @@ const TEXT_FIELDS = [
 export function AuditFilters({ values }: { values: Record<string, string> }) {
   return (
     <form method="get">
-      <FieldGroup className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <FieldGroup className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TEXT_FIELDS.map((f) => (
           <Field key={f.name}>
             <FieldLabel htmlFor={f.name}>{f.label}</FieldLabel>
@@ -37,6 +37,7 @@ export function AuditFilters({ values }: { values: Record<string, string> }) {
               name={f.name}
               defaultValue={values[f.name] ?? ""}
               placeholder={f.placeholder}
+              className="rounded-lg"
             />
           </Field>
         ))}
@@ -47,6 +48,7 @@ export function AuditFilters({ values }: { values: Record<string, string> }) {
             name="from"
             type="datetime-local"
             defaultValue={values.from ?? ""}
+            className="rounded-lg"
           />
         </Field>
         <Field>
@@ -56,18 +58,24 @@ export function AuditFilters({ values }: { values: Record<string, string> }) {
             name="to"
             type="datetime-local"
             defaultValue={values.to ?? ""}
+            className="rounded-lg"
           />
         </Field>
-        <Field orientation="horizontal">
-          <Button type="submit">Filter</Button>
-          <a
-            href="/admin/audit"
-            className={buttonVariants({ variant: "ghost" })}
-          >
-            Clear
-          </a>
-        </Field>
       </FieldGroup>
+      <div className="mt-3 flex items-center gap-2">
+        <Button type="submit" className="rounded-full">
+          Filter
+        </Button>
+        <a
+          href="/admin/audit"
+          className={buttonVariants({
+            variant: "ghost",
+            className: "rounded-full",
+          })}
+        >
+          Clear
+        </a>
+      </div>
     </form>
   );
 }
