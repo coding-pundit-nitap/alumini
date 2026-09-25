@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { CheckCheck, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { Button } from "@nitap/ui/components/button";
 
 import { NotificationList, type NotificationItem } from "./notification-list";
 
@@ -16,7 +19,7 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
 /**
  * The `/notifications` client shell: owns mark-read and load-more state around the server-rendered first
  * page. `NotificationList` stays a dumb presentational component; this is where the fetches live. Both
- * mutations are optimistic and roll back to the pre-request state on a non-2xx response or a network error,
+ * mutations (and mark all read) are optimistic and roll back to the pre-request state on a non-2xx response or a network error,
  * surfacing a short message (mirrors messaging's `Thread`).
  */
 export function NotificationInbox({
@@ -67,15 +70,60 @@ export function NotificationInbox({
     }
   };
 
-  const loadMore = async () => {
+  const [markingAll, setMarkingAll] = useState(false);
+  const onReadAll = async () => {
+    setError(null);
+    setMarkingAll(true);
+    // Only the ones this call flips go back on failure; anything marked meanwhile stays read.
+    const flipped = new Set(
+      items.filter((item) => !item.readAt).map((item) => item.id)
+    );
+    const now = new Date().toISOString();
+    const revert = () =>
+      setItems((current) =>
+        current.map((item) =>
+          flipped.has(item.id) ? { ...item, readAt: null } : item
+        )
+      );
+    setItems((current) =>
+      current.map((item) => (item.readAt ? item : { ...item, readAt: now }))
+    );
+    try {
+      const response = await fetch("/api/v1/notifications/read-all", {
+        method: "POST",
+        headers: JSON_HEADERS,
+      });
+      if (!response.ok) {
+        revert();
+        setError(
+          await errorMessage(
+            response,
+            "Could not mark all as read. Please try again."
+          )
+        );
+      }
+    } catch {
+      revert();
+      setError(
+        "Could not mark all as read. Check your connection and try again."
+      );
+    } finally {
+      setMarkingAll(false);
+    }
+  };
+
+  const [failed, setFailed] = useState(false);
+  const loadMore = useCallback(async () => {
     if (!cursor || loading) return;
     setError(null);
+    setFailed(false);
     setLoading(true);
     try {
       const response = await fetch(
         `/api/v1/notifications?cursor=${encodeURIComponent(cursor)}`
       );
       if (!response.ok) {
+        setFailed(true);
         setError(
           await errorMessage(
             response,
@@ -91,31 +139,78 @@ export function NotificationInbox({
       setItems((current) => [...current, ...body.data]);
       setCursor(body.page.nextCursor);
     } catch {
+      setFailed(true);
       setError(
         "Could not load more notifications. Check your connection and try again."
       );
     } finally {
       setLoading(false);
     }
-  };
+  }, [cursor, loading]);
+
+  // Scrolling near the end loads the next page; the button stays for keyboards and as the retry.
+  // A failed page stops auto-loading, so it can't retry in a loop.
+  const moreRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = moreRef.current;
+    if (!el || failed || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) void loadMore();
+      },
+      { rootMargin: "0px 0px 600px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore, failed]);
+
+  const unread = items.some((item) => !item.readAt);
 
   return (
-    <div className="space-y-4">
-      {error ? (
-        <p role="alert" className="text-destructive text-sm">
-          {error}
-        </p>
+    <div>
+      {unread || error ? (
+        <div className="flex min-h-12 items-center justify-between gap-3 border-b px-4 py-2 sm:px-5">
+          {error ? (
+            <p role="alert" className="text-destructive text-sm">
+              {error}
+            </p>
+          ) : (
+            <span />
+          )}
+          {unread ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground shrink-0 rounded-full"
+              disabled={markingAll}
+              onClick={() => void onReadAll()}
+            >
+              <CheckCheck aria-hidden />
+              Mark all read
+            </Button>
+          ) : null}
+        </div>
       ) : null}
       <NotificationList items={items} onRead={(id) => void onRead(id)} />
       {cursor ? (
-        <button
-          type="button"
-          className="text-primary text-sm underline disabled:opacity-50"
-          disabled={loading}
-          onClick={() => void loadMore()}
-        >
-          {loading ? "Loading…" : "Load more"}
-        </button>
+        <div ref={moreRef} className="flex justify-center py-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground rounded-full"
+            disabled={loading}
+            onClick={() => void loadMore()}
+          >
+            {loading ? (
+              <>
+                <Loader2 aria-hidden className="animate-spin" />
+                Loading…
+              </>
+            ) : (
+              "Load more"
+            )}
+          </Button>
+        </div>
       ) : null}
     </div>
   );

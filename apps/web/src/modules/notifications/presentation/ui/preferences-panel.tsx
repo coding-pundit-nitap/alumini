@@ -84,9 +84,12 @@ export function PreferencesPanel({
   };
 
   return (
-    <div className="space-y-4">
+    <div>
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
+        <p
+          role="alert"
+          className="border-destructive/30 bg-destructive/5 text-destructive mx-4 mt-4 rounded-lg border px-3 py-2 text-sm sm:mx-5"
+        >
           {error}
         </p>
       ) : null}

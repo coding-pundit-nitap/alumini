@@ -67,7 +67,10 @@ test("a connection acceptance shows up in the bell without a reload, and in /not
   await expect(ravi.getByText("No requests waiting for you.")).toBeVisible();
 
   // Back on Asha's still-open page: the bell badge increments via the SSE hint, not a reload.
-  await expect(asha.getByTestId("unread-badge")).toHaveText("1", {
+  // The shell mounts two bells (rail, and the mobile bar hidden at this width); check the visible one.
+  await expect(
+    asha.getByTestId("unread-badge").filter({ visible: true })
+  ).toHaveText("1", {
     timeout: 15_000,
   });
   await asha.getByRole("button", { name: "Notifications" }).click();

@@ -129,4 +129,41 @@ describe("NotificationInbox", () => {
     const backButtons = screen.getAllByRole("button", { name: /mark read/i });
     expect(backButtons).toHaveLength(1);
   });
+
+  it("marks all read at once, and puts back only those it flipped when that fails", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementationOnce(() => fail({ error: { message: "Nope" } }))
+      .mockImplementationOnce(() => ok({ data: { updated: 1 } }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <NotificationInbox
+        initialItems={[item("a"), item("b", new Date().toISOString())]}
+        initialNextCursor={null}
+      />
+    );
+    expect(screen.getAllByRole("button", { name: /mark read/i })).toHaveLength(
+      1
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Mark all read" })
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/nope/i)
+    );
+    expect(screen.getAllByRole("button", { name: /mark read/i })).toHaveLength(
+      1
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Mark all read" })
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: /mark read/i })).toBeNull()
+    );
+    expect(screen.queryByRole("button", { name: "Mark all read" })).toBeNull();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/api/v1/notifications/read-all",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
 });
