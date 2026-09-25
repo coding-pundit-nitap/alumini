@@ -1,3 +1,4 @@
+import { addTicks } from "./ticks";
 import { debounceKeyFor } from "@nitap/jobs";
 
 import { audit } from "@/infrastructure/audit";
@@ -74,11 +75,24 @@ export const removeParticipant = createRemoveParticipant({
   observe,
 });
 export const reportMessage = createReportMessage({ store, authorize, observe });
-export const listConversations = createListConversations({
+const listConversationsBare = createListConversations({
   queries,
   authorize,
 });
-export const getConversation = createGetConversation({ queries, authorize });
+export const listConversations: typeof listConversationsBare = async (args) => {
+  const page = await listConversationsBare(args);
+  await addTicks(
+    page.data.flatMap((c) => c.participants),
+    (person) => person.id
+  );
+  return page;
+};
+const getConversationBare = createGetConversation({ queries, authorize });
+export const getConversation: typeof getConversationBare = async (args) => {
+  const conversation = await getConversationBare(args);
+  await addTicks(conversation.participants, (person) => person.id);
+  return conversation;
+};
 export const listMessages = createListMessages({ queries, authorize });
 export const readReportedMessage = createReadReportedMessage({
   store,

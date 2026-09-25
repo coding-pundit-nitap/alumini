@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { buttonVariants } from "@nitap/ui/components/button";
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
 
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
 import { relativeTime } from "@/lib/relative-time";
 import { cn } from "@/lib/utils";
 
@@ -18,12 +19,14 @@ export function PostAuthorAvatar({
   size?: "sm" | "default" | "lg";
 }) {
   return (
-    <InitialsAvatar
-      name={author.fullName}
-      seed={author.id}
-      src={author.hasPhoto ? `/api/photos/${author.id}` : null}
-      size={size}
-    />
+    <TickedAvatar tick={author.tick} size={size === "sm" ? "sm" : "md"}>
+      <InitialsAvatar
+        name={author.fullName}
+        seed={author.id}
+        src={author.hasPhoto ? `/api/photos/${author.id}` : null}
+        size={size}
+      />
+    </TickedAvatar>
   );
 }
 

@@ -16,6 +16,8 @@ const infrastructureSdks = {
     // one @nitap/database subpath the domain and application layers may import. Order matters: the
     // negation must come after the pattern it re-allows.
     "!@nitap/database/permissions",
+    // Role display labels (UI-15 ticks): pure data beside the role definitions, so app code never names a role.
+    "!@nitap/database/role-ticks",
     // Prisma-generated enum types are pure type data (no client, no runtime I/O) and are the single
     // source of truth for schema-backed unions such as NotificationDomain; domain code re-exports them
     // instead of hand-declaring a parallel literal union that could drift from the schema.

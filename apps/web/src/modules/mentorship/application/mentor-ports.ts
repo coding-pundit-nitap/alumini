@@ -1,3 +1,4 @@
+import type { Tick } from "@/lib/role-tick";
 import type { ListCursor } from "../domain/cursor";
 import type { MentorProfileInput } from "../domain/mentor-profile";
 
@@ -11,6 +12,8 @@ export type MentorCard = {
   department: string | null;
   currentCompany: string | null;
   hasPhoto: boolean;
+  /** UI-15: set by composition after the read. */
+  tick?: Tick | null;
   expertise: string;
   topics: string[];
   availability: string;

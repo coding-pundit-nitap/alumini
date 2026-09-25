@@ -15,7 +15,13 @@ vi.mock("next/navigation", () => ({
 
 import { UserMenu } from "./user-menu";
 
-const user = { id: "u1", name: "Asha Rao", headline: "SDE", photoUrl: null };
+const user = {
+  id: "u1",
+  name: "Asha Rao",
+  headline: "SDE",
+  photoUrl: null,
+  tick: null,
+};
 
 describe("UserMenu", () => {
   beforeEach(() => {

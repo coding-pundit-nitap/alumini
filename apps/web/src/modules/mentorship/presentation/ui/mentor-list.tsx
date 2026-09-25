@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { Badge } from "@nitap/ui/components/badge";
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
 
 import type { MentorCard } from "../../application/mentor-ports";
 
@@ -19,13 +20,15 @@ function Row({
   return (
     <li className="hover:bg-muted/30 px-4 py-4 transition-colors sm:px-5">
       <div className="flex items-start gap-3">
-        <InitialsAvatar
-          name={mentor.fullName}
-          seed={mentor.userId}
-          src={mentor.hasPhoto ? `/api/photos/${mentor.userId}` : null}
-          size="lg"
-          className="size-11"
-        />
+        <TickedAvatar tick={mentor.tick}>
+          <InitialsAvatar
+            name={mentor.fullName}
+            seed={mentor.userId}
+            src={mentor.hasPhoto ? `/api/photos/${mentor.userId}` : null}
+            size="lg"
+            className="size-11"
+          />
+        </TickedAvatar>
         <div className="min-w-0 flex-1 space-y-2">
           <div className="leading-tight">
             <Link

@@ -1,3 +1,4 @@
+import { addTicks } from "./ticks";
 import { audit } from "@/infrastructure/audit";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { getMetrics, logger } from "@/infrastructure/observability";
@@ -52,7 +53,16 @@ export const removeConnection = createRemoveConnection({
   observe,
 });
 export const blockUser = createBlockUser({ store, authorize, observe });
-export const listConnections = createListConnections({ queries, authorize });
+const listConnectionsBare = createListConnections({ queries, authorize });
+export const listConnections: typeof listConnectionsBare = async (args) => {
+  const page = await listConnectionsBare(args);
+  await addTicks(
+    page.data,
+    (item) => item.user.id,
+    (item) => item.user
+  );
+  return page;
+};
 export const getConnectionStatus = createGetConnectionStatus({
   queries,
   authorize,

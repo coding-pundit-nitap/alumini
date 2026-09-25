@@ -1,7 +1,9 @@
 import { cache } from "react";
 
 import { getMentorProfile } from "@/composition/mentorship";
+import { loadTicks } from "@/composition/ticks";
 import { getOwnProfile } from "@/composition/users";
+import type { Tick } from "@/lib/role-tick";
 import { can, getActor } from "@/modules/auth";
 
 import { buildNav, type NavModel } from "./nav-model";
@@ -11,6 +13,7 @@ export type ShellUser = {
   name: string;
   headline: string | null;
   photoUrl: string | null;
+  tick: Tick | null;
 };
 /** null = signed out. */
 export type ShellData = {
@@ -25,13 +28,15 @@ export const loadShell = cache(async (): Promise<ShellData> => {
   if (!actor) return null;
 
   const verified = actor.accountState === "VERIFIED";
-  const [profile, isMentor] = await Promise.all([
+  const [profile, isMentor, ticks] = await Promise.all([
     getOwnProfile({ actor }).catch(() => null),
     verified
       ? getMentorProfile({ actor })
           .then(Boolean)
           .catch(() => false)
       : false,
+    // A tick is decoration: never let it take the shell down.
+    loadTicks([actor.userId]).catch(() => new Map<string, Tick>()),
   ]);
 
   return {
@@ -41,6 +46,7 @@ export const loadShell = cache(async (): Promise<ShellData> => {
       name: profile?.fullName || "Member",
       headline: profile?.headline ?? null,
       photoUrl: profile?.photoUploadId ? `/api/photos/${actor.userId}` : null,
+      tick: ticks.get(actor.userId) ?? null,
     },
     nav: buildNav({
       accountState: actor.accountState,

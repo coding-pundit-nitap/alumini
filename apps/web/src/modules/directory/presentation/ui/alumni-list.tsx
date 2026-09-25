@@ -15,6 +15,8 @@ import { Badge } from "@nitap/ui/components/badge";
 import { buttonVariants } from "@nitap/ui/components/button";
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
 
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
+
 import type {
   AlumniSummary,
   DirectoryPage,
@@ -53,13 +55,15 @@ function Person({ person, isYou }: { person: AlumniSummary; isYou: boolean }) {
         href={`/members/${person.id}`}
         className="group hover:bg-muted/30 focus-visible:bg-muted/40 flex items-center gap-3 px-4 py-3.5 transition-colors outline-none sm:px-5"
       >
-        <InitialsAvatar
-          name={person.fullName}
-          seed={person.id}
-          src={person.photoUrl}
-          size="lg"
-          className="size-11"
-        />
+        <TickedAvatar tick={person.tick}>
+          <InitialsAvatar
+            name={person.fullName}
+            seed={person.id}
+            src={person.photoUrl}
+            size="lg"
+            className="size-11"
+          />
+        </TickedAvatar>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             <span className="truncate font-medium underline-offset-2 group-hover:underline">

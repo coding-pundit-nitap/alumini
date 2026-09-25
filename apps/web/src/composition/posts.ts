@@ -1,3 +1,4 @@
+import { addTicks } from "./ticks";
 import { transactionRunner } from "@/infrastructure/database/client";
 import { outbox } from "@/infrastructure/outbox";
 import { authorize, type Actor } from "@/modules/auth";
@@ -28,12 +29,39 @@ const deps = { store, authorize };
 
 export const createPost = createCreatePost(deps);
 export const deletePost = createDeletePost(deps);
-export const listFeed = createListFeed(deps);
-export const getPost = createGetPost(deps);
+const listFeedBare = createListFeed(deps);
+export const listFeed: typeof listFeedBare = async (args) => {
+  const page = await listFeedBare(args);
+  await addTicks(
+    page.posts,
+    (post) => post.author.id,
+    (post) => post.author
+  );
+  return page;
+};
+const getPostBare = createGetPost(deps);
+export const getPost: typeof getPostBare = async (args) => {
+  const post = await getPostBare(args);
+  await addTicks(
+    [post],
+    (p) => p.author.id,
+    (p) => p.author
+  );
+  return post;
+};
 export const getPostImageKey = createGetPostImageKey(deps);
 export const addComment = createAddComment(deps);
 export const deleteComment = createDeleteComment(deps);
-export const listComments = createListComments(deps);
+const listCommentsBare = createListComments(deps);
+export const listComments: typeof listCommentsBare = async (args) => {
+  const page = await listCommentsBare(args);
+  await addTicks(
+    page.comments,
+    (comment) => comment.author.id,
+    (comment) => comment.author
+  );
+  return page;
+};
 export const react = createReact(deps);
 export const unreact = createUnreact(deps);
 

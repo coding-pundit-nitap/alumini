@@ -7,11 +7,18 @@ import {
   createSearchDirectory,
 } from "@/modules/directory";
 
+import { addTicks } from "./ticks";
+
 /** Wires the directory module to PostgreSQL search (Stage A) and the shared Redis rate limiter. */
-export const searchDirectory = createSearchDirectory({
+const searchDirectoryBare = createSearchDirectory({
   authorize,
   search: createPostgresSearch(prisma),
   rateLimiter: redisRateLimitStorage,
 });
+export const searchDirectory: typeof searchDirectoryBare = async (args) => {
+  const page = await searchDirectoryBare(args);
+  await addTicks(page.data, (person) => person.id);
+  return page;
+};
 
 export const listDepartments = createListDepartments(prisma);

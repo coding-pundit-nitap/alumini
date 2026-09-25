@@ -1,8 +1,13 @@
 "use server";
 
 import { runAction } from "@/app/_actions/run-action";
-import { updateOwnPrivacy, updateOwnProfile } from "@/composition/users";
+import {
+  setBadgeRole,
+  updateOwnPrivacy,
+  updateOwnProfile,
+} from "@/composition/users";
 import type { ActionResult } from "@/lib/action-result";
+import { refresh } from "next/cache";
 import { getActor } from "@/modules/auth";
 import { parsePrivacyForm, parseProfileForm } from "@/modules/users";
 
@@ -26,6 +31,17 @@ export async function updatePrivacyAction(
   return runAction(async () => {
     const input = parsePrivacyForm(formData);
     await updateOwnPrivacy({ actor: await getActor(), input });
+    return { saved: true as const };
+  });
+}
+
+/** UI-15: which tick shows on the caller's photo ("AUTO", a held role, or "NONE"). */
+export async function setBadgeRoleAction(
+  choice: string
+): Promise<ActionResult<{ saved: true }>> {
+  return runAction(async () => {
+    await setBadgeRole({ actor: await getActor(), choice });
+    refresh();
     return { saved: true as const };
   });
 }

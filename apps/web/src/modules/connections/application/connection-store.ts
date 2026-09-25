@@ -1,3 +1,4 @@
+import type { Tick } from "@/lib/role-tick";
 import type {
   ConnectionPatch,
   ConnectionRow,
@@ -70,7 +71,7 @@ export type ListedConnection = {
   state: ConnectionState;
   /** Relative to the caller: who started it. */
   direction: "INCOMING" | "OUTGOING";
-  user: { id: string; fullName: string; hasPhoto: boolean };
+  user: { id: string; fullName: string; hasPhoto: boolean; tick?: Tick | null };
   requestedAt: Date;
   respondedAt: Date | null;
 };

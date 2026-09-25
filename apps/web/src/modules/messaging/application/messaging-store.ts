@@ -1,3 +1,4 @@
+import type { Tick } from "@/lib/role-tick";
 import type { MessageSentPayload } from "@nitap/jobs";
 
 import type { ListedMessage } from "../domain/messaging";
@@ -107,7 +108,13 @@ export type MessagingOutcome =
   | "reported";
 export type MessagingObserver = (outcome: MessagingOutcome, id: string) => void;
 
-export type Person = { id: string; fullName: string; hasPhoto: boolean };
+export type Person = {
+  id: string;
+  fullName: string;
+  hasPhoto: boolean;
+  /** UI-15: set by composition after the read. */
+  tick?: Tick | null;
+};
 export type ListedConversation = {
   id: string;
   isGroup: boolean;

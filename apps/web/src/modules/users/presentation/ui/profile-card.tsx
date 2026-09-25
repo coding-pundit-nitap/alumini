@@ -6,9 +6,13 @@ import {
   Link2,
   MapPin,
 } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
+
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
+import type { Tick } from "@/lib/role-tick";
 
 import type { ProfileView } from "../../domain/profile";
 import { duration, hostPath, LINK_LABEL, monthYear } from "./format";
@@ -81,9 +85,15 @@ function Cover() {
 export function ProfileCard({
   view,
   actions,
+  tick = null,
+  tickHref,
 }: {
   view: ProfileView;
   actions?: ReactNode;
+  /** UI-15: the seal on the photo and beside the name. */
+  tick?: Tick | null;
+  /** Your own profile: where to change which tick shows. */
+  tickHref?: string;
 }) {
   const { institution, experience, education, skills, links } = view;
   const schooling =
@@ -97,20 +107,22 @@ export function ProfileCard({
       <Cover />
       <header className="px-4 pb-6 sm:px-6">
         <div className="-mt-12 flex items-end justify-between gap-3 sm:-mt-14">
-          {view.photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- a presigned, auth-checked route; not a static asset.
-            <img
-              src={view.photoUrl}
-              alt={view.fullName}
-              className="ring-background bg-muted size-24 rounded-full object-cover ring-4 sm:size-28"
-            />
-          ) : (
-            <InitialsAvatar
-              name={view.fullName}
-              seed={view.userId}
-              className="ring-background bg-background size-24 ring-4 sm:size-28 [&_[data-slot=avatar-fallback]]:text-3xl"
-            />
-          )}
+          <TickedAvatar tick={tick} size="lg">
+            {view.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- a presigned, auth-checked route; not a static asset.
+              <img
+                src={view.photoUrl}
+                alt={view.fullName}
+                className="ring-background bg-muted size-24 rounded-full object-cover ring-4 sm:size-28"
+              />
+            ) : (
+              <InitialsAvatar
+                name={view.fullName}
+                seed={view.userId}
+                className="ring-background bg-background size-24 ring-4 sm:size-28 [&_[data-slot=avatar-fallback]]:text-3xl"
+              />
+            )}
+          </TickedAvatar>
           {actions ? (
             <div className="flex flex-wrap justify-end gap-2 pb-1">
               {actions}
@@ -120,6 +132,19 @@ export function ProfileCard({
         <h1 className="mt-4 text-2xl font-semibold tracking-tight">
           {view.fullName}
         </h1>
+        {tick ? (
+          <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm">
+            <span aria-hidden>{tick.label}</span>
+            {tickHref ? (
+              <Link
+                href={tickHref}
+                className="text-brand text-xs font-medium underline-offset-2 hover:underline"
+              >
+                Change tick
+              </Link>
+            ) : null}
+          </p>
+        ) : null}
         {view.headline ? (
           <p className="text-foreground/90 mt-1 text-[15px] leading-snug">
             {view.headline}

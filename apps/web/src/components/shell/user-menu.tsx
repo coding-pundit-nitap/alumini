@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
+
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -104,12 +106,14 @@ export function UserMenu({
             : "rounded-full p-1"
         )}
       >
-        <InitialsAvatar
-          name={user.name}
-          seed={user.id}
-          src={user.photoUrl}
-          className="size-8"
-        />
+        <TickedAvatar tick={user.tick} size="sm">
+          <InitialsAvatar
+            name={user.name}
+            seed={user.id}
+            src={user.photoUrl}
+            className="size-8"
+          />
+        </TickedAvatar>
         {variant === "rail" && (
           <>
             <span className="hidden min-w-0 flex-1 lg:block">
@@ -141,13 +145,15 @@ export function UserMenu({
           render={<Link href="/profile" />}
           className="gap-3 rounded-lg p-2"
         >
-          <InitialsAvatar
-            name={user.name}
-            seed={user.id}
-            src={user.photoUrl}
-            size="lg"
-            className="size-10"
-          />
+          <TickedAvatar tick={user.tick} size="sm">
+            <InitialsAvatar
+              name={user.name}
+              seed={user.id}
+              src={user.photoUrl}
+              size="lg"
+              className="size-10"
+            />
+          </TickedAvatar>
           <span className="min-w-0 flex-1 leading-tight">
             <span className="block truncate font-medium">{user.name}</span>
             {user.headline && (

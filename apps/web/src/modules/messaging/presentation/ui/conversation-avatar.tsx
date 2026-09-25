@@ -1,4 +1,5 @@
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
 
 import { cn } from "@/lib/utils";
 
@@ -49,13 +50,15 @@ export function ConversationAvatar({
   }
   if (!isGroup || !second) {
     return (
-      <InitialsAvatar
-        name={first.fullName}
-        seed={first.id}
-        src={photoOf(first)}
-        size="lg"
-        className={className}
-      />
+      <TickedAvatar tick={first.tick}>
+        <InitialsAvatar
+          name={first.fullName}
+          seed={first.id}
+          src={photoOf(first)}
+          size="lg"
+          className={className}
+        />
+      </TickedAvatar>
     );
   }
   return (

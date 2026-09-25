@@ -13,6 +13,7 @@ import { getActor } from "@/modules/auth";
 import { ConnectionButton } from "@/modules/connections";
 import { MessageButton } from "@/modules/messaging";
 import { ProfileCard } from "@/modules/users";
+import { loadTicks } from "@/composition/ticks";
 
 import { startConversationAction } from "@/app/(app)/messages/actions";
 import {
@@ -52,11 +53,15 @@ export default async function MemberPage({
       : null;
 
   const own = actor?.userId === userId;
+  const tick =
+    (await loadTicks([userId]).catch(() => null))?.get(userId) ?? null;
 
   return (
     <PageColumns>
       <ProfileCard
         view={view}
+        tick={tick}
+        tickHref={own ? "/profile/privacy#tick" : undefined}
         actions={
           own ? (
             <Link

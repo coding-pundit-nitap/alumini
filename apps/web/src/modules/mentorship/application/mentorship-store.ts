@@ -1,3 +1,4 @@
+import type { Tick } from "@/lib/role-tick";
 import type {
   MentorContext,
   MentorshipEventType,
@@ -70,7 +71,12 @@ export type MentorshipObserver = (
 export type ListedMentorship = {
   id: string;
   state: MentorshipState;
-  counterparty: { id: string; fullName: string; hasPhoto: boolean };
+  counterparty: {
+    id: string;
+    fullName: string;
+    hasPhoto: boolean;
+    tick?: Tick | null;
+  };
   topic: string | null;
   message: string;
   responseNote: string | null;

@@ -1,3 +1,4 @@
+import type { Tick } from "@/lib/role-tick";
 import { PERMISSIONS } from "@nitap/database/permissions";
 import type { DirectoryQuery, PersonHit, SearchPort } from "@nitap/search";
 
@@ -19,6 +20,8 @@ export type RateLimiter = {
 export type AlumniSummary = Omit<PersonHit, "hasPhoto" | "userId"> & {
   id: string;
   photoUrl?: string;
+  /** UI-15: set by composition after the search; absent/null = no tick. */
+  tick?: Tick | null;
 };
 
 export type DirectoryPage = {

@@ -2,6 +2,7 @@
 
 import { Button } from "@nitap/ui/components/button";
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -69,7 +70,9 @@ export function GroupMembers({
             key={p.id}
             className="hover:bg-muted/50 flex items-center gap-3 rounded-xl px-2 py-2 text-sm"
           >
-            <InitialsAvatar name={p.fullName} seed={p.id} src={photoOf(p)} />
+            <TickedAvatar tick={p.tick}>
+              <InitialsAvatar name={p.fullName} seed={p.id} src={photoOf(p)} />
+            </TickedAvatar>
             <span className="min-w-0 flex-1 truncate font-medium">
               {p.id === viewerId ? `${p.fullName} (you)` : p.fullName}
               {p.id === createdById ? (

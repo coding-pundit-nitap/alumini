@@ -279,6 +279,9 @@ model Profile {
   locationVisibility   ProfileVisibility? @map("location_visibility")
   experienceVisibility ProfileVisibility? @map("experience_visibility")
   educationVisibility  ProfileVisibility? @map("education_visibility")
+  // UI-15: the role whose tick shows on the photo. NULL = automatic, a role name while held, 'NONE' = hidden.
+  // Length CHECK (ck_profile_badge_role_length) is in the profile_badge_role migration's SQL.
+  badgeRole            String?            @map("badge_role")
   createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt            DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
 

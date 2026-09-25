@@ -10,6 +10,7 @@ export { createPrismaEducationCollection } from "./infrastructure/prisma-educati
 export { createPrismaExperienceCollection } from "./infrastructure/prisma-experience-collection";
 export { createPrismaLinkCollection } from "./infrastructure/prisma-link-collection";
 export { createPrismaProfileStore } from "./infrastructure/prisma-profile-store";
+export { createPrismaBadgeStore } from "./infrastructure/prisma-badge-store";
 export { createPrismaSkillCollection } from "./infrastructure/prisma-skill-collection";
 export { createProfileAudit } from "./infrastructure/profile-audit";
 export type { ProfileRecord, ProfileView } from "./domain/profile";
@@ -65,3 +66,10 @@ export {
 export { ProfileCard } from "./presentation/ui/profile-card";
 export { ProfileForm } from "./presentation/ui/profile-form";
 export { SkillForm } from "./presentation/ui/skill-form";
+export {
+  AUTO_TICK,
+  createGetBadgeSettings,
+  createSetBadgeRole,
+  type BadgeStore,
+} from "./application/badge-role";
+export { BadgeRolePicker } from "./presentation/ui/badge-role-picker";

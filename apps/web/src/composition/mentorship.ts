@@ -1,3 +1,4 @@
+import { addTicks } from "./ticks";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { getMetrics, logger } from "@/infrastructure/observability";
 import { outbox } from "@/infrastructure/outbox";
@@ -26,7 +27,12 @@ export const saveMentorProfile = createSaveMentorProfile({
   authorize,
 });
 export const getMentorProfile = createGetMentorProfile({ queries, authorize });
-export const listMentors = createListMentors({ queries, authorize });
+const listMentorsBare = createListMentors({ queries, authorize });
+export const listMentors: typeof listMentorsBare = async (args) => {
+  const page = await listMentorsBare(args);
+  await addTicks(page.data, (mentor) => mentor.userId);
+  return page;
+};
 
 const store = createPrismaMentorshipStore({
   runner: transactionRunner,
@@ -50,7 +56,16 @@ export const transitionMentorship = createTransitionMentorship({
   observe,
 });
 
-export const listMentorships = createListMentorships({
+const listMentorshipsBare = createListMentorships({
   queries: createPrismaMentorshipQueries(prisma),
   authorize,
 });
+export const listMentorships: typeof listMentorshipsBare = async (args) => {
+  const page = await listMentorshipsBare(args);
+  await addTicks(
+    page.data,
+    (item) => item.counterparty.id,
+    (item) => item.counterparty
+  );
+  return page;
+};

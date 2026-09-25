@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { Button, buttonVariants } from "@nitap/ui/components/button";
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
 
 import type { ActionResult } from "@/lib/action-result";
 import { relativeTime } from "@/lib/relative-time";
@@ -142,13 +143,15 @@ function Row({
       )}
     >
       <div className="flex items-center gap-3">
-        <InitialsAvatar
-          name={item.user.fullName}
-          seed={item.user.id}
-          src={item.user.hasPhoto ? `/api/photos/${item.user.id}` : null}
-          size="lg"
-          className="size-11"
-        />
+        <TickedAvatar tick={item.user.tick}>
+          <InitialsAvatar
+            name={item.user.fullName}
+            seed={item.user.id}
+            src={item.user.hasPhoto ? `/api/photos/${item.user.id}` : null}
+            size="lg"
+            className="size-11"
+          />
+        </TickedAvatar>
         <div className="min-w-0 flex-1">
           {tab === "blocked" ? (
             <span className="block truncate font-medium">

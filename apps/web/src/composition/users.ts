@@ -5,6 +5,9 @@ import { authorize, can } from "@/modules/auth";
 import { connectionLookup } from "./connections";
 import {
   createCollectionUseCases,
+  createGetBadgeSettings,
+  createPrismaBadgeStore,
+  createSetBadgeRole,
   createGetOwnProfile,
   createGetProfileForViewer,
   createGetProfilePhotoKey,
@@ -53,6 +56,11 @@ export const updateProfilePhoto = createUpdateProfilePhoto({
   authorize,
 });
 export const updateOwnPrivacy = createUpdateOwnPrivacy({ store, authorize });
+
+// UI-15: the tick a member shows on their photo.
+const badges = createPrismaBadgeStore(prisma);
+export const getBadgeSettings = createGetBadgeSettings({ badges, authorize });
+export const setBadgeRole = createSetBadgeRole({ badges, authorize });
 
 // The four detail collections (spec 3B): one shared use-case factory, four explicit Prisma stores.
 const now = () => new Date();

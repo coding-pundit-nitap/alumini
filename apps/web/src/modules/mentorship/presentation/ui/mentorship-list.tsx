@@ -3,6 +3,7 @@
 import { Button, buttonVariants } from "@nitap/ui/components/button";
 import { Badge } from "@nitap/ui/components/badge";
 import { InitialsAvatar } from "@nitap/ui/components/initials-avatar";
+import { TickedAvatar } from "@nitap/ui/components/role-tick";
 import {
   GraduationCap,
   Inbox,
@@ -235,17 +236,19 @@ function Row({
   return (
     <li className="hover:bg-muted/30 px-4 py-4 transition-colors sm:px-5">
       <div className="flex items-start gap-3">
-        <InitialsAvatar
-          name={item.counterparty.fullName}
-          seed={item.counterparty.id}
-          src={
-            item.counterparty.hasPhoto
-              ? `/api/photos/${item.counterparty.id}`
-              : null
-          }
-          size="lg"
-          className="size-11"
-        />
+        <TickedAvatar tick={item.counterparty.tick}>
+          <InitialsAvatar
+            name={item.counterparty.fullName}
+            seed={item.counterparty.id}
+            src={
+              item.counterparty.hasPhoto
+                ? `/api/photos/${item.counterparty.id}`
+                : null
+            }
+            size="lg"
+            className="size-11"
+          />
+        </TickedAvatar>
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 leading-tight">

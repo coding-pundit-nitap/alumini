@@ -1,3 +1,4 @@
+import type { Tick } from "@/lib/role-tick";
 import type { ReactionType } from "../domain/posts";
 
 export type PostRow = {
@@ -16,6 +17,8 @@ export type PostAuthor = {
   fullName: string;
   headline: string | null;
   hasPhoto: boolean;
+  /** UI-15: set by composition after the read; absent/null = no tick. */
+  tick?: Tick | null;
 };
 /**
  * The enriched read model `listFeed`/`findFeedPost` return: a post plus its author, per-type

@@ -14,6 +14,7 @@
     "./permissions": "./prisma/seed-data/permissions.ts",
     "./enums": "./generated/prisma/enums.ts",
     "./role-permissions": "./prisma/seed-data/role-permissions.ts",
+    "./role-ticks": "./prisma/seed-data/role-ticks.ts",
     "./seed": "./prisma/seed.ts"
   },
   "scripts": {
