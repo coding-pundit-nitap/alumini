@@ -21,8 +21,9 @@ type Deps = {
 
 /**
  * Handles the nine Community outbox events. post.created and reaction.added deliberately notify no
- * one (spec catalogue). Every notifying processor re-reads current state at delivery time and returns
- * quietly if the row is gone (never throws into an endless retry). Ids only in logs and payloads.
+ * one (spec catalogue). achievement.submitted, report.filed, and report.resolved notify moderators/reporters
+ * in-app + email (overview XD-9, 12E). Every notifying processor re-reads current state at delivery time
+ * and returns quietly if the row is gone (never throws into an endless retry). Ids only in logs and payloads.
  */
 export function createPostCreatedProcessor(): JobProcessor<PostCreatedPayload> {
   return async (payload, { logger }) => {
@@ -114,6 +115,7 @@ export function createAchievementSubmittedProcessor(
         category: "ENGAGEMENT",
         recipientId,
         payload: { achievementId: payload.achievementId },
+        emailTo: (await deps.findEmail(recipientId)) ?? undefined,
       });
     }
   };
@@ -171,6 +173,7 @@ export function createReportFiledProcessor(
         category: "ENGAGEMENT",
         recipientId,
         payload: { reportId: payload.reportId },
+        emailTo: (await deps.findEmail(recipientId)) ?? undefined,
       });
     }
   };
@@ -194,6 +197,7 @@ export function createReportResolvedProcessor(
       category: "ENGAGEMENT",
       recipientId: reporterId,
       payload: { reportId: payload.reportId },
+      emailTo: (await deps.findEmail(reporterId)) ?? undefined,
     });
   };
 }

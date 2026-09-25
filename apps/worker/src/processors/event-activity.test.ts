@@ -106,20 +106,23 @@ describe("event activity processor", () => {
     expect(d.deliver).not.toHaveBeenCalled();
   });
 
-  it("registration-cancelled by someone else notifies the registrant in-app (spec D12-7)", async () => {
+  it("registration-cancelled by someone else notifies the registrant in-app + email (spec D12-7)", async () => {
     const d = deps();
     await createEventActivityProcessor("registration-cancelled", d)(
       { ...registration, actorId: "organizer-1" },
       ctx()
     );
-    expect(d.deliver).toHaveBeenCalledWith({
-      eventId: "j1",
-      type: "event.registration-cancelled",
-      category: "ENGAGEMENT",
-      recipientId: "user-1",
-      payload: { eventId: "ev1" },
-    });
-    expect(d.findEmail).not.toHaveBeenCalled();
+    expect(d.deliver).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: "j1",
+        type: "event.registration-cancelled",
+        category: "ENGAGEMENT",
+        recipientId: "user-1",
+        payload: { eventId: "ev1" },
+        emailTo: "e@nitap.ac.in",
+      })
+    );
+    expect(d.findEmail).toHaveBeenCalled();
   });
 
   it("registration-cancelled skips a registrant who blocked the actor", async () => {

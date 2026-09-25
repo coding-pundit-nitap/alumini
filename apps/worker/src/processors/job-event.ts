@@ -45,7 +45,7 @@ export function createJobEventProcessor(
           id === (payload as JobEventPayload).actorId
         )
           continue;
-        await send(id, false); // in-app only (spec catalogue)
+        await send(id, true); // in-app + email (overview XD-9)
       }
       return;
     }

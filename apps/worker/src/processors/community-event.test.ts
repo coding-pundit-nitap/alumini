@@ -117,7 +117,7 @@ describe("reaction.added", () => {
 });
 
 describe("achievement.*", () => {
-  it("submitted fans out in-app only to reviewers, minus the submitter", async () => {
+  it("submitted fans out in-app + email to reviewers, minus the submitter", async () => {
     const findModerators = vi.fn(async () => ["m1", "u1", "m2"]);
     const d = {
       ...base(),
@@ -130,7 +130,7 @@ describe("achievement.*", () => {
       "m1",
       "m2",
     ]);
-    expect(d.deliver.mock.calls[0]![0].emailTo).toBeUndefined();
+    expect(d.deliver.mock.calls[0]![0].emailTo).toEqual("e@nitap.ac.in");
     expect(d.deliver.mock.calls[0]![0].payload).toEqual({
       achievementId: "a1",
     });
@@ -175,7 +175,7 @@ describe("achievement.*", () => {
 });
 
 describe("report.*", () => {
-  it("filed fans out in-app to report.review holders, minus the reporter", async () => {
+  it("filed fans out in-app + email to report.review holders, minus the reporter", async () => {
     const findModerators = vi.fn(async () => ["mod-1", "rep1", "mod-2"]);
     const d = {
       ...base(),
@@ -188,7 +188,7 @@ describe("report.*", () => {
       "mod-1",
       "mod-2",
     ]);
-    expect(d.deliver.mock.calls[0]![0].emailTo).toBeUndefined();
+    expect(d.deliver.mock.calls[0]![0].emailTo).toEqual("e@nitap.ac.in");
   });
 
   it("filed skips when the report is gone", async () => {
@@ -201,7 +201,7 @@ describe("report.*", () => {
     expect(d.deliver).not.toHaveBeenCalled();
   });
 
-  it("resolved notifies the reporter in-app; gone report is a no-op", async () => {
+  it("resolved notifies the reporter in-app + email; gone report is a no-op", async () => {
     const d = {
       ...base(),
       findReporter: vi.fn(async () => "rep1" as string | null),
@@ -217,7 +217,7 @@ describe("report.*", () => {
       recipientId: "rep1",
       payload: { reportId: "r1" },
     });
-    expect(d.deliver.mock.calls[0]![0].emailTo).toBeUndefined();
+    expect(d.deliver.mock.calls[0]![0].emailTo).toEqual("e@nitap.ac.in");
     d.findReporter.mockResolvedValue(null);
     d.deliver.mockClear();
     await createReportResolvedProcessor(d)(payload, ctx());
