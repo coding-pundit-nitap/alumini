@@ -69,14 +69,16 @@ services:
       timeout: 3s
       retries: 10
 
-  # Object storage for uploads (spec 3C). The official image, pulled from quay.io (Docker Hub no longer
-  # serves MinIO's images unauthenticated; bitnami/minio is also gone from Docker Hub as of Bitnami's
-  # August 2025 catalog change — only the unmaintained bitnamilegacy/minio remains, and this project does
-  # not build on that). It has no env-var bucket auto-create, so `minio-init` creates the bucket once and
-  # exits; CI cannot use this as a `services:` entry (no command override there), so the CI workflow
-  # starts it with a plain `docker run` step instead.
+  # Object storage for uploads (spec 3C). MinIO no longer publishes images anonymously (quay.io and Docker
+  # Hub both return 401 since its community-edition change; bitnami/minio is also gone, and this project does
+  # not build on the unmaintained bitnamilegacy/minio), so this uses Chainguard's free source build. It ships
+  # `sh` and `mc`, so one image serves both services. It has no env-var bucket auto-create, so `minio-init`
+  # creates the bucket once and exits; CI cannot use this as a `services:` entry (no command override there),
+  # so the CI workflow starts it with a plain `docker run` step instead.
   minio:
-    image: quay.io/minio/minio:latest
+    image: cgr.dev/chainguard/minio:latest
+    # The image runs as uid 65532, but volumes created by the old official image are root-owned.
+    user: "0:0"
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -96,7 +98,7 @@ services:
       retries: 10
 
   minio-init:
-    image: quay.io/minio/mc:latest
+    image: cgr.dev/chainguard/minio:latest
     depends_on:
       minio:
         condition: service_healthy
