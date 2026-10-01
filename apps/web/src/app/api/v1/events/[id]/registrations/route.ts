@@ -6,6 +6,7 @@ import { routeHandler } from "@/infrastructure/http/route-handler";
 import { respondIdempotently } from "@/infrastructure/idempotency";
 import { NotFoundError, ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { readBodyText } from "../../../_lib/request";
 
 const id = z.uuid();
 
@@ -53,7 +54,7 @@ export const POST = routeHandler(async (request, ctx: Params) => {
   // A malformed id and an unknown one are the same answer.
   if (!eventId.success) throw new NotFoundError();
 
-  const rawBody = await request.text();
+  const rawBody = await readBodyText(request);
   const actor = await getActor();
 
   return respondIdempotently(request, {

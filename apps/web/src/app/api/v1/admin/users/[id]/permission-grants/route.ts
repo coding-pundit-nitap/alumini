@@ -3,8 +3,9 @@ import { z } from "zod";
 import { grantPermission } from "@/composition/admin";
 import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
 import { routeHandler } from "@/infrastructure/http/route-handler";
-import { NotFoundError, ValidationError } from "@/lib/errors";
+import { NotFoundError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { readJson } from "../../../../_lib/request";
 
 const uuid = z.uuid();
 type Params = { params: Promise<{ id: string }> };
@@ -13,10 +14,7 @@ const userId = async (ctx: Params) => {
   if (!parsed.success) throw new NotFoundError();
   return parsed.data;
 };
-const json = (request: Request) =>
-  request.json().catch(() => {
-    throw new ValidationError({ code: "MALFORMED_REQUEST" });
-  });
+const json = (request: Request) => readJson(request);
 
 /** POST /api/v1/admin/users/:id/permission-grants — grant a permission (spec B12-3, B12-4). */
 export const POST = routeHandler(async (request, ctx: Params) => {

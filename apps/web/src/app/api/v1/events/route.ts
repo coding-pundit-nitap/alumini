@@ -6,23 +6,19 @@ import { routeHandler } from "@/infrastructure/http/route-handler";
 import { respondIdempotently } from "@/infrastructure/idempotency";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { parseJson, readBodyText } from "../_lib/request";
 
 /** POST /api/v1/events — create an event (FR-EVENT-001). Honours `Idempotency-Key` (spec E-14). The use case validates the body. */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
-  const rawBody = await request.text();
+  const rawBody = await readBodyText(request);
   const actor = await getActor();
 
   return respondIdempotently(request, {
     userId: actor?.userId ?? null,
     rawBody,
     execute: async () => {
-      let input: unknown;
-      try {
-        input = JSON.parse(rawBody);
-      } catch {
-        throw new ValidationError({ code: "MALFORMED_REQUEST" });
-      }
+      const input = parseJson(rawBody);
       const { eventId } = await createEvent({ actor, input });
       return {
         status: 201,

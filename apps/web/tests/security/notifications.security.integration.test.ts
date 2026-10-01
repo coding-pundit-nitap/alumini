@@ -502,7 +502,10 @@ describe("notifications API security", () => {
       replayRoute(
         req("/api/v1/admin/notifications/replay", {
           method: "POST",
-          headers: origin ? { origin } : {},
+          headers: {
+            "content-type": "application/json",
+            ...(origin ? { origin } : {}),
+          },
           body: typeof body === "string" ? body : JSON.stringify(body),
         })
       );

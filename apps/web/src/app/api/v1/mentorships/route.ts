@@ -7,6 +7,7 @@ import { respondIdempotently } from "@/infrastructure/idempotency";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import { MENTORSHIP_STATES } from "@/modules/mentorship";
+import { parseJson, readBodyText } from "../_lib/request";
 
 // Only the envelope is parsed here; the use case validates `message` and `topic` (and rejects extras).
 const envelope = z.object({ mentorId: z.uuid() }).passthrough();
@@ -14,20 +15,14 @@ const envelope = z.object({ mentorId: z.uuid() }).passthrough();
 /** POST /api/v1/mentorships — ask a mentor (FR-MENTOR-004). Honours `Idempotency-Key` (API spec §1.6). */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
-  const rawBody = await request.text();
+  const rawBody = await readBodyText(request);
   const actor = await getActor();
 
   return respondIdempotently(request, {
     userId: actor?.userId ?? null,
     rawBody,
     execute: async () => {
-      const body = (() => {
-        try {
-          return JSON.parse(rawBody) as unknown;
-        } catch {
-          throw new ValidationError({ code: "MALFORMED_REQUEST" });
-        }
-      })();
+      const body = parseJson(rawBody);
       const parsed = envelope.safeParse(body);
       if (!parsed.success) {
         throw new ValidationError({

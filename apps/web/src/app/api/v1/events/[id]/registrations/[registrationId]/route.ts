@@ -5,6 +5,7 @@ import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { NotFoundError, ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { readJson } from "../../../../_lib/request";
 
 const id = z.uuid();
 const body = z.object({ state: z.enum(["ATTENDED", "NO_SHOW"]) });
@@ -20,12 +21,7 @@ export const PATCH = routeHandler(async (request, ctx: Params) => {
   // A malformed id and an unknown one are the same answer.
   if (!eventId.success || !registrationId.success) throw new NotFoundError();
 
-  let raw: unknown;
-  try {
-    raw = await request.json();
-  } catch {
-    throw new ValidationError({ code: "MALFORMED_REQUEST" });
-  }
+  const raw = await readJson(request);
   const parsed = body.safeParse(raw);
   if (!parsed.success) {
     throw new ValidationError({

@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { NotFoundError, ValidationError } from "@/lib/errors";
+import {
+  NotFoundError,
+  RequestRejectedError,
+  ValidationError,
+} from "@/lib/errors";
 
 const id = z.uuid();
 
@@ -11,10 +15,63 @@ export function uuidParam(value: string): string {
   return parsed.data;
 }
 
-export async function readJson(request: Request): Promise<unknown> {
-  return request.json().catch(() => {
+/**
+ * The largest JSON body any route accepts (spec 16 SD-4). The largest legitimate body, a job or event
+ * description, is a few KiB; this leaves room without letting a client make the server buffer megabytes.
+ */
+export const MAX_JSON_BODY_BYTES = 64 * 1024;
+
+function isJsonMediaType(header: string | null): boolean {
+  const type = header?.split(";")[0]?.trim().toLowerCase() ?? "";
+  return (
+    type === "application/json" || /^application\/[\w.-]+\+json$/.test(type)
+  );
+}
+
+/**
+ * The raw text of a JSON body, for routes that need it (idempotent creates hash it). Refuses a non-JSON
+ * Content-Type with 415 and a body over the cap with 413. The bytes are counted as they stream, so a
+ * missing or understated Content-Length does not get past it; an overstated one is refused unread.
+ */
+export async function readBodyText(request: Request): Promise<string> {
+  // No body (a bodiless POST such as an event registration): nothing to type-check or bound.
+  if (!request.body || request.headers.get("content-length") === "0") return "";
+  if (!isJsonMediaType(request.headers.get("content-type"))) {
+    throw new RequestRejectedError("UNSUPPORTED_MEDIA_TYPE");
+  }
+  const declared = Number(request.headers.get("content-length"));
+  if (declared > MAX_JSON_BODY_BYTES) {
+    throw new RequestRejectedError("PAYLOAD_TOO_LARGE");
+  }
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_JSON_BODY_BYTES) {
+      await reader.cancel();
+      throw new RequestRejectedError("PAYLOAD_TOO_LARGE");
+    }
+    chunks.push(value);
+  }
+  return new TextDecoder().decode(Buffer.concat(chunks));
+}
+
+/** JSON.parse with the API's answer for a body that is not JSON. */
+export function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
     throw new ValidationError({ code: "MALFORMED_REQUEST" });
-  });
+  }
+}
+
+/** Every Route Handler reads a JSON body through this (an architecture test forbids `request.json()`). */
+export async function readJson(request: Request): Promise<unknown> {
+  return parseJson(await readBodyText(request));
 }
 
 export function invalid(error: z.ZodError) {

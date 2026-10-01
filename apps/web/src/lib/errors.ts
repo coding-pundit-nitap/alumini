@@ -334,6 +334,20 @@ export class ValidationError extends AppError {
   }
 }
 
+/** The request itself was refused before validation: a body too large (413) or not JSON (415). */
+export class RequestRejectedError extends AppError {
+  readonly kind = "validation";
+  constructor(
+    code: "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE",
+    options: Omit<ErrorOptions, "code"> = {}
+  ) {
+    super(code === "PAYLOAD_TOO_LARGE" ? 413 : 415, code, {
+      ...options,
+      code,
+    });
+  }
+}
+
 export class AuthenticationError extends AppError {
   readonly kind = "authentication";
   constructor(options: ErrorOptions = {}) {

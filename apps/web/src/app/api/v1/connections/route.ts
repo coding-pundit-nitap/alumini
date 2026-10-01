@@ -6,6 +6,7 @@ import { respondIdempotently } from "@/infrastructure/idempotency";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { parseJson, readBodyText } from "../_lib/request";
 
 const createBody = z.object({ recipientId: z.uuid() }).strict();
 
@@ -28,20 +29,14 @@ const invalid = (error: z.ZodError) =>
 /** POST /api/v1/connections — send a request (API spec §6.1). Honours `Idempotency-Key` (§1.6). */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
-  const rawBody = await request.text();
+  const rawBody = await readBodyText(request);
   const actor = await getActor();
 
   return respondIdempotently(request, {
     userId: actor?.userId ?? null,
     rawBody,
     execute: async () => {
-      const body = (() => {
-        try {
-          return JSON.parse(rawBody) as unknown;
-        } catch {
-          throw new ValidationError({ code: "MALFORMED_REQUEST" });
-        }
-      })();
+      const body = parseJson(rawBody);
       const parsed = createBody.safeParse(body);
       if (!parsed.success) throw invalid(parsed.error);
 

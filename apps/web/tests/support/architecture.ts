@@ -179,3 +179,26 @@ export function checkNoWorkerImports(srcRoot: string): string[] {
   }
   return violations;
 }
+
+const UNBOUNDED_BODY_READ =
+  /\b(?:request|req)\.(json|text|arrayBuffer|formData|blob)\(\)/;
+
+/**
+ * Route Handlers read bodies only through `readJson` / `readBodyText` (app/api/v1/_lib/request.ts), which
+ * check the media type and cap the size (spec 16 SD-4). A direct `request.json()` buffers whatever the
+ * client sends. Test files are ignored.
+ */
+export function checkBoundedBodyReads(srcRoot: string): string[] {
+  const violations: string[] = [];
+  for (const file of walk(path.join(srcRoot, "app")).files) {
+    if (!SOURCE_FILE.test(file) || TEST_FILE.test(file)) continue;
+    if (rel(srcRoot, file) === "app/api/v1/_lib/request.ts") continue;
+    const match = UNBOUNDED_BODY_READ.exec(fs.readFileSync(file, "utf8"));
+    if (match) {
+      violations.push(
+        `${rel(srcRoot, file)} calls ${match[0]}; read the body with readJson or readBodyText`
+      );
+    }
+  }
+  return violations;
+}

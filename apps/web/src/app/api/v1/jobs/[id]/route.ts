@@ -3,8 +3,9 @@ import { z } from "zod";
 import { editJob, getJob } from "@/composition/jobs";
 import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
 import { routeHandler } from "@/infrastructure/http/route-handler";
-import { NotFoundError, ValidationError } from "@/lib/errors";
+import { NotFoundError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { readJson } from "../../_lib/request";
 
 const id = z.uuid();
 type Params = { params: Promise<{ id: string }> };
@@ -23,9 +24,7 @@ export const GET = routeHandler(async (_request, ctx: Params) => {
 /** PATCH /api/v1/jobs/:id — edit (FR-JOB-002). Ownership/job.manage is checked by editJob, not here. */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
-  const body = await request.json().catch(() => {
-    throw new ValidationError({ code: "MALFORMED_REQUEST" });
-  });
+  const body = await readJson(request);
   const jobId = id.safeParse((await ctx.params).id);
   if (!jobId.success) throw new NotFoundError();
 

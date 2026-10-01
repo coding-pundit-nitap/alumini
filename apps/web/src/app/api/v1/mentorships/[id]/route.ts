@@ -5,6 +5,7 @@ import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { NotFoundError, ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { readJson } from "../../_lib/request";
 
 const patchBody = z
   .object({
@@ -19,9 +20,7 @@ type Params = { params: Promise<{ id: string }> };
 /** PATCH /api/v1/mentorships/:id — accept, decline, cancel, start or complete (FR-MENTOR-005/006). */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
-  const body = await request.json().catch(() => {
-    throw new ValidationError({ code: "MALFORMED_REQUEST" });
-  });
+  const body = await readJson(request);
   const parsed = patchBody.safeParse(body);
   if (!parsed.success) {
     throw new ValidationError({

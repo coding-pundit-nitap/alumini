@@ -7,24 +7,19 @@ import { respondIdempotently } from "@/infrastructure/idempotency";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import { EMPLOYMENT_TYPES, WORK_MODES } from "@/modules/jobs";
+import { parseJson, readBodyText } from "../_lib/request";
 
 /** POST /api/v1/jobs — create/submit a job (FR-JOB-001). Honours `Idempotency-Key` (spec J-16). */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
-  const rawBody = await request.text();
+  const rawBody = await readBodyText(request);
   const actor = await getActor();
 
   return respondIdempotently(request, {
     userId: actor?.userId ?? null,
     rawBody,
     execute: async () => {
-      const input = (() => {
-        try {
-          return JSON.parse(rawBody) as unknown;
-        } catch {
-          throw new ValidationError({ code: "MALFORMED_REQUEST" });
-        }
-      })();
+      const input = parseJson(rawBody);
       const { jobId, status } = await createJob({ actor, input });
       return {
         status: 201,

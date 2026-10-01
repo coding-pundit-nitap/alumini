@@ -5,6 +5,7 @@ import { assertSameOrigin } from "@/infrastructure/http/assert-same-origin";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
+import { readJson } from "../_lib/request";
 
 const body = z.object({ userId: z.uuid() }).strict();
 
@@ -14,9 +15,7 @@ const body = z.object({ userId: z.uuid() }).strict();
  */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
-  const raw = await request.json().catch(() => {
-    throw new ValidationError({ code: "MALFORMED_REQUEST" });
-  });
+  const raw = await readJson(request);
   const parsed = body.safeParse(raw);
   if (!parsed.success) {
     throw new ValidationError({
