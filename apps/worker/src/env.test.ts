@@ -52,6 +52,13 @@ describe("loadEnv", () => {
     ).toBe("a".repeat(16));
   });
 
+  it("takes an optional error-tracker DSN, which must be a URL", () => {
+    expect(loadEnv(valid).SENTRY_DSN).toBeUndefined();
+    expect(() => loadEnv({ ...valid, SENTRY_DSN: "not a url" })).toThrow(
+      /SENTRY_DSN/
+    );
+  });
+
   it("the CLI needs only the database and the queue Redis", () => {
     expect(
       loadCliEnv({

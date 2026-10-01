@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createOutboxWriter } from "@nitap/database/outbox";
 import { defineJob, emailSend, messageHintChannel } from "@nitap/jobs";
+import { createLogger } from "@nitap/observability";
+import type { Logger } from "@nitap/observability";
 import { createQueueAdmin } from "@nitap/queue";
 import type { QueuePort } from "@nitap/queue";
 import { createFakeStoragePort } from "@nitap/storage";
@@ -49,12 +51,15 @@ describe("outbox → relay → queue → worker → SMTP (real PostgreSQL, Redis
     await db.drop();
   });
 
-  const startWorker = async (wrapQueue?: (queue: QueuePort) => QueuePort) => {
+  const startWorker = async (
+    wrapQueue?: (queue: QueuePort) => QueuePort,
+    logger: Logger = silentLogger()
+  ) => {
     const metrics = recordingMetrics();
     const worker = composeWorker(
       {
         prisma: db.prisma,
-        logger: silentLogger(),
+        logger,
         metrics,
         storage: createFakeStoragePort(),
         config: {
@@ -99,6 +104,26 @@ describe("outbox → relay → queue → worker → SMTP (real PostgreSQL, Redis
   const write = (to: string) =>
     db.prisma.$transaction((tx) => writer.add(tx, emailEvent(to)));
   const admin = () => createQueueAdmin({ url: ns.url, prefix: ns.prefix });
+
+  it("carries the writer's request id into the worker's job log lines (spec 13B B-9)", async () => {
+    const lines: Record<string, unknown>[] = [];
+    const logger = createLogger({
+      level: "debug",
+      service: "worker",
+      env: "test",
+      version: "t",
+      write: (_stream, line) => lines.push(JSON.parse(line)),
+    });
+    await startWorker(undefined, logger);
+
+    await write("ada@example.test");
+
+    await eventually(() =>
+      expect(lines.find((line) => line.event === "email.sent")).toMatchObject({
+        request_id: "req-pipeline",
+      })
+    );
+  });
 
   it("delivers an email written in a transaction, and marks the outbox row published", async () => {
     await startWorker();

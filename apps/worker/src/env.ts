@@ -20,6 +20,8 @@ const workerSchema = z.object({
   APP_VERSION: z.string().min(1).optional(),
   // Gates /metrics in production (spec 13A OD-2); same token as the web health details.
   HEALTH_CHECK_TOKEN: z.string().min(16).optional(),
+  // Error tracker (Sentry protocol: Sentry or GlitchTip); off when unset (spec 13B B-2).
+  SENTRY_DSN: z.url().optional(),
 });
 
 const cliSchema = workerSchema.pick({

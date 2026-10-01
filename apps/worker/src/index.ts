@@ -1,7 +1,10 @@
 import {
   canSeeHealthDetails,
+  captureError,
   createLogger,
   createPrometheusMetrics,
+  flushErrorTracker,
+  initErrorTracker,
   recordPoolStats,
   setMetrics,
 } from "@nitap/observability";
@@ -24,6 +27,12 @@ const logger = createLogger({
   format: env.NODE_ENV === "development" ? "pretty" : "json",
 });
 
+initErrorTracker({
+  dsn: env.SENTRY_DSN,
+  environment: env.NODE_ENV,
+  release: env.APP_VERSION ?? "dev",
+  service: "worker",
+});
 // Installed before anything records a metric (spec 13A A-7).
 const metrics = createPrometheusMetrics({
   service: "worker",
@@ -87,6 +96,7 @@ async function shutdown(signal: string) {
     await queueAdmin.close();
     await health.close();
     await prisma.$disconnect();
+    await flushErrorTracker();
     logger.info("worker.shutdown.complete");
     process.exit(0);
   } catch (error) {
@@ -99,5 +109,6 @@ process.on("SIGTERM", () => void shutdown("SIGTERM"));
 process.on("SIGINT", () => void shutdown("SIGINT"));
 process.on("unhandledRejection", (reason) => {
   logger.fatal("worker.unhandled_rejection", { error: reason });
-  process.exit(1);
+  captureError(reason, { tags: { kind: "unhandled_rejection" } });
+  void flushErrorTracker().finally(() => process.exit(1));
 });

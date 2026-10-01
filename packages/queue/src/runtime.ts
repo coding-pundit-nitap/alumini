@@ -9,8 +9,8 @@ import {
   computeBackoffMs,
 } from "@nitap/jobs";
 import type { JobDefinition, QueueName } from "@nitap/jobs";
-import { runWithRequestContext } from "@nitap/observability";
-import type { Logger, Metrics } from "@nitap/observability";
+import { captureError, runWithRequestContext } from "@nitap/observability";
+import type { CaptureContext, Logger, Metrics } from "@nitap/observability";
 
 import { TimeoutError } from "./timeout.ts";
 
@@ -59,6 +59,8 @@ export type ExecuteDeps = {
   registry: ReadonlyMap<string, RegisteredJob>;
   logger: Logger;
   metrics: Metrics;
+  /** Reports a dead job to the error tracker (spec 13B B-6); defaults to `@nitap/observability`'s. */
+  captureError?: (error: unknown, context: CaptureContext) => void;
   /** How long to hold back a payload of a newer version than this worker knows. */
   unknownVersionDelayMs: number;
   now?: () => number;
@@ -92,9 +94,13 @@ export async function executeJob(
   const attempt = job.attemptsMade + 1;
   const isLastAttempt = attempt >= definition.retry.attempts;
 
-  const dead = (reason: string) => {
+  const dead = (reason: string, error?: unknown) => {
     logger.error("job.dead", {
       metadata: { job: definition.name, jobId, attempts: attempt, reason },
+    });
+    (deps.captureError ?? captureError)(error ?? new Error(reason), {
+      tags: { ...labels, job_id: jobId, request_id: requestId ?? undefined },
+      extra: { attempts: attempt },
     });
     metrics.increment("jobs_dead_total", labels);
     metrics.increment("jobs_processed_total", { ...labels, outcome: "failed" });
@@ -165,11 +171,11 @@ export async function executeJob(
       return defer(error.delayMs, error.message);
     }
     if (error instanceof PermanentJobError) {
-      dead(error.message);
+      dead(error.message, error);
       throw new UnrecoverableError(error.message);
     }
     if (isLastAttempt) {
-      dead(error instanceof Error ? error.message : "unknown error");
+      dead(error instanceof Error ? error.message : "unknown error", error);
     } else {
       logger.warn("job.retry", {
         error,

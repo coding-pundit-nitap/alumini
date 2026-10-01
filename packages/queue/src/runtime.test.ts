@@ -29,10 +29,12 @@ function setup(
   const logger = silentLogger();
   const metrics = recordingMetrics();
   const registry = new Map([["test.run", registerJob(definition, process)]]);
+  const captureError = vi.fn();
   const deps = {
     registry,
     logger,
     metrics,
+    captureError,
     unknownVersionDelayMs: 5_000,
     now: () => NOW,
   };
@@ -51,7 +53,7 @@ function setup(
       moveToDelayed: vi.fn(async () => {}),
       ...over,
     }) as never;
-  return { deps, logger, metrics, job };
+  return { deps, logger, metrics, captureError, job };
 }
 
 describe("executeJob", () => {
@@ -166,6 +168,27 @@ describe("executeJob", () => {
     expect(metrics.increment).toHaveBeenCalledWith("jobs_dead_total", {
       queue: "default",
       job: "test.run",
+    });
+  });
+
+  it("reports a dead job to the error tracker with its queue, job and request id, but not a retried attempt (spec 13B B-6)", async () => {
+    const boom = new Error("still unavailable");
+    const { deps, job, captureError } = setup(async () => {
+      throw boom;
+    });
+
+    await expect(executeJob(deps, job({ attemptsMade: 0 }))).rejects.toBe(boom);
+    expect(captureError).not.toHaveBeenCalled();
+
+    await expect(executeJob(deps, job({ attemptsMade: 2 }))).rejects.toBe(boom);
+    expect(captureError).toHaveBeenCalledWith(boom, {
+      tags: {
+        queue: "default",
+        job: "test.run",
+        job_id: "job-1",
+        request_id: "req-9",
+      },
+      extra: { attempts: 3 },
     });
   });
 
