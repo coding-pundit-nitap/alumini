@@ -68,7 +68,7 @@
     "test:watch": { "cache": false, "persistent": true },
     "test:integration": {
       "dependsOn": ["transit", "^db:generate"],
-      "env": ["EVENT_RACE_ITERATIONS", "SYSTEM_RACE_ITERATIONS"],
+      "env": ["EVENT_RACE_ITERATIONS", "SYSTEM_RACE_ITERATIONS", "FUZZ_RUNS"],
       "cache": false
     },
     "test:e2e": { "dependsOn": ["transit", "^db:generate"], "cache": false },

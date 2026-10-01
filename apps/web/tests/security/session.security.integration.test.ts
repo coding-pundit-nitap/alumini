@@ -91,7 +91,7 @@ describe("session security (real Better Auth, real PostgreSQL)", () => {
   const cookieFrom = (response: Response) =>
     response.headers
       .getSetCookie()
-      .map((c) => c.split(";")[0])
+      .map((c) => c.split(";")[0] ?? "")
       .filter((c) => !c.endsWith("="))
       .join("; ");
 
