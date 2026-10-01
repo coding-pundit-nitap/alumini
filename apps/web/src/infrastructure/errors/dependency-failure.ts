@@ -2,7 +2,11 @@ import { Prisma } from "@nitap/database";
 import { StorageError } from "@nitap/storage";
 
 import { getMetrics } from "@/infrastructure/observability";
-import { AppError, DependencyUnavailableError } from "@/lib/errors";
+import {
+  AppError,
+  DependencyUnavailableError,
+  ValidationError,
+} from "@/lib/errors";
 
 /** How long a client should wait before retrying a request that met an unavailable dependency. */
 export const DEPENDENCY_RETRY_AFTER_SECONDS = 5;
@@ -84,6 +88,16 @@ function failedSessionLookup(error: unknown): boolean {
     (error as { body?: { code?: unknown } }).body?.code ===
       "FAILED_TO_GET_SESSION"
   );
+};
+// Text PostgreSQL cannot store: a NUL byte (22021) or a character with no UTF-8 form (22P05). Only a
+// client puts these in a filter or a field, so they are a 400, not a 500 (spec 16 S-9, found by fuzzing).
+const UNSTORABLE_TEXT_SQLSTATES = new Set(["22021", "22P05"]);
+
+function unstorableText(error: unknown): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  const cause = adapterCause(error);
+  const sqlState = cause?.code ?? cause?.originalCode;
+  return sqlState !== undefined && UNSTORABLE_TEXT_SQLSTATES.has(sqlState);
 }
 
 function classify(error: unknown): Dependency | null {
@@ -102,10 +116,13 @@ function classify(error: unknown): Dependency | null {
 /**
  * Turns a failure of PostgreSQL or object storage into `DependencyUnavailableError` (503 SERVICE_UNAVAILABLE,
  * `Retry-After`), so an outage reads as "try again" rather than a 500 bug (strategy §11.2, spec 14 RD-3).
- * Returns the error unchanged when it is already an AppError or is not a dependency failure.
+ * Text PostgreSQL refuses to store (a NUL byte) is the caller's input: 400 MALFORMED_REQUEST.
+ * Returns the error unchanged when it is already an AppError or is neither.
  */
 export function asDependencyFailure(error: unknown): unknown {
   if (error instanceof AppError) return error;
+  if (unstorableText(error))
+    return new ValidationError({ code: "MALFORMED_REQUEST", cause: error });
   const dependency = classify(error);
   if (!dependency) return error;
   getMetrics().increment("dependency_unavailable_total", { dependency });

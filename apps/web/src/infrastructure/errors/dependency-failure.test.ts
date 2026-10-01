@@ -121,3 +121,39 @@ describe("asDependencyFailure (spec 14 RD-3)", () => {
     );
   });
 });
+
+describe("text PostgreSQL cannot store is the client's input, not a server fault (spec 16 S-9)", () => {
+  // Measured: a NUL byte in a filter or a write (Prisma 7 + adapter-pg) surfaces as P2010 for $queryRaw and
+  // P2039 for model queries, with SQLSTATE 22021 on the adapter cause.
+  it.each([
+    [
+      "$queryRaw, NUL byte (P2010 22021)",
+      known(
+        "P2010",
+        adapter({ kind: "postgres", code: "22021", originalCode: "22021" })
+      ),
+    ],
+    [
+      "model query, NUL byte (P2039 22021)",
+      known(
+        "P2039",
+        adapter({ kind: "postgres", code: "22021", originalCode: "22021" })
+      ),
+    ],
+    [
+      "untranslatable character (22P05)",
+      known("P2039", adapter({ kind: "postgres", code: "22P05" })),
+    ],
+  ])("%s → 400 MALFORMED_REQUEST", (_name, error) => {
+    const translated = asDependencyFailure(error);
+    const { status, body } = toApiError(translated, "req-1");
+    expect(status).toBe(400);
+    expect(body.error.code).toBe("MALFORMED_REQUEST");
+    expect(isDatabaseUnavailable(error)).toBe(false);
+  });
+
+  it("other data errors stay unexpected", () => {
+    const error = known("P2039", adapter({ kind: "postgres", code: "22003" }));
+    expect(asDependencyFailure(error)).toBe(error);
+  });
+});
