@@ -9,6 +9,7 @@ import {
   registerForEvent,
 } from "@/composition/events";
 import type { ActionResult } from "@/lib/action-result";
+import { assertObjectInput } from "@/lib/form-data";
 import { ValidationError, type ValidationDetail } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import {
@@ -26,6 +27,7 @@ export async function createEventAction(
   form: EventFormValues
 ): Promise<ActionResult<{ eventId: string }>> {
   return runAction(async () => {
+    assertObjectInput(form);
     const details: ValidationDetail[] = [];
     const toUtc = (field: string, wall: string) => {
       try {

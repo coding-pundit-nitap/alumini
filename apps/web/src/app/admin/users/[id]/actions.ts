@@ -1,6 +1,7 @@
 "use server";
 
 import { runAction } from "@/app/_actions/run-action";
+import { assertFormData } from "@/lib/form-data";
 import {
   assignRole,
   changeAccountState,
@@ -32,59 +33,64 @@ const id = (form: FormData, key: string) => {
 export async function changeAccountStateAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {
-  return runAction(async () =>
-    changeAccountState({
+  return runAction(async () => {
+    assertFormData(form);
+    return changeAccountState({
       actor: await getActor(),
       userId: id(form, "userId"),
       input: pick(form, ["accountState", "reason"]),
-    })
-  );
+    });
+  });
 }
 
 export async function assignRoleAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {
-  return runAction(async () =>
-    assignRole({
+  return runAction(async () => {
+    assertFormData(form);
+    return assignRole({
       actor: await getActor(),
       userId: id(form, "userId"),
       input: pick(form, ["role"]),
-    })
-  );
+    });
+  });
 }
 
 export async function revokeRoleAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {
-  return runAction(async () =>
-    revokeRole({
+  return runAction(async () => {
+    assertFormData(form);
+    return revokeRole({
       actor: await getActor(),
       userId: id(form, "userId"),
       role: String(form.get("role") ?? ""),
-    })
-  );
+    });
+  });
 }
 
 export async function grantPermissionAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {
-  return runAction(async () =>
-    grantPermission({
+  return runAction(async () => {
+    assertFormData(form);
+    return grantPermission({
       actor: await getActor(),
       userId: id(form, "userId"),
       input: pick(form, ["permission", "scope", "chapterId", "expiresAt"]),
-    })
-  );
+    });
+  });
 }
 
 export async function revokeGrantAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {
-  return runAction(async () =>
-    revokeGrant({
+  return runAction(async () => {
+    assertFormData(form);
+    return revokeGrant({
       actor: await getActor(),
       userId: id(form, "userId"),
       grantId: id(form, "grantId"),
-    })
-  );
+    });
+  });
 }

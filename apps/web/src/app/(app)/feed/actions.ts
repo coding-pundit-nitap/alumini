@@ -24,6 +24,7 @@ import {
   presignUpload,
 } from "@/composition/uploads";
 import type { ActionResult } from "@/lib/action-result";
+import { assertObjectInput } from "@/lib/form-data";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import type {
@@ -206,13 +207,14 @@ export async function presignPostImageAction(input: {
   mime: string;
   size: number;
 }): Promise<ActionResult<PresignUploadResult>> {
-  return runAction(async () =>
-    presignUpload({
+  return runAction(async () => {
+    assertObjectInput(input);
+    return presignUpload({
       actor: await getActor(),
       mime: input.mime,
       size: input.size,
-    })
-  );
+    });
+  });
 }
 
 export async function completePostImageAction(

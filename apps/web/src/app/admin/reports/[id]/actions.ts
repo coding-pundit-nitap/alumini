@@ -1,6 +1,7 @@
 "use server";
 
 import { runAction } from "@/app/_actions/run-action";
+import { assertFormData } from "@/lib/form-data";
 import { claimReport } from "@/composition/moderation";
 import type { ActionResult } from "@/lib/action-result";
 import { NotFoundError } from "@/lib/errors";
@@ -12,6 +13,7 @@ export async function claimReportFormAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
+    assertFormData(form);
     const reportId = form.get("reportId");
     if (!isUuid(reportId)) throw new NotFoundError();
     await claimReport({ actor: await getActor(), reportId });

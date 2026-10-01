@@ -1,6 +1,7 @@
 "use server";
 
 import { runAction } from "@/app/_actions/run-action";
+import { assertFormData } from "@/lib/form-data";
 import { publishAnnouncement, removeAnnouncement } from "@/composition/posts";
 import type { ActionResult } from "@/lib/action-result";
 import { NotFoundError } from "@/lib/errors";
@@ -21,6 +22,7 @@ export async function removeAnnouncementAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {
   return runAction(async () => {
+    assertFormData(form);
     const postId = form.get("postId");
     if (!isUuid(postId)) throw new NotFoundError();
     await removeAnnouncement({ actor: await getActor(), postId });
