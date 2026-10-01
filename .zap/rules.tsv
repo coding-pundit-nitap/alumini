@@ -1,0 +1,5 @@
+# ZAP baseline rule overrides (spec 16 16E): <rule id>	<IGNORE|INFO|WARN|FAIL>	<reason>. Reviewed 2026-10-02.
+10049	IGNORE	Dynamic, per-user pages are no-store on purpose.
+10055	INFO	style-src unsafe-inline is decision SD-2 (server-rendered style attributes cannot carry a nonce); script-src stays strict.
+10111	IGNORE	The sign-in form is an authentication request; informational.
+90004	INFO	No COEP/CORP: the app uses no cross-origin-isolated APIs, and presigned images may come from the store origin.

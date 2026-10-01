@@ -1,0 +1,93 @@
+# Nightly security pipeline (strategy §18.3; spec 16 16E). Report-only: findings open tickets, they do not
+# block a merge (the blocking gates are in pr.yml). Run by hand with "Run workflow".
+name: Nightly security
+
+on:
+  schedule:
+    - cron: "30 20 * * *" # 02:00 IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: postgresql://alumini:alumini@localhost:5432/alumini
+  REDIS_URL: redis://localhost:6379
+  QUEUE_REDIS_URL: redis://localhost:6380
+  BETTER_AUTH_SECRET: ci-only-secret-not-used-outside-github-actions-0000
+  BETTER_AUTH_URL: http://localhost:3000
+  APP_URL: http://localhost:3000
+  S3_ENDPOINT: http://localhost:9000
+  S3_REGION: us-east-1
+  S3_BUCKET: alumini-uploads
+  S3_ACCESS_KEY_ID: alumini-storage
+  S3_SECRET_ACCESS_KEY: alumini-storage-secret
+  S3_FORCE_PATH_STYLE: "true"
+
+jobs:
+  dependency-audit:
+    name: Dependency audit (all severities)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Low and moderate findings are tickets, not blockers (§10.2); the log is the report.
+      - run: pnpm audit || true
+
+  dast:
+    name: DAST (OWASP ZAP baseline against the web image)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: alumini
+          POSTGRES_PASSWORD: alumini
+          POSTGRES_DB: alumini
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U alumini" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:deploy
+      - run: docker build -f docker/web.Dockerfile -t nitap-web .
+      - name: Start the web image
+        run: |
+          docker run -d --name web --network host \
+            -e DATABASE_URL -e REDIS_URL -e QUEUE_REDIS_URL -e BETTER_AUTH_SECRET -e BETTER_AUTH_URL \
+            -e S3_ENDPOINT -e S3_REGION -e S3_BUCKET -e S3_ACCESS_KEY_ID -e S3_SECRET_ACCESS_KEY \
+            -e S3_FORCE_PATH_STYLE nitap-web
+          for _ in $(seq 1 60); do curl -sf http://localhost:3000/health/live && break; sleep 1; done
+      # Baseline = passive scan plus a spider: headers, cookies, information leaks. -I reports warnings
+      # without failing; .zap/rules.tsv records the reviewed exceptions.
+      - name: ZAP baseline
+        run: |
+          mkdir -p zap && chmod 777 zap
+          docker run --rm --network host -v "$PWD/zap:/zap/wrk" -v "$PWD/.zap:/zap/config:ro" \
+            ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:3000 \
+            -c /zap/config/rules.tsv -r report.html -J report.json -I
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: zap-baseline
+          path: zap
+          retention-days: 14
+      - if: always()
+        run: docker logs web | tail -100

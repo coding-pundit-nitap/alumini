@@ -1,0 +1,74 @@
+# Project SAST rules (strategy §10.2: "reviewed rules for dangerouslySetInnerHTML, string-built SQL, missing
+# server-only"; spec 16 16E). ERROR blocks the merge (SD-9); a reviewed exception carries
+# `// nosemgrep: <rule-id> — <reason>` on the line.
+rules:
+  - id: nitap-unsafe-raw-query
+    languages: [typescript]
+    severity: ERROR
+    message: >-
+      $queryRawUnsafe / $executeRawUnsafe build SQL from a string. Use the tagged template
+      ($queryRaw`...`) so every value is a parameter.
+    pattern-either:
+      - pattern: $DB.$queryRawUnsafe(...)
+      - pattern: $DB.$executeRawUnsafe(...)
+    paths:
+      exclude: ["database/generated/**"]
+
+  - id: nitap-raw-sql-from-input
+    languages: [typescript]
+    severity: ERROR
+    message: >-
+      Prisma.raw() is spliced into SQL unparameterised. Its argument must be a fixed identifier or keyword,
+      never request input ($ARG).
+    patterns:
+      - pattern: Prisma.raw($ARG)
+      - metavariable-regex:
+          metavariable: $ARG
+          regex: (?i).*\b(input|body|query|params|searchParams|formData|request|req|args)\b.*
+
+  - id: nitap-dangerously-set-inner-html
+    languages: [typescript]
+    severity: ERROR
+    message: >-
+      dangerouslySetInnerHTML renders HTML unescaped. User content must render as text (React escapes it);
+      markdown goes through react-markdown with rehype-sanitize.
+    pattern: <$EL dangerouslySetInnerHTML={...} />
+
+  - id: nitap-eval
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: eval / new Function run strings as code, and the page CSP forbids them (spec 16 SD-1).
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+      - pattern: Function(...)
+    paths:
+      exclude: ["**/*.test.ts", "**/*.test.tsx"]
+
+  - id: nitap-client-imports-server-module
+    languages: [typescript]
+    severity: ERROR
+    message: >-
+      A Client Component imports a server module ($MOD). It would ship server code to the browser; pass
+      the data down from a Server Component or call a Server Action.
+    patterns:
+      - pattern-inside: |
+          "use client";
+          ...
+      - pattern-either:
+          - pattern: import $X from "$MOD";
+          - pattern: import { $...X } from "$MOD";
+          - pattern: import "$MOD";
+      - metavariable-regex:
+          metavariable: $MOD
+          regex: ^(@/config/env|@/infrastructure/(database|redis|audit|outbox|idempotency)(/.*)?|@/composition/.*|@nitap/database(/(?!permissions|role-ticks).*)?|@/modules/[^/]+/infrastructure/.*)$
+
+  - id: nitap-child-process-in-web
+    languages: [typescript]
+    severity: ERROR
+    message: The web app never spawns processes; background work goes through the outbox and the worker.
+    pattern-regex: from\s+["'](node:)?child_process["']
+    paths:
+      # Tooling, tests and the test harness start processes on purpose.
+      exclude:
+        ["scripts/**", "packages/testing/**", "**/tests/**", "**/*.test.ts"]

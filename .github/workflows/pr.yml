@@ -101,6 +101,47 @@ jobs:
       # pnpm-workspace.yaml (auditConfig) so the exception is reviewed like code.
       - run: pnpm audit --audit-level high
 
+  # SAST (strategy §10.2, spec 16 16E): the project rules' own tests, then registry packs plus project rules.
+  # ERROR findings block; a reviewed exception is a `nosemgrep: <rule-id> — <reason>` comment on the line.
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Project rules match their fixtures
+        run: docker run --rm -v "$PWD:/src" semgrep/semgrep:1.140.0 semgrep scan --test --metrics=off .semgrep
+      - name: Scan
+        run: >-
+          docker run --rm -v "$PWD:/src" semgrep/semgrep:1.140.0 semgrep scan --metrics=off
+          --config p/typescript --config p/react --config p/nodejs --config p/secrets
+          --config .semgrep/rules.yml --exclude .semgrep --severity ERROR --error
+
+  # Container images (strategy §18.2 "Build (web + worker images), image scan"; spec 16 16E). Dockerfile lint
+  # and CRITICAL vulnerabilities block; HIGH ones are listed in the log for triage.
+  images:
+    name: Images (hadolint, build, Trivy)
+    needs: static
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Lint Dockerfiles
+        run: |
+          for f in docker/web.Dockerfile docker/worker.Dockerfile; do
+            docker run --rm -i hadolint/hadolint:v2.14.0 hadolint --failure-threshold error - < "$f"
+          done
+      - run: docker build -f docker/web.Dockerfile -t nitap-web:${{ github.sha }} .
+      - run: docker build -f docker/worker.Dockerfile -t nitap-worker:${{ github.sha }} .
+      - name: Scan images
+        run: |
+          for image in nitap-web nitap-worker; do
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 image \
+              --quiet --scanners vuln --severity HIGH,CRITICAL "$image:${{ github.sha }}"
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 image \
+              --quiet --scanners vuln --severity CRITICAL --exit-code 1 "$image:${{ github.sha }}"
+          done
+
   unit:
     name: Unit and component tests
     needs: static
@@ -184,6 +225,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      # No server variable name or credential in what browsers download (strategy §10.1, spec 16 16E).
+      - run: node scripts/security/scan-client-bundle.mjs
 
   e2e:
     name: E2E smoke

@@ -50,6 +50,7 @@ export default async function RootLayout({
       className={`${sans.variable} ${display.variable} ${mono.variable} h-full antialiased`}
     >
       <head>
+        {/* nosemgrep: nitap-dangerously-set-inner-html — a constant script of ours, no user content, run by its nonce. */}
         <script
           nonce={nonce}
           dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
