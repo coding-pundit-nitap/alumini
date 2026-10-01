@@ -131,8 +131,8 @@ jobs:
           for f in docker/web.Dockerfile docker/worker.Dockerfile; do
             docker run --rm -i hadolint/hadolint:v2.14.0 hadolint --failure-threshold error - < "$f"
           done
-      - run: docker build -f docker/web.Dockerfile -t nitap-web:${{ github.sha }} .
-      - run: docker build -f docker/worker.Dockerfile -t nitap-worker:${{ github.sha }} .
+      - run: docker build -f docker/web.Dockerfile --build-arg GIT_SHA=${{ github.sha }} -t nitap-web:${{ github.sha }} .
+      - run: docker build -f docker/worker.Dockerfile --build-arg GIT_SHA=${{ github.sha }} -t nitap-worker:${{ github.sha }} .
       - name: Scan images
         run: |
           for image in nitap-web nitap-worker; do
@@ -293,3 +293,45 @@ jobs:
           name: playwright-report
           path: apps/web/playwright-report
           retention-days: 7
+
+  # Release images (reliability §8.2: one image per process per commit, promoted unchanged). Only a main commit
+  # that passed every gate is published, so `deploy/deploy.sh pull` never finds an image for a red commit.
+  # Tagged with the full SHA; `main` points at the newest. ghcr.io needs a lowercase owner.
+  publish:
+    name: Publish images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      [
+        static,
+        secret-scan,
+        observability,
+        dependency-audit,
+        sast,
+        images,
+        unit,
+        integration,
+        build,
+        e2e,
+      ]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build and push web, migrate and worker
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.sha }}
+        run: |
+          prefix="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nitap-"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker build -f docker/web.Dockerfile --build-arg GIT_SHA="$SHA" -t "${prefix}web:$SHA" .
+          docker build -f docker/web.Dockerfile --build-arg GIT_SHA="$SHA" --target migrate -t "${prefix}migrate:$SHA" .
+          docker build -f docker/worker.Dockerfile --build-arg GIT_SHA="$SHA" -t "${prefix}worker:$SHA" .
+          for name in web migrate worker; do
+            docker tag "${prefix}${name}:$SHA" "${prefix}${name}:main"
+            docker push "${prefix}${name}:$SHA"
+            docker push "${prefix}${name}:main"
+          done

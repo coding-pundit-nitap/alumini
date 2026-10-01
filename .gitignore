@@ -64,3 +64,6 @@ database/generated
 
 # Performance seed output (signed load-user cookies) — never commit
 /perf/.data
+
+# Server-side release history written by deploy/deploy.sh
+deploy/releases.log
