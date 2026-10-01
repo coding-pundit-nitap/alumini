@@ -1,3 +1,5 @@
+import "server-only";
+
 import { loadStorageEnv, createS3StoragePort } from "@nitap/storage";
 
 import { transactionRunner } from "@/infrastructure/database/client";

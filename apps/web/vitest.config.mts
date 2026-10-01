@@ -10,6 +10,13 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     tsconfigPaths: true,
+    // `import "server-only"` guards client bundles at `next build`; under Vitest it is a no-op (spec 16 16E).
+    alias: {
+      "server-only": new URL(
+        "./tests/support/server-only-stub.ts",
+        import.meta.url
+      ).pathname,
+    },
   },
   test: {
     globals: true,

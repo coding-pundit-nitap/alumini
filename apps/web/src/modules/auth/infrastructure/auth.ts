@@ -1,3 +1,5 @@
+import "server-only";
+
 import { env } from "@/config/env";
 import { prisma } from "@/infrastructure/database/client";
 import { redisRateLimitStorage } from "@/infrastructure/redis/rate-limit-storage";
