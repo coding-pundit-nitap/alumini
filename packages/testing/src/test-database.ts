@@ -21,17 +21,27 @@ export type TestDatabase = {
   drop: () => Promise<void>;
 };
 
+/** A fresh, unique test database name, for `createTestDatabase({ name })`. */
+export function testDatabaseName(): string {
+  return `test_${randomUUID().replace(/-/g, "")}`;
+}
+
 /**
  * Clones the migrated template database (strategy §6.3) into a fresh, isolated database for one
  * test (or one test file). PostgreSQL forbids `CREATE DATABASE … TEMPLATE` while any other
  * session holds a connection to the template, but the template itself is never connected to
  * after `global-setup.ts` migrates it, so this is safe to call concurrently across test files.
  */
-export async function createTestDatabase(): Promise<TestDatabase> {
+export async function createTestDatabase(
+  options: {
+    /** A name chosen in advance, for code that reads the database URL at import time (see `testDatabaseName`). */
+    name?: string;
+  } = {}
+): Promise<TestDatabase> {
   const templateUrl = inject("templateDatabaseUrl");
   const template = new URL(templateUrl);
   const templateName = template.pathname.slice(1);
-  const testName = `test_${randomUUID().replace(/-/g, "")}`;
+  const testName = options.name ?? testDatabaseName();
 
   const adminUrl = new URL(templateUrl);
   adminUrl.pathname = "/postgres";
