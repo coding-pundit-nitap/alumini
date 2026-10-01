@@ -38,7 +38,9 @@
     "S3_ACCESS_KEY_ID",
     "S3_SECRET_ACCESS_KEY",
     "S3_FORCE_PATH_STYLE",
-    "S3_PUBLIC_PATH"
+    "S3_PUBLIC_PATH",
+    "PERF_DATABASE_URL",
+    "PERF_PASSWORD"
   ],
   "tasks": {
     "transit": { "dependsOn": ["^transit"] },

@@ -61,3 +61,6 @@ database/generated
 # Turborepo
 .turbo
 .superpowers/
+
+# Performance seed output (signed load-user cookies) — never commit
+/perf/.data

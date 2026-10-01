@@ -18,7 +18,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "db:seed:admin": "node --experimental-strip-types --env-file-if-exists=../../.env scripts/seed-dev-admin.ts",
-    "admin:bootstrap": "node --experimental-strip-types --env-file-if-exists=../../.env scripts/bootstrap-admin.ts"
+    "admin:bootstrap": "node --experimental-strip-types --env-file-if-exists=../../.env scripts/bootstrap-admin.ts",
+    "perf:seed": "node --experimental-strip-types --env-file-if-exists=../../.env scripts/perf-seed.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "1.7.5",
