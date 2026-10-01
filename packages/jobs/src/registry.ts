@@ -1,5 +1,11 @@
 import type { PayloadOf } from "./define-job.ts";
 import { announcementPublished } from "./announcement.ts";
+import {
+  donationConfirmed,
+  donationExpirePledges,
+  donationNotReceived,
+  donationPledged,
+} from "./donation.ts";
 import { connectionAccepted, connectionRequested } from "./connection.ts";
 import { idempotencySweep } from "./idempotency.ts";
 import { notificationRetentionSweep } from "./notification-retention.ts";
@@ -49,6 +55,9 @@ export const OUTBOX_EVENTS = {
   "user.suspended": userSuspended,
   "user.reactivated": userReactivated,
   "announcement.published": announcementPublished,
+  "donation.pledged": donationPledged,
+  "donation.confirmed": donationConfirmed,
+  "donation.not-received": donationNotReceived,
   ...mentorshipJobs,
   ...jobEvents,
   ...eventJobs,
@@ -62,6 +71,7 @@ export const JOBS = {
   "idempotency.sweep": idempotencySweep,
   "job.expire": jobExpire,
   "notification.retention-sweep": notificationRetentionSweep,
+  "donation.expire-pledges": donationExpirePledges,
 } as const;
 
 export type OutboxEventType = keyof typeof OUTBOX_EVENTS;

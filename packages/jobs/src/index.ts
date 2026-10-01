@@ -1,4 +1,11 @@
 export { announcementPublished } from "./announcement.ts";
+export {
+  donationConfirmed,
+  donationExpirePledges,
+  donationNotReceived,
+  donationPledged,
+} from "./donation.ts";
+export type { DonationEventPayload } from "./donation.ts";
 export type { AnnouncementPublishedPayload } from "./announcement.ts";
 export { QUEUES } from "./queues.ts";
 export type { QueueName } from "./queues.ts";

@@ -93,6 +93,7 @@ describe("registry", () => {
       "job.submitted",
       "achievement.submitted",
       "announcement.published",
+      "donation.pledged",
     ];
     expect(FANOUT_TIMEOUT_MS).toBeGreaterThanOrEqual(60_000);
     for (const [type, job] of Object.entries(OUTBOX_EVENTS)) {
@@ -111,6 +112,24 @@ describe("registry", () => {
     expect(isOutboxEventType("announcement.published")).toBe(true);
     expect(OUTBOX_EVENTS["announcement.published"].timeoutMs).toBe(
       FANOUT_TIMEOUT_MS
+    );
+  });
+
+  it("donation events are ids-only outbox events; the expiry sweep is scheduled only (12H)", () => {
+    for (const type of [
+      "donation.pledged",
+      "donation.confirmed",
+      "donation.not-received",
+    ])
+      expect(isOutboxEventType(type)).toBe(true);
+    expect(isOutboxEventType("donation.expire-pledges")).toBe(false);
+    expect(JOBS["donation.expire-pledges"].queue).toBe("scheduled");
+    const id = "00000000-0000-4000-8000-000000000001";
+    const schema = OUTBOX_EVENTS["donation.confirmed"].schema;
+    const payload = { v: 1, donationId: id, campaignId: id, donorId: id };
+    expect(schema.safeParse(payload).success).toBe(true);
+    expect(schema.safeParse({ ...payload, amountPaise: 1000 }).success).toBe(
+      false
     );
   });
 });

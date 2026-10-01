@@ -31,6 +31,9 @@ const NOTIFYING_TYPES = [
   "user.suspended",
   "user.reactivated",
   "event.registration-cancelled",
+  "donation.pledged",
+  "donation.confirmed",
+  "donation.not-received",
 ];
 
 describe("renderNotificationCopy", () => {

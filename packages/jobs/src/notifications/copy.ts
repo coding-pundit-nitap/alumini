@@ -205,6 +205,24 @@ export function renderNotificationCopy(
         "The institute published an announcement.",
         under("/feed", "postId")
       );
+    case "donation.pledged":
+      return copy(
+        "New pledge to confirm",
+        "A member pledged a donation. Confirm it once the payment arrives.",
+        "/admin/donations"
+      );
+    case "donation.confirmed":
+      return copy(
+        "Donation received",
+        "Your donation was received. Thank you for supporting the institute.",
+        "/donations"
+      );
+    case "donation.not-received":
+      return copy(
+        "Donation not received",
+        "We could not match a payment to your pledge. Check the details on your donations page.",
+        "/donations"
+      );
     default:
       throw new Error(`No notification copy for type "${type}".`);
   }
