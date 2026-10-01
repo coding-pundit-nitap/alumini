@@ -9,6 +9,7 @@ import {
 import {
   createAssignRole,
   createChangeAccountState,
+  createGetAnalytics,
   createGetDashboard,
   createGetUser,
   createGrantPermission,
@@ -20,6 +21,7 @@ import {
 import {
   createPrismaAccessStore,
   createPrismaAdminStore,
+  createPrismaAnalyticsStore,
 } from "@/modules/admin/server";
 import { authorize, can, loadGrants } from "@/modules/auth";
 
@@ -35,6 +37,22 @@ export const getDashboard = createGetDashboard({
   },
 });
 export const listAuditLog = createListAuditLog({ store, authorize });
+
+/** Spec 12F F-3: a failed section is logged and counted, and the rest of the page renders (SRS §44). */
+export const getAnalytics = createGetAnalytics({
+  store: createPrismaAnalyticsStore(prisma),
+  authorize,
+  can,
+  onSectionFailed: (section, error) => {
+    logger.warn("admin.analytics.section_failed", {
+      error,
+      metadata: { section },
+    });
+    getMetrics().increment("admin_analytics_section_failed_total", {
+      section,
+    });
+  },
+});
 
 // The role catalogue and the super-admin role name are data injected here (RBAC §11: use cases name
 // permissions); role-matrix.integration.test.ts proves ROLE_PERMISSIONS matches the database.

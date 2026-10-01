@@ -30,6 +30,7 @@ export type NavIconName =
   | "status"
   | "users"
   | "audit"
+  | "analytics"
   | "announcements";
 
 export type NavEntry = { href: string; label: string; icon: NavIconName };
@@ -50,6 +51,7 @@ export type NavInput = {
 
 const ADMIN_ICON_MAP: Record<NavIcon, NavIconName> = {
   dashboard: "admin",
+  analytics: "analytics",
   users: "users",
   audit: "audit",
   verification: "verification",

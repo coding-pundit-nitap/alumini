@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Award,
   Briefcase,
+  ChartColumn,
   Flag,
   LayoutDashboard,
   MailWarning,
@@ -34,6 +35,7 @@ import type { NavGroup, NavIcon } from "@/modules/admin";
 
 const ICONS: Record<NavIcon, LucideIcon> = {
   dashboard: LayoutDashboard,
+  analytics: ChartColumn,
   users: Users,
   audit: ScrollText,
   verification: UserCheck,

@@ -13,6 +13,22 @@ export type { Can, NavGroup, NavIcon, NavItem, TileKey } from "./domain/access";
 export { createGetDashboard } from "./application/get-dashboard";
 export type { DashboardTile, GetDashboard } from "./application/get-dashboard";
 export { createListAuditLog } from "./application/list-audit-log";
+export { createGetAnalytics } from "./application/get-analytics";
+export type { GetAnalytics } from "./application/get-analytics";
+export type { AnalyticsStore } from "./application/admin-store";
+export { ANALYTICS_RANGES, RANGE_DAYS } from "./domain/analytics";
+export type {
+  AnalyticsRange,
+  AnalyticsSection,
+  Count,
+  MaskedBucket,
+  SectionKey,
+  WeekPoint,
+} from "./domain/analytics";
+export {
+  AnalyticsSectionBody,
+  SECTION_COPY,
+} from "./presentation/ui/analytics-sections";
 export type { ListAuditLog } from "./application/list-audit-log";
 export type {
   AdminStore,

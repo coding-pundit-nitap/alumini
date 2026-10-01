@@ -15,6 +15,7 @@ export const hasAdminAccess = (can: Can): boolean =>
 
 export type NavIcon =
   | "dashboard"
+  | "analytics"
   | "users"
   | "audit"
   | "verification"
@@ -26,6 +27,12 @@ export type NavIcon =
 export type NavItem = { href: string; label: string; icon: NavIcon };
 
 const QUEUE_ITEMS: ReadonlyArray<NavItem & { permission: Permission }> = [
+  {
+    href: "/admin/analytics",
+    label: "Analytics",
+    icon: "analytics",
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+  },
   {
     href: "/admin/users",
     label: "Users",
@@ -116,6 +123,7 @@ export type NavGroup = {
 
 const GROUP_OF: Record<string, NavGroup["label"]> = {
   "/admin": "Overview",
+  "/admin/analytics": "Overview",
   "/admin/verification": "Queues",
   "/admin/reports": "Queues",
   "/admin/jobs": "Queues",

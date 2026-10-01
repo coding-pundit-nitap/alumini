@@ -4,6 +4,7 @@ import {
   Briefcase,
   BriefcaseBusiness,
   CalendarDays,
+  ChartColumn,
   CircleAlert,
   Flag,
   GraduationCap,
@@ -38,6 +39,7 @@ const ICONS: Record<NavIconName, LucideIcon> = {
   status: CircleAlert,
   users: UserCog,
   audit: ScrollText,
+  analytics: ChartColumn,
   announcements: Megaphone,
 };
 

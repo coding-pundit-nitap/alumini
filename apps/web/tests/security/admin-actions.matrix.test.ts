@@ -16,6 +16,7 @@ import {
   ADMIN_PERMISSIONS,
   createAssignRole,
   createChangeAccountState,
+  createGetAnalytics,
   createGetDashboard,
   createGetUser,
   createGrantPermission,
@@ -217,6 +218,20 @@ const ADMIN_ACTIONS: ReadonlyArray<{
       }),
   },
   {
+    name: "getAnalytics",
+    permission: PERMISSIONS.ANALYTICS_VIEW,
+    // Sections load under Promise.allSettled: rethrow from onSectionFailed so reaching the store is observed.
+    run: (actor) =>
+      createGetAnalytics({
+        store: tripwire(),
+        authorize,
+        can,
+        onSectionFailed: (_key, error) => {
+          throw error;
+        },
+      })({ actor }),
+  },
+  {
     name: "publishAnnouncement",
     permission: PERMISSIONS.ANNOUNCEMENT_PUBLISH,
     run: (actor) =>
@@ -351,7 +366,7 @@ const ADMIN_ACTIONS: ReadonlyArray<{
 ];
 
 /** Admin-tier permissions with no action yet. The list may only shrink (spec A12-10). */
-const NOT_YET_BUILT: readonly Permission[] = [PERMISSIONS.ANALYTICS_VIEW];
+const NOT_YET_BUILT: readonly Permission[] = [];
 
 const matrix = readRoleMatrixFromDoc();
 const actorHolding = (held: ReadonlySet<string>): Actor => ({

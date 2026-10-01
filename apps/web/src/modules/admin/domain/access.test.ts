@@ -113,3 +113,27 @@ describe("announcements navigation (12E)", () => {
     expect(items.some((i) => i.href === "/admin/announcements")).toBe(false);
   });
 });
+
+describe("analytics navigation (12F)", () => {
+  it("puts Analytics under Overview, after Dashboard, for analytics.view holders", () => {
+    const groups = groupAdminNav(
+      adminNavigation(
+        holding(PERMISSIONS.ANALYTICS_VIEW, PERMISSIONS.JOB_APPROVE)
+      )
+    );
+    expect(groups[0]).toEqual({
+      label: "Overview",
+      items: [
+        { href: "/admin", label: "Dashboard", icon: "dashboard" },
+        { href: "/admin/analytics", label: "Analytics", icon: "analytics" },
+      ],
+    });
+  });
+
+  it("hides it from a moderator", () => {
+    const items = adminNavigation(
+      holding(PERMISSIONS.REPORT_REVIEW, PERMISSIONS.USER_READ_ADMIN)
+    );
+    expect(items.some((i) => i.href === "/admin/analytics")).toBe(false);
+  });
+});
