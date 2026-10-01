@@ -253,6 +253,26 @@ export const ERROR_CATALOG: Record<
     status: 409,
     message: "This user already has that permission in that scope.",
   },
+  CAMPAIGN_NOT_OPEN: {
+    status: 409,
+    message: "This campaign is not accepting pledges right now.",
+  },
+  INVALID_CAMPAIGN_TRANSITION: {
+    status: 409,
+    message: "The campaign can't move to that state from where it is now.",
+  },
+  DONATION_ALREADY_DECIDED: {
+    status: 409,
+    message: "This pledge has already been settled.",
+  },
+  PAYMENT_REFERENCE_TAKEN: {
+    status: 409,
+    message: "That payment reference is already recorded on another pledge.",
+  },
+  DONATION_SELF_DECISION: {
+    status: 403,
+    message: "You can't settle your own pledge. Ask another campaign manager.",
+  },
 };
 
 export type ErrorKind =

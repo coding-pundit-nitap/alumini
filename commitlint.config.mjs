@@ -49,6 +49,7 @@ export default {
         "admin",
         "search",
         "uploads",
+        "donations",
       ],
     ],
     "subject-case": [0],

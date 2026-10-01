@@ -18,6 +18,7 @@ const MODULE_DEPENDENCIES = {
   mentorship: ["auth"],
   events: ["auth"],
   admin: ["auth"],
+  donations: ["auth"],
 };
 
 const moduleDagRules = Object.entries(MODULE_DEPENDENCIES).map(
