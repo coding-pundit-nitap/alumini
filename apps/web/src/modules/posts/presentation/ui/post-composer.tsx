@@ -290,6 +290,7 @@ export function PostComposer({
 
   return (
     <form
+      method="post"
       onSubmit={onFormSubmit}
       className="animate-in fade-in space-y-3 duration-200"
     >

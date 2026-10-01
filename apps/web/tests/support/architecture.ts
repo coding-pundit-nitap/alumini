@@ -202,3 +202,27 @@ export function checkBoundedBodyReads(srcRoot: string): string[] {
   }
   return violations;
 }
+
+/**
+ * A form handled by a client `onSubmit` must say `method="post"` (spec 16 S-12, found by the ZAP baseline):
+ * submitted before hydration — a slow network, Enter pressed early — a form with no method is a GET, and the
+ * password, roll number or message ends up in the URL, browser history, access logs and Referer.
+ * Forms with `action={serverAction}` are POSTed by React even before hydration and are not checked.
+ */
+export function checkClientFormsPost(srcRoot: string): string[] {
+  const violations: string[] = [];
+  for (const file of walk(srcRoot).files) {
+    if (!file.endsWith(".tsx") || TEST_FILE.test(file)) continue;
+    const lines = fs.readFileSync(file, "utf8").split("\n");
+    lines.forEach((line, i) => {
+      if (!/<form\b/.test(line)) return;
+      const tag = lines.slice(i, i + 4).join("\n");
+      if (tag.includes("onSubmit") && !/\bmethod=/.test(tag)) {
+        violations.push(
+          `${rel(srcRoot, file)}:${i + 1} has onSubmit but no method="post"`
+        );
+      }
+    });
+  }
+  return violations;
+}

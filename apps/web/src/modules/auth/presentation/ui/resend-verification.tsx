@@ -49,7 +49,7 @@ export function ResendVerification({ email: knownEmail }: { email?: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-3">
+    <form method="post" onSubmit={onSubmit} noValidate className="space-y-3">
       {knownEmail ? null : (
         <FormField
           label="Email"

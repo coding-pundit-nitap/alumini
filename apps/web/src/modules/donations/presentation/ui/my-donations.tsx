@@ -41,6 +41,7 @@ function OpenPledgeActions(props: {
   return (
     <div className="flex flex-col gap-2">
       <form
+        method="post"
         className="flex flex-wrap items-end gap-2"
         onSubmit={(e) => {
           e.preventDefault();

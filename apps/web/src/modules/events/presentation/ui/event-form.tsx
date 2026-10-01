@@ -111,7 +111,7 @@ export function EventForm({
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate>
+    <form method="post" onSubmit={onSubmit} noValidate>
       <FieldGroup>
         <Field data-invalid={!!errors.title}>
           <FieldLabel htmlFor="event-title">Title</FieldLabel>

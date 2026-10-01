@@ -555,6 +555,7 @@ export function Thread(props: {
       ) : null}
 
       <form
+        method="post"
         onSubmit={send}
         className="bg-background border-t px-3 py-3 sm:px-5"
       >
@@ -604,7 +605,7 @@ export function Thread(props: {
         }}
       >
         <DialogContent>
-          <form onSubmit={submitReport} className="grid gap-4">
+          <form method="post" onSubmit={submitReport} className="grid gap-4">
             <DialogHeader>
               <DialogTitle>Report message</DialogTitle>
               <DialogDescription>

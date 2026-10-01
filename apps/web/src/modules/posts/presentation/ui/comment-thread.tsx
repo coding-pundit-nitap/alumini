@@ -150,6 +150,7 @@ export function CommentThread({
   return (
     <div>
       <form
+        method="post"
         id={COMMENT_FORM_ID}
         onSubmit={(event) => {
           event.preventDefault();

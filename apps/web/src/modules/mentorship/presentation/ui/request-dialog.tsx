@@ -87,7 +87,11 @@ export function RequestDialog({
               <X aria-hidden className="size-4" />
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
+          <form
+            method="post"
+            onSubmit={handleSubmit}
+            className="space-y-4 px-5 py-4"
+          >
             <div className="space-y-1 text-sm">
               <label
                 htmlFor={`${mentor.userId}-message`}

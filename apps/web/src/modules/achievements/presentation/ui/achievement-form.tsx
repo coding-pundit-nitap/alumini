@@ -63,6 +63,7 @@ export function AchievementForm({ onSubmit }: { onSubmit: SubmitAction }) {
 
   return (
     <form
+      method="post"
       onSubmit={onFormSubmit}
       className="bg-card space-y-4 rounded-xl border p-4 sm:p-5"
     >

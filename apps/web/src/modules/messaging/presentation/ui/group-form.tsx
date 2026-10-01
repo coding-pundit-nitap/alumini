@@ -54,7 +54,11 @@ export function GroupForm({
   }
 
   return (
-    <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+    <form
+      method="post"
+      onSubmit={submit}
+      className="flex min-h-0 flex-1 flex-col"
+    >
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-5 sm:px-6">
         <label className="block text-sm font-medium">
           Group name (optional)

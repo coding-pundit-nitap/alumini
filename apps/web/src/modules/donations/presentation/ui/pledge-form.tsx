@@ -35,6 +35,7 @@ export function PledgeForm(props: {
 
   return (
     <form
+      method="post"
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();

@@ -119,7 +119,7 @@ export function EvidenceForm({
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-4">
+    <form method="post" onSubmit={onSubmit} noValidate className="space-y-4">
       <FormField
         label="Roll / enrolment number"
         name="rollNumber"

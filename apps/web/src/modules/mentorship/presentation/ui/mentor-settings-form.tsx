@@ -116,7 +116,7 @@ export function MentorSettingsForm({
   ];
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form method="post" onSubmit={handleSubmit}>
       <div className="space-y-2 border-b px-4 py-4 sm:px-5">
         <p className="text-muted-foreground text-sm">
           Mentees see your name, photo, headline, expertise, topics and

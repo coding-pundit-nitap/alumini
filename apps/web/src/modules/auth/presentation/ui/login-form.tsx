@@ -47,7 +47,7 @@ export function LoginForm({ next = "/" }: { next?: string }) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={onSubmit} noValidate className="space-y-4">
+      <form method="post" onSubmit={onSubmit} noValidate className="space-y-4">
         <FormField
           label="Email"
           name="email"

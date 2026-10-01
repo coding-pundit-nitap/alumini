@@ -195,7 +195,7 @@ export function JobForm({
   const live = saved?.status === "PUBLISHED";
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form method="post" onSubmit={handleSubmit}>
       {saved ? (
         <div
           role="status"
