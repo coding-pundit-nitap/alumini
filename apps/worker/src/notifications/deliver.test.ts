@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { hashEmail } from "@nitap/email";
 import { dedupeKeyFor } from "@nitap/jobs";
 
+import { recordingMetrics } from "../../tests/support.ts";
 import { createDeliverNotification } from "./deliver.ts";
 
 function fakeStore(overrides: Record<string, unknown> = {}) {
@@ -495,5 +496,68 @@ describe("deliverNotification", () => {
     });
     expect(getPreference).not.toHaveBeenCalled();
     expect(enqueueEmail).toHaveBeenCalledTimes(1);
+  });
+
+  describe("notification_delivered_total (spec 13A A-11)", () => {
+    const build = (store: ReturnType<typeof fakeStore>) => {
+      const metrics = recordingMetrics();
+      const enqueueEmail = vi.fn<(p: unknown, o: unknown) => Promise<void>>(
+        async () => {}
+      );
+      const deliver = createDeliverNotification({
+        store: store as never,
+        getPreference: async () => ({ enabled: true }),
+        enqueueEmail,
+        hintPublisher: null,
+        unreadCounter: { increment: vi.fn() },
+        logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as never,
+        appUrl: "https://alumni.example",
+        metrics,
+      });
+      return { deliver, metrics, enqueueEmail };
+    };
+    const input = {
+      eventId: "e1",
+      type: "connection.requested",
+      category: "ENGAGEMENT" as const,
+      recipientId: "u1",
+      payload: {},
+      emailTo: "u1@nitap.ac.in",
+    };
+
+    it("counts an IN_APP delivery on a fresh insert", async () => {
+      const { deliver, metrics } = build(fakeStore());
+
+      await deliver(input);
+
+      expect(metrics.increment).toHaveBeenCalledWith(
+        "notification_delivered_total",
+        { channel: "IN_APP", category: "ENGAGEMENT" }
+      );
+    });
+
+    it("does not count a deduped redelivery", async () => {
+      const { deliver, metrics } = build(
+        fakeStore({
+          insert: vi.fn(async () => ({ id: "notif-1", created: false })),
+          emailDeliveryStatus: vi.fn(async () => "SENT"),
+        })
+      );
+
+      await deliver(input);
+
+      expect(metrics.increment).not.toHaveBeenCalled();
+    });
+
+    it("puts the category on the enqueued email so the sender can count it", async () => {
+      const { deliver, enqueueEmail } = build(fakeStore());
+
+      await deliver(input);
+
+      expect(enqueueEmail.mock.calls[0]?.[0]).toMatchObject({
+        template: "notification",
+        category: "ENGAGEMENT",
+      });
+    });
   });
 });

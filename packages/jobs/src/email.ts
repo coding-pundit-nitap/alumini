@@ -61,6 +61,8 @@ export const emailSendPayload = z.discriminatedUnion("template", [
       template: z.literal("notification"),
       /** Ids-only link back to the NotificationDelivery row this send updates (N-12). */
       notificationId: z.uuid().optional(),
+      // For notification_delivered_total only (spec 13A A-11); absent on jobs enqueued before 13A.
+      category: z.enum(["TRANSACTIONAL", "ENGAGEMENT"]).optional(),
       params: z
         .object({
           title: z.string().min(1),

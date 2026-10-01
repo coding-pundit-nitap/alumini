@@ -211,6 +211,7 @@ export function composeWorker(
   // The one fan-out-to-a-recipient primitive; later notification processors reuse it.
   const deliver = createDeliverNotification({
     store: deliveryStore,
+    metrics,
     getPreference: getPreference(prisma),
     appUrl: config.appUrl,
     enqueueEmail: (payload, options) => queue.add(emailJob, payload, options),

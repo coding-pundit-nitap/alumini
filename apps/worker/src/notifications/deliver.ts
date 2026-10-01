@@ -7,7 +7,8 @@ import {
   type NotificationDomain,
 } from "@nitap/jobs";
 import { hashEmail } from "@nitap/email";
-import type { Logger } from "@nitap/observability";
+import { getMetrics } from "@nitap/observability";
+import type { Logger, Metrics } from "@nitap/observability";
 
 import type { NotificationHintPublisher } from "../hints.ts";
 import type { UnreadCounter } from "./unread-counter.ts";
@@ -91,7 +92,9 @@ export function createDeliverNotification(deps: {
   logger: Logger;
   /** Public web origin, the base of the email's action link. */
   appUrl: string;
+  metrics?: Metrics;
 }): DeliverNotification {
+  const metrics = deps.metrics ?? getMetrics();
   return async (input) => {
     const dedupeKey = input.dedupeKey ?? dedupeKeyFor(input);
     // N-9: the counter is a cache recomputed from PostgreSQL and the hint is a refetch nudge. A cache
@@ -136,6 +139,10 @@ export function createDeliverNotification(deps: {
         channel: "IN_APP",
         status: "SENT",
       });
+      metrics.increment("notification_delivered_total", {
+        channel: "IN_APP",
+        category: input.category,
+      });
       await announce(id);
     }
 
@@ -174,6 +181,7 @@ export function createDeliverNotification(deps: {
         to: input.emailTo,
         template: "notification",
         notificationId: id,
+        category: input.category,
         params: {
           title: copy.title,
           body: copy.body,

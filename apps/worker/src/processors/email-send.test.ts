@@ -104,6 +104,59 @@ describe("email.send processor", () => {
   });
 
   describe("delivery status tracking (N-12)", () => {
+    it("counts a sent notification email by channel and category (spec 13A A-11)", async () => {
+      const metrics = recordingMetrics();
+      const processor = createEmailSendProcessor(
+        { send: async () => {} },
+        { deliveries: fakeDeliveries(), metrics }
+      );
+
+      await processor(
+        { ...notificationPayload, category: "ENGAGEMENT" },
+        context()
+      );
+      await processor(notificationPayload, context());
+
+      expect(metrics.increment).toHaveBeenNthCalledWith(
+        1,
+        "notification_delivered_total",
+        { channel: "EMAIL", category: "ENGAGEMENT" }
+      );
+      // Jobs enqueued before 13A carry no category.
+      expect(metrics.increment).toHaveBeenNthCalledWith(
+        2,
+        "notification_delivered_total",
+        { channel: "EMAIL", category: "unknown" }
+      );
+    });
+
+    it("labels a failed notification email with the same channel and category", async () => {
+      const metrics = recordingMetrics();
+      const processor = createEmailSendProcessor(
+        {
+          send: async () =>
+            Promise.reject(new EmailSendError("SMTP 550", "permanent")),
+        },
+        { deliveries: fakeDeliveries(), metrics }
+      );
+
+      await expect(
+        processor(
+          { ...notificationPayload, category: "TRANSACTIONAL" },
+          context()
+        )
+      ).rejects.toBeInstanceOf(PermanentJobError);
+
+      expect(metrics.increment).toHaveBeenCalledWith(
+        "notification_delivery_failed_total",
+        {
+          template: "notification",
+          channel: "EMAIL",
+          category: "TRANSACTIONAL",
+        }
+      );
+    });
+
     it("marks the delivery SENT on a successful notification email", async () => {
       const deliveries = fakeDeliveries();
       const processor = createEmailSendProcessor(
