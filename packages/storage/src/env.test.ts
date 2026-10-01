@@ -29,12 +29,15 @@ describe("loadStorageEnv", () => {
     expect(loadStorageEnv(rest).forcePathStyle).toBe(false);
   });
 
-  it("accepts a same-origin public path and rejects a URL", () => {
+  it("accepts /storage and rejects a URL or any other path", () => {
     expect(
       loadStorageEnv({ ...valid, S3_PUBLIC_PATH: "/storage" }).publicPath
     ).toBe("/storage");
     expect(() =>
       loadStorageEnv({ ...valid, S3_PUBLIC_PATH: "http://x/storage" })
+    ).toThrow("S3_PUBLIC_PATH");
+    expect(() =>
+      loadStorageEnv({ ...valid, S3_PUBLIC_PATH: "/files" })
     ).toThrow("S3_PUBLIC_PATH");
   });
 

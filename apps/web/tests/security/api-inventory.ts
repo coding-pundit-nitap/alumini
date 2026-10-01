@@ -204,6 +204,12 @@ export const API_INVENTORY: Record<string, Partial<Record<Method, Entry>>> = {
   "/health/startup": { GET: read({ kind: "public" }) },
   "/health/drain": { POST: write({ kind: "monitoring" }) },
   "/metrics": { GET: read({ kind: "monitoring" }) },
+  // Same-origin path to object storage: the store checks each presigned signature, the app checks nothing.
+  "/storage/[...path]": {
+    GET: read({ kind: "public" }),
+    POST: write({ kind: "public" }),
+    PUT: write({ kind: "public" }),
+  },
 };
 
 const EXPORT =

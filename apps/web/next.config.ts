@@ -27,6 +27,8 @@ const nextConfig: NextConfig = {
   // Loaded with Node's require, not bundled: the error tracker's SDK patches Node internals (spec 13B B-1).
   serverExternalPackages: ["@sentry/node"],
   poweredByHeader: false,
+  // deploymentId (version-skew protection, reliability §8.2) comes from NEXT_DEPLOYMENT_ID, which
+  // docker/web.Dockerfile sets to the git SHA at build. Unset in development.
   // The container image (docker/web.Dockerfile) sets NEXT_OUTPUT=standalone: a self-contained server with only
   // the files it traces. Traced from the repository root so the workspace packages come along.
   ...(process.env.NEXT_OUTPUT === "standalone"
@@ -46,18 +48,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Keeps object storage off the browser: presigned URLs point at S3_PUBLIC_PATH on this origin and are
-  // proxied to S3_ENDPOINT (Host is rewritten to the endpoint, so the signatures still match).
-  async rewrites() {
-    const { S3_PUBLIC_PATH, S3_ENDPOINT } = process.env;
-    if (!S3_PUBLIC_PATH || !S3_ENDPOINT) return [];
-    return [
-      {
-        source: `${S3_PUBLIC_PATH}/:path*`,
-        destination: `${S3_ENDPOINT.replace(/\/$/, "")}/:path*`,
-      },
-    ];
-  },
+  // S3_PUBLIC_PATH is served by src/app/storage/[...path]/route.ts, not a rewrite: rewrites are fixed at build
+  // time, and the image must take its storage endpoint from the runtime environment.
 };
 
 export default nextConfig;

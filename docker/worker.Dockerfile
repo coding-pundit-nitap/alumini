@@ -1,5 +1,5 @@
 # Worker image (spec 16 16E). Build from the repository root:
-#   docker build -f docker/worker.Dockerfile -t nitap-worker .
+#   docker build -f docker/worker.Dockerfile --build-arg GIT_SHA=$(git rev-parse HEAD) -t nitap-worker .
 # Node runs the TypeScript sources directly (type stripping), so there is no compile step.
 ARG NODE_IMAGE=node:24.21.0-alpine3.24
 
@@ -28,7 +28,8 @@ RUN pnpm install --frozen-lockfile --prod --ignore-scripts \
     && rm -rf node_modules/.pnpm/@typescript+typescript-* node_modules/.pnpm/@turbo+* node_modules/.pnpm/turbo@*
 
 FROM ${NODE_IMAGE} AS run
-ENV NODE_ENV=production
+ARG GIT_SHA=dev
+ENV NODE_ENV=production APP_VERSION=${GIT_SHA}
 WORKDIR /repo
 # The runtime needs only node: npm, npx and corepack (and the CVEs in npm's own bundled dependencies) go.
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \

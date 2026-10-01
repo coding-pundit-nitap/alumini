@@ -20,7 +20,7 @@ const PUBLIC_PREFIXES = [
   "/members",
   // Social crawlers fetch this with no session cookie when a link is shared.
   "/opengraph-image",
-  // S3_PUBLIC_PATH, proxied to object storage (next.config rewrites); every URL there is presigned.
+  // S3_PUBLIC_PATH, proxied to object storage (app/storage/[...path]); every URL there is presigned.
   "/storage",
 ] as const;
 

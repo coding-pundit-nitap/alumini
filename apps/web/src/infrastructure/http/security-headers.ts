@@ -47,7 +47,7 @@ export function buildPageCsp(options: {
 
 /**
  * Where the browser reaches the object store. None when S3_PUBLIC_PATH proxies it through this origin
- * (next.config rewrites); otherwise S3_ENDPOINT's origin, with the bucket as a subdomain unless path-style.
+ * (app/storage/[...path]); otherwise S3_ENDPOINT's origin, with the bucket as a subdomain unless path-style.
  */
 export function storageOriginFor(
   source: Record<string, string | undefined>

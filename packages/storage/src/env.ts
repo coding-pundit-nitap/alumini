@@ -10,9 +10,9 @@ const schema = z.object({
     .string()
     .optional()
     .transform((value) => value === "true"),
+  // Only /storage: that is where apps/web's proxy route lives (app/storage/[...path]).
   S3_PUBLIC_PATH: z
-    .string()
-    .regex(/^\/[\w-]+$/, "S3_PUBLIC_PATH must look like /storage")
+    .literal("/storage", "S3_PUBLIC_PATH must be /storage")
     .optional(),
 });
 
@@ -23,7 +23,7 @@ export type StorageEnv = {
   accessKeyId: string;
   secretAccessKey: string;
   forcePathStyle: boolean;
-  /** Same-origin path the app proxies to `endpoint` (apps/web next.config rewrites); browser URLs use it. */
+  /** Same-origin path the app proxies to `endpoint` (apps/web app/storage/[...path] route); browser URLs use it. */
   publicPath?: string;
 };
 
