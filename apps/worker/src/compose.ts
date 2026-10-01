@@ -1,6 +1,7 @@
 import { Redis } from "ioredis";
 
 import type { PrismaClient } from "@nitap/database";
+import { createPledgeExpiryStore } from "@nitap/database/donations";
 import { createJobExpireStore } from "@nitap/database/jobs";
 import { createOutboxStore, createOutboxWriter } from "@nitap/database/outbox";
 import { createIdempotencyStore } from "@nitap/database/idempotency";
@@ -16,6 +17,10 @@ import {
   connectionAccepted,
   connectionRequested,
   contentRemoved,
+  donationConfirmed,
+  donationExpirePledges,
+  donationNotReceived,
+  donationPledged,
   emailSend,
   eventJobs,
   idempotencySweep,
@@ -90,6 +95,8 @@ import { createIdempotencySweepProcessor } from "./processors/idempotency-sweep.
 import { createEmailSendProcessor } from "./processors/email-send.ts";
 import { createJobEventProcessor } from "./processors/job-event.ts";
 import { createJobExpireProcessor } from "./processors/job-expire.ts";
+import { createDonationEventProcessor } from "./processors/donation-event.ts";
+import { createDonationExpireProcessor } from "./processors/donation-expire.ts";
 import { createEventActivityProcessor } from "./processors/event-activity.ts";
 import { createMentorshipEventProcessor } from "./processors/mentorship-event.ts";
 import { createMessageSentProcessor } from "./processors/message-sent.ts";
@@ -164,6 +171,10 @@ export function composeWorker(
   const store = createOutboxStore(prisma);
   const outboxWriter = createOutboxWriter();
   const jobExpireStore = createJobExpireStore({ prisma, outbox: outboxWriter });
+  const pledgeExpiryStore = createPledgeExpiryStore({
+    prisma,
+    outbox: outboxWriter,
+  });
   const uploads = createUploadStore();
   const idempotency = createIdempotencyStore();
   const notificationRetention = createNotificationRetentionStore();
@@ -242,7 +253,8 @@ export function composeWorker(
     ).map((row) => row.userId);
   // ponytail: CHAPTER-scoped grants count as reviewers too (no chapter filter); narrow when review is chapter-scoped.
   const findModerators = async (
-    permission: "job.approve" | "achievement.review" | "report.review"
+    permission:
+      "job.approve" | "achievement.review" | "report.review" | "campaign.manage"
   ) => {
     const now = new Date();
     const [viaRole, viaGrant] = await Promise.all([
@@ -448,6 +460,22 @@ export function composeWorker(
         userReactivated,
         createAccountStateProcessor("user.reactivated", { deliver, findEmail })
       ),
+      ...(
+        [
+          [donationPledged, "donation.pledged"],
+          [donationConfirmed, "donation.confirmed"],
+          [donationNotReceived, "donation.not-received"],
+        ] as const
+      ).map(([job, type]) =>
+        registerJob(
+          job,
+          createDonationEventProcessor(type, {
+            deliver,
+            findEmail,
+            findManagers: findModerators,
+          })
+        )
+      ),
       ...[...Object.values(jobEvents), jobExpired].map((job) =>
         registerJob(
           job as JobDefinition<
@@ -544,6 +572,10 @@ export function composeWorker(
         jobExpire,
         createJobExpireProcessor({ store: jobExpireStore })
       ),
+      registerJob(
+        donationExpirePledges,
+        createDonationExpireProcessor({ store: pledgeExpiryStore })
+      ),
     ],
     queueOverrides: {
       email: {
@@ -584,6 +616,11 @@ export function composeWorker(
       });
       await rawQueue.upsertSchedule(jobExpire, {
         id: "job-expire",
+        everyMs: DAY_MS,
+        payload: { v: 1 },
+      });
+      await rawQueue.upsertSchedule(donationExpirePledges, {
+        id: "donation-expire-pledges",
         everyMs: DAY_MS,
         payload: { v: 1 },
       });
