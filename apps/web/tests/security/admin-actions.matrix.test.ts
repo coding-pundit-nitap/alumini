@@ -24,6 +24,7 @@ import {
   createListUsers,
   createRevokeGrant,
   createRevokeRole,
+  createUpdateRetentionSetting,
 } from "@/modules/admin";
 import type { Actor } from "@/modules/auth";
 import { createAuthorization } from "@/modules/auth/application/authorize";
@@ -230,6 +231,23 @@ const ADMIN_ACTIONS: ReadonlyArray<{
           throw error;
         },
       })({ actor }),
+  },
+  {
+    name: "updateRetentionSetting",
+    permission: PERMISSIONS.SYSTEM_CONFIGURE,
+    run: (actor) =>
+      createUpdateRetentionSetting({
+        store: tripwire(),
+        authorize,
+        catalogue: {
+          notifications: {
+            defaultDays: 90,
+            minDays: 7,
+            maxDays: 3650,
+            enforced: true,
+          },
+        },
+      })({ actor, category: "notifications", input: { retentionDays: 30 } }),
   },
   {
     name: "publishAnnouncement",

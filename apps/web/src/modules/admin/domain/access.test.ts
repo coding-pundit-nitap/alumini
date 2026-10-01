@@ -62,7 +62,7 @@ describe("admin access", () => {
 
   it("lists every admin-tier permission exactly once", () => {
     expect(new Set(ADMIN_PERMISSIONS).size).toBe(ADMIN_PERMISSIONS.length);
-    expect(ADMIN_PERMISSIONS).toHaveLength(14);
+    expect(ADMIN_PERMISSIONS).toHaveLength(15);
   });
 });
 
@@ -135,5 +135,22 @@ describe("analytics navigation (12F)", () => {
       holding(PERMISSIONS.REPORT_REVIEW, PERMISSIONS.USER_READ_ADMIN)
     );
     expect(items.some((i) => i.href === "/admin/analytics")).toBe(false);
+  });
+});
+
+describe("settings navigation (12G)", () => {
+  it("puts Settings under System for system.configure holders only", () => {
+    const groups = groupAdminNav(
+      adminNavigation(holding(PERMISSIONS.SYSTEM_CONFIGURE))
+    );
+    expect(groups.at(-1)).toEqual({
+      label: "System",
+      items: [{ href: "/admin/settings", label: "Settings", icon: "settings" }],
+    });
+    expect(
+      adminNavigation(holding(PERMISSIONS.ANALYTICS_VIEW)).some(
+        (i) => i.href === "/admin/settings"
+      )
+    ).toBe(false);
   });
 });

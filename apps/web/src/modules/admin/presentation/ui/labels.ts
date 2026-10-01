@@ -38,3 +38,11 @@ export const USER_FILTER_LABELS: Record<string, string> = {
 export const LAST_SUPER_ADMIN_NOTE = "This is the last active Super Admin.";
 export const SELECT_CLASS =
   "border-input bg-background h-9 w-full rounded-lg border px-2.5 text-sm";
+export const RETENTION_LABEL: Record<string, string> = {
+  notifications: "Notifications",
+  deactivated_accounts: "Deactivated accounts",
+  deleted_content: "Deleted content",
+  reports: "Moderation reports",
+  audit_logs: "Audit logs",
+  donation_records: "Donation records",
+};

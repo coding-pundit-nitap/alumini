@@ -91,3 +91,38 @@ export type AnalyticsStore = {
   eventsSection(window: AnalyticsWindow): Promise<EventsRaw>;
   communitySection(window: AnalyticsWindow): Promise<CommunityRaw>;
 };
+
+export type RetentionRow = {
+  id: string;
+  category: string;
+  retentionDays: number;
+  approvedBy: string | null;
+  updatedAt: Date;
+  updatedBy: { id: string; name: string } | null;
+};
+
+/** 12G G-4: settings writes, each with its `config.changed` audit row in the same transaction. */
+export type SettingsTx = {
+  findForUpdate(
+    category: string
+  ): Promise<Pick<RetentionRow, "id" | "retentionDays" | "approvedBy"> | null>;
+  update(
+    id: string,
+    values: { retentionDays: number; approvedBy: string | null },
+    actorId: string
+  ): Promise<void>;
+  audit(entry: {
+    actorId: string;
+    targetId: string;
+    /** Identifiers and outcomes only (writer contract): the sign-off name stays in the table. */
+    metadata: {
+      key: string;
+      from: { retentionDays: number; approved: boolean };
+      to: { retentionDays: number; approved: boolean };
+    };
+  }): Promise<void>;
+};
+export type SettingsStore = {
+  listRetention(): Promise<RetentionRow[]>;
+  transaction<T>(fn: (tx: SettingsTx) => Promise<T>): Promise<T>;
+};

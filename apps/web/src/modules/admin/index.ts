@@ -14,6 +14,16 @@ export { createGetDashboard } from "./application/get-dashboard";
 export type { DashboardTile, GetDashboard } from "./application/get-dashboard";
 export { createListAuditLog } from "./application/list-audit-log";
 export { createGetAnalytics } from "./application/get-analytics";
+export { createListRetentionSettings } from "./application/list-retention-settings";
+export type { ListRetentionSettings } from "./application/list-retention-settings";
+export { createUpdateRetentionSetting } from "./application/update-retention-setting";
+export type { UpdateRetentionSetting } from "./application/update-retention-setting";
+export type { SettingsStore } from "./application/admin-store";
+export type {
+  RetentionCatalogue,
+  RetentionSettingView,
+} from "./domain/retention";
+export { RetentionTable } from "./presentation/ui/retention-table";
 export type { GetAnalytics } from "./application/get-analytics";
 export type { AnalyticsStore } from "./application/admin-store";
 export { ANALYTICS_RANGES, RANGE_DAYS } from "./domain/analytics";

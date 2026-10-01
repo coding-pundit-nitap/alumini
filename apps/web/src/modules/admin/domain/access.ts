@@ -16,6 +16,7 @@ export const hasAdminAccess = (can: Can): boolean =>
 export type NavIcon =
   | "dashboard"
   | "analytics"
+  | "settings"
   | "users"
   | "audit"
   | "verification"
@@ -81,6 +82,12 @@ const QUEUE_ITEMS: ReadonlyArray<NavItem & { permission: Permission }> = [
     icon: "announcements",
     permission: PERMISSIONS.ANNOUNCEMENT_PUBLISH,
   },
+  {
+    href: "/admin/settings",
+    label: "Settings",
+    icon: "settings",
+    permission: PERMISSIONS.SYSTEM_CONFIGURE,
+  },
 ];
 
 export function adminNavigation(can: Can): NavItem[] {
@@ -132,6 +139,7 @@ const GROUP_OF: Record<string, NavGroup["label"]> = {
   "/admin/users": "People",
   "/admin/audit": "System",
   "/admin/notifications": "System",
+  "/admin/settings": "System",
 };
 const GROUP_ORDER: NavGroup["label"][] = [
   "Overview",

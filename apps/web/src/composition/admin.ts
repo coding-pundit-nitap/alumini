@@ -2,6 +2,7 @@ import { audit } from "@/infrastructure/audit";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
 import { getMetrics, logger } from "@/infrastructure/observability";
 import { outbox } from "@/infrastructure/outbox";
+import { RETENTION_CATALOGUE } from "@/infrastructure/retention-catalogue";
 import {
   ROLE_PERMISSIONS,
   SUPER_ADMIN_ROLE,
@@ -14,14 +15,17 @@ import {
   createGetUser,
   createGrantPermission,
   createListAuditLog,
+  createListRetentionSettings,
   createListUsers,
   createRevokeGrant,
   createRevokeRole,
+  createUpdateRetentionSetting,
 } from "@/modules/admin";
 import {
   createPrismaAccessStore,
   createPrismaAdminStore,
   createPrismaAnalyticsStore,
+  createPrismaSettingsStore,
 } from "@/modules/admin/server";
 import { authorize, can, loadGrants } from "@/modules/auth";
 
@@ -85,3 +89,16 @@ export const assignRole = createAssignRole(roleDeps);
 export const revokeRole = createRevokeRole(roleDeps);
 export const grantPermission = createGrantPermission(access);
 export const revokeGrant = createRevokeGrant(access);
+
+// 12G: the SRS §45 catalogue is data injected here, like the role catalogue.
+const settings = {
+  store: createPrismaSettingsStore({
+    db: prisma,
+    runner: transactionRunner,
+    audit,
+  }),
+  authorize,
+  catalogue: RETENTION_CATALOGUE,
+};
+export const listRetentionSettings = createListRetentionSettings(settings);
+export const updateRetentionSetting = createUpdateRetentionSetting(settings);

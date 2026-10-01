@@ -14,6 +14,7 @@ import {
   Megaphone,
   Menu,
   ScrollText,
+  Settings,
   UserCheck,
   Users,
   type LucideIcon,
@@ -36,6 +37,7 @@ import type { NavGroup, NavIcon } from "@/modules/admin";
 const ICONS: Record<NavIcon, LucideIcon> = {
   dashboard: LayoutDashboard,
   analytics: ChartColumn,
+  settings: Settings,
   users: Users,
   audit: ScrollText,
   verification: UserCheck,

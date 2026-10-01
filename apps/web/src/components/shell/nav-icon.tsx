@@ -13,6 +13,7 @@ import {
   MessageCircle,
   ScrollText,
   Search,
+  Settings,
   ShieldCheck,
   Trophy,
   UserCog,
@@ -40,6 +41,7 @@ const ICONS: Record<NavIconName, LucideIcon> = {
   users: UserCog,
   audit: ScrollText,
   analytics: ChartColumn,
+  settings: Settings,
   announcements: Megaphone,
 };
 
