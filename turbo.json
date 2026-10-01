@@ -52,7 +52,7 @@
     },
     "build": {
       "dependsOn": ["^build", "^db:generate"],
-      "env": ["NEXT_PUBLIC_*"],
+      "env": ["NEXT_PUBLIC_*", "NEXT_OUTPUT"],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/.env"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
     },

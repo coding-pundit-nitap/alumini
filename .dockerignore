@@ -1,0 +1,15 @@
+# Build context for docker/*.Dockerfile: sources and lockfile only. Secrets and local state never enter an image.
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/coverage
+**/playwright-report
+**/test-results
+**/*.tsbuildinfo
+.git
+.env
+.env.*
+!.env.example
+docs
+perf/results

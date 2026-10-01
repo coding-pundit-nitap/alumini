@@ -27,6 +27,14 @@ const nextConfig: NextConfig = {
   // Loaded with Node's require, not bundled: the error tracker's SDK patches Node internals (spec 13B B-1).
   serverExternalPackages: ["@sentry/node"],
   poweredByHeader: false,
+  // The container image (docker/web.Dockerfile) sets NEXT_OUTPUT=standalone: a self-contained server with only
+  // the files it traces. Traced from the repository root so the workspace packages come along.
+  ...(process.env.NEXT_OUTPUT === "standalone"
+    ? {
+        output: "standalone" as const,
+        outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
+      }
+    : {}),
   // Every response, static assets included (spec 16 SD-3). The CSP is per request, so it is set in the proxy.
   async headers() {
     return [
