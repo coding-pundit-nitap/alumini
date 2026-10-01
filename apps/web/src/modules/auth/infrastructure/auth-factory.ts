@@ -38,6 +38,48 @@ export type AuthDeps = {
 const LINK_TTL_SECONDS = AUTH_LINK_TTL_MINUTES * 60;
 
 /**
+ * The Better Auth endpoints this app uses (spec 16 SD-11). Every /api/auth path is public, so the rest are
+ * switched off: change-email would skip the institutional policy, delete-user would hard-delete an
+ * audited account, change-password lets the client keep other sessions alive, and the social/OAuth and
+ * session-management endpoints back no feature. A test fails when Better Auth adds a path not classified here.
+ */
+export const ENABLED_AUTH_PATHS = [
+  "/sign-up/email",
+  "/sign-in/email",
+  "/sign-out",
+  "/get-session",
+  "/send-verification-email",
+  "/verify-email",
+  "/request-password-reset",
+  "/reset-password",
+  "/reset-password/:token",
+  "/ok",
+  "/error",
+] as const;
+
+export const DISABLED_AUTH_PATHS = [
+  "/account-info",
+  "/callback/:id",
+  "/change-email",
+  "/change-password",
+  "/delete-user",
+  "/delete-user/callback",
+  "/get-access-token",
+  "/link-social",
+  "/list-accounts",
+  "/list-sessions",
+  "/refresh-token",
+  "/revoke-other-sessions",
+  "/revoke-session",
+  "/revoke-sessions",
+  "/sign-in/social",
+  "/unlink-account",
+  "/update-session",
+  "/update-user",
+  "/verify-password",
+];
+
+/**
  * Authentication only (who you are, is the session valid). Authorization is our own model and is
  * deliberately NOT delegated to Better Auth's admin or organization plugins (ADR-005). Every hook and
  * callback here delegates to a use case; the logic lives there and is tested there.
@@ -189,6 +231,8 @@ export function createAuth(deps: AuthDeps) {
         },
       },
     },
+
+    disabledPaths: DISABLED_AUTH_PATHS,
 
     // Must be the last plugin: lets Server Actions set the session cookie.
     plugins,
