@@ -17,6 +17,8 @@ export function createPrismaClient(connectionString: string): {
     connectionTimeoutMillis: 2_000,
     idleTimeoutMillis: 30_000,
     statement_timeout: 30_000,
+    // A stalled server never reaches statement_timeout; this bounds the wait on the client (spec 14 F-5).
+    query_timeout: 35_000,
   });
   return { prisma: new PrismaClient({ adapter: new PrismaPg(pool) }), pool };
 }

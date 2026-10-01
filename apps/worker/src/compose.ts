@@ -57,6 +57,7 @@ import {
   createRelay,
   createWorkerRuntime,
   registerJob,
+  withTimeout,
 } from "@nitap/queue";
 import type { QueuePort, Relay, WorkerRuntime } from "@nitap/queue";
 import type { Logger, Metrics } from "@nitap/observability";
@@ -105,6 +106,9 @@ import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
 import { createUploadScanProcessor } from "./processors/upload-scan.ts";
 import { createUploadSweepProcessor } from "./processors/upload-sweep.ts";
 import { passthroughScanner } from "./scanner.ts";
+
+/** Readiness answers within this per check (reliability §4.1: the web probe uses the same 1 s). */
+const READY_CHECK_TIMEOUT_MS = 1_000;
 
 export type WorkerConfig = {
   queueRedisUrl: string;
@@ -195,6 +199,7 @@ export function composeWorker(
     maxRetriesPerRequest: 1,
     enableOfflineQueue: false,
     lazyConnect: true,
+    commandTimeout: READY_CHECK_TIMEOUT_MS,
   });
   ping.on("error", () => {});
   const hintRedis = config.cacheRedisUrl
@@ -639,15 +644,24 @@ export function composeWorker(
     },
 
     async ready() {
+      // Each check is bounded: a stalled dependency must make the probe say "not ready", not hang it (spec 14 F-7).
       const [database, queueRedis] = await Promise.all([
-        prisma.$queryRaw`SELECT 1`.then(
+        withTimeout(
+          prisma.$queryRaw`SELECT 1`,
+          READY_CHECK_TIMEOUT_MS,
+          "ready.database"
+        ).then(
           () => true,
           () => false
         ),
-        (async () => {
-          if (ping.status === "wait") await ping.connect();
-          return (await ping.ping()) === "PONG";
-        })().catch(() => false),
+        withTimeout(
+          (async () => {
+            if (ping.status === "wait") await ping.connect();
+            return (await ping.ping()) === "PONG";
+          })(),
+          READY_CHECK_TIMEOUT_MS,
+          "ready.queue_redis"
+        ).catch(() => false),
       ]);
       const { lastPollAt } = relay.health();
       const stale = Math.max(15_000, pollIntervalMs * 5);
