@@ -35,7 +35,9 @@
     "docker:down": "docker compose --env-file .env -f docker/docker-compose.yml down",
     "docker:observability": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml up -d",
     "docker:observability:down": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml down",
-    "ops:check": "node scripts/check-ops.mjs"
+    "ops:check": "node scripts/check-ops.mjs",
+    "perf:seed": "pnpm --filter @nitap/web perf:seed",
+    "perf:run": "node scripts/perf/run.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
