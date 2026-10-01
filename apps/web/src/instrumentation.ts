@@ -1,8 +1,14 @@
 import type { Instrumentation } from "next";
 
-/** Runs once when the server starts. A malformed institutional-email policy stops startup (fail closed). */
+/**
+ * Runs once when the server starts. Missing production configuration (spec 16 S-11) or a malformed
+ * institutional-email policy stops startup (fail closed).
+ */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+
+  const { exitIfMisconfigured } = await import("@/config/production-config");
+  exitIfMisconfigured();
 
   const { createPrometheusMetrics, initErrorTracker, setMetrics } =
     await import("@nitap/observability");
