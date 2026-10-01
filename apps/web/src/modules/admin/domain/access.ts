@@ -17,6 +17,8 @@ export type NavIcon =
   | "dashboard"
   | "analytics"
   | "settings"
+  | "campaigns"
+  | "donations"
   | "users"
   | "audit"
   | "verification"
@@ -83,6 +85,18 @@ const QUEUE_ITEMS: ReadonlyArray<NavItem & { permission: Permission }> = [
     permission: PERMISSIONS.ANNOUNCEMENT_PUBLISH,
   },
   {
+    href: "/admin/campaigns",
+    label: "Campaigns",
+    icon: "campaigns",
+    permission: PERMISSIONS.CAMPAIGN_MANAGE,
+  },
+  {
+    href: "/admin/donations",
+    label: "Donations",
+    icon: "donations",
+    permission: PERMISSIONS.CAMPAIGN_MANAGE,
+  },
+  {
     href: "/admin/settings",
     label: "Settings",
     icon: "settings",
@@ -106,6 +120,7 @@ export type TileKey =
   | "pendingJobs"
   | "pendingAchievements"
   | "failedEmails"
+  | "pendingPledges"
   | "members";
 
 /** Each tile shows only to holders of the permission for its queue (spec A12-5). */
@@ -115,6 +130,7 @@ export const TILE_PERMISSIONS: Record<TileKey, Permission> = {
   pendingJobs: PERMISSIONS.JOB_APPROVE,
   pendingAchievements: PERMISSIONS.ACHIEVEMENT_REVIEW,
   failedEmails: PERMISSIONS.NOTIFICATION_REPLAY,
+  pendingPledges: PERMISSIONS.CAMPAIGN_MANAGE,
   members: PERMISSIONS.USER_READ_ADMIN,
 };
 
@@ -124,7 +140,8 @@ export const dashboardTiles = (can: Can): TileKey[] =>
   );
 
 export type NavGroup = {
-  label: "Overview" | "Queues" | "Content" | "People" | "System";
+  label:
+    "Overview" | "Queues" | "Content" | "Fundraising" | "People" | "System";
   items: NavItem[];
 };
 
@@ -136,6 +153,8 @@ const GROUP_OF: Record<string, NavGroup["label"]> = {
   "/admin/jobs": "Queues",
   "/admin/achievements": "Queues",
   "/admin/announcements": "Content",
+  "/admin/campaigns": "Fundraising",
+  "/admin/donations": "Fundraising",
   "/admin/users": "People",
   "/admin/audit": "System",
   "/admin/notifications": "System",
@@ -145,6 +164,7 @@ const GROUP_ORDER: NavGroup["label"][] = [
   "Overview",
   "Queues",
   "Content",
+  "Fundraising",
   "People",
   "System",
 ];

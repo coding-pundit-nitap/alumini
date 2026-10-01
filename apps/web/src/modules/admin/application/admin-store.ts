@@ -2,6 +2,7 @@ import type { TileKey } from "../domain/access";
 import type {
   AnalyticsWindow,
   CommunityRaw,
+  DonationsRaw,
   EventsRaw,
   JobsRaw,
   MembersRaw,
@@ -90,6 +91,7 @@ export type AnalyticsStore = {
   jobsSection(window: AnalyticsWindow): Promise<JobsRaw>;
   eventsSection(window: AnalyticsWindow): Promise<EventsRaw>;
   communitySection(window: AnalyticsWindow): Promise<CommunityRaw>;
+  donationsSection(window: AnalyticsWindow): Promise<DonationsRaw>;
 };
 
 export type RetentionRow = {

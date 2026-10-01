@@ -40,6 +40,12 @@ function setup(held: Permission[], overrides: Partial<AnalyticsStore> = {}) {
       averageFillRate: 0.5,
       upcoming: 2,
     })),
+    donationsSection: vi.fn(async () => ({
+      receivedRupees: [],
+      raisedPaise: 0,
+      donors: 0,
+      donorsByCampaign: [],
+    })),
     communitySection: vi.fn(async () => ({
       posts: [],
       comments: [],

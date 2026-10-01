@@ -49,6 +49,16 @@ function loader(
       return store
         .eventsSection(w)
         .then((data) => ({ key, status: "ok", data }));
+    case "donations":
+      return store.donationsSection(w).then((raw) => ({
+        key,
+        status: "ok",
+        data: {
+          ...raw,
+          receivedRupees: fillWeeks(raw.receivedRupees, w),
+          donorsByCampaign: maskBuckets(raw.donorsByCampaign),
+        },
+      }));
     case "community":
       return store.communitySection(w).then((raw) => ({
         key,

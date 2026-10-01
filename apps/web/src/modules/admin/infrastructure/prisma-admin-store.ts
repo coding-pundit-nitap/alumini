@@ -28,6 +28,7 @@ export function createPrismaAdminStore(db: PrismaClient): AdminStore {
       db.notificationDelivery.count({
         where: { channel: "EMAIL", status: "FAILED" },
       }),
+    pendingPledges: () => db.donation.count({ where: { status: "PLEDGED" } }),
   };
 
   const where = (f: AuditFilter): Prisma.AuditLogWhereInput => ({

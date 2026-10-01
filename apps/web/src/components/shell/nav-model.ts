@@ -32,6 +32,9 @@ export type NavIconName =
   | "audit"
   | "analytics"
   | "settings"
+  | "campaigns"
+  | "donations"
+  | "donate"
   | "announcements";
 
 export type NavEntry = { href: string; label: string; icon: NavIconName };
@@ -54,6 +57,8 @@ const ADMIN_ICON_MAP: Record<NavIcon, NavIconName> = {
   dashboard: "admin",
   analytics: "analytics",
   settings: "settings",
+  campaigns: "campaigns",
+  donations: "donations",
   users: "users",
   audit: "audit",
   verification: "verification",
@@ -141,6 +146,8 @@ export function buildNav(input: NavInput): NavModel {
       label: "Achievements",
       icon: "achievements",
     });
+  if (can(P.DONATION_MAKE))
+    opportunities.push({ href: "/donate", label: "Donate", icon: "donate" });
 
   const manage: NavEntry[] = [];
   if (hasAdminAccess(can)) {

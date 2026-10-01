@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type {
   AnalyticsSection,
   CommunityData,
+  DonationsData,
   EventsData,
   JobsData,
   MembersData,
@@ -33,6 +34,10 @@ export const SECTION_COPY: Record<
   community: {
     title: "Community",
     description: "Feed activity and reports filed.",
+  },
+  donations: {
+    title: "Donations",
+    description: "Money confirmed as received, and who gave.",
   },
 };
 
@@ -158,6 +163,24 @@ function Community({ data }: { data: CommunityData }) {
   );
 }
 
+function Donations({ data }: { data: DonationsData }) {
+  const rupees = (paise: number) =>
+    `₹${Math.round(paise / 100).toLocaleString("en-IN")}`;
+  return (
+    <>
+      <Stats>
+        <Stat label="Received" value={rupees(data.raisedPaise)} />
+        <Stat label="Donors" value={number(data.donors)} />
+      </Stats>
+      <BarSeries label="Received per week (₹)" points={data.receivedRupees} />
+      <BarBreakdown
+        label="Donors by campaign"
+        buckets={data.donorsByCampaign}
+      />
+    </>
+  );
+}
+
 /** Spec 12F §3: a section's content; a failed section says so in place and the rest render. */
 export function AnalyticsSectionBody({
   section,
@@ -180,5 +203,7 @@ export function AnalyticsSectionBody({
       return <Events data={section.data} />;
     case "community":
       return <Community data={section.data} />;
+    case "donations":
+      return <Donations data={section.data} />;
   }
 }

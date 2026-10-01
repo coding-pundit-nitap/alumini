@@ -45,6 +45,17 @@ import { createReplayNotifications } from "@/modules/notifications/application/r
 import { createPublishAnnouncement } from "@/modules/posts/application/publish-announcement";
 import { createRemoveAnnouncement } from "@/modules/posts/application/remove-announcement";
 import { createListFailedDeliveries } from "@/modules/notifications/application/list-failed-deliveries";
+import {
+  createChangeCampaignStatus,
+  createCreateCampaign,
+  createEditCampaign,
+  createListCampaignsForAdmin,
+} from "@/modules/donations/application/campaigns";
+import {
+  createConfirmDonation,
+  createListDonationsForAdmin,
+  createMarkNotReceived,
+} from "@/modules/donations/application/review";
 
 import { readRoleMatrixFromDoc } from "../support/rbac-matrix-doc";
 
@@ -249,6 +260,59 @@ const ADMIN_ACTIONS: ReadonlyArray<{
         },
       })({ actor, category: "notifications", input: { retentionDays: 30 } }),
   },
+  ...(() => {
+    const donations = () => ({
+      store: tripwire(),
+      queries: tripwire(),
+      authorize,
+      can,
+    });
+    const campaign = {
+      title: "Library fund",
+      description: "Books for the central library.",
+      purpose: "Books",
+      paymentInstructions: "UPI: library@bank",
+      goal: "",
+      startsOn: "2026-10-01",
+      endsOn: "2026-12-31",
+    };
+    const run = (
+      name: string,
+      call: (actor: Actor | null) => Promise<unknown>
+    ) => ({ name, permission: PERMISSIONS.CAMPAIGN_MANAGE, run: call });
+    return [
+      run("listCampaignsForAdmin", (actor) =>
+        createListCampaignsForAdmin(donations())({ actor })
+      ),
+      run("createCampaign", (actor) =>
+        createCreateCampaign(donations())({ actor, input: campaign })
+      ),
+      run("editCampaign", (actor) =>
+        createEditCampaign(donations())({
+          actor,
+          campaignId: ID,
+          input: campaign,
+        })
+      ),
+      run("changeCampaignStatus", (actor) =>
+        createChangeCampaignStatus(donations())({
+          actor,
+          campaignId: ID,
+          to: "ACTIVE",
+        })
+      ),
+      run("confirmDonation", (actor) =>
+        createConfirmDonation(donations())({ actor, donationId: ID, input: {} })
+      ),
+      run("markNotReceived", (actor) =>
+        createMarkNotReceived(donations())({
+          actor,
+          donationId: ID,
+          input: { reason: "OTHER" },
+        })
+      ),
+    ];
+  })(),
   {
     name: "publishAnnouncement",
     permission: PERMISSIONS.ANNOUNCEMENT_PUBLISH,
@@ -453,8 +517,36 @@ describe("admin action × role matrix (RBAC §4)", () => {
     });
   });
 
+  describe("listDonationsForAdmin (campaign.manage or donation.view_all)", () => {
+    const run = (actor: Actor | null) =>
+      createListDonationsForAdmin({
+        store: tripwire(),
+        queries: tripwire(),
+        authorize,
+        can,
+      })({ actor });
+
+    it.each(ROLE_NAMES)("%s", async (role) => {
+      const allowed =
+        matrix[role].has(PERMISSIONS.CAMPAIGN_MANAGE) ||
+        matrix[role].has(PERMISSIONS.DONATION_VIEW_ALL);
+      const outcome = await outcomeOf(run(actorHolding(matrix[role])));
+      expect(outcome).toBeInstanceOf(
+        allowed ? ReachedStore : AuthorizationError
+      );
+    });
+
+    it("unauthenticated", async () => {
+      await expect(run(null)).rejects.toBeInstanceOf(AuthenticationError);
+    });
+  });
+
   it("every admin-tier permission has a registered action or is explicitly not yet built", () => {
-    const covered = new Set(ADMIN_ACTIONS.map((a) => a.permission));
+    const covered = new Set([
+      ...ADMIN_ACTIONS.map((a) => a.permission),
+      // Covered by the dedicated listDonationsForAdmin block above.
+      PERMISSIONS.DONATION_VIEW_ALL,
+    ]);
     for (const permission of ADMIN_PERMISSIONS) {
       expect(
         covered.has(permission) !== NOT_YET_BUILT.includes(permission),

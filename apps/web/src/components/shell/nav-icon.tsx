@@ -8,6 +8,9 @@ import {
   CircleAlert,
   Flag,
   GraduationCap,
+  HandCoins,
+  HandHeart,
+  Heart,
   House,
   Megaphone,
   MessageCircle,
@@ -42,6 +45,9 @@ const ICONS: Record<NavIconName, LucideIcon> = {
   audit: ScrollText,
   analytics: ChartColumn,
   settings: Settings,
+  campaigns: HandHeart,
+  donations: HandCoins,
+  donate: Heart,
   announcements: Megaphone,
 };
 

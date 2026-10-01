@@ -4,6 +4,7 @@ import {
   Award,
   Briefcase,
   Flag,
+  HandCoins,
   MailWarning,
   UserCheck,
   Users,
@@ -40,6 +41,11 @@ const TILE_COPY: Record<
     label: "Failed notification emails",
     href: "/admin/notifications",
     icon: MailWarning,
+  },
+  pendingPledges: {
+    label: "Pledges awaiting confirmation",
+    href: "/admin/donations",
+    icon: HandCoins,
   },
   members: { label: "Verified members", href: "/admin/users", icon: Users },
 };

@@ -28,7 +28,8 @@ export const analyticsWindow = (
   to: now,
 });
 
-export type SectionKey = "members" | "jobs" | "events" | "community";
+export type SectionKey =
+  "members" | "jobs" | "events" | "community" | "donations";
 
 /** Spec F-2 / XD-2: a section needs `analytics.view` and the permission that owns its data. */
 export const SECTION_PERMISSIONS: Record<SectionKey, Permission> = {
@@ -36,6 +37,7 @@ export const SECTION_PERMISSIONS: Record<SectionKey, Permission> = {
   jobs: PERMISSIONS.JOB_APPROVE,
   events: PERMISSIONS.EVENT_CREATE,
   community: PERMISSIONS.REPORT_REVIEW,
+  donations: PERMISSIONS.DONATION_VIEW_ALL,
 };
 
 export const analyticsSections = (can: Can): SectionKey[] =>
@@ -116,6 +118,14 @@ export type CommunityRaw = {
   reportsByStatus: Bucket[];
 };
 
+/** 12H H-10: confirmed money only. Weekly values are whole rupees; the per-campaign bucket counts donors. */
+export type DonationsRaw = {
+  receivedRupees: WeekPoint[];
+  raisedPaise: number;
+  donors: number;
+  donorsByCampaign: Bucket[];
+};
+
 // --- What the page renders ---
 
 export type MembersData = Omit<MembersRaw, "byRole" | "byGraduationYear"> & {
@@ -131,9 +141,14 @@ export type CommunityData = Omit<CommunityRaw, "reportsByStatus"> & {
   reportsByStatus: MaskedBucket[];
 };
 
+export type DonationsData = Omit<DonationsRaw, "donorsByCampaign"> & {
+  donorsByCampaign: MaskedBucket[];
+};
+
 export type AnalyticsSection =
   | { key: "members"; status: "ok"; data: MembersData }
   | { key: "jobs"; status: "ok"; data: JobsData }
   | { key: "events"; status: "ok"; data: EventsData }
   | { key: "community"; status: "ok"; data: CommunityData }
+  | { key: "donations"; status: "ok"; data: DonationsData }
   | { key: SectionKey; status: "unavailable" };

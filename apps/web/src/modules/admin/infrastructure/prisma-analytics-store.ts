@@ -125,6 +125,34 @@ export function createPrismaAnalyticsStore(db: PrismaClient): AnalyticsStore {
       };
     },
 
+    async donationsSection(w) {
+      // Confirmed money only (12H H-9); a pledge counts in the week it was confirmed.
+      const [receivedRupees, [totals], donorsByCampaign] = await Promise.all([
+        db.$queryRaw<WeekPoint[]>`
+          SELECT to_char(date_trunc('week', decided_at AT TIME ZONE 'Asia/Kolkata'), 'YYYY-MM-DD') AS week,
+                 round(sum(amount_paise) / 100.0)::int AS value
+            FROM donation
+           WHERE status = 'CONFIRMED' AND ${inWindow("decided_at", w)}
+           GROUP BY 1`,
+        db.$queryRaw<{ raised: bigint | null; donors: number }[]>`
+          SELECT sum(amount_paise) AS raised, count(DISTINCT donor_id)::int AS donors
+            FROM donation
+           WHERE status = 'CONFIRMED' AND ${inWindow("decided_at", w)}`,
+        db.$queryRaw<Bucket[]>`
+          SELECT c.title AS key, count(DISTINCT d.donor_id)::int AS value
+            FROM donation d JOIN donation_campaign c ON c.id = d.campaign_id
+           WHERE d.status = 'CONFIRMED' AND ${inWindow("d.decided_at", w)}
+           GROUP BY c.id, c.title
+           ORDER BY c.title`,
+      ]);
+      return {
+        receivedRupees,
+        raisedPaise: Number(totals?.raised ?? 0),
+        donors: totals?.donors ?? 0,
+        donorsByCampaign,
+      };
+    },
+
     async communitySection(w) {
       const notDeleted = Prisma.sql`AND NOT deleted`;
       const [posts, comments, reportsByStatus] = await Promise.all([
