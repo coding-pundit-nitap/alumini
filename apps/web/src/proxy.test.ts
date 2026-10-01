@@ -86,3 +86,50 @@ describe("proxy optimistic auth redirect (ADR-005 §2, TDS §7.5)", () => {
     expect(location.searchParams.get("next")).toBe("/dashboard");
   });
 });
+
+describe("proxy security headers (strategy §10.1, spec 16 SD-1)", () => {
+  const nonceOf = (csp: string | null) =>
+    /'nonce-([^']+)'/.exec(csp ?? "")?.[1];
+
+  it("gives a page a CSP with a fresh nonce and hands the same nonce to the render", () => {
+    const first = call();
+    const csp = first.headers.get("content-security-policy");
+    const nonce = nonceOf(csp);
+    expect(nonce).toBeTruthy();
+    expect(first.headers.get("x-middleware-request-x-nonce")).toBe(nonce);
+    // Next.js reads the nonce for its own scripts from the request's CSP header.
+    expect(
+      first.headers.get("x-middleware-request-content-security-policy")
+    ).toBe(csp);
+    expect(nonceOf(call().headers.get("content-security-policy"))).not.toBe(
+      nonce
+    );
+  });
+
+  it("puts the page CSP on the login redirect as well", () => {
+    const response = callAnonymous("http://localhost/alumni");
+    expect(response.headers.get("content-security-policy")).toContain(
+      "frame-ancestors 'none'"
+    );
+  });
+
+  it.each([
+    "http://localhost/api/v1/jobs",
+    "http://localhost/api/auth/get-session",
+    "http://localhost/health/ready",
+    "http://localhost/metrics",
+  ])("gives the data path %s a CSP that loads nothing and no nonce", (url) => {
+    const response = call({}, url);
+    expect(response.headers.get("content-security-policy")).toBe(
+      "default-src 'none'; frame-ancestors 'none'"
+    );
+    expect(response.headers.get("x-middleware-request-x-nonce")).toBeNull();
+  });
+
+  it("does not take a nonce from the client", () => {
+    const response = call({ "x-nonce": "attacker" });
+    expect(response.headers.get("x-middleware-request-x-nonce")).not.toBe(
+      "attacker"
+    );
+  });
+});

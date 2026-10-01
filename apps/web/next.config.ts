@@ -2,6 +2,8 @@ import { loadEnvConfig } from "@next/env";
 import type { NextConfig } from "next";
 import path from "node:path";
 
+import { staticSecurityHeaders } from "./src/infrastructure/http/security-headers";
+
 // One .env at the repository root serves the whole workspace (see .env.example).
 // cwd is apps/web when Next runs through `pnpm --filter @nitap/web`. Next has already loaded (and
 // cached) the app directory's env files by the time this runs, so forceReload is required; it
@@ -25,6 +27,17 @@ const nextConfig: NextConfig = {
   // Loaded with Node's require, not bundled: the error tracker's SDK patches Node internals (spec 13B B-1).
   serverExternalPackages: ["@sentry/node"],
   poweredByHeader: false,
+  // Every response, static assets included (spec 16 SD-3). The CSP is per request, so it is set in the proxy.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: staticSecurityHeaders({
+          production: process.env.NODE_ENV === "production",
+        }),
+      },
+    ];
+  },
   // Keeps object storage off the browser: presigned URLs point at S3_PUBLIC_PATH on this origin and are
   // proxied to S3_ENDPOINT (Host is rewritten to the endpoint, so the signatures still match).
   async rewrites() {
