@@ -21,6 +21,8 @@ const serverEnvSchema = z.object({
     .optional(),
   // Bearer token that lets monitoring see the `checks` detail of /health/ready in production.
   HEALTH_CHECK_TOKEN: z.string().min(16).optional(),
+  // Error tracker (Sentry protocol: Sentry or GlitchTip); off when unset (spec 13B B-2).
+  SENTRY_DSN: z.string().url().optional(),
   // Build/commit identifier stamped on every log line. Set by the deploy pipeline.
   APP_VERSION: z.string().min(1).optional(),
   // JSON map of recognised institutional email domains → { role, autoVerify }. Parsed and validated by

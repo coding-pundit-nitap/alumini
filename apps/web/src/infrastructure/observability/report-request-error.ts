@@ -1,5 +1,6 @@
 import {
   REQUEST_ID_HEADER,
+  captureError,
   resolveRequestId,
   runWithRequestContext,
 } from "@nitap/observability";
@@ -22,7 +23,7 @@ type ErrorContext = {
  * and Route Handlers not wrapped in `routeHandler` (TDS §16.4 rule 6). Called from `instrumentation.ts`.
  *
  * The `digest` is what the error UI shows the user; logging it next to `request_id` is what lets
- * support go from "the id on my screen" to the failing request. The error tracker joins here in Phase 13.
+ * support go from "the id on my screen" to the failing request. The same failure goes to the error tracker (13B).
  * Await everything: Next.js requires async work in `onRequestError` to be awaited.
  */
 export async function reportRequestError(
@@ -50,6 +51,14 @@ export async function reportRequestError(
         routePath: context.routePath,
         routeType: context.routeType,
       },
+    });
+    captureError(error, {
+      tags: {
+        route: context.routePath,
+        route_type: context.routeType,
+        method: request.method,
+      },
+      extra: { digest },
     });
   });
 }

@@ -1,5 +1,6 @@
 import {
   REQUEST_ID_HEADER,
+  captureError,
   getMetrics,
   logger,
   resolveRequestId,
@@ -41,6 +42,14 @@ export function routeHandler<Args extends unknown[]>(
           },
         });
         response = Response.json(body, { status, headers });
+        // 4xx are the client's mistakes (reliability §6.3); only server failures go to the tracker.
+        if (status >= 500)
+          captureError(error, {
+            tags: {
+              route: routeLabel(new URL(request.url).pathname, status),
+              method: request.method,
+            },
+          });
       }
 
       const route = routeLabel(new URL(request.url).pathname, response.status);

@@ -1,4 +1,3 @@
-import { createTransport } from "@sentry/node";
 import type { ErrorEvent } from "@sentry/node";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -11,6 +10,7 @@ import {
 } from "./error-tracker.ts";
 import { REDACTED } from "./redact.ts";
 import { runWithRequestContext, setRequestUser } from "./request-context.ts";
+import { startRecordingErrorTracker } from "./testing.ts";
 
 // The same secrets the log redaction test masks (redact.test.ts): tracker and logs share one rule.
 const secrets = {
@@ -31,37 +31,6 @@ const leaks = [
   "reset-abc",
   "ada@example.test",
 ];
-
-/** A transport that keeps the serialized envelopes instead of sending them. */
-function recordingTransport() {
-  const sent: string[] = [];
-  const transport = (options: Parameters<typeof createTransport>[0]) =>
-    createTransport(options, async (request) => {
-      sent.push(
-        typeof request.body === "string"
-          ? request.body
-          : new TextDecoder().decode(request.body)
-      );
-      return { statusCode: 200 };
-    });
-  const events = () =>
-    sent.flatMap((envelope) =>
-      envelope
-        .split("\n")
-        .filter((line) => line.includes('"exception"'))
-        .map((line) => JSON.parse(line) as ErrorEvent)
-    );
-  return { transport, sent, events };
-}
-
-const init = (transport: ReturnType<typeof recordingTransport>["transport"]) =>
-  initErrorTracker({
-    dsn: "https://public@tracker.example.test/1",
-    environment: "test",
-    release: "t",
-    service: "web",
-    transport,
-  });
 
 afterEach(() => closeErrorTracker());
 
@@ -117,8 +86,7 @@ describe("error tracker (spec 13B B-1, B-2, B-5)", () => {
   });
 
   it("sends a scrubbed event tagged with the request id, service and user id", async () => {
-    const recorder = recordingTransport();
-    expect(init(recorder.transport)).toBe(true);
+    const recorder = startRecordingErrorTracker("web");
 
     runWithRequestContext({ requestId: "req-13b" }, () => {
       setRequestUser("user-1");
@@ -136,7 +104,6 @@ describe("error tracker (spec 13B B-1, B-2, B-5)", () => {
       route: "/api/v1/x",
     });
     expect(event?.user).toEqual({ id: "user-1" });
-    for (const leak of leaks)
-      expect(recorder.sent.join("\n")).not.toContain(leak);
+    for (const leak of leaks) expect(recorder.raw()).not.toContain(leak);
   });
 });

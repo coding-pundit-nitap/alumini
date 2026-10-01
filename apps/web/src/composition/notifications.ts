@@ -3,6 +3,7 @@ import { createQueueAdmin, type QueueAdmin } from "@nitap/queue";
 import { env } from "@/config/env";
 import { audit } from "@/infrastructure/audit";
 import { prisma, transactionRunner } from "@/infrastructure/database/client";
+import { captureError, logger } from "@/infrastructure/observability";
 import { getRedis } from "@/infrastructure/redis/client";
 import { authorize } from "@/modules/auth";
 import {
@@ -42,6 +43,13 @@ const replayUseCases = createReplayNotifications({
     return (queueAdmin ??= createQueueAdmin({ url }));
   },
   audit: (entry) => transactionRunner.run((tx) => audit.record(tx, entry)),
+  onAuditFailed: (error, metadata) => {
+    logger.error("notification.replay.audit_failed", { error, metadata });
+    captureError(error, {
+      tags: { action: "notification.replay" },
+      extra: metadata,
+    });
+  },
 });
 
 export const authorizeNotificationReplay = replayUseCases.check;

@@ -3,6 +3,7 @@ import { createLogger } from "@nitap/observability";
 import { env } from "@/config/env";
 
 export {
+  captureError,
   getMetrics,
   noopMetrics,
   setMetrics,

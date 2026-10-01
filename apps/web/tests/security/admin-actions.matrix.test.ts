@@ -208,6 +208,7 @@ const ADMIN_ACTIONS: ReadonlyArray<{
         queueAdmin: tripwire(),
         failedEmailJobId: tripwire(),
         audit: tripwire(),
+        onAuditFailed: tripwire(),
       }).replay({ actor, notificationId: ID }),
   },
   {

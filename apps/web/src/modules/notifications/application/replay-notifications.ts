@@ -16,6 +16,10 @@ type Authorize = (actor: Actor | null, permission: Permission) => Actor;
  * processor rewrites the delivery row itself (SENT or FAILED) when the retried job runs. The audit row is the only
  * write in the database transaction; the BullMQ retry happens first and outside it. If the retry throws there is
  * no audit row (nothing changed that we know of). The result is counts only: job payloads hold personal data.
+ *
+ * If the audit write fails after the retry succeeded, the job is already re-queued: the failure is reported through
+ * `onAuditFailed` (logged at error and sent to the tracker, spec 13B B-8) and the call still succeeds, since a 500
+ * would invite a second replay of a job that is already running.
  */
 export function createReplayNotifications(deps: {
   authorize: Authorize;
@@ -30,6 +34,10 @@ export function createReplayNotifications(deps: {
     targetId: string;
     metadata: Record<string, unknown>;
   }) => Promise<void>;
+  onAuditFailed: (
+    error: unknown,
+    info: { notificationId: string; actorId: string; retried: number }
+  ) => void;
 }) {
   const check = (actor: Actor | null) =>
     deps.authorize(actor, PERMISSIONS.NOTIFICATION_REPLAY);
@@ -44,13 +52,21 @@ export function createReplayNotifications(deps: {
       const retried = await deps.queueAdmin().retry("email", [jobId]);
       // BullMQ already dropped the failed job (7-day retention): nothing changed, so nothing to audit.
       if (retried === 0) throw new ConflictError("REPLAY_JOB_GONE");
-      await deps.audit({
-        actorId: caller.userId,
-        action: "notification.replay",
-        targetType: "notification",
-        targetId: args.notificationId,
-        metadata: { retried },
-      });
+      try {
+        await deps.audit({
+          actorId: caller.userId,
+          action: "notification.replay",
+          targetType: "notification",
+          targetId: args.notificationId,
+          metadata: { retried },
+        });
+      } catch (error) {
+        deps.onAuditFailed(error, {
+          notificationId: args.notificationId,
+          actorId: caller.userId,
+          retried,
+        });
+      }
       return { retried };
     },
   };

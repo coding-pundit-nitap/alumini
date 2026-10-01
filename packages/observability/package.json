@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./request-id": "./src/request-id.ts"
+    "./request-id": "./src/request-id.ts",
+    "./testing": "./src/testing.ts"
   },
   "scripts": {
     "lint": "eslint --max-warnings=0",
@@ -24,6 +25,6 @@
   },
   "dependencies": {
     "@prometheus-io/client": "^0.16.1",
-    "@sentry/node": "^11.2.0"
+    "@sentry/node": "11.1.0"
   }
 }

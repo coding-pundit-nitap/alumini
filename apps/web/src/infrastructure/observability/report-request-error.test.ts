@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { logger } from "./index";
-import { getRequestContext } from "@nitap/observability";
+import { flushErrorTracker, getRequestContext } from "@nitap/observability";
+import { startRecordingErrorTracker } from "@nitap/observability/testing";
 import { reportRequestError } from "./report-request-error";
 
 const context = {
@@ -55,5 +56,35 @@ describe("reportRequestError (TDS §16.4 rule 6)", () => {
       context
     );
     expect(error).toHaveBeenCalledTimes(1);
+  });
+
+  describe("error tracker (spec 13B B-6)", () => {
+    let tracker: ReturnType<typeof startRecordingErrorTracker> | undefined;
+    afterEach(() => tracker?.stop());
+
+    it("sends the failure with its route, digest and request id", async () => {
+      vi.spyOn(logger, "error").mockImplementation(() => {});
+      tracker = startRecordingErrorTracker("web");
+
+      await reportRequestError(
+        Object.assign(new Error("render blew up"), { digest: "1234567" }),
+        {
+          path: "/alumni/42?token=secret",
+          method: "GET",
+          headers: { "x-request-id": "abcd-1234-efgh" },
+        },
+        context
+      );
+      await flushErrorTracker(2_000);
+
+      const [event] = tracker.events();
+      expect(event?.tags).toMatchObject({
+        request_id: "abcd-1234-efgh",
+        route: "/app/alumni/[id]",
+        route_type: "render",
+      });
+      expect(event?.extra).toMatchObject({ digest: "1234567" });
+      expect(tracker.raw()).not.toContain("token=secret");
+    });
   });
 });

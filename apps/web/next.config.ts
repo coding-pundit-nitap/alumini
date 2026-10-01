@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
     "@nitap/jobs",
     "@nitap/search",
   ],
+  // Loaded with Node's require, not bundled: the error tracker's SDK patches Node internals (spec 13B B-1).
+  serverExternalPackages: ["@sentry/node"],
   poweredByHeader: false,
   // Keeps object storage off the browser: presigned URLs point at S3_PUBLIC_PATH on this origin and are
   // proxied to S3_ENDPOINT (Host is rewritten to the endpoint, so the signatures still match).

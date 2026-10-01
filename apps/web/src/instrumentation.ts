@@ -4,8 +4,14 @@ import type { Instrumentation } from "next";
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
-  const { createPrometheusMetrics, setMetrics } =
+  const { createPrometheusMetrics, initErrorTracker, setMetrics } =
     await import("@nitap/observability");
+  initErrorTracker({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV ?? "development",
+    release: process.env.APP_VERSION ?? "dev",
+    service: "web",
+  });
   setMetrics(
     createPrometheusMetrics({
       service: "web",
@@ -19,8 +25,8 @@ export async function register() {
 
 /**
  * Runs for every server error Next.js catches (renders, Server Actions, unwrapped Route Handlers).
- * Node runtime only: the logger uses AsyncLocalStorage. The error tracker joins in 13B; tracing is
- * not used (ADR-028).
+ * Node runtime only: the logger uses AsyncLocalStorage. Logged and sent to the error tracker (13B);
+ * tracing is not used (ADR-028).
  */
 export const onRequestError: Instrumentation.onRequestError = async (
   error,
