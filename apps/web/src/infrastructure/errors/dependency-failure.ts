@@ -71,7 +71,23 @@ function databaseUnavailable(error: unknown): boolean {
   );
 }
 
+/**
+ * Better Auth's session read catches whatever its database adapter throws, logs it, and rethrows a bare
+ * `FAILED_TO_GET_SESSION` (500) with no `cause` (better-auth api/routes/session.mjs). That read only touches
+ * PostgreSQL, so the code alone says the database did not answer: measured under load as pool-acquire
+ * timeouts that reached the client as 500s (spec 15 F-2). Matched on shape, so this file needs no Better Auth.
+ */
+function failedSessionLookup(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.name === "APIError" &&
+    (error as { body?: { code?: unknown } }).body?.code ===
+      "FAILED_TO_GET_SESSION"
+  );
+}
+
 function classify(error: unknown): Dependency | null {
+  if (failedSessionLookup(error)) return "postgres";
   // Follow `cause` a few levels: adapters and use cases sometimes wrap the driver's error.
   let current: unknown = error;
   for (let depth = 0; depth < 4 && current; depth += 1) {

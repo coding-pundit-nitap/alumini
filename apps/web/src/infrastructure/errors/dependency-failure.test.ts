@@ -1,3 +1,5 @@
+import { BASE_ERROR_CODES } from "better-auth";
+import { APIError } from "better-auth/api";
 import { describe, expect, it } from "vitest";
 
 import { Prisma } from "@nitap/database";
@@ -64,6 +66,14 @@ const unavailable: Array<[string, unknown]> = [
     new Error("use case failed", { cause: known("P1001") }),
   ],
   ["storage unavailable", new StorageError("down", "unavailable")],
+  [
+    // Better Auth logs the pool timeout and rethrows this with no cause (measured under load: spec 15 F-2).
+    "session lookup that failed inside Better Auth",
+    APIError.from(
+      "INTERNAL_SERVER_ERROR",
+      BASE_ERROR_CODES.FAILED_TO_GET_SESSION
+    ),
+  ],
 ];
 
 describe("asDependencyFailure (spec 14 RD-3)", () => {
@@ -91,6 +101,10 @@ describe("asDependencyFailure (spec 14 RD-3)", () => {
     ],
     ["a storage not-found", new StorageError("gone", "not_found")],
     ["a plain bug", new TypeError("undefined is not a function")],
+    [
+      "any other Better Auth error",
+      APIError.from("UNAUTHORIZED", BASE_ERROR_CODES.SESSION_EXPIRED),
+    ],
   ])("leaves %s alone", (_name, error) => {
     expect(asDependencyFailure(error)).toBe(error);
   });
