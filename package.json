@@ -33,6 +33,7 @@
     "worker:prune:check": "node scripts/verify-worker-prune.mjs",
     "docker:up": "docker compose --env-file .env -f docker/docker-compose.yml up -d",
     "docker:down": "docker compose --env-file .env -f docker/docker-compose.yml down",
+    "docker:scan": "docker compose --env-file .env -f docker/docker-compose.yml --profile scan up -d clamav",
     "docker:observability": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml up -d",
     "docker:observability:down": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml down",
     "ops:check": "node scripts/check-ops.mjs",

@@ -69,3 +69,28 @@ describe("loadEnv", () => {
     expect(() => loadCliEnv({})).toThrow(/DATABASE_URL/);
   });
 });
+
+describe("CLAMAV_URL (spec 16 SD-8)", () => {
+  it("is optional outside production", () => {
+    expect(loadEnv(valid).CLAMAV_URL).toBeUndefined();
+  });
+
+  it("is required in production: uploads are never left unscanned", () => {
+    expect(() => loadEnv({ ...valid, NODE_ENV: "production" })).toThrow(
+      /CLAMAV_URL/
+    );
+    expect(
+      loadEnv({
+        ...valid,
+        NODE_ENV: "production",
+        CLAMAV_URL: "tcp://clamav:3310",
+      }).CLAMAV_URL
+    ).toBe("tcp://clamav:3310");
+  });
+
+  it("must be tcp://host[:port]", () => {
+    expect(() => loadEnv({ ...valid, CLAMAV_URL: "http://clamav" })).toThrow(
+      /CLAMAV_URL/
+    );
+  });
+});

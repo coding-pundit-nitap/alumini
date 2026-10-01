@@ -126,7 +126,26 @@ services:
       timeout: 3s
       retries: 10
 
+  # Upload malware scanning (spec 16 SD-8). Opt-in: the image downloads its signatures (~300 MB) on first
+  # start and clamd holds ~1 GB of RAM, so it runs only with `--profile scan` (pnpm docker:scan). Point the
+  # worker at it with CLAMAV_URL=tcp://localhost:3310; without it the worker passes uploads unscanned.
+  clamav:
+    image: clamav/clamav:1.4
+    restart: unless-stopped
+    profiles: ["scan"]
+    ports:
+      - "${CLAMAV_PORT:-3310}:3310"
+    volumes:
+      - clamav-data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      start_period: 300s
+      retries: 5
+
 volumes:
   postgres-data:
   queue-redis-data:
   minio-data:
+  clamav-data:

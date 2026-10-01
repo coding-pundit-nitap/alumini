@@ -105,7 +105,7 @@ import { createNotificationRetentionSweepProcessor } from "./processors/notifica
 import { createOutboxPruneProcessor } from "./processors/outbox-prune.ts";
 import { createUploadScanProcessor } from "./processors/upload-scan.ts";
 import { createUploadSweepProcessor } from "./processors/upload-sweep.ts";
-import { passthroughScanner } from "./scanner.ts";
+import { passthroughScanner, type ScannerPort } from "./scanner.ts";
 
 /** Readiness answers within this per check (reliability §4.1: the web probe uses the same 1 s). */
 const READY_CHECK_TIMEOUT_MS = 1_000;
@@ -120,6 +120,8 @@ export type WorkerConfig = {
   emailRatePerSecond: number;
   /** BullMQ key prefix; tests use a unique one. */
   queuePrefix?: string;
+  /** Upload malware scanner (spec 16 SD-8); the pass-through one when unset (never in production). */
+  scanner?: ScannerPort;
 };
 
 export type ComposeOverrides = {
@@ -546,7 +548,7 @@ export function composeWorker(
               uploads.markRejected(prisma, id, reason),
           },
           storage,
-          scanner: passthroughScanner,
+          scanner: config.scanner ?? passthroughScanner,
         })
       ),
       registerJob(

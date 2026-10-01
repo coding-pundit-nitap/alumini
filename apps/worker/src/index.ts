@@ -13,6 +13,7 @@ import { createS3StoragePort, loadStorageEnv } from "@nitap/storage";
 
 import { composeWorker } from "./compose.ts";
 import { loadEnv } from "./env.ts";
+import { createClamdScanner, parseClamavUrl } from "./clamav.ts";
 import { startHealthServer } from "./health.ts";
 import { createPrismaClient } from "./prisma.ts";
 import { registerQueueDepthCollector } from "./queue-depth.ts";
@@ -54,7 +55,13 @@ const worker = composeWorker({
     emailFrom: env.EMAIL_FROM,
     appUrl: env.APP_URL,
     emailRatePerSecond: env.EMAIL_RATE_PER_SECOND,
+    ...(env.CLAMAV_URL
+      ? { scanner: createClamdScanner(parseClamavUrl(env.CLAMAV_URL)) }
+      : {}),
   },
+});
+logger.info("worker.upload_scanner", {
+  metadata: { scanner: env.CLAMAV_URL ? "clamav" : "passthrough" },
 });
 
 await worker.start();
