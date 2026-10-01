@@ -1,0 +1,70 @@
+# Local observability stack (spec 13C): Prometheus, Alertmanager, Grafana and the data exporters.
+# An overlay on docker-compose.yml (same project, so `postgres`, `redis` and `queue-redis` resolve):
+#   pnpm docker:observability        → Prometheus :9090, Alertmanager :9093, Grafana :3030 (admin/admin)
+# Web and worker run on the host and are scraped through host.docker.internal. Production placement waits
+# for hosting (O-2); there the monitoring stack belongs on a separate host (reliability §5.1).
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+      - --web.enable-lifecycle
+    volumes:
+      - ../ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../ops/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    restart: unless-stopped
+    command: [--config.file=/etc/alertmanager/alertmanager.yml]
+    volumes:
+      - ../ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      # Placeholder receiver URLs: alerts are visible in the UI but go nowhere locally.
+      - ../ops/alertmanager/secrets.example:/etc/alertmanager/secrets:ro
+    ports:
+      - "${ALERTMANAGER_PORT:-9093}:9093"
+
+  grafana:
+    image: grafana/grafana:12.2.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - ../ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "${GRAFANA_PORT:-3030}:3000"
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: postgresql://alumini:alumini@postgres:5432/alumini?sslmode=disable
+    depends_on: [postgres]
+
+  redis-exporter-cache:
+    image: oliver006/redis_exporter:v1.74.0
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    depends_on: [redis]
+
+  redis-exporter-queue:
+    image: oliver006/redis_exporter:v1.74.0
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: redis://queue-redis:6379
+    depends_on: [queue-redis]
+
+volumes:
+  prometheus-data:

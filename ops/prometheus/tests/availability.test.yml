@@ -1,0 +1,71 @@
+# promtool test rules (TASK.md Phase 13: alert rules fire on injected conditions, tested not assumed).
+rule_files:
+  - ../rules/availability.yml
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'up{job="web",instance="web:3000"}'
+        values: "0x10"
+      - series: 'up{job="worker",instance="worker:3001"}'
+        values: "1 1 0x8"
+      - series: 'dependency_up{job="web",instance="web:3000",dependency="postgres"}'
+        values: "0x10"
+      - series: 'dependency_up{job="web",instance="web:3000",dependency="redis"}'
+        values: "0x10"
+    alert_rule_test:
+      # Not before the `for` window.
+      - eval_time: 1m
+        alertname: WebDown
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: WebDown
+        exp_alerts:
+          - exp_labels:
+              { severity: page, service: web, job: web, instance: "web:3000" }
+            exp_annotations:
+              summary: "Web process web:3000 is not answering scrapes"
+              description: "Prometheus cannot scrape /metrics on web:3000: the process is down, wedged or unreachable."
+              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md
+      # Redis being down degrades, it does not fail readiness: only the postgres series fires.
+      - eval_time: 3m
+        alertname: ReadinessFailing
+        exp_alerts:
+          - exp_labels:
+              {
+                severity: page,
+                service: web,
+                job: web,
+                instance: "web:3000",
+                dependency: postgres,
+              }
+            exp_annotations:
+              summary: "Web readiness fails: PostgreSQL unreachable from web:3000"
+              description: "The last /health/ready check on web:3000 could not reach PostgreSQL, so the instance reports not ready."
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md"
+      - eval_time: 3m
+        alertname: WorkerDown
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: WorkerDown
+        exp_alerts:
+          - exp_labels:
+              {
+                severity: page,
+                service: worker,
+                job: worker,
+                instance: "worker:3001",
+              }
+            exp_annotations:
+              summary: "Worker worker:3001 is not answering scrapes"
+              description: No jobs or outbox relaying happen while the worker is down; requests keep succeeding and the outbox grows.
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md"
+      - eval_time: 1m
+        alertname: Watchdog
+        exp_alerts:
+          - exp_labels: { severity: none, service: monitoring }
+            exp_annotations:
+              summary: Monitoring heartbeat (always firing)
+              description: "Routed to the dead-man's switch. If this stops arriving, Prometheus or Alertmanager is down."
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md"

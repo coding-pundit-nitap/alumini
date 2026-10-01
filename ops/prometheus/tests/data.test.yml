@@ -1,0 +1,112 @@
+rule_files:
+  - ../rules/data.yml
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'db_pool_connections{job="web",instance="web:3000",state="waiting"}'
+        values: "2x12"
+      - series: 'db_pool_connections{job="worker",instance="w",state="waiting"}'
+        values: "0x12"
+      - series: 'pg_up{job="postgres",instance="pg"}'
+        values: "0x12"
+      - series: 'pg_stat_database_numbackends{job="postgres",instance="pg",datname="alumini"}'
+        values: "90x12"
+      - series: 'pg_settings_max_connections{job="postgres",instance="pg"}'
+        values: "100x12"
+      - series: 'redis_up{job="redis-cache",instance="rc"}'
+        values: "0x12"
+      - series: 'redis_up{job="redis-queue",instance="rq"}'
+        values: "0x12"
+      - series: 'redis_memory_used_bytes{job="redis-queue",instance="rq"}'
+        values: "90x12"
+      - series: 'redis_memory_max_bytes{job="redis-queue",instance="rq"}'
+        values: "100x12"
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: DbPoolSaturated
+        exp_alerts:
+          - exp_labels: { severity: ticket, service: web, job: web }
+            exp_annotations:
+              summary: web requests are waiting for a database connection
+              description: 2 callers have been queued on the web pool for 5 minutes.
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md"
+      - eval_time: 3m
+        alertname: PostgresDown
+        exp_alerts:
+          - exp_labels:
+              { severity: page, service: postgres, job: postgres, instance: pg }
+            exp_annotations:
+              summary: PostgreSQL is unreachable from its exporter
+              description: postgres_exporter cannot connect to PostgreSQL.
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md"
+      - eval_time: 6m
+        alertname: PostgresConnectionsHigh
+        exp_alerts:
+          - exp_labels: { severity: ticket, service: postgres }
+            exp_annotations:
+              summary: "PostgreSQL connections above 85 % of max_connections"
+              description: "90% of max_connections are in use."
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md"
+      - eval_time: 3m
+        alertname: CacheRedisDown
+        exp_alerts:
+          - exp_labels:
+              {
+                severity: ticket,
+                service: redis-cache,
+                job: redis-cache,
+                instance: rc,
+              }
+            exp_annotations:
+              summary: Cache Redis is unreachable
+              description: Rate limiting falls back and real-time hints stop; nothing durable is lost (ADR-006).
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md"
+      - eval_time: 3m
+        alertname: QueueRedisDown
+        exp_alerts:
+          - exp_labels:
+              {
+                severity: page,
+                service: redis-queue,
+                job: redis-queue,
+                instance: rq,
+              }
+            exp_annotations:
+              summary: Queue Redis is unreachable
+              description: "No job can be queued or run; the outbox keeps the events, so nothing is lost while it is down."
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md"
+      - eval_time: 11m
+        alertname: QueueRedisMemoryHigh
+        exp_alerts:
+          - exp_labels:
+              {
+                severity: page,
+                service: redis-queue,
+                job: redis-queue,
+                instance: rq,
+              }
+            exp_annotations:
+              summary: "Queue Redis above 80 % of maxmemory"
+              description: "The queue Redis is noeviction: at 100 % every enqueue fails. Used 90%."
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md"
+
+  # Half the connections in use; a queue Redis with no maxmemory (0) never divides by zero into an alert.
+  - interval: 1m
+    input_series:
+      - series: 'pg_stat_database_numbackends{job="postgres",instance="pg",datname="alumini"}'
+        values: "50x12"
+      - series: 'pg_settings_max_connections{job="postgres",instance="pg"}'
+        values: "100x12"
+      - series: 'redis_memory_used_bytes{job="redis-queue",instance="rq"}'
+        values: "90x12"
+      - series: 'redis_memory_max_bytes{job="redis-queue",instance="rq"}'
+        values: "0x12"
+    alert_rule_test:
+      - eval_time: 11m
+        alertname: PostgresConnectionsHigh
+        exp_alerts: []
+      - eval_time: 11m
+        alertname: QueueRedisMemoryHigh
+        exp_alerts: []

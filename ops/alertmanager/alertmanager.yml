@@ -1,0 +1,50 @@
+# Routing (reliability §5.5, spec 13C C-5). Receiver URLs are read from files so no secret lives in Git:
+# mount the real ones at /etc/alertmanager/secrets at deploy time; secrets.example/ holds local placeholders.
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: ticket
+  group_by: [alertname, service]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 24h
+  routes:
+    # Always firing; the external dead-man's switch pages when these heartbeats STOP (reliability §5.1).
+    - matchers: [alertname="Watchdog"]
+      receiver: deadmans-switch
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 1m
+    - matchers: [severity="page"]
+      receiver: pager
+      repeat_interval: 1h
+    - matchers: [severity="ticket"]
+      receiver: ticket
+      repeat_interval: 24h
+
+# An instance that is down or not ready explains its own errors and latency: one page, not three (§5.4.5).
+inhibit_rules:
+  - source_matchers: [alertname=~"WebDown|ReadinessFailing"]
+    target_matchers:
+      [alertname=~"HighErrorRate|HighLatencyP95|HighLatencyP95Sustained"]
+    equal: [service]
+  - source_matchers: [alertname="QueueRedisDown"]
+    target_matchers: [alertname=~"QueueBacklogGrowing|OutboxStuck"]
+  - source_matchers: [alertname="PostgresDown"]
+    target_matchers:
+      [alertname=~"ReadinessFailing|DbPoolSaturated|PostgresConnectionsHigh"]
+
+receivers:
+  - name: pager
+    webhook_configs:
+      - url_file: /etc/alertmanager/secrets/pager_url
+        send_resolved: true
+  - name: ticket
+    webhook_configs:
+      - url_file: /etc/alertmanager/secrets/ticket_url
+        send_resolved: true
+  - name: deadmans-switch
+    webhook_configs:
+      - url_file: /etc/alertmanager/secrets/deadmans_switch_url
+        send_resolved: false

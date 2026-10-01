@@ -72,6 +72,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
+  # Alert rules fire on injected conditions, Alertmanager config is valid, every alert links a runbook
+  # (spec 13C C-8). Needs only Node and Docker; it reproduces `pnpm ops:check`.
+  observability:
+    name: Monitoring as code (promtool, amtool, runbooks)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/check-ops.mjs
+
   dependency-audit:
     name: Dependency audit (high and critical)
     runs-on: ubuntu-24.04

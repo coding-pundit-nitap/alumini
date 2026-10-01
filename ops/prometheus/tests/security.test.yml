@@ -1,0 +1,44 @@
+rule_files:
+  - ../rules/security.yml
+evaluation_interval: 1m
+
+tests:
+  # 5 denials a minute on an admin-tier permission; the same rate on a member permission is ignored.
+  - interval: 1m
+    input_series:
+      - series: 'authz_decisions_total{job="web",instance="web:3000",permission="role.assign",outcome="denied"}'
+        values: "0+5x30"
+      - series: 'authz_denied_audit_failed_total{job="web",instance="web:3000"}'
+        values: "0 0 1 1 1"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: AdminPermissionDenialSpike
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: AdminPermissionDenialSpike
+        exp_alerts:
+          - exp_labels: { severity: ticket, service: web }
+            exp_annotations:
+              summary: Spike in denied admin-tier permission checks
+              description: 50 admin-tier permission checks were denied in 10 minutes. Review who is probing.
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md"
+      - eval_time: 3m
+        alertname: AuthzDenialAuditFailing
+        exp_alerts:
+          - exp_labels:
+              { severity: ticket, service: web, job: web, instance: "web:3000" }
+            exp_annotations:
+              summary: Denied admin actions are not being audited
+              description: 1 audit writes for denied permission checks failed in 10 minutes.
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md"
+
+  - interval: 1m
+    input_series:
+      - series: 'authz_decisions_total{job="web",instance="web:3000",permission="post.create",outcome="denied"}'
+        values: "0+5x30"
+      - series: 'authz_decisions_total{job="web",instance="web:3000",permission="role.assign",outcome="allowed"}'
+        values: "0+5x30"
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: AdminPermissionDenialSpike
+        exp_alerts: []

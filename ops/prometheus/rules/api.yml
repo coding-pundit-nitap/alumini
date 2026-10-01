@@ -1,0 +1,39 @@
+# HTTP RED for /api routes (13A A-8). Ratio rules need >= 50 requests in the window (reliability §5.4.4).
+groups:
+  - name: api
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="web",status_class="5xx"}[5m]))
+              / sum(rate(http_requests_total{job="web"}[5m]))
+          ) > 0.02
+          and sum(increase(http_requests_total{job="web"}[5m])) >= 50
+        for: 5m
+        labels: { severity: page, service: web }
+        annotations:
+          summary: "More than 2 % of API requests fail with 5xx"
+          description: "{{ $value | humanizePercentage }} of API requests returned 5xx over the last 5 minutes."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-2.md
+
+      - alert: HighLatencyP95
+        expr: &p95 |
+          histogram_quantile(0.95,
+            sum by (le) (rate(http_request_duration_seconds_bucket{job="web",route=~"/api/.*"}[5m]))
+          ) > 0.5
+          and sum(increase(http_request_duration_seconds_count{job="web",route=~"/api/.*"}[5m])) >= 50
+        for: 10m
+        labels: { severity: ticket, service: web }
+        annotations:
+          summary: "API p95 latency above 500 ms (SRS §47)"
+          description: "p95 over the last 5 minutes is {{ $value | humanizeDuration }}."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-2.md
+
+      - alert: HighLatencyP95Sustained
+        expr: *p95
+        for: 30m
+        labels: { severity: page, service: web }
+        annotations:
+          summary: "API p95 latency above 500 ms for 30 minutes"
+          description: "p95 over the last 5 minutes is {{ $value | humanizeDuration }}; the ticket-level alert has not cleared."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-2.md

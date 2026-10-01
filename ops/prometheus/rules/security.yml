@@ -1,0 +1,21 @@
+# Auth & security (reliability §5.6, R-9). The login-failure spike waits for a login-failure counter (spec 13C C-7).
+groups:
+  - name: security
+    rules:
+      - alert: AdminPermissionDenialSpike
+        expr: |
+          sum(increase(authz_decisions_total{job="web",outcome="denied",permission=~"user\\.(read_admin|suspend|reactivate)|role\\.assign|permission\\.grant|audit\\.read|system\\.configure|notification\\.replay|analytics\\.view|donation\\.view_all|campaign\\.manage|message\\.read_reported"}[10m])) > 20
+        for: 10m
+        labels: { severity: ticket, service: web }
+        annotations:
+          summary: "Spike in denied admin-tier permission checks"
+          description: "{{ $value | humanize }} admin-tier permission checks were denied in 10 minutes. Review who is probing."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md
+
+      - alert: AuthzDenialAuditFailing
+        expr: increase(authz_denied_audit_failed_total{job="web"}[10m]) > 0
+        labels: { severity: ticket, service: web }
+        annotations:
+          summary: "Denied admin actions are not being audited"
+          description: "{{ $value | humanize }} audit writes for denied permission checks failed in 10 minutes."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md

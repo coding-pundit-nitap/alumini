@@ -1,0 +1,61 @@
+# Database and Redis. Pool gauges come from the app (13A A-10); the rest from the exporters in the local stack.
+groups:
+  - name: data
+    rules:
+      - alert: DbPoolSaturated
+        expr: max by (job) (db_pool_connections{state="waiting"}) > 0
+        for: 5m
+        labels: { severity: ticket, service: "{{ $labels.job }}" }
+        annotations:
+          summary: "{{ $labels.job }} requests are waiting for a database connection"
+          description: "{{ $value }} callers have been queued on the {{ $labels.job }} pool for 5 minutes."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md
+
+      - alert: PostgresDown
+        expr: pg_up{job="postgres"} == 0
+        for: 2m
+        labels: { severity: page, service: postgres }
+        annotations:
+          summary: "PostgreSQL is unreachable from its exporter"
+          description: "postgres_exporter cannot connect to PostgreSQL."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md
+
+      - alert: PostgresConnectionsHigh
+        expr: |
+          sum(pg_stat_database_numbackends{job="postgres"})
+            / max(pg_settings_max_connections{job="postgres"}) > 0.85
+        for: 5m
+        labels: { severity: ticket, service: postgres }
+        annotations:
+          summary: "PostgreSQL connections above 85 % of max_connections"
+          description: "{{ $value | humanizePercentage }} of max_connections are in use."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md
+
+      - alert: CacheRedisDown
+        expr: redis_up{job="redis-cache"} == 0
+        for: 2m
+        labels: { severity: ticket, service: redis-cache }
+        annotations:
+          summary: "Cache Redis is unreachable"
+          description: "Rate limiting falls back and real-time hints stop; nothing durable is lost (ADR-006)."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md
+
+      - alert: QueueRedisDown
+        expr: redis_up{job="redis-queue"} == 0
+        for: 2m
+        labels: { severity: page, service: redis-queue }
+        annotations:
+          summary: "Queue Redis is unreachable"
+          description: "No job can be queued or run; the outbox keeps the events, so nothing is lost while it is down."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md
+
+      - alert: QueueRedisMemoryHigh
+        expr: |
+          redis_memory_used_bytes{job="redis-queue"}
+            / (redis_memory_max_bytes{job="redis-queue"} > 0) > 0.8
+        for: 10m
+        labels: { severity: page, service: redis-queue }
+        annotations:
+          summary: "Queue Redis above 80 % of maxmemory"
+          description: "The queue Redis is noeviction: at 100 % every enqueue fails. Used {{ $value | humanizePercentage }}."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md

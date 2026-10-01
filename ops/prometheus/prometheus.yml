@@ -1,0 +1,35 @@
+# Local scrape config for docker/docker-compose.observability.yml (spec 13C). Production placement waits for
+# hosting (O-2); there, web and worker need `authorization: { credentials_file: ... }` with HEALTH_CHECK_TOKEN,
+# because /metrics answers 404 in production without it (ADR-028 OD-2).
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+  # The app processes run on the host (`pnpm dev`, `pnpm --filter @nitap/worker dev`).
+  - job_name: web
+    static_configs:
+      - targets: ["host.docker.internal:3000"]
+  - job_name: worker
+    static_configs:
+      - targets: ["host.docker.internal:3001"]
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+  - job_name: redis-cache
+    static_configs:
+      - targets: ["redis-exporter-cache:9121"]
+  - job_name: redis-queue
+    static_configs:
+      - targets: ["redis-exporter-queue:9121"]
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
