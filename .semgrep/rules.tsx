@@ -1,3 +1,5 @@
+// @ts-nocheck — deliberately bad code, never compiled: no tsconfig includes it, so the editor's loose check
+// has neither the workspace aliases nor the Node/React types. Semgrep only needs it to parse.
 // Fixtures for `semgrep --test .semgrep` (spec 16 16E): each rule must flag the `ruleid:` lines and only those.
 "use client";
 
@@ -12,9 +14,17 @@ import { PERMISSIONS } from "@nitap/database/permissions";
 // ruleid: nitap-child-process-in-web
 import { exec } from "node:child_process";
 
-export function Bad({ input, html }: { input: { column: string }; html: string }) {
+export function Bad({
+  input,
+  html,
+}: {
+  input: { column: string };
+  html: string;
+}) {
   // ruleid: nitap-unsafe-raw-query
-  void prisma.$queryRawUnsafe(`SELECT * FROM "user" WHERE name = '${input.column}'`);
+  void prisma.$queryRawUnsafe(
+    `SELECT * FROM "user" WHERE name = '${input.column}'`
+  );
   // ruleid: nitap-raw-sql-from-input
   void Prisma.sql`SELECT ${Prisma.raw(input.column)} FROM profile`;
   // ok: nitap-raw-sql-from-input
@@ -24,7 +34,7 @@ export function Bad({ input, html }: { input: { column: string }; html: string }
   // ruleid: nitap-eval
   void new Function(html);
   // ok: nitap-eval
-  void ({ eval: () => 1 }).eval();
+  void { eval: () => 1 }.eval();
   void env;
   void PERMISSIONS;
   void exec;
