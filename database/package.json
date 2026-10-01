@@ -9,6 +9,7 @@
     "./audit": "./audit/index.ts",
     "./uploads": "./uploads/index.ts",
     "./jobs": "./jobs/index.ts",
+    "./donations": "./donations/index.ts",
     "./idempotency": "./idempotency/index.ts",
     "./notifications": "./notifications/index.ts",
     "./permissions": "./prisma/seed-data/permissions.ts",

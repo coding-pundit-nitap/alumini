@@ -80,6 +80,10 @@ model User {
 
   retentionSettingsUpdated RetentionSetting[]
 
+  campaignsCreated  DonationCampaign[] @relation("CampaignCreator")
+  donations         Donation[]         @relation("DonationDonor")
+  donationsDecided  Donation[]         @relation("DonationDecider")
+
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
   @@unique([email])
@@ -985,4 +989,63 @@ model RetentionSetting {
   updater       User?    @relation(fields: [updatedBy], references: [id], onDelete: SetNull)
 
   @@map("retention_setting")
+}
+
+/// Phase 12H (XD-6): offline fundraising. The app records pledges; money moves outside it.
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum DonationStatus {
+  PLEDGED
+  CONFIRMED
+  NOT_RECEIVED
+  CANCELLED
+}
+
+model DonationCampaign {
+  id                  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdBy           String         @map("created_by") @db.Uuid
+  creator             User           @relation("CampaignCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  title               String
+  description         String
+  purpose             String
+  paymentInstructions String         @map("payment_instructions")
+  /// Integer paise (XD-7); null = no goal.
+  goalPaise           BigInt?        @map("goal_paise")
+  startsOn            DateTime       @map("starts_on") @db.Date
+  endsOn              DateTime       @map("ends_on") @db.Date
+  status              CampaignStatus @default(DRAFT)
+  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  donations           Donation[]
+
+  @@index([status, endsOn], map: "ix_campaign_status")
+  @@map("donation_campaign")
+}
+
+model Donation {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  campaignId       String           @map("campaign_id") @db.Uuid
+  campaign         DonationCampaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  donorId          String           @map("donor_id") @db.Uuid
+  donor            User             @relation("DonationDonor", fields: [donorId], references: [id], onDelete: Restrict)
+  amountPaise      BigInt           @map("amount_paise")
+  /// UTR / cheque number, upper-cased. Unique per campaign: one bank reference settles one pledge (FR-DON-004).
+  paymentReference String?          @map("payment_reference")
+  status           DonationStatus   @default(PLEDGED)
+  decidedBy        String?          @map("decided_by") @db.Uuid
+  decider          User?            @relation("DonationDecider", fields: [decidedBy], references: [id], onDelete: Restrict)
+  decidedAt        DateTime?        @map("decided_at") @db.Timestamptz(3)
+  note             String?
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([campaignId, paymentReference], map: "uq_donation_reference")
+  @@index([status, createdAt], map: "ix_donation_status")
+  @@index([donorId, createdAt], map: "ix_donation_donor")
+  @@index([campaignId, status], map: "ix_donation_campaign")
+  @@map("donation")
 }
