@@ -212,6 +212,13 @@ export type WorkerRuntimeOptions = {
   queueOverrides?: Partial<Record<QueueName, QueueOverride>>;
   /** Default 60 s. */
   unknownVersionDelayMs?: number;
+  /**
+   * How long a job's lock lives without renewal, and how often stalled jobs are looked for. A worker that
+   * dies mid-job stops renewing, so its job returns to the queue within about these two. BullMQ's 30 s
+   * defaults are kept in production; tests shorten them (spec 14 RD-5).
+   */
+  lockDurationMs?: number;
+  stalledIntervalMs?: number;
 };
 
 export type WorkerRuntime = {
@@ -263,6 +270,14 @@ export function createWorkerRuntime(
             connection: connection as Redis,
             prefix: options.prefix,
             concurrency: override?.concurrency ?? QUEUES[name].concurrency,
+            // Spread only when set: BullMQ merges with Object.assign, so an explicit undefined would replace
+            // its 30 s defaults and fail its own validation.
+            ...(options.lockDurationMs !== undefined && {
+              lockDuration: options.lockDurationMs,
+            }),
+            ...(options.stalledIntervalMs !== undefined && {
+              stalledInterval: options.stalledIntervalMs,
+            }),
             limiter: override?.rateLimit
               ? {
                   max: override.rateLimit.max,
