@@ -40,6 +40,7 @@
     "S3_FORCE_PATH_STYLE",
     "S3_PUBLIC_PATH",
     "PERF_DATABASE_URL",
+    "DATABASE_POOL_MAX",
     "PERF_PASSWORD"
   ],
   "tasks": {

@@ -22,7 +22,7 @@ function createPool() {
   // the pool again per instance before running more than one (system-architecture §10).
   return new Pool({
     connectionString: env.DATABASE_URL,
-    max: 10,
+    max: env.DATABASE_POOL_MAX,
     connectionTimeoutMillis: 2_000, // pool acquire
     idleTimeoutMillis: 30_000,
     statement_timeout: 5_000, // PostgreSQL statement (API)

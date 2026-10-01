@@ -7,6 +7,9 @@ const serverEnvSchema = z.object({
   // Optional at validation time so builds and tests that never touch the database still work;
   // src/infrastructure/database/client.ts throws if it is missing when a client is actually created.
   DATABASE_URL: z.string().min(1).optional(),
+  // Connections per web instance (TDS §18.1, §25.1: an explicit cap per instance). Sized from the Phase 15
+  // measurements; instances × this must stay under PostgreSQL's max_connections with the worker's share.
+  DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).default(10),
   // Better Auth reads BETTER_AUTH_SECRET itself and refuses to run in production without it.
   // Optional here so builds and tests that never touch auth still work.
   BETTER_AUTH_SECRET: z.string().min(32).optional(),
