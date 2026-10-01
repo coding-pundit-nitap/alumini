@@ -23,6 +23,7 @@
     "vitest": "^5.0.1"
   },
   "dependencies": {
-    "@prometheus-io/client": "^0.16.1"
+    "@prometheus-io/client": "^0.16.1",
+    "@sentry/node": "^11.2.0"
   }
 }

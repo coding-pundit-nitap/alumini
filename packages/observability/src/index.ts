@@ -21,3 +21,11 @@ export {
   isValidRequestId,
   resolveRequestId,
 } from "./request-id.ts";
+export {
+  captureError,
+  closeErrorTracker,
+  flushErrorTracker,
+  initErrorTracker,
+  scrubEvent,
+} from "./error-tracker.ts";
+export type { CaptureContext, ErrorTrackerOptions } from "./error-tracker.ts";
