@@ -136,6 +136,26 @@ describe("upload.scan processor", () => {
     expect(store.rejected).toEqual([{ id: "up1", reason: "flagged" }]);
   });
 
+  it("propagates a scanner outage so the job retries; the row stays PENDING_SCAN (fails closed, spec 16 SD-8)", async () => {
+    const storage = createFakeStoragePort();
+    await storage.put(row.objectKey, await tinyPng(), "image/png");
+    const store = fakeStore(row);
+    const scanner: ScannerPort = {
+      async scan() {
+        throw new Error("clamd unreachable: ECONNREFUSED");
+      },
+    };
+    await expect(
+      createUploadScanProcessor({ store, storage, scanner })(
+        { v: 1, uploadId: "up1" },
+        context()
+      )
+    ).rejects.toThrow(/clamd/);
+    expect(store.ready).toEqual([]);
+    expect(store.rejected).toEqual([]);
+    expect(await storage.get(row.objectKey)).toBeDefined();
+  });
+
   it("is a no-op (idempotent) when the row is already READY or REJECTED", async () => {
     const storage = createFakeStoragePort();
     for (const status of ["READY", "REJECTED"] as const) {
@@ -178,5 +198,88 @@ describe("upload.scan processor", () => {
     ).rejects.toBeInstanceOf(StorageError);
     expect(store.ready).toEqual([]);
     expect(store.rejected).toEqual([]);
+  });
+});
+
+// File-upload attacks (strategy §10.1 "File upload", spec 16 16D). The declared type is checked at presign
+// and pinned in the storage policy; these prove what the worker does with bytes that lie about themselves.
+describe("upload.scan against hostile files (spec 16 16D)", () => {
+  async function scanBytes(bytes: Buffer) {
+    const storage = createFakeStoragePort();
+    await storage.put(row.objectKey, bytes, "image/png");
+    const store = fakeStore(row);
+    await createUploadScanProcessor({
+      store,
+      storage,
+      scanner: passthroughScanner,
+    })({ v: 1, uploadId: "up1" }, context());
+    const derivative =
+      store.ready.length > 0 ? await storage.get(avatarKey("u1", "up1")) : null;
+    return { store, derivative };
+  }
+
+  it.each([
+    [
+      "an SVG carrying a script",
+      '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><script>alert(1)</script><rect width="8" height="8"/></svg>',
+    ],
+    ["an HTML page", "<!doctype html><script>alert(1)</script>"],
+    ["a PDF header", "%PDF-1.7\n1 0 obj<<>>endobj"],
+  ])(
+    "rejects %s declared as image/png (type spoofing)",
+    async (_name, text) => {
+      const { store } = await scanBytes(Buffer.from(text));
+      expect(store.rejected).toHaveLength(1);
+      expect(store.ready).toEqual([]);
+    }
+  );
+
+  it("a valid image with HTML and a ZIP appended (a polyglot) comes out re-encoded, trailer gone", async () => {
+    const trailer = Buffer.concat([
+      Buffer.from("<script>alert(document.cookie)</script>"),
+      Buffer.from("PK\x03\x04payload.txt"),
+    ]);
+    const { store, derivative } = await scanBytes(
+      Buffer.concat([await tinyPng(), trailer])
+    );
+    expect(store.ready).toHaveLength(1);
+    expect(derivative!.includes("<script")).toBe(false);
+    expect(derivative!.includes("PK\x03\x04")).toBe(false);
+    expect((await sharp(derivative!).metadata()).format).toBe("webp");
+  });
+
+  it("strips EXIF, GPS included, from the derivative", async () => {
+    const withGps = await sharp({
+      create: { width: 16, height: 16, channels: 3, background: "blue" },
+    })
+      .jpeg()
+      .withExif({
+        IFD0: { Make: "PhoneCo", Model: "Leaky 1" },
+        IFD3: {
+          GPSLatitudeRef: "N",
+          GPSLatitude: "27/1 5/1 0/1",
+          GPSLongitudeRef: "E",
+          GPSLongitude: "93/1 36/1 0/1",
+        },
+      })
+      .toBuffer();
+    expect((await sharp(withGps).metadata()).exif).toBeDefined();
+
+    const { derivative } = await scanBytes(withGps);
+    const meta = await sharp(derivative!).metadata();
+    expect(meta.exif).toBeUndefined();
+    expect(derivative!.includes("Leaky")).toBe(false);
+  });
+
+  it("refuses a decompression bomb by its declared dimensions, before decoding it", async () => {
+    // A tiny file that claims to be 20 000 px wide.
+    const bomb = await sharp({
+      create: { width: 20_000, height: 1, channels: 3, background: "black" },
+    })
+      .png({ compressionLevel: 9 })
+      .toBuffer();
+    expect(bomb.length).toBeLessThan(50_000);
+    const { store } = await scanBytes(bomb);
+    expect(store.rejected).toHaveLength(1);
   });
 });

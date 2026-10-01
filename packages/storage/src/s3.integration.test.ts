@@ -94,4 +94,38 @@ describe("S3 storage adapter against real MinIO", () => {
     expect(response.status).toBeGreaterThanOrEqual(400);
     await expect(storage.head(key)).rejects.toBeInstanceOf(StorageError);
   });
+
+  // Storage isolation (NFR-SEC-007, spec 16 16D). The web app proxies /storage/* to the store on its own
+  // origin, so an object readable without a signature would be content served from this origin.
+  it("an object cannot be read, listed or overwritten without a signature", async () => {
+    const key = trackedKey();
+    await storage.put(
+      key,
+      Buffer.from("<script>alert(1)</script>"),
+      "text/html"
+    );
+    const base = `${env.endpoint.replace(/\/$/, "")}/${env.bucket}`;
+
+    expect((await fetch(`${base}/${key}`)).status).toBe(403);
+    expect((await fetch(`${base}?list-type=2`)).status).toBe(403);
+    expect(
+      (await fetch(`${base}/${key}`, { method: "PUT", body: "replaced" }))
+        .status
+    ).toBe(403);
+    expect((await storage.get(key)).toString()).toBe(
+      "<script>alert(1)</script>"
+    );
+  });
+
+  it("a presigned URL stops working once it has been tampered with", async () => {
+    const key = trackedKey();
+    await storage.put(key, Buffer.from("secret"), "text/plain");
+    const url = new URL(
+      await storage.presignDownload({ key, expiresInSeconds: 60 })
+    );
+    const other = trackedKey();
+    await storage.put(other, Buffer.from("other"), "text/plain");
+    url.pathname = url.pathname.replace(key, other);
+    expect((await fetch(url)).status).toBe(403);
+  });
 });
