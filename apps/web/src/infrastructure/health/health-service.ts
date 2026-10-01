@@ -8,7 +8,8 @@ import { getMetrics } from "@nitap/observability";
  *   fails readiness, otherwise a Redis blip would pull every instance out of rotation (rule 1).
  * - Results are cached for ~2 s and concurrent probes share one check, so a probe storm cannot exhaust
  *   the connection pool (rule 2).
- * - `startDraining()` flips readiness to unavailable first on shutdown so no new traffic arrives (rule 4).
+ * - `startDraining()` flips readiness to unavailable first on shutdown so no new traffic arrives (rule 4), and
+ *   tells `onDrain` listeners (open message streams), which would otherwise hold the shutdown open (spec 14 F-4).
  * Failure detail (error text, hosts) never leaves this module: callers only see ok/down/degraded.
  */
 export type ReadinessResult = {
@@ -49,6 +50,7 @@ export function createHealthService(options: HealthServiceOptions) {
   const cacheMs = options.cacheMs ?? 2_000;
   const now = options.now ?? Date.now;
   let draining = false;
+  const drainListeners = new Set<() => void>();
 
   // Caches the promise itself, so concurrent callers share the in-flight check.
   function cached(check: () => Promise<void>) {
@@ -97,8 +99,34 @@ export function createHealthService(options: HealthServiceOptions) {
       };
     },
 
+    /** Idempotent: listeners run once, on the first call. */
     startDraining() {
+      if (draining) return;
       draining = true;
+      for (const listener of drainListeners) {
+        try {
+          listener();
+        } catch {
+          // one listener's failure must not stop the others closing
+        }
+      }
+      drainListeners.clear();
+    },
+
+    isDraining() {
+      return draining;
+    },
+
+    /** Runs `listener` when draining starts (at once if it already has); returns an unsubscribe. */
+    onDrain(listener: () => void): () => void {
+      if (draining) {
+        listener();
+        return () => {};
+      }
+      drainListeners.add(listener);
+      return () => {
+        drainListeners.delete(listener);
+      };
     },
   };
 }

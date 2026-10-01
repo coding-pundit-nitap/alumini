@@ -2,15 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const ready = vi.fn();
 const detailsVisible = vi.fn();
+const startDraining = vi.fn();
 
 vi.mock("@/infrastructure/health", () => ({
   health: {
     live: () => ({ status: "ok" }),
     ready: () => ready(),
+    isDraining: () => false,
+    startDraining: () => startDraining(),
   },
   healthDetailsVisible: () => detailsVisible(),
 }));
 
+import { POST as drain } from "./drain/route";
 import { GET as live } from "./live/route";
 import { GET as readyRoute } from "./ready/route";
 import { GET as startup } from "./startup/route";
@@ -25,6 +29,28 @@ const okResult = {
 beforeEach(() => {
   ready.mockReset();
   detailsVisible.mockReset();
+  startDraining.mockReset();
+});
+
+describe("POST /health/drain (spec 14 RD-4)", () => {
+  it("starts draining for a privileged caller and answers 202", async () => {
+    detailsVisible.mockReturnValue(true);
+    const response = await drain(
+      new Request("http://localhost/health/drain", { method: "POST" })
+    );
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({ status: "draining" });
+    expect(startDraining).toHaveBeenCalledTimes(1);
+  });
+
+  it("is a plain 404 to anyone else, and drains nothing", async () => {
+    detailsVisible.mockReturnValue(false);
+    const response = await drain(
+      new Request("http://localhost/health/drain", { method: "POST" })
+    );
+    expect(response.status).toBe(404);
+    expect(startDraining).not.toHaveBeenCalled();
+  });
 });
 
 describe("GET /health/live", () => {

@@ -4,6 +4,7 @@ import {
   realtimeAvailable,
   subscribeToUser,
 } from "@/infrastructure/realtime/message-hub";
+import { health } from "@/infrastructure/health";
 import { routeHandler } from "@/infrastructure/http/route-handler";
 import { authorize, can, getActor } from "@/modules/auth";
 
@@ -31,7 +32,9 @@ export const GET = routeHandler(async (request) => {
       : PERMISSIONS.NOTIFICATION_READ
   );
   const canReceiveNotifications = can(caller, PERMISSIONS.NOTIFICATION_READ);
-  if (!realtimeAvailable()) return new Response(null, { status: 503 });
+  // A draining instance takes no new streams: the client falls back to polling and reconnects to the live one.
+  if (!realtimeAvailable() || health.isDraining())
+    return new Response(null, { status: 503 });
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -55,19 +58,21 @@ export const GET = routeHandler(async (request) => {
           : undefined
       );
       const heartbeat = setInterval(() => write(": ping\n\n"), HEARTBEAT_MS);
-      request.signal.addEventListener(
-        "abort",
-        () => {
-          clearInterval(heartbeat);
-          unsubscribe();
-          try {
-            controller.close();
-          } catch {
-            // already closed
-          }
-        },
-        { once: true }
-      );
+      let stopDrainWatch = () => {};
+      const end = () => {
+        clearInterval(heartbeat);
+        unsubscribe();
+        stopDrainWatch();
+        try {
+          controller.close();
+        } catch {
+          // already closed
+        }
+      };
+      request.signal.addEventListener("abort", end, { once: true });
+      // An open stream never ends by itself, so it would hold a draining instance's shutdown open until the
+      // grace period kills it (spec 14 F-4). Ending it makes the browser reconnect (retry: 5000) elsewhere.
+      stopDrainWatch = health.onDrain(end);
     },
   });
 

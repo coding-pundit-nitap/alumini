@@ -14,6 +14,20 @@ vi.mock("@/modules/auth", () => ({
   authorize: mocks.authorize,
 }));
 vi.mock("@/infrastructure/realtime/message-hub", () => mocks);
+// A real health service, so draining behaves exactly as in production (spec 14 F-4).
+const drain = vi.hoisted(() => ({
+  current: null as null | { startDraining(): void },
+}));
+vi.mock("@/infrastructure/health", async () => {
+  const { createHealthService } =
+    await import("@/infrastructure/health/health-service");
+  const health = createHealthService({
+    checkPostgres: async () => {},
+    checkRedis: async () => {},
+  });
+  drain.current = health;
+  return { health };
+});
 
 import { AuthenticationError, AuthorizationError } from "@/lib/errors";
 
@@ -195,5 +209,30 @@ describe("GET /api/v1/messages/stream", () => {
     expect(chunk).toBe(
       'event: message\ndata: {"conversationId":"c1","messageId":"m1"}\n\n'
     );
+  });
+});
+
+describe("GET /api/v1/messages/stream while the instance drains (spec 14 F-4)", () => {
+  it("ends an open stream when draining starts and unsubscribes, then refuses new streams with 503", async () => {
+    const unsubscribe = vi.fn();
+    mocks.subscribeToUser.mockReturnValue(unsubscribe);
+    const response = await GET(
+      new Request("https://x.test/api/v1/messages/stream")
+    );
+    expect(response.status).toBe(200);
+    const reader = response.body!.getReader();
+    await reader.read(); // the "connected" preamble
+
+    drain.current!.startDraining();
+
+    await expect(reader.read()).resolves.toMatchObject({ done: true });
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+
+    mocks.subscribeToUser.mockClear();
+    const refused = await GET(
+      new Request("https://x.test/api/v1/messages/stream")
+    );
+    expect(refused.status).toBe(503);
+    expect(mocks.subscribeToUser).not.toHaveBeenCalled();
   });
 });

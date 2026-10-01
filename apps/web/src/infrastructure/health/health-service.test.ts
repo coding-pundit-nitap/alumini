@@ -132,6 +132,25 @@ describe("health: ready", () => {
     });
   });
 
+  it("tells drain listeners once, immediately for late subscribers, and not after they unsubscribe (spec 14 F-4)", () => {
+    const service = createHealthService({ checkPostgres: up, checkRedis: up });
+    const early = vi.fn();
+    const gone = vi.fn();
+    service.onDrain(early);
+    service.onDrain(gone)();
+    expect(service.isDraining()).toBe(false);
+
+    service.startDraining();
+    service.startDraining();
+    expect(early).toHaveBeenCalledTimes(1);
+    expect(gone).not.toHaveBeenCalled();
+    expect(service.isDraining()).toBe(true);
+
+    const late = vi.fn();
+    service.onDrain(late);
+    expect(late).toHaveBeenCalledTimes(1);
+  });
+
   it("never returns error text from a failed dependency", async () => {
     const service = createHealthService({
       checkPostgres: down,
