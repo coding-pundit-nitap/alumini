@@ -6,7 +6,7 @@ import { loadCliEnv } from "./env.ts";
 import { createPrismaClient } from "./prisma.ts";
 
 const env = loadCliEnv(process.env);
-const prisma = createPrismaClient(env.DATABASE_URL);
+const { prisma } = createPrismaClient(env.DATABASE_URL);
 const admin = createQueueAdmin({ url: env.QUEUE_REDIS_URL });
 
 async function main(): Promise<number> {

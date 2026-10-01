@@ -309,6 +309,9 @@ importers:
       ioredis:
         specifier: 6.0.0
         version: 6.0.0(supports-color@7.2.0)
+      pg:
+        specifier: ^8.23.0
+        version: 8.23.0
       sharp:
         specifier: ^0.35.0
         version: 0.35.4(@types/node@26.6.2)
@@ -328,6 +331,9 @@ importers:
       '@types/node':
         specifier: ^26.6.2
         version: 26.6.2
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
       eslint:
         specifier: ^10.11.0
         version: 10.11.0(jiti@2.7.0)(supports-color@7.2.0)

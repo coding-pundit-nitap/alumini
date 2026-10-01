@@ -18,6 +18,8 @@ const workerSchema = z.object({
   WORKER_HEALTH_PORT: z.coerce.number().int().min(0).max(65535).default(3001),
   LOG_LEVEL: logLevel.optional(),
   APP_VERSION: z.string().min(1).optional(),
+  // Gates /metrics in production (spec 13A OD-2); same token as the web health details.
+  HEALTH_CHECK_TOKEN: z.string().min(16).optional(),
 });
 
 const cliSchema = workerSchema.pick({

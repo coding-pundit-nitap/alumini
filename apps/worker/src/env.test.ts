@@ -42,6 +42,16 @@ describe("loadEnv", () => {
     expect(error.message).not.toContain("secret");
   });
 
+  it("rejects a monitoring token shorter than 16 characters", () => {
+    expect(() => loadEnv({ ...valid, HEALTH_CHECK_TOKEN: "short" })).toThrow(
+      /HEALTH_CHECK_TOKEN/
+    );
+    expect(
+      loadEnv({ ...valid, HEALTH_CHECK_TOKEN: "a".repeat(16) })
+        .HEALTH_CHECK_TOKEN
+    ).toBe("a".repeat(16));
+  });
+
   it("the CLI needs only the database and the queue Redis", () => {
     expect(
       loadCliEnv({

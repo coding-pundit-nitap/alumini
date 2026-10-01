@@ -11,7 +11,7 @@ if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 const mailpit = `http://localhost:${process.env.MAILPIT_UI_PORT ?? 8025}`;
 
 const to = `smoke-${Date.now()}@example.test`;
-const prisma = createPrismaClient(databaseUrl);
+const { prisma } = createPrismaClient(databaseUrl);
 try {
   await prisma.$transaction((tx) =>
     createOutboxWriter().add(tx, {

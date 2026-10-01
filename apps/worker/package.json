@@ -23,6 +23,7 @@
     "@nitap/storage": "workspace:*",
     "@prisma/adapter-pg": "7.10.0",
     "ioredis": "6.0.0",
+    "pg": "^8.23.0",
     "sharp": "^0.35.0",
     "zod": "^4.6.5"
   },
@@ -31,6 +32,7 @@
     "@nitap/testing": "workspace:*",
     "@nitap/typescript-config": "workspace:*",
     "@types/node": "^26.6.2",
+    "@types/pg": "^8.23.1",
     "eslint": "^10.11.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"

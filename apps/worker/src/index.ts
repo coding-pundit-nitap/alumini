@@ -1,10 +1,18 @@
-import { createLogger, getMetrics } from "@nitap/observability";
+import {
+  canSeeHealthDetails,
+  createLogger,
+  createPrometheusMetrics,
+  recordPoolStats,
+  setMetrics,
+} from "@nitap/observability";
+import { createQueueAdmin } from "@nitap/queue";
 import { createS3StoragePort, loadStorageEnv } from "@nitap/storage";
 
 import { composeWorker } from "./compose.ts";
 import { loadEnv } from "./env.ts";
 import { startHealthServer } from "./health.ts";
 import { createPrismaClient } from "./prisma.ts";
+import { registerQueueDepthCollector } from "./queue-depth.ts";
 
 const env = loadEnv(process.env);
 const storage = createS3StoragePort(loadStorageEnv(process.env));
@@ -16,12 +24,19 @@ const logger = createLogger({
   format: env.NODE_ENV === "development" ? "pretty" : "json",
 });
 
-// Metrics stay the no-op adapter until Phase 13 installs an exporter (decision D10).
-const prisma = createPrismaClient(env.DATABASE_URL);
+// Installed before anything records a metric (spec 13A A-7).
+const metrics = createPrometheusMetrics({
+  service: "worker",
+  version: env.APP_VERSION ?? "dev",
+});
+setMetrics(metrics);
+const { prisma, pool } = createPrismaClient(env.DATABASE_URL);
+const queueAdmin = createQueueAdmin({ url: env.QUEUE_REDIS_URL });
+registerQueueDepthCollector(metrics, queueAdmin);
 const worker = composeWorker({
   prisma,
   logger,
-  metrics: getMetrics(),
+  metrics,
   storage,
   config: {
     queueRedisUrl: env.QUEUE_REDIS_URL,
@@ -37,6 +52,22 @@ await worker.start();
 const health = await startHealthServer({
   port: env.WORKER_HEALTH_PORT,
   ready: () => worker.ready(),
+  metrics: {
+    authorize: ({ headers }) =>
+      canSeeHealthDetails(
+        new Request("http://worker/metrics", {
+          headers:
+            typeof headers.authorization === "string"
+              ? { authorization: headers.authorization }
+              : {},
+        }),
+        { nodeEnv: env.NODE_ENV, token: env.HEALTH_CHECK_TOKEN }
+      ),
+    render: async () => {
+      recordPoolStats(metrics, pool);
+      return metrics.render();
+    },
+  },
 });
 logger.info("worker.started", { metadata: { healthPort: health.port } });
 
@@ -53,6 +84,7 @@ async function shutdown(signal: string) {
   backstop.unref();
   try {
     await worker.stop();
+    await queueAdmin.close();
     await health.close();
     await prisma.$disconnect();
     logger.info("worker.shutdown.complete");
