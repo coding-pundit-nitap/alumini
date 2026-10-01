@@ -112,6 +112,16 @@ function failedSessionLookup(error: unknown): boolean {
     (error as { body?: { code?: unknown } }).body?.code ===
       "FAILED_TO_GET_SESSION"
   );
+};
+// Text PostgreSQL cannot store: a NUL byte (22021) or a character with no UTF-8 form (22P05). Only a
+// client puts these in a filter or a field, so they are a 400, not a 500 (spec 16 S-9, found by fuzzing).
+const UNSTORABLE_TEXT_SQLSTATES = new Set(["22021", "22P05"]);
+
+function unstorableText(error: unknown): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  const cause = adapterCause(error);
+  const sqlState = cause?.code ?? cause?.originalCode;
+  return sqlState !== undefined && UNSTORABLE_TEXT_SQLSTATES.has(sqlState);
 }
 
 function classify(error: unknown): Dependency | null {
