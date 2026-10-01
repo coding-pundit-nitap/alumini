@@ -1,6 +1,6 @@
 import { UNREAD_COUNTER_TTL_SECONDS, unreadCounterKey } from "@nitap/jobs";
 
-import { logger } from "@/infrastructure/observability";
+import { getMetrics, logger } from "@/infrastructure/observability";
 import type { UnreadCounter } from "../application/notification-use-cases";
 
 type RedisLike = {
@@ -24,10 +24,14 @@ type RedisLike = {
 export function createRedisUnreadCounter(
   getClient: () => Promise<RedisLike>
 ): UnreadCounter {
-  const warn = (op: string, error: unknown) =>
+  const warn = (op: string, error: unknown) => {
+    getMetrics().increment("dependency_unavailable_total", {
+      dependency: "redis",
+    });
     logger.warn("notifications.unread_counter.redis_failed", {
       metadata: { op, message: (error as Error).message },
     });
+  };
   return {
     async get(userId) {
       try {

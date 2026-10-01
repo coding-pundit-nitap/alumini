@@ -1,7 +1,7 @@
 import type { BetterAuthOptions } from "better-auth";
 
 import { getRedis } from "@/infrastructure/redis/client";
-import { logger } from "@/infrastructure/observability";
+import { getMetrics, logger } from "@/infrastructure/observability";
 
 type RateLimitStorage = NonNullable<
   NonNullable<BetterAuthOptions["rateLimit"]>["customStorage"]
@@ -74,6 +74,9 @@ export const redisRateLimitStorage: RateLimitStorage = {
         ? { allowed: true, retryAfter: null }
         : { allowed: false, retryAfter: Math.max(1, retryAfter) };
     } catch (error) {
+      getMetrics().increment("dependency_unavailable_total", {
+        dependency: "redis",
+      });
       logger.warn("ratelimit.redis.unavailable_fallback", {
         error,
         metadata: { fallback: "in-memory" },

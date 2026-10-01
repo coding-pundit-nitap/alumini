@@ -6,6 +6,7 @@ import {
   resolveRequestId,
   runWithRequestContext,
 } from "@/infrastructure/observability";
+import { asDependencyFailure } from "@/infrastructure/errors/dependency-failure";
 import { logLevelFor, toApiError } from "@/lib/errors";
 
 import { routeLabel } from "./route-label";
@@ -29,7 +30,9 @@ export function routeHandler<Args extends unknown[]>(
       let response: Response;
       try {
         response = await handler(request, ...args);
-      } catch (error) {
+      } catch (thrown) {
+        // A dead or slow PostgreSQL / object store is a 503 to retry, not a 500 bug (spec 14 RD-3).
+        const error = asDependencyFailure(thrown);
         const { status, headers, body } = toApiError(error, requestId);
         logger[logLevelFor(error)]("http.request.failed", {
           error,

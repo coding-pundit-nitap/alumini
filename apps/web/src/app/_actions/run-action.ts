@@ -6,6 +6,7 @@ import {
   resolveRequestId,
   runWithRequestContext,
 } from "@/infrastructure/observability";
+import { asDependencyFailure } from "@/infrastructure/errors/dependency-failure";
 import type { ActionResult } from "@/lib/action-result";
 import {
   logLevelFor,
@@ -31,7 +32,8 @@ export async function runAction<T>(
     async (): Promise<ActionResult<T>> => {
       try {
         return { ok: true, data: await work() };
-      } catch (error) {
+      } catch (thrown) {
+        const error = asDependencyFailure(thrown);
         const { body } = toApiError(error, requestId);
         logger[logLevelFor(error)]("action.failed", {
           error,

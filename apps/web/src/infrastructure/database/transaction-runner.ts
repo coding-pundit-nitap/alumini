@@ -1,5 +1,9 @@
 import { Prisma, type PrismaClient } from "@nitap/database";
 
+import {
+  DEPENDENCY_RETRY_AFTER_SECONDS,
+  isDatabaseUnavailable,
+} from "@/infrastructure/errors/dependency-failure";
 import { getMetrics, logger } from "@/infrastructure/observability";
 import {
   DependencyUnavailableError,
@@ -49,14 +53,6 @@ function isSerializationFailureOrDeadlock(error: unknown): boolean {
   return false;
 }
 
-/** Unreachable, timed out, or the server closed the connection. */
-function isConnectionFailure(error: unknown): boolean {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
-    ["P1001", "P1002", "P1008", "P1017"].includes(error.code)
-  );
-}
-
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -80,9 +76,13 @@ export function createTransactionRunner(
             maxWait: maxWaitMs,
           });
         } catch (error) {
-          if (isConnectionFailure(error)) {
+          // Unreachable, timed out, pool exhausted, or the server closed the connection (spec 14 RD-3).
+          if (isDatabaseUnavailable(error)) {
             getMetrics().increment("db_transaction_unavailable_total");
-            throw new DependencyUnavailableError({ cause: error });
+            throw new DependencyUnavailableError({
+              cause: error,
+              retryAfterSeconds: DEPENDENCY_RETRY_AFTER_SECONDS,
+            });
           }
           if (!isSerializationFailureOrDeadlock(error)) throw error;
 

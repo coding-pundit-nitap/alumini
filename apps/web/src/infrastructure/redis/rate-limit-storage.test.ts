@@ -5,8 +5,10 @@ vi.mock("@/infrastructure/redis/client", () => ({
     throw new Error("redis down");
   },
 }));
+const increment = vi.hoisted(() => vi.fn());
 vi.mock("@/infrastructure/observability", () => ({
   logger: { warn: () => undefined },
+  getMetrics: () => ({ increment }),
 }));
 
 import { redisRateLimitStorage } from "./rate-limit-storage";
@@ -29,5 +31,13 @@ describe("rate limiting while Redis is unreachable", () => {
     const k = key();
     expect((await redisRateLimitStorage.consume(k, rule)).allowed).toBe(true);
     expect((await redisRateLimitStorage.consume(k, rule)).allowed).toBe(false);
+  });
+
+  it("counts each fallback on dependency_unavailable_total (spec 14A)", async () => {
+    increment.mockClear();
+    await redisRateLimitStorage.consume(key(), { window: 60, max: 4 });
+    expect(increment).toHaveBeenCalledWith("dependency_unavailable_total", {
+      dependency: "redis",
+    });
   });
 });
