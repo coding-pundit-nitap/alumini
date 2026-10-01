@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from "vitest";
 
 import { runSeed } from "@nitap/database/seed";
 import {
@@ -426,92 +434,155 @@ describe("directory search against real PostgreSQL", () => {
       ).rejects.toBeInstanceOf(InvalidCursorError);
     });
   });
+});
 
-  describe("query plans (strategy §9.4)", () => {
-    let known = "";
-    // Enough rows that a sequential scan is visibly the wrong choice; the profile mix is realistic:
-    // mostly MEMBERS_ONLY, a tail of PRIVATE, a few departments, years 2010–2024.
-    beforeEach(async () => {
-      await db.prisma.$executeRaw`
-        INSERT INTO "user" (id, name, email, account_state, updated_at)
-        SELECT gen_random_uuid(), 'User ' || g, 'bulk' || g || '@example.test', 'VERIFIED', now()
-        FROM generate_series(1, 30000) g`;
-      await db.prisma.$executeRaw`
-        INSERT INTO profile (user_id, full_name, bio, headline, location, graduation_year, department_id, visibility, updated_at)
-        SELECT u.id,
-               initcap(substr(md5(u.n::text), 1, 7)) || ' ' || initcap(substr(md5((u.n + 7)::text), 1, 9)),
-               repeat(md5(random()::text), 10), -- realistic row width, or a scan is honestly cheaper
-               'Engineer number ' || u.n,
-               (ARRAY['Bengaluru','Hyderabad','Pune','Delhi','Chennai'])[1 + u.n % 5],
-               2010 + u.n % 15,
-               d.id,
-               CASE WHEN u.n % 10 = 0 THEN 'PRIVATE'::"ProfileVisibility" ELSE 'MEMBERS_ONLY'::"ProfileVisibility" END,
-               now()
-        FROM (SELECT id, (row_number() OVER ())::int AS n FROM "user" WHERE email LIKE 'bulk%') u
-        JOIN (SELECT id, (row_number() OVER (ORDER BY code))::int - 1 AS k FROM department) d ON d.k = u.n % 5`;
-      await db.prisma.$executeRaw`
-        INSERT INTO profile_experience (user_id, company, designation, start_date, is_current, updated_at)
-        SELECT user_id, 'Company ' || (row_number() OVER ())::int % 500, 'Engineer', DATE '2020-01-01', true, now() FROM profile WHERE full_name LIKE '%1'`;
-      await db.prisma.$executeRawUnsafe("ANALYZE");
-      const [row] = await db.prisma.$queryRaw<{ full_name: string }[]>`
-        SELECT full_name FROM profile WHERE headline = 'Engineer number 777'`;
-      known = row!.full_name;
-    });
-
-    /** Runs the adapter's own SQL under EXPLAIN by capturing it from a query log of one real call. */
-    async function planFor(params: Record<string, string>): Promise<string> {
-      const logged: string[] = [];
-      const { PrismaClient } = await import("@nitap/database");
-      const { PrismaPg } = await import("@prisma/adapter-pg");
-      const probe = new PrismaClient({
-        adapter: new PrismaPg({ connectionString: db.databaseUrl }),
-        log: [{ emit: "event", level: "query" }],
-      });
-      (
-        probe as unknown as {
-          $on: (
-            e: string,
-            f: (q: { query: string; params: string }) => void
-          ) => void;
-        }
-      ).$on("query", (e) => {
-        if (
-          e.query.includes("word_similarity") === false &&
-          e.query.includes("ORDER BY page.sort_key") === false
-        )
-          return;
-        logged.push(JSON.stringify({ sql: e.query, params: e.params }));
-      });
-      await createPostgresSearch(probe).searchPeople(query(params), MEMBER);
-      await probe.$disconnect();
-      const entry = JSON.parse(logged.at(-1) ?? "null") as {
-        sql: string;
-        params: string;
-      } | null;
-      if (!entry) throw new Error("no query captured");
-      const values = JSON.parse(entry.params) as unknown[];
-      const rows = await db.prisma.$queryRawUnsafe<{ "QUERY PLAN": string }[]>(
-        `EXPLAIN (COSTS OFF) ${entry.sql}`,
-        ...values
-      );
-      return rows.map((r) => r["QUERY PLAN"]).join("\n");
-    }
-
-    it.each([
-      ["name order", {}],
-      [
-        "batch filter and order",
-        { graduationYear: "2015", sort: "graduationYear" },
-      ],
-      ["batch order, newest first", { sort: "-graduationYear" }],
-      ["company search", { q: "Company 42" }],
-      ["exact name search", () => ({ q: known })],
-      ["name search with a typo", () => ({ q: `${known.slice(0, -1)}x` })],
-    ])("%s never scans the whole profile table", async (_label, params) => {
-      const plan = await planFor(
-        typeof params === "function" ? params() : params
-      );
-      expect(plan).not.toMatch(/Seq Scan on profile(?![_\w])/);
-    });
+describe("directory query plans (strategy §9.4)", () => {
+  // One database for the whole block: every test here only EXPLAINs, so the 120 000-row setup runs once.
+  let db: TestDatabase;
+  afterAll(async () => {
+    await db.drop();
   });
+  let known = "";
+  // Enough rows that a sequential scan is visibly the wrong choice; the profile mix is realistic:
+  // mostly MEMBERS_ONLY, a tail of PRIVATE, a few departments, years 2010–2024.
+  beforeAll(async () => {
+    db = await createTestDatabase();
+    await runSeed(db.prisma);
+    await db.prisma.$executeRaw`
+      INSERT INTO "user" (id, name, email, account_state, updated_at)
+      SELECT gen_random_uuid(), 'User ' || g, 'bulk' || g || '@example.test', 'VERIFIED', now()
+      FROM generate_series(1, 30000) g`;
+    await db.prisma.$executeRaw`
+      INSERT INTO profile (user_id, full_name, bio, headline, location, graduation_year, department_id, visibility, updated_at)
+      SELECT u.id,
+             initcap(substr(md5(u.n::text), 1, 7)) || ' ' || initcap(substr(md5((u.n + 7)::text), 1, 9)),
+             repeat(md5(random()::text), 10), -- realistic row width, or a scan is honestly cheaper
+             'Engineer number ' || u.n,
+             (ARRAY['Bengaluru','Hyderabad','Pune','Delhi','Chennai'])[1 + u.n % 5],
+             2010 + u.n % 15,
+             d.id,
+             CASE u.n % 10 WHEN 0 THEN 'PRIVATE'::"ProfileVisibility"
+                           WHEN 5 THEN 'CONNECTIONS_ONLY'::"ProfileVisibility"
+                           ELSE 'MEMBERS_ONLY'::"ProfileVisibility" END,
+             now()
+      FROM (SELECT id, (row_number() OVER ())::int AS n FROM "user" WHERE email LIKE 'bulk%') u
+      JOIN (SELECT id, (row_number() OVER (ORDER BY code))::int - 1 AS k FROM department) d ON d.k = u.n % 5`;
+    await db.prisma.$executeRaw`
+      INSERT INTO profile_experience (user_id, company, designation, start_date, is_current, updated_at)
+      SELECT user_id, 'Company ' || (row_number() OVER ())::int % 500, 'Engineer', DATE '2020-01-01', true, now() FROM profile WHERE full_name LIKE '%1'`;
+    // A network to go with them (Phase 15 F-1): each member connected to the next three, ~90 000 pairs, as a
+    // 10 000-member network has. Without it a full scan of `connection` costs nothing and hides.
+    await db.prisma.$executeRaw`
+      WITH bulk AS (SELECT id, (row_number() OVER (ORDER BY email))::int AS n,
+                            lead(id, 1) OVER w AS n1, lead(id, 2) OVER w AS n2, lead(id, 3) OVER w AS n3
+                     FROM "user" WHERE email LIKE 'bulk%' WINDOW w AS (ORDER BY email)),
+           pairs AS (SELECT id, n, other FROM bulk, LATERAL (VALUES (n1), (n2), (n3)) AS v(other) WHERE other IS NOT NULL)
+      INSERT INTO connection (user_a_id, user_b_id, requested_by_id, blocked_by_id, state, responded_at)
+      SELECT LEAST(id, other), GREATEST(id, other), id,
+             CASE WHEN n % 97 = 0 THEN id END,
+             CASE WHEN n % 97 = 0 THEN 'BLOCKED'::"ConnectionState" ELSE 'ACCEPTED'::"ConnectionState" END,
+             CASE WHEN n % 97 = 0 THEN NULL ELSE now() END
+      FROM pairs`;
+    await db.prisma.$executeRawUnsafe("ANALYZE");
+    const [row] = await db.prisma.$queryRaw<{ full_name: string }[]>`
+      SELECT full_name FROM profile WHERE headline = 'Engineer number 777'`;
+    known = row!.full_name;
+  }, 120_000);
+
+  /** The adapter's own SQL and parameters, captured from a query log of one real call. */
+  async function capture(
+    params: Record<string, string>
+  ): Promise<{ sql: string; values: unknown[] }> {
+    const logged: string[] = [];
+    const { PrismaClient } = await import("@nitap/database");
+    const { PrismaPg } = await import("@prisma/adapter-pg");
+    const probe = new PrismaClient({
+      adapter: new PrismaPg({ connectionString: db.databaseUrl }),
+      log: [{ emit: "event", level: "query" }],
+    });
+    (
+      probe as unknown as {
+        $on: (
+          e: string,
+          f: (q: { query: string; params: string }) => void
+        ) => void;
+      }
+    ).$on("query", (e) => {
+      if (
+        e.query.includes("word_similarity") === false &&
+        e.query.includes("ORDER BY page.sort_key") === false
+      )
+        return;
+      logged.push(JSON.stringify({ sql: e.query, params: e.params }));
+    });
+    await createPostgresSearch(probe).searchPeople(query(params), MEMBER);
+    await probe.$disconnect();
+    const entry = JSON.parse(logged.at(-1) ?? "null") as {
+      sql: string;
+      params: string;
+    } | null;
+    if (!entry) throw new Error("no query captured");
+    return { sql: entry.sql, values: JSON.parse(entry.params) as unknown[] };
+  }
+
+  async function planFor(params: Record<string, string>): Promise<string> {
+    const { sql, values } = await capture(params);
+    const rows = await db.prisma.$queryRawUnsafe<{ "QUERY PLAN": string }[]>(
+      `EXPLAIN (COSTS OFF) ${sql}`,
+      ...values
+    );
+    return rows.map((r) => r["QUERY PLAN"]).join("\n");
+  }
+
+  type PlanNode = {
+    "Relation Name"?: string;
+    "Actual Rows"?: number;
+    "Actual Loops"?: number;
+    Plans?: PlanNode[];
+  };
+  /** Rows the executed query actually read from `connection`, over every node and loop. */
+  async function connectionRowsRead(
+    params: Record<string, string>
+  ): Promise<number> {
+    const { sql, values } = await capture(params);
+    const [row] = await db.prisma.$queryRawUnsafe<
+      { "QUERY PLAN": { Plan: PlanNode }[] }[]
+    >(`EXPLAIN (ANALYZE, FORMAT JSON) ${sql}`, ...values);
+    const walk = (node: PlanNode): number =>
+      (node["Relation Name"] === "connection"
+        ? (node["Actual Rows"] ?? 0) * (node["Actual Loops"] ?? 1)
+        : 0) + (node.Plans ?? []).reduce((sum, child) => sum + walk(child), 0);
+    return walk(row!["QUERY PLAN"][0]!.Plan);
+  }
+
+  it.each([
+    ["name order", {}],
+    [
+      "batch filter and order",
+      { graduationYear: "2015", sort: "graduationYear" },
+    ],
+    ["batch order, newest first", { sort: "-graduationYear" }],
+    ["company search", { q: "Company 42" }],
+    ["exact name search", () => ({ q: known })],
+    ["name search with a typo", () => ({ q: `${known.slice(0, -1)}x` })],
+  ])("%s never scans the whole profile table", async (_label, params) => {
+    const plan = await planFor(
+      typeof params === "function" ? params() : params
+    );
+    expect(plan).not.toMatch(/Seq Scan on profile(?![_\w])/);
+  });
+
+  // Phase 15 F-1: the CONNECTIONS_ONLY check sat under an OR, so PostgreSQL hashed every ACCEPTED pair in the
+  // network (a full scan of `connection`) on each request. Only the viewer's own pairs may be read.
+  it.each([
+    ["name order", {}],
+    ["batch order, newest first", { sort: "-graduationYear" }],
+    ["company search", { q: "Company 42" }],
+    ["location filter", { location: "Pune" }],
+  ])(
+    "%s reads only the viewer's own connections, not the network",
+    async (_label, params) => {
+      expect(await connectionRowsRead(params)).toBeLessThan(1_000);
+    }
+  );
 });
