@@ -1,4 +1,11 @@
 import type { TileKey } from "../domain/access";
+import type {
+  AnalyticsWindow,
+  CommunityRaw,
+  EventsRaw,
+  JobsRaw,
+  MembersRaw,
+} from "../domain/analytics";
 import type { AuditCursor } from "../domain/audit-query";
 import type { KeysetCursor } from "../domain/keyset-cursor";
 
@@ -75,4 +82,12 @@ export type AdminStore = {
   }): Promise<UserRow[]>;
   getUser(id: string, superAdminRole: string): Promise<UserDetail | null>;
   listChapters(): Promise<{ id: string; slug: string }[]>;
+};
+
+/** Spec 12F §3: one aggregate read per analytics section, all over `[from, to)`. Read-only. */
+export type AnalyticsStore = {
+  membersSection(window: AnalyticsWindow): Promise<MembersRaw>;
+  jobsSection(window: AnalyticsWindow): Promise<JobsRaw>;
+  eventsSection(window: AnalyticsWindow): Promise<EventsRaw>;
+  communitySection(window: AnalyticsWindow): Promise<CommunityRaw>;
 };
