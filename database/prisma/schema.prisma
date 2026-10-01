@@ -78,6 +78,8 @@ model User {
   notifications           Notification[]
   notificationPreferences NotificationPreference[]
 
+  retentionSettingsUpdated RetentionSetting[]
+
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
   @@unique([email])
@@ -970,4 +972,17 @@ model EmailSuppression {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@map("email_suppression")
+}
+
+/// Phase 12G (SRS §45): one row per retention category; approved_by stays null until institute sign-off.
+model RetentionSetting {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category      String   @unique
+  retentionDays Int      @map("retention_days")
+  approvedBy    String?  @map("approved_by")
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  updatedBy     String?  @map("updated_by") @db.Uuid
+  updater       User?    @relation(fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@map("retention_setting")
 }

@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../generated/prisma/client.ts";
 import { DEGREES, DEPARTMENTS } from "./seed-data/reference-data.ts";
+import { RETENTION_CATALOGUE } from "./seed-data/retention.ts";
 import {
   ROLE_NAMES,
   ROLE_PERMISSIONS,
@@ -71,6 +72,17 @@ export async function runSeed(prisma: PrismaClient): Promise<void> {
         data: { name: degree.name, level: degree.level },
       });
     }
+  }
+
+  // SRS §45 placeholders (12G G-2): insert missing categories only, never overwrite an admin's edit.
+  for (const [category, { defaultDays }] of Object.entries(
+    RETENTION_CATALOGUE
+  )) {
+    await prisma.retentionSetting.upsert({
+      where: { category },
+      create: { category, retentionDays: defaultDays },
+      update: {},
+    });
   }
 }
 
@@ -196,7 +208,9 @@ async function main() {
   });
   try {
     await runSeed(prisma);
-    console.log("Seed complete: roles, RBAC bundles, departments, degrees.");
+    console.log(
+      "Seed complete: roles, RBAC bundles, departments, degrees, retention settings."
+    );
   } finally {
     await prisma.$disconnect();
   }

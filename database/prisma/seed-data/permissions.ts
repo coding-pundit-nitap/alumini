@@ -83,6 +83,7 @@ export const ADMIN_TIER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.AUDIT_READ,
   PERMISSIONS.ANALYTICS_VIEW,
   PERMISSIONS.ANNOUNCEMENT_PUBLISH,
+  PERMISSIONS.SYSTEM_CONFIGURE,
 ];
 
 /** The only permissions a CHAPTER-scoped grant may carry: the chapter-admin bundle (RBAC §3 "Scopable", §5). */
