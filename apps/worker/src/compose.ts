@@ -526,6 +526,7 @@ export function composeWorker(
         createNotificationRetentionSweepProcessor({
           sweep: (before, limit) =>
             notificationRetention.sweep(prisma, before, limit),
+          retentionDays: () => notificationRetention.retentionDays(prisma),
         })
       ),
       registerJob(

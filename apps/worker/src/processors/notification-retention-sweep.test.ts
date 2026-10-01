@@ -26,6 +26,17 @@ describe("notification.retention-sweep processor", () => {
     expect(sweep).toHaveBeenCalledWith(new Date("2026-06-25T00:00:00Z"), 3);
   });
 
+  it("uses the configured period, read at the start of the run", async () => {
+    const sweep = vi.fn(async () => 0);
+    await createNotificationRetentionSweepProcessor({
+      sweep,
+      retentionDays: async () => 120,
+      batchSize: 3,
+      now: () => new Date("2026-09-23T00:00:00Z"),
+    })({ v: 1 }, context());
+    expect(sweep).toHaveBeenCalledWith(new Date("2026-05-26T00:00:00Z"), 3);
+  });
+
   it("stops when aborted", async () => {
     const ac = new AbortController();
     ac.abort();
