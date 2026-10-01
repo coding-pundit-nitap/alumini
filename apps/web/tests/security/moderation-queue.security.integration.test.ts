@@ -53,6 +53,15 @@ vi.mock("@/modules/auth/infrastructure/actor", async () => {
   };
 });
 vi.mock("@/modules/auth/infrastructure/auth", () => ({ auth: {} }));
+// The same-origin guard compares against BETTER_AUTH_URL when it is set (it is, in CI and in .env); pin it to
+// this file's origin so the guard is tested, not the environment.
+vi.mock("@/config/env", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/config/env")>();
+  return {
+    ...actual,
+    env: { ...actual.env, BETTER_AUTH_URL: "https://alumni.example.test" },
+  };
+});
 
 import type { Actor, AccountState } from "@/modules/auth";
 import { resolveActor } from "@/modules/auth/application/resolve-actor";
