@@ -464,6 +464,9 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     await eventually(async () =>
       expect(await notifications(recipient.id)).toHaveLength(1)
     );
+    // Phase 14 RD-6: without the debounce window there is no email at all, rather than one per message.
+    await wait(300);
+    expect(smtp.received).toHaveLength(0);
   });
 
   // N-6/N-7: one row per (recipient, conversation, window), not one per message.
