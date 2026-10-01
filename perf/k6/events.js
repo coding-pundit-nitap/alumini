@@ -31,8 +31,9 @@ export const options = {
       executor: "ramping-arrival-rate",
       startRate: 0,
       timeUnit: "1s",
-      preAllocatedVUs: 300,
-      maxVUs: 1500,
+      // One VU per arrival up front: starting VUs mid-spike dropped ~15 % of arrivals in the first runs.
+      preAllocatedVUs: users,
+      maxVUs: users + 200,
       // ~users arrivals in 10 s: ramp to the peak in 3 s, hold, then stop.
       stages: [
         { target: Math.ceil(users / 8.5), duration: "3s" },

@@ -13,7 +13,7 @@
 // threshold (an SRS budget) broke.
 import { execFileSync, spawn } from "node:child_process";
 import { createRequire } from "node:module";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, openSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { parseArgs } from "node:util";
@@ -45,6 +45,7 @@ if (!scenario) {
   process.exit(2);
 }
 
+const runLabel = `${scenario}${args.label ? `-${args.label}` : ""}`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const origin = `http://localhost:${args.port}`;
 const fixture = JSON.parse(
@@ -69,10 +70,16 @@ const pairs = (list) =>
 const children = [];
 const healthToken = "perf-health-token-000000000000";
 function start(name, cmd, argv, cwd, env) {
+  // Server output goes to perf/.data/logs/<run>-<name>.log, so an error during a run can be explained afterwards.
+  const logDir = path.join(root, "perf/.data/logs");
+  mkdirSync(logDir, { recursive: true });
+  const log = openSync(path.join(logDir, `${runLabel}-${name}.log`), "w");
   const child = spawn(cmd, argv, {
     cwd,
     env: { ...process.env, ...env },
-    stdio: ["ignore", "inherit", "inherit"],
+    stdio: ["ignore", log, log],
+    // Its own process group: pnpm does not forward SIGTERM, so stopAll() signals the whole group.
+    detached: true,
   });
   children.push(child);
   child.once("exit", (code, signal) => {
@@ -83,7 +90,13 @@ function start(name, cmd, argv, cwd, env) {
 let stopping = false;
 async function stopAll() {
   stopping = true;
-  for (const child of children) child.kill("SIGTERM");
+  for (const child of children) {
+    try {
+      process.kill(-child.pid, "SIGTERM");
+    } catch {
+      // already gone
+    }
+  }
   await sleep(500);
 }
 process.on("SIGINT", async () => {
@@ -91,6 +104,12 @@ process.on("SIGINT", async () => {
   process.exit(130);
 });
 
+function redisDb1(value) {
+  if (!value) return value;
+  const url = new URL(value);
+  url.pathname = "/1";
+  return url.toString();
+}
 const serverEnv = {
   NODE_ENV: "production",
   DATABASE_URL: perfUrl,
@@ -99,6 +118,9 @@ const serverEnv = {
   APP_URL: origin,
   HEALTH_CHECK_TOKEN: healthToken,
   LOG_LEVEL: "warn",
+  // Redis database 1, so a perf worker never takes development jobs (and the reverse).
+  REDIS_URL: redisDb1(process.env.REDIS_URL),
+  QUEUE_REDIS_URL: redisDb1(process.env.QUEUE_REDIS_URL),
   ...pairs(args["server-env"]),
 };
 let web = null;
