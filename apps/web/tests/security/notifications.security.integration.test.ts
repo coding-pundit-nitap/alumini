@@ -429,6 +429,7 @@ describe("notifications API security", () => {
       expect(data.map((d) => d.domain).sort()).toEqual(
         [
           "ACHIEVEMENT",
+          "ANNOUNCEMENT",
           "CONNECTION",
           "EVENT",
           "JOB",
