@@ -223,4 +223,30 @@ describe("queue + worker runtime (real Redis)", () => {
     expect(Date.now() - began).toBeLessThan(3_000);
     await port.close();
   });
+
+  it("jobCounts reports waiting jobs per queue while nothing consumes them", async () => {
+    const ns = await createRedisNamespace();
+    const port = createBullQueuePort({
+      url: ns.url,
+      prefix: ns.prefix,
+      addTimeoutMs: 1_000,
+    });
+    const admin = createQueueAdmin({ url: ns.url, prefix: ns.prefix });
+    cleanups.push(async () => {
+      await port.close();
+      await admin.close();
+      await ns.cleanup();
+    });
+
+    await port.add(testJob, payload, { jobId: "count-a" });
+    await port.add(testJob, { v: 1, n: 2 }, { jobId: "count-b" });
+
+    expect(await admin.jobCounts("default")).toEqual({
+      waiting: 2,
+      active: 0,
+      delayed: 0,
+      failed: 0,
+      completed: 0,
+    });
+  });
 });

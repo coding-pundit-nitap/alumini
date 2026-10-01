@@ -14,4 +14,4 @@ export type {
   WorkerRuntimeOptions,
 } from "./runtime.ts";
 export { createQueueAdmin } from "./admin.ts";
-export type { FailedJobSummary, QueueAdmin } from "./admin.ts";
+export type { FailedJobSummary, JobCounts, QueueAdmin } from "./admin.ts";

@@ -13,11 +13,18 @@ export type FailedJobSummary = {
   finishedOn: number | null;
 };
 
+/** Jobs per BullMQ state, sampled for `queue_jobs` at scrape time (spec 13A A-9). */
+export type JobCounts = Record<
+  "waiting" | "active" | "delayed" | "failed" | "completed",
+  number
+>;
+
 export interface QueueAdmin {
   listFailed(queue: QueueName, limit: number): Promise<FailedJobSummary[]>;
   /** Re-queues these failed jobs; returns how many were failed and are now retried. */
   retry(queue: QueueName, ids: readonly string[]): Promise<number>;
   retryAll(queue: QueueName): Promise<number>;
+  jobCounts(queue: QueueName): Promise<JobCounts>;
   close(): Promise<void>;
 }
 
@@ -77,6 +84,23 @@ export function createQueueAdmin(options: {
         }
       }
       return retried;
+    },
+
+    async jobCounts(name) {
+      const counts = await queueFor(name).getJobCounts(
+        "waiting",
+        "active",
+        "delayed",
+        "failed",
+        "completed"
+      );
+      return {
+        waiting: counts.waiting ?? 0,
+        active: counts.active ?? 0,
+        delayed: counts.delayed ?? 0,
+        failed: counts.failed ?? 0,
+        completed: counts.completed ?? 0,
+      };
     },
 
     async close() {

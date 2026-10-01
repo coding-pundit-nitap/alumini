@@ -36,6 +36,13 @@ function setup() {
     ]),
     retry: vi.fn(async () => 1),
     retryAll: vi.fn(async () => 3),
+    jobCounts: vi.fn(async () => ({
+      waiting: 0,
+      active: 0,
+      delayed: 0,
+      failed: 0,
+      completed: 0,
+    })),
     close: vi.fn(async () => {}),
   };
   const deps = {
