@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { cache } from "react";
 
 import { prisma } from "@/infrastructure/database/client";
+import { apiBudget } from "@/infrastructure/http/api-budget-instance";
 import {
   logger,
   REQUEST_ID_HEADER,
@@ -42,6 +43,8 @@ export const getActor = cache(async (): Promise<Actor | null> => {
   if (!session) return null;
 
   const userId = session.user.id;
+  // Inside a Route Handler, the caller's API-wide allowance (spec 16 SD-7); refused before any grant load.
+  await apiBudget.charge(userId);
   const requestId = requestHeaders.get(REQUEST_ID_HEADER) ?? "unknown";
   const deps = { grantSource, now: () => new Date() };
   const identity: SessionIdentity = {

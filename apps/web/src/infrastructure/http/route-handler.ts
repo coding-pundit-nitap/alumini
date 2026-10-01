@@ -9,6 +9,7 @@ import {
 import { asDependencyFailure } from "@/infrastructure/errors/dependency-failure";
 import { logLevelFor, toApiError } from "@/lib/errors";
 
+import { apiBudget } from "./api-budget-instance";
 import { routeLabel } from "./route-label";
 
 /**
@@ -29,7 +30,8 @@ export function routeHandler<Args extends unknown[]>(
       const started = performance.now();
       let response: Response;
       try {
-        response = await handler(request, ...args);
+        // The scope lets getActor charge the caller's API allowance once (spec 16 SD-7).
+        response = await apiBudget.scope(async () => handler(request, ...args));
       } catch (thrown) {
         // A dead or slow PostgreSQL / object store is a 503 to retry, not a 500 bug (spec 14 RD-3).
         const error = asDependencyFailure(thrown);
