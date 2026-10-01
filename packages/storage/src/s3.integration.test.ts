@@ -5,7 +5,9 @@ import { pendingKey } from "./key.ts";
 import { StorageError } from "./port.ts";
 import { createS3StoragePort } from "./s3.ts";
 
-const env = loadStorageEnv(process.env);
+// Straight to MinIO: S3_PUBLIC_PATH (set in a local .env) makes presigned URLs relative to the web app's
+// origin, which only resolves behind the running Next.js rewrite, so this suite leaves it out.
+const env = { ...loadStorageEnv(process.env), publicPath: undefined };
 const storage = createS3StoragePort(env);
 const written: string[] = [];
 
