@@ -21,6 +21,7 @@ import { StorageError } from "./port.ts";
 
 /** Every call gets a bound: no request to the store waits forever (TDS §17.2). */
 const REQUEST_TIMEOUT_MS = 5_000;
+const CONNECTION_TIMEOUT_MS = 2_000;
 
 function wrapFailure(error: unknown, key: string): never {
   if (error instanceof NoSuchKey || error instanceof NotFound) {
@@ -56,7 +57,15 @@ export function createS3StoragePort(env: StorageEnv): StoragePort {
       accessKeyId: env.accessKeyId,
       secretAccessKey: env.secretAccessKey,
     },
-    requestHandler: { requestTimeout: REQUEST_TIMEOUT_MS },
+    // Without throwOnRequestTimeout the SDK only logs a warning past requestTimeout and keeps waiting, so a
+    // stalled store hung requests forever (spec 14 F-6). One attempt: the caller owns retries (the user's
+    // retry on a 503, the queue's backoff in the worker), so the bound stays one timeout, not three.
+    requestHandler: {
+      connectionTimeout: CONNECTION_TIMEOUT_MS,
+      requestTimeout: REQUEST_TIMEOUT_MS,
+      throwOnRequestTimeout: true,
+    },
+    maxAttempts: 1,
   });
 
   return {
