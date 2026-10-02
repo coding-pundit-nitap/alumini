@@ -27,7 +27,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
     "db:studio": "prisma studio",
-    "db:seed": "node --experimental-strip-types prisma/seed.ts",
+    "db:seed": "node prisma/seed.ts",
     "test": "pnpm --filter @nitap/web exec vitest run --project unit prisma/seed-data perf",
     "test:watch": "pnpm --filter @nitap/web exec vitest --project unit prisma/seed-data perf"
   },
