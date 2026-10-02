@@ -1,4 +1,4 @@
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "./support/test";
 
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
 
@@ -61,7 +61,10 @@ test("J-04 a member edits their profile and controls who sees it", async ({
 
   // The owner still sees their own profile.
   await owner.goto(memberUrl!);
-  await expect(owner.getByText("Robotics engineer")).toBeVisible();
+  // Scoped to main: the account menu shows the owner's headline too.
+  await expect(
+    owner.getByRole("main").getByText("Robotics engineer")
+  ).toBeVisible();
 
   // PUBLIC: a guest sees only the reduced view.
   await setLevel(owner, "Everyone, including people who are not signed in");
@@ -103,6 +106,6 @@ test("a forged institutional field in the profile form changes nothing", async (
   await owner.reload();
   await expect(owner.getByLabel("Headline")).toHaveValue("Still me");
   await owner.getByRole("link", { name: "View my profile" }).click();
-  await expect(owner.getByText("Still me")).toBeVisible();
+  await expect(owner.getByRole("main").getByText("Still me")).toBeVisible();
   await expect(owner.getByText(/Batch of/)).toHaveCount(0);
 });

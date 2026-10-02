@@ -1,4 +1,4 @@
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "./support/test";
 
 import { Pool } from "pg";
 
@@ -88,6 +88,15 @@ test.afterAll(async () => {
 const postArticle = (page: Page, content: string) =>
   page.locator("article", { hasText: content });
 
+/** The composer on Home starts collapsed behind a prompt button; opening it reveals the form. */
+async function publishPost(page: Page, content: string) {
+  await page
+    .getByRole("button", { name: /Share something with your batchmates/ })
+    .click();
+  await page.getByLabel("Post content").fill(content);
+  await page.getByRole("button", { name: "Post", exact: true }).click();
+}
+
 test.describe("community journey", () => {
   test("J-12 create post, comment, react, then the author deletes it", async ({
     browser,
@@ -97,10 +106,9 @@ test.describe("community journey", () => {
     const ravi = await member(browser);
     const content = `Hello from Asha ${unique(DOMAIN)}`;
 
-    // Asha creates a text post from /feed and sees it rendered there.
+    // Asha creates a text post from Home (/feed redirects there) and sees it rendered there.
     await asha.page.goto("/feed");
-    await asha.page.getByLabel("Content").fill(content);
-    await asha.page.getByRole("button", { name: "Post" }).click();
+    await publishPost(asha.page, content);
     await expect(postArticle(asha.page, content)).toBeVisible({
       timeout: 15_000,
     });
@@ -109,11 +117,15 @@ test.describe("community journey", () => {
     await ravi.page.goto("/feed");
     const raviArticle = postArticle(ravi.page, content);
     await expect(raviArticle).toBeVisible({ timeout: 15_000 });
-    await raviArticle.getByRole("link", { name: "Comments" }).click();
+    await raviArticle
+      .getByRole("link", { name: "Comment", exact: true })
+      .click();
     await expect(ravi.page).toHaveURL(/\/feed\/[0-9a-f-]{36}$/);
     const commentBody = `Nice post, Asha! ${unique(DOMAIN)}`;
     await ravi.page.getByLabel("Add a comment").fill(commentBody);
-    await ravi.page.getByRole("button", { name: "Post comment" }).click();
+    await ravi.page
+      .getByRole("button", { name: "Comment", exact: true })
+      .click();
     await expect(ravi.page.getByText(commentBody)).toBeVisible({
       timeout: 15_000,
     });
@@ -143,7 +155,13 @@ test.describe("community journey", () => {
 
     // Asha deletes her own post; it disappears from the feed for both of them on refresh.
     await asha.page.goto("/feed");
+    // Delete lives in the post's options menu and asks for confirmation.
     await postArticle(asha.page, content)
+      .getByRole("button", { name: "Post options" })
+      .click();
+    await asha.page.getByRole("menuitem", { name: "Delete" }).click();
+    await asha.page
+      .getByRole("alertdialog")
       .getByRole("button", { name: "Delete" })
       .click();
     await expect(postArticle(asha.page, content)).toHaveCount(0, {
@@ -230,8 +248,7 @@ test.describe("community journey", () => {
 
     const content = `Reportable post ${unique(DOMAIN)}`;
     await asha.page.goto("/feed");
-    await asha.page.getByLabel("Content").fill(content);
-    await asha.page.getByRole("button", { name: "Post" }).click();
+    await publishPost(asha.page, content);
     await expect(postArticle(asha.page, content)).toBeVisible({
       timeout: 15_000,
     });

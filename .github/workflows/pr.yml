@@ -289,12 +289,17 @@ jobs:
     name: E2E smoke (${{ matrix.shard }})
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    # One worker against `next dev` (every route compiles on first visit) outgrew a single runner, so the
-    # journeys are split into shards like the integration suite. Each leg has its own services and data.
+    # The journeys run against the production build (`next start`), split into shards like the integration
+    # suite. Each leg has its own services and data.
     strategy:
       fail-fast: false
       matrix:
         shard: [1/3, 2/3, 3/3]
+    env:
+      # A production server shows /health/ready details only to this token (health.spec.ts sends it).
+      HEALTH_CHECK_TOKEN: ci-only-health-token-0000
+      # Mailpit takes any rate; an announcement's fan-out at the default 5/s queues the next sign-up's email.
+      EMAIL_RATE_PER_SECOND: "100"
     services:
       postgres:
         image: postgres:17-alpine
@@ -351,7 +356,14 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @nitap/web exec playwright install --with-deps chromium
-      # Runs against `next dev` for now; it moves to the built images with the Docker pipeline (Phase 15).
+      # Restore-only: the Build job owns this cache; each shard reuses its compiler cache for its own build.
+      - uses: actions/cache/restore@v6
+        with:
+          path: apps/web/.next/cache
+          key: next-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: next-${{ hashFiles('pnpm-lock.yaml') }}-
+      # playwright.config.ts serves this build with `next start` when CI is set.
+      - run: pnpm --filter @nitap/web build
       # Called directly rather than through turbo, which holds a task's output until it exits: a run that
       # hits the job timeout would otherwise leave an empty log. Prisma Client is generated on install.
       - run: pnpm --filter @nitap/web test:e2e --shard=${{ matrix.shard }}

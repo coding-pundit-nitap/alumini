@@ -29,7 +29,9 @@ export default defineConfig({
   // Redis instances and Mailpit come from `pnpm docker:up` (local) or service containers (CI).
   webServer: [
     {
-      command: "pnpm dev",
+      // CI tests the production build (`pnpm build` first): `next dev` compiles each route on first visit,
+      // which outran the 5s assertions, and renders dev-only overlays that intercept clicks.
+      command: process.env.CI ? "pnpm start --port 3000" : "pnpm dev",
       url: "http://localhost:3000/health/live",
       reuseExistingServer: !process.env.CI,
       timeout: 120000,

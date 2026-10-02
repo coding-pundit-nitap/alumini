@@ -1,4 +1,4 @@
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "./support/test";
 
 import { Pool } from "pg";
 
@@ -149,7 +149,7 @@ test("a member reports a message; a Moderator reads the context, resolves it, an
     reporter.page.getByText("This message was removed by a moderator.")
   ).toBeVisible();
   await expect(
-    reporter.page.getByRole("list", { name: "Messages" }).getByText(offending)
+    reporter.page.getByRole("log", { name: "Messages" }).getByText(offending)
   ).toHaveCount(0);
 });
 

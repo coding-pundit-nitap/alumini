@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./support/test";
 
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
 import { clientIp } from "./support/verification";

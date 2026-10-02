@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "./support/test";
 
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
 import { countEmails } from "./support/mailpit";

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./support/test";
 
 test.describe("Health endpoints", () => {
   test("/health/live reports the process alive, uncacheable, with a request id", async ({
@@ -14,7 +14,11 @@ test.describe("Health endpoints", () => {
   test("/health/ready checks PostgreSQL and reports Redis without failing on it", async ({
     request,
   }) => {
-    const response = await request.get("/health/ready");
+    // A production build shows `checks` only to the monitoring token (reliability §4.1).
+    const token = process.env.HEALTH_CHECK_TOKEN;
+    const response = await request.get("/health/ready", {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    });
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(body.status).toBe("ok");

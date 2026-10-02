@@ -1,4 +1,4 @@
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "./support/test";
 
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
 
@@ -47,7 +47,20 @@ async function setLevel(page: Page, label: string) {
  * content, so a bare getByText("…") matches what was merely TYPED and races ahead of the send.
  */
 const posted = (page: Page, body: string) =>
-  page.getByRole("list", { name: "Messages" }).getByText(body);
+  page.getByRole("log", { name: "Messages" }).getByText(body);
+
+/**
+ * A sent message shows at once as an optimistic bubble marked "Sending"; it is stored only when the marker
+ * goes. Wait for that before another member loads the thread, or their page can render without it.
+ */
+async function expectSent(page: Page, body: string) {
+  await expect(posted(page, body)).toBeVisible({ timeout: 15_000 });
+  await expect(
+    page
+      .getByRole("log", { name: "Messages" })
+      .getByText("Sending", { exact: true })
+  ).toHaveCount(0, { timeout: 15_000 });
+}
 
 async function profilePath(page: Page): Promise<string> {
   await page.goto("/profile");
@@ -76,9 +89,7 @@ test("J-10 members message each other, see unread counts, report and block", asy
     .getByRole("textbox", { name: "Message" })
     .fill("Hello Ravi, nice to meet you");
   await asha.getByRole("button", { name: "Send" }).click();
-  await expect(posted(asha, "Hello Ravi, nice to meet you")).toBeVisible({
-    timeout: 15_000,
-  });
+  await expectSent(asha, "Hello Ravi, nice to meet you");
 
   // Ravi sees it unread in his inbox, opens it, and the badge clears.
   await ravi.goto("/messages");
@@ -164,28 +175,34 @@ test("J-11 a member starts a group from their connections and manages it", async
 
   await asha.goto("/messages/new-group");
   await asha.getByLabel("Group name (optional)").fill("Batch reunion");
-  await asha.locator('input[type="checkbox"]').nth(0).check();
-  await asha.locator('input[type="checkbox"]').nth(1).check();
+  // The checkboxes are visually hidden; a person clicks the row, which is their label.
+  const picks = asha
+    .locator("label")
+    .filter({ has: asha.getByRole("checkbox") });
+  await picks.nth(0).click();
+  await picks.nth(1).click();
+  await expect(asha.getByRole("checkbox", { checked: true })).toHaveCount(2);
   await asha.getByRole("button", { name: "Create group" }).click();
   await expect(asha).toHaveURL(/\/messages\/[0-9a-f-]{36}$/);
   await expect(
     asha.getByRole("heading", { name: "Batch reunion" })
   ).toBeVisible();
   const groupUrl = asha.url();
-  const send = asha.getByRole("button", { name: "Send" });
-  await expect(send).toBeEnabled();
   await asha
     .getByRole("textbox", { name: "Message" })
     .fill("Welcome to the group");
+  // Send stays disabled on an empty draft; it enables once the hydrated composer holds the text.
+  const send = asha.getByRole("button", { name: "Send" });
+  await expect(send).toBeEnabled();
   await send.click();
-  await expect(posted(asha, "Welcome to the group")).toBeVisible({
-    timeout: 15_000,
-  });
+  await expectSent(asha, "Welcome to the group");
 
   await ravi.goto(groupUrl);
   await expect(posted(ravi, "Welcome to the group")).toBeVisible({
     timeout: 15_000,
   });
+  // Group management sits in the Members sheet.
+  await ravi.getByRole("button", { name: "Members" }).click();
   await expect(ravi.getByRole("button", { name: "Leave group" })).toBeVisible();
   await expect(ravi.getByLabel("Add member")).toHaveCount(0);
 
@@ -194,6 +211,8 @@ test("J-11 a member starts a group from their connections and manages it", async
   await ravi.goto(groupUrl);
   await expect(ravi.getByText("Page not found")).toBeVisible();
   await asha.reload();
+  await asha.getByRole("button", { name: "Members" }).click();
+  await expect(asha.getByLabel("Add member")).toBeVisible();
   await expect(asha.getByRole("button", { name: "Leave group" })).toHaveCount(
     0
   );
