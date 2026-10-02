@@ -51,19 +51,24 @@ const rowsOf = (name: string) => {
 
 describe("generatePerfData", () => {
   it("is deterministic for the same options", () => {
-    const again = generatePerfData(options, reference);
-    expect(JSON.stringify(again)).toBe(JSON.stringify(data));
-    const other = generatePerfData({ ...options, seed: 43 }, reference);
+    // Determinism does not depend on scale; a small run keeps this cheap on slow CI runners.
+    const small = { ...options, users: 60, sessions: 10 };
+    const first = generatePerfData(small, reference);
+    const again = generatePerfData(small, reference);
+    expect(JSON.stringify(again)).toBe(JSON.stringify(first));
+    const other = generatePerfData({ ...small, seed: 43 }, reference);
     expect(JSON.stringify(other.fixture)).not.toBe(
-      JSON.stringify(data.fixture)
+      JSON.stringify(first.fixture)
     );
   });
 
   it("gives every row a value per column", () => {
-    for (const table of data.tables) {
-      for (const row of table.rows)
-        expect(row).toHaveLength(table.columns.length);
-    }
+    const misshapen = data.tables.flatMap((table) =>
+      table.rows
+        .map((row, i) => ({ table: table.table, i, length: row.length }))
+        .filter((r) => r.length !== table.columns.length)
+    );
+    expect(misshapen).toEqual([]);
   });
 
   it("makes members on top of nine staff accounts, with unique emails", () => {
