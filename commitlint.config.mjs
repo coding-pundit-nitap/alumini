@@ -50,6 +50,7 @@ export default {
         "search",
         "uploads",
         "donations",
+        "queue",
       ],
     ],
     "subject-case": [0],

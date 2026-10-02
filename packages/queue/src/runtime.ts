@@ -223,10 +223,16 @@ export type WorkerRuntimeOptions = {
 
 export type WorkerRuntime = {
   start(): Promise<void>;
-  /** Stops taking jobs, lets in-flight ones finish for up to `timeoutMs` (default 30 s), then forces. */
+  /**
+   * Stops taking jobs, lets in-flight ones finish for up to `timeoutMs` (default 30 s), then forces. With no
+   * job running it forces after a short grace instead, should BullMQ's own close not return.
+   */
   close(options?: { timeoutMs?: number }): Promise<void>;
   health(): { running: boolean; draining: boolean };
 };
+
+/** How long close() lets BullMQ finish its own cleanup once no job of this runtime is running. */
+const CLOSE_GRACE_MS = 2_000;
 
 export function createWorkerRuntime(
   options: WorkerRuntimeOptions
@@ -246,6 +252,24 @@ export function createWorkerRuntime(
   let workers: Worker[] = [];
   let running = false;
   let draining = false;
+  // This runtime's own count of executing jobs. close() waits on it rather than on BullMQ's close(), which
+  // can stay pending with nothing running (seen after a queue Redis reconnect; bullmq 6.3.8 to 6.3.11).
+  let inFlight = 0;
+  let onIdle: (() => void) | null = null;
+  const track = async (run: Promise<void>) => {
+    inFlight++;
+    try {
+      return await run;
+    } finally {
+      if (--inFlight === 0) onIdle?.();
+    }
+  };
+  const idle = () =>
+    inFlight === 0
+      ? Promise.resolve()
+      : new Promise<void>((resolve) => {
+          onIdle = resolve;
+        });
 
   const deps: ExecuteDeps = {
     registry,
@@ -265,7 +289,7 @@ export function createWorkerRuntime(
         const override = options.queueOverrides?.[name];
         const worker = new Worker(
           name,
-          (job, token) => executeJob(deps, job, token),
+          (job, token) => track(executeJob(deps, job, token)),
           {
             connection: connection as Redis,
             prefix: options.prefix,
@@ -313,14 +337,29 @@ export function createWorkerRuntime(
       const graceful = Promise.allSettled(
         workers.map((worker) => worker.close())
       );
-      let timer: ReturnType<typeof setTimeout> | undefined;
-      const expired = new Promise<boolean>((resolve) => {
-        timer = setTimeout(() => resolve(false), timeoutMs);
-      });
-      const finished = await Promise.race([graceful.then(() => true), expired]);
-      clearTimeout(timer);
+      // In-flight jobs get the whole timeout. Once they are done, BullMQ gets a short grace to finish its own
+      // cleanup; past that its close is stuck, not draining, and waiting longer would only delay the stop.
+      const timers: ReturnType<typeof setTimeout>[] = [];
+      let decided = false;
+      const after = <T>(ms: number, value: T) =>
+        new Promise<T>((resolve) => {
+          if (!decided) timers.push(setTimeout(resolve, ms, value));
+        });
+      const stuck = Promise.race([
+        idle().then(() => after(CLOSE_GRACE_MS, "close_stuck" as const)),
+        after(timeoutMs, "jobs_running" as const),
+      ]);
+      const outcome = await Promise.race([
+        graceful.then(() => "closed" as const),
+        stuck,
+      ]);
+      decided = true;
+      for (const timer of timers) clearTimeout(timer);
+      const finished = outcome === "closed";
       if (!finished) {
-        logger.warn("queue.worker.force_close", { metadata: { timeoutMs } });
+        logger.warn("queue.worker.force_close", {
+          metadata: { timeoutMs, reason: outcome, inFlight },
+        });
       }
       workers = [];
       running = false;
