@@ -20,7 +20,7 @@
     "test:e2e:ui": "turbo run test:e2e:ui",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky || true",
+    "prepare": "lefthook install || true",
     "db:generate": "pnpm --filter @nitap/database db:generate",
     "db:migrate": "pnpm --filter @nitap/database db:migrate",
     "db:deploy": "pnpm --filter @nitap/database db:deploy",
@@ -44,8 +44,7 @@
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
     "dependency-cruiser": "18.3.1",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.5.1",
+    "lefthook": "^2.1.15",
     "prettier": "^3.9.8",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.11.3"
