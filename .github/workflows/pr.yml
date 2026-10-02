@@ -1,6 +1,7 @@
 # Pull-request pipeline (docs/architecture/development-and-testing-strategy.md §18.1).
-# Jobs are scheduled by cost: static checks and the fast security gates run in parallel, unit tests follow
-# static, and the slow stages (integration, build, E2E) start only on code that already passes them.
+# Every gate starts at once, so a run takes as long as its slowest job rather than the sum of a chain; images
+# are published only after all of them pass. Turbo's task cache, Next's build cache, Playwright's browsers and
+# the image layers persist between runs.
 # Every job reproduces a local command: pnpm lint | typecheck | arch | test | test:integration | build | test:e2e.
 name: PR
 
@@ -52,6 +53,12 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Turbo replays a task whose inputs are unchanged since an earlier run instead of running it again.
+      - uses: actions/cache@v6
+        with:
+          path: .turbo/cache
+          key: turbo-${{ github.job }}-${{ github.sha }}
+          restore-keys: turbo-${{ github.job }}-
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm lint
@@ -120,31 +127,52 @@ jobs:
   # Container images (strategy §18.2 "Build (web + worker images), image scan"; spec 16 16E). Dockerfile lint
   # and CRITICAL vulnerabilities block; HIGH ones are listed in the log for triage.
   images:
-    name: Images (hadolint, build, Trivy)
-    needs: static
+    name: Image ${{ matrix.image }} (hadolint, build, Trivy)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: web
+            file: docker/web.Dockerfile
+            target: run
+            scan: true
+          - image: worker
+            file: docker/worker.Dockerfile
+            target: run
+            scan: true
+          - image: migrate
+            file: docker/web.Dockerfile
+            target: migrate
+            scan: false
     steps:
       - uses: actions/checkout@v7
-      - name: Lint Dockerfiles
+      - name: Lint Dockerfile
+        run: docker run --rm -i hadolint/hadolint:v2.14.0 hadolint --failure-threshold error - < ${{ matrix.file }}
+      - uses: docker/setup-buildx-action@v4
+      # Layers go to the Actions cache, scoped per image; publish builds the same commit from it.
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          target: ${{ matrix.target }}
+          build-args: GIT_SHA=${{ github.sha }}
+          tags: nitap-${{ matrix.image }}:${{ github.sha }}
+          load: ${{ matrix.scan }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,scope=${{ matrix.image }},mode=max
+      - name: Scan image
+        if: matrix.scan
         run: |
-          for f in docker/web.Dockerfile docker/worker.Dockerfile; do
-            docker run --rm -i hadolint/hadolint:v2.14.0 hadolint --failure-threshold error - < "$f"
-          done
-      - run: docker build -f docker/web.Dockerfile --build-arg GIT_SHA=${{ github.sha }} -t nitap-web:${{ github.sha }} .
-      - run: docker build -f docker/worker.Dockerfile --build-arg GIT_SHA=${{ github.sha }} -t nitap-worker:${{ github.sha }} .
-      - name: Scan images
-        run: |
-          for image in nitap-web nitap-worker; do
-            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 image \
-              --quiet --scanners vuln --severity HIGH,CRITICAL "$image:${{ github.sha }}"
-            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 image \
-              --quiet --scanners vuln --severity CRITICAL --exit-code 1 "$image:${{ github.sha }}"
-          done
+          image="nitap-${{ matrix.image }}:${{ github.sha }}"
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 image \
+            --quiet --scanners vuln --severity HIGH,CRITICAL "$image"
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 image \
+            --quiet --scanners vuln --severity CRITICAL --exit-code 1 "$image"
 
   unit:
     name: Unit and component tests
-    needs: static
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -157,12 +185,17 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # A pull request tests what its change can affect; main always runs everything.
+      # Turbo replays a task whose inputs are unchanged since an earlier run instead of running it again.
+      - uses: actions/cache@v6
+        with:
+          path: .turbo/cache
+          key: turbo-${{ github.job }}-${{ github.sha }}
+          restore-keys: turbo-${{ github.job }}-
+      # A pull request tests what its change can affect; main runs every package whose inputs changed.
       - run: ${{ github.event_name == 'pull_request' && 'pnpm turbo run test --affected' || 'pnpm test' }}
 
   integration:
     name: Integration and contract tests (${{ matrix.suite }})
-    needs: unit
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Web's suite alone needs ~15 min on one runner, so it is split into shards; the other
@@ -227,7 +260,6 @@ jobs:
 
   build:
     name: Build
-    needs: unit
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -238,15 +270,31 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Turbo replays a task whose inputs are unchanged since an earlier run instead of running it again.
+      - uses: actions/cache@v6
+        with:
+          path: .turbo/cache
+          key: turbo-${{ github.job }}-${{ github.sha }}
+          restore-keys: turbo-${{ github.job }}-
+      - uses: actions/cache@v6
+        with:
+          path: apps/web/.next/cache
+          key: next-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: next-${{ hashFiles('pnpm-lock.yaml') }}-
       - run: pnpm build
       # No server variable name or credential in what browsers download (strategy §10.1, spec 16 16E).
       - run: node scripts/security/scan-client-bundle.mjs
 
   e2e:
-    name: E2E smoke
-    needs: [integration, build]
+    name: E2E smoke (${{ matrix.shard }})
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    # One worker against `next dev` (every route compiles on first visit) outgrew a single runner, so the
+    # journeys are split into shards like the integration suite. Each leg has its own services and data.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/3, 2/3, 3/3]
     services:
       postgres:
         image: postgres:17-alpine
@@ -298,13 +346,20 @@ jobs:
       - run: pnpm --filter @nitap/database db:seed
       # The verification journeys sign in as a seeded alumni coordinator.
       - run: pnpm --filter @nitap/web db:seed:admin
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm --filter @nitap/web exec playwright install --with-deps chromium
       # Runs against `next dev` for now; it moves to the built images with the Docker pipeline (Phase 15).
-      - run: pnpm test:e2e
+      # Called directly rather than through turbo, which holds a task's output until it exits: a run that
+      # hits the job timeout would otherwise leave an empty log. Prisma Client is generated on install.
+      - run: pnpm --filter @nitap/web test:e2e --shard=${{ matrix.shard }}
+      # always(): a timed-out job is "cancelled", not "failed", and that is when the report matters most.
       - uses: actions/upload-artifact@v7
-        if: failure()
+        if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ strategy.job-index }}
           path: apps/web/playwright-report
           retention-days: 7
 
@@ -332,20 +387,37 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      matrix:
+        include:
+          - image: web
+            file: docker/web.Dockerfile
+            target: run
+          - image: worker
+            file: docker/worker.Dockerfile
+            target: run
+          - image: migrate
+            file: docker/web.Dockerfile
+            target: migrate
     steps:
       - uses: actions/checkout@v7
-      - name: Build and push web, migrate and worker
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SHA: ${{ github.sha }}
-        run: |
-          prefix="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nitap-"
-          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
-          docker build -f docker/web.Dockerfile --build-arg GIT_SHA="$SHA" -t "${prefix}web:$SHA" .
-          docker build -f docker/web.Dockerfile --build-arg GIT_SHA="$SHA" --target migrate -t "${prefix}migrate:$SHA" .
-          docker build -f docker/worker.Dockerfile --build-arg GIT_SHA="$SHA" -t "${prefix}worker:$SHA" .
-          for name in web migrate worker; do
-            docker tag "${prefix}${name}:$SHA" "${prefix}${name}:main"
-            docker push "${prefix}${name}:$SHA"
-            docker push "${prefix}${name}:main"
-          done
+      - id: prefix
+        run: echo "value=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nitap-" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Same commit, same cache scope as the images job: every layer is a cache hit.
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          target: ${{ matrix.target }}
+          build-args: GIT_SHA=${{ github.sha }}
+          push: true
+          tags: |
+            ${{ steps.prefix.outputs.value }}${{ matrix.image }}:${{ github.sha }}
+            ${{ steps.prefix.outputs.value }}${{ matrix.image }}:main
+          cache-from: type=gha,scope=${{ matrix.image }}

@@ -9,7 +9,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  // CI prints progress and annotates failures; the html report alone writes nothing to the log.
+  reporter: process.env.CI
+    ? [["list"], ["github"], ["html", { open: "never" }]]
+    : "html",
+  // Ends a CI shard before the job's 20-minute timeout, so it fails with a report instead of being cancelled.
+  globalTimeout: process.env.CI ? 15 * 60_000 : undefined,
   use: {
     baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000",
     trace: "on-first-retry",
