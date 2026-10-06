@@ -98,15 +98,36 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
+        with:
+          fetch-depth: 0
+      # Blocks only a change that touches dependencies (§18.2): an advisory published overnight is not the fault
+      # of an unrelated pull request. New advisories against an unchanged lockfile fail the nightly run instead.
+      - name: Did dependencies change?
+        id: deps
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "$BASE^{commit}" 2>/dev/null \
+            || ! git diff --quiet "$BASE" HEAD -- pnpm-lock.yaml pnpm-workspace.yaml package.json '**/package.json'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Dependencies unchanged since $BASE; the nightly audit covers new advisories."
+          fi
+      - if: steps.deps.outputs.changed == 'true'
+        uses: pnpm/action-setup@v6
+      - if: steps.deps.outputs.changed == 'true'
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      # Blocking by design (§18.2). Findings are fixed, or accepted explicitly with a reason in
-      # pnpm-workspace.yaml (auditConfig) so the exception is reviewed like code.
-      - run: pnpm audit --audit-level high
+      - if: steps.deps.outputs.changed == 'true'
+        run: pnpm install --frozen-lockfile
+      # Findings are fixed, or accepted explicitly with a reason in pnpm-workspace.yaml (auditConfig) so the
+      # exception is reviewed like code.
+      - if: steps.deps.outputs.changed == 'true'
+        run: pnpm audit --audit-level high
 
   # SAST (strategy §10.2, spec 16 16E): the project rules' own tests, then registry packs plus project rules.
   # ERROR findings block; a reviewed exception is a `nosemgrep: <rule-id> — <reason>` comment on the line.

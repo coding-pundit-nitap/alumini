@@ -1,5 +1,5 @@
-# Nightly security pipeline (strategy §18.3; spec 16 16E). Report-only: findings open tickets, they do not
-# block a merge (the blocking gates are in pr.yml). Run by hand with "Run workflow".
+# Nightly security pipeline (strategy §18.3; spec 16 16E). Nothing here blocks a merge (the blocking gates are in
+# pr.yml); a failed job is the alert. Run by hand with "Run workflow".
 name: Nightly security
 
 on:
@@ -39,6 +39,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Low and moderate findings are tickets, not blockers (§10.2); the log is the report.
       - run: pnpm audit || true
+      # High and critical advisories published since the last dependency change: pr.yml audits only pull requests
+      # that change dependencies, so this is where a new one turns red. Fix it, or accept it with a reason in
+      # pnpm-workspace.yaml (auditConfig).
+      - name: High and critical advisories
+        run: pnpm audit --audit-level high
 
   dast:
     name: DAST (OWASP ZAP baseline against the web image)
