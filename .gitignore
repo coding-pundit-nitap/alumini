@@ -64,6 +64,9 @@ database/generated
 
 # Performance seed output (signed load-user cookies) — never commit
 /perf/.data
+# Raw load-test output (scripts/perf); the dated results page carries the numbers
+/docs/operations/perf/data/
+/doc/operations/perf/data/
 
 # Server-side release history written by deploy/deploy.sh
 deploy/releases.log
