@@ -125,6 +125,17 @@ const serverEnv = {
 };
 let web = null;
 if (!args["no-server"]) {
+  // A server left over from another run would answer the readiness probe below, and k6 would measure it
+  // instead of the one this run configured.
+  const busy = await fetch(`${origin}/health/live`)
+    .then(() => true)
+    .catch(() => false);
+  if (busy) {
+    console.error(
+      `port ${args.port} is already serving; stop that server first`
+    );
+    process.exit(2);
+  }
   web = start(
     "web",
     process.execPath,
@@ -136,6 +147,9 @@ if (!args["no-server"]) {
     start("worker", "pnpm", ["--filter", "@nitap/worker", "start"], root, {
       ...serverEnv,
       WORKER_HEALTH_PORT: "3199",
+      // A production worker refuses to start without clamd (spec 16 SD-8); no scenario uploads a file, so the
+      // address is never dialled.
+      CLAMAV_URL: process.env.CLAMAV_URL ?? "tcp://127.0.0.1:3310",
     });
   }
   const deadline = Date.now() + 60_000;

@@ -53,6 +53,8 @@ const worker = spawn("pnpm", ["--filter", "@nitap/worker", "start"], {
     QUEUE_REDIS_URL: redisDb1(process.env.QUEUE_REDIS_URL),
     WORKER_HEALTH_PORT: "3199",
     LOG_LEVEL: "warn",
+    // Required in production (spec 16 SD-8); fan-out never scans, so the address is never dialled.
+    CLAMAV_URL: process.env.CLAMAV_URL ?? "tcp://127.0.0.1:3310",
   },
   stdio: ["ignore", "inherit", "inherit"],
   detached: true,
@@ -101,9 +103,9 @@ for (const size of args.recipients.split(",").map(Number)) {
   );
   await db.query(
     `INSERT INTO event_registration (id, event_id, user_id, state, registered_at, updated_at)
-     SELECT gen_random_uuid(), $1, u.id, 'REGISTERED', now(), now()
+     SELECT gen_random_uuid(), $1::uuid, u.id, 'REGISTERED', now(), now()
      FROM "user" u WHERE u.account_state = 'VERIFIED' AND u.id <> $2 AND u.email LIKE 'perf.%'
-     ORDER BY md5(u.id::text || $1) LIMIT $3`,
+     ORDER BY md5(u.id::text || $1::text) LIMIT $3`,
     [eventId, organizer.id, size]
   );
   const t0 = Date.now();
