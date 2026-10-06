@@ -16,9 +16,21 @@ allowBuilds:
 # dependency-cruiser only supports TypeScript < 7 and otherwise resolves the workspace's TS 7 through pnpm's
 # hoisting, silently cruising 0 modules. Give it its own compiler; drop this once it supports TS 7.
 overrides:
+  "@modelcontextprotocol/sdk@<1.31.0": ^1.31.0
   deepmerge-ts@<8.0.0: ^8.0.0
   mysql2@<3.22.0: ^3.22.0
   mysql2@<=3.23.0: ^3.23.1
+  # solid-js (react-query devtools) pins ~1.5; the plugins move in lockstep with seroval.
+  seroval@<1.6.3: ^1.6.3
+  seroval-plugins@<1.6.3: ^1.6.3
+  sharp@<0.35.5: ^0.35.5
+  source-map-js@<1.2.2: ^1.2.2
+
+auditConfig:
+  ignoreGhsas:
+    # braces <=3.0.3, no patched release. Reached only through shadcn's CLI (fast-glob > micromatch); the app
+    # imports nothing from shadcn but its stylesheet, so the vulnerable glob expansion never runs. 2026-10-07.
+    - GHSA-vfj7-8cjw-p6xm
 
 packageExtensions:
   dependency-cruiser:
