@@ -1,0 +1,66 @@
+# Monthly restore drill (reliability §3.6; spec 17, O-11). Runs scripts/drills/restore.ts: the production backup
+# configuration (deploy/compose.yml, deploy/backup.sh) against a stand-in repository, a host-loss restore with
+# RPO/RTO measured, and a point-in-time restore. The result table is the run's summary; a failed run is the
+# alert, as in nightly.yml. The production server's own monthly `backup.sh restore-test` is separate (it proves
+# the real repository and passphrase); this one proves the tooling on every month's code.
+name: Restore drill
+
+on:
+  schedule:
+    - cron: "30 21 1 * *" # 03:00 IST on the 1st
+  workflow_dispatch:
+    inputs:
+      users:
+        description: Perf users seeded for volume
+        default: "10000"
+      soak:
+        description: Seconds of heartbeat writes before the host is lost
+        default: "420"
+
+permissions:
+  contents: read
+
+env:
+  REDIS_URL: redis://localhost:6379
+  QUEUE_REDIS_URL: redis://localhost:6380
+  BETTER_AUTH_SECRET: ci-only-secret-not-used-outside-github-actions-0000
+  BETTER_AUTH_URL: http://localhost:3100
+  APP_URL: http://localhost:3100
+  S3_ENDPOINT: http://localhost:9000
+  S3_REGION: us-east-1
+  S3_BUCKET: alumini-uploads
+  S3_ACCESS_KEY_ID: alumini-storage
+  S3_SECRET_ACCESS_KEY: alumini-storage-secret
+  S3_FORCE_PATH_STYLE: "true"
+  DEV_COORDINATOR_EMAIL: coordinator@nitap.example
+  DEV_COORDINATOR_PASSWORD: ci-coordinator-password-1234
+  # Placeholder for the build only; the drill points the app at the restored database.
+  DATABASE_URL: postgresql://alumini:alumini@localhost:5432/alumini
+
+jobs:
+  drill:
+    name: Restore drill (host loss + point in time)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+      queue-redis:
+        image: redis:7-alpine
+        ports: ["6380:6379"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @nitap/web build
+      - name: Drill
+        env:
+          DRILL_HOST: "a GitHub Actions runner (ubuntu-24.04, run ${{ github.run_id }})"
+          USERS: ${{ inputs.users || '10000' }}
+          SOAK: ${{ inputs.soak || '420' }}
+        run: node scripts/drills/restore.ts --users "$USERS" --soak "$SOAK" --summary "$GITHUB_STEP_SUMMARY"
