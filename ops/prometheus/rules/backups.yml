@@ -1,0 +1,64 @@
+# Backups and restore tests (ADR-011, reliability §3.6). WAL archiving comes from postgres_exporter's
+# pg_stat_archiver; every deploy/backup.sh job writes alumini_backup_last_success_timestamp_seconds{kind} for
+# node_exporter's textfile collector. Thresholds follow the cron schedule in deploy/README.md step 8.
+groups:
+  - name: backups
+    rules:
+      - alert: WalArchiveFailing
+        expr: increase(pg_stat_archiver_failed_count{job="postgres"}[15m]) > 0
+        for: 10m
+        labels: { severity: page, service: postgres }
+        annotations:
+          summary: "PostgreSQL cannot archive WAL to the backup repository"
+          description: "archive_command failed {{ $value | humanize }} times in 15 minutes. Point-in-time recovery stops at the last archived segment, and pg_wal grows until the disk fills."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+
+      # A quiet database switches WAL only when the hourly `backup.sh check` forces it, so archiving is "stale"
+      # only well past that: either archiving stopped or the check stopped running.
+      - alert: WalArchiveStale
+        expr: pg_stat_archiver_last_archive_age{job="postgres"} > 75 * 60
+        for: 5m
+        labels: { severity: page, service: postgres }
+        annotations:
+          summary: "No WAL segment archived for over 75 minutes"
+          description: "The last segment reached the repository {{ $value | humanizeDuration }} ago; the 15-minute RPO no longer holds."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+
+      - alert: BaseBackupMissed
+        expr: time() - max(alumini_backup_last_success_timestamp_seconds{kind=~"full|diff"}) > 26 * 3600
+        labels: { severity: ticket, service: backups }
+        annotations:
+          summary: "No successful base backup in 26 hours"
+          description: "The last full or differential backup finished {{ $value | humanizeDuration }} ago. WAL still covers recovery, but a restore replays more of it."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+
+      - alert: BackupJobOverdue
+        expr: |
+          (time() - alumini_backup_last_success_timestamp_seconds{kind="full"} > 8 * 86400)
+            or (time() - alumini_backup_last_success_timestamp_seconds{kind="verify"} > 8 * 86400)
+            or (time() - alumini_backup_last_success_timestamp_seconds{kind="dump"} > 8 * 86400)
+            or (time() - alumini_backup_last_success_timestamp_seconds{kind="uploads"} > 26 * 3600)
+        labels: { severity: ticket, service: backups }
+        annotations:
+          summary: "Backup job {{ $labels.kind }} has not succeeded on schedule"
+          description: "The last successful {{ $labels.kind }} run was {{ $value | humanizeDuration }} ago."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+
+      # SRS §46: restore testing is scheduled, and a missed or failed one pages.
+      - alert: RestoreTestOverdue
+        expr: time() - alumini_backup_last_success_timestamp_seconds{kind="restore_test"} > 35 * 86400
+        labels: { severity: page, service: backups }
+        annotations:
+          summary: "No successful restore test in 35 days"
+          description: "The monthly restore test last passed {{ $value | humanizeDuration }} ago."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+
+      # The textfile metrics vanish if node_exporter loses the directory or the cron never ran.
+      - alert: BackupMetricsMissing
+        expr: absent(alumini_backup_last_success_timestamp_seconds{kind="full"})
+        for: 1h
+        labels: { severity: ticket, service: backups }
+        annotations:
+          summary: "No backup metrics reach Prometheus"
+          description: "alumini_backup_last_success_timestamp_seconds is absent, so the backup alerts cannot fire."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md

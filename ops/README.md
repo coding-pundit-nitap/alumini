@@ -38,16 +38,20 @@ Metrics the app labels `job` (`jobs_processed_total`, `jobs_dead_total`, `job_du
 
 Alerts only ship for series that something exports (overview OD-6). These wait for their owner:
 
-| Alert (reliability §5.6)                     | Runbook | Waits for                                         |
-| -------------------------------------------- | ------- | ------------------------------------------------- |
-| Site down (external synthetic probe)         | R-1     | External probe, hosting (Phase 18)                |
-| Disk / host                                  | R-7     | `node_exporter` with hosting (Phase 17/18)        |
-| Backup missed, WAL archive lag, restore test | R-8     | Backup tooling (Phase 14/17)                      |
-| Certificate / domain expiry                  | R-12    | Production proxy and blackbox exporter (Phase 18) |
-| Donation reconciliation mismatch             | R-13    | A payment-provider integration                    |
-| Upload scan backlog                          | R-14    | A `PENDING_SCAN` age gauge in the worker          |
-| Login-failure spike                          | R-9     | A login-failure counter in auth                   |
-| New error class after deploy                 | R-2     | Configured in the error tracker, not Prometheus   |
+| Alert (reliability §5.6)             | Runbook | Waits for                                         |
+| ------------------------------------ | ------- | ------------------------------------------------- |
+| Site down (external synthetic probe) | R-1     | External probe, hosting (Phase 18)                |
+| Disk / host                          | R-7     | `node_exporter` with hosting (Phase 17/18)        |
+| Certificate / domain expiry          | R-12    | Production proxy and blackbox exporter (Phase 18) |
+| Donation reconciliation mismatch     | R-13    | A payment-provider integration                    |
+| Upload scan backlog                  | R-14    | A `PENDING_SCAN` age gauge in the worker          |
+| Login-failure spike                  | R-9     | A login-failure counter in auth                   |
+| New error class after deploy         | R-2     | Configured in the error tracker, not Prometheus   |
+
+The backup alerts (`rules/backups.yml`, R-8) ship: WAL archiving comes from postgres_exporter, and the job
+timestamps from `deploy/backup.sh` through node_exporter's textfile collector
+(`--collector.textfile.directory=/var/lib/prometheus/node-exporter`), which arrives with the host's
+node_exporter (R-7). Until then `BackupMetricsMissing` is the only one of them that can fire.
 
 Production placement of this stack waits for hosting (O-2). The dead-man's-switch receiver must point at a
 service outside our infrastructure.
