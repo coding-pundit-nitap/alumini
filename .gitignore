@@ -70,3 +70,5 @@ database/generated
 
 # Server-side release history written by deploy/deploy.sh
 deploy/releases.log
+deploy/backups.log
+.drill-restore/

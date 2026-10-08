@@ -7,6 +7,36 @@
 # deploy/deploy.sh, which sets IMAGE_PREFIX and IMAGE_TAG; the procedure is in deploy/README.md.
 name: alumini-prod
 
+# pgBackRest (ADR-011) takes its whole configuration from these, in the postgres container (for archive-push,
+# which Postgres runs as archive_command) and in postgres-restore. The repository is an off-host S3-compatible
+# bucket; everything is encrypted before it leaves the host, with BACKUP_CIPHER_PASS escrowed apart from it.
+x-pgbackrest: &pgbackrest
+  PGBACKREST_STANZA: alumini
+  PGBACKREST_PG1_PATH: /var/lib/postgresql/18/docker
+  PGBACKREST_PG1_USER: alumini
+  PGBACKREST_PG1_DATABASE: alumini
+  PGBACKREST_REPO1_TYPE: s3
+  PGBACKREST_REPO1_PATH: /pgbackrest
+  PGBACKREST_REPO1_S3_ENDPOINT: ${BACKUP_S3_ENDPOINT:?}
+  PGBACKREST_REPO1_S3_REGION: ${BACKUP_S3_REGION:?}
+  PGBACKREST_REPO1_S3_BUCKET: ${BACKUP_S3_BUCKET:?}
+  PGBACKREST_REPO1_S3_KEY: ${BACKUP_S3_KEY:?}
+  PGBACKREST_REPO1_S3_KEY_SECRET: ${BACKUP_S3_KEY_SECRET:?}
+  PGBACKREST_REPO1_S3_URI_STYLE: ${BACKUP_S3_URI_STYLE:-host}
+  PGBACKREST_REPO1_CIPHER_TYPE: aes-256-cbc
+  PGBACKREST_REPO1_CIPHER_PASS: ${BACKUP_CIPHER_PASS:?}
+  # Fulls are kept 28 days and WAL with them, so point-in-time restore reaches back at least 14 (§3.2).
+  PGBACKREST_REPO1_RETENTION_FULL_TYPE: time
+  PGBACKREST_REPO1_RETENTION_FULL: "28"
+  PGBACKREST_REPO1_RETENTION_DIFF: "14"
+  PGBACKREST_REPO1_BUNDLE: "y"
+  PGBACKREST_COMPRESS_TYPE: zst
+  PGBACKREST_START_FAST: "y"
+  PGBACKREST_PROCESS_MAX: "2"
+  # The container filesystem is not kept: errors go to stderr (docker logs), nothing to /var/log.
+  PGBACKREST_LOG_LEVEL_FILE: "off"
+  PGBACKREST_LOG_LEVEL_STDERR: warn
+
 x-app: &app
   restart: unless-stopped
   env_file: .env
@@ -56,15 +86,55 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
 
+  # docker/postgres.Dockerfile: the official image plus pgBackRest. `docker compose build postgres` on the server.
   postgres:
-    image: postgres:17-alpine
+    build: &postgres-build
+      context: ../docker
+      dockerfile: postgres.Dockerfile
+    image: alumini-postgres:18
     restart: unless-stopped
+    # Every WAL segment goes to the repository, and a quiet database still switches segment every 5 minutes, which
+    # bounds data loss on host loss (RPO, reliability §2). The 18 image enables data checksums at initdb.
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=pgbackrest --stanza=alumini archive-push %p
+      - -c
+      - archive_timeout=300
     environment:
+      <<: *pgbackrest
+      POSTGRES_USER: alumini
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: alumini
+    # 18+ keeps the cluster in a versioned directory under this mount (/var/lib/postgresql/18/docker). A volume
+    # from the old postgres:17 layout is refused at start; it needs pg_upgrade or dump/restore (deploy/README.md).
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    stop_grace_period: 60s
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alumini"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Restore tests only (`deploy/backup.sh restore-test`): the same image restoring into its own volume, with
+  # archiving off so a restored copy can never push WAL into the production stanza.
+  postgres-restore:
+    build: *postgres-build
+    image: alumini-postgres:18
+    profiles: ["tools"]
+    command: ["postgres", "-c", "archive_mode=off"]
+    environment:
+      <<: *pgbackrest
       POSTGRES_USER: alumini
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
       POSTGRES_DB: alumini
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-restore-data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U alumini"]
       interval: 5s
@@ -142,6 +212,30 @@ services:
         mc mb --ignore-existing local/alumini-uploads
       '
 
+  # mc for deploy/backup.sh (uploads mirror, logical dumps), against the same off-host bucket as pgBackRest.
+  # The aliases are written as config rather than `mc alias set`, which needs every endpoint up to define one.
+  backup-tools:
+    image: cgr.dev/chainguard/minio:latest
+    profiles: ["tools"]
+    environment:
+      MC_CONFIG_DIR: /tmp/mc
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+      BACKUP_S3_ENDPOINT: ${BACKUP_S3_ENDPOINT:?}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:?}
+      BACKUP_S3_KEY: ${BACKUP_S3_KEY:?}
+      BACKUP_S3_KEY_SECRET: ${BACKUP_S3_KEY_SECRET:?}
+      BACKUP_S3_URI_STYLE: ${BACKUP_S3_URI_STYLE:-host}
+    entrypoint: >
+      sh -c '
+        mkdir -p /tmp/mc &&
+        if [ "$$BACKUP_S3_URI_STYLE" = path ]; then style=on; else style=off; fi &&
+        printf "{\"version\":\"10\",\"aliases\":{\"local\":{\"url\":\"http://minio:9000\",\"accessKey\":\"%s\",\"secretKey\":\"%s\",\"api\":\"s3v4\",\"path\":\"on\"},\"backup\":{\"url\":\"https://%s\",\"accessKey\":\"%s\",\"secretKey\":\"%s\",\"api\":\"s3v4\",\"path\":\"%s\"}}}" \
+          "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" "$$BACKUP_S3_ENDPOINT" "$$BACKUP_S3_KEY" "$$BACKUP_S3_KEY_SECRET" "$$style" \
+          > /tmp/mc/config.json &&
+        exec sh -c "$$0" "$$@"
+      '
+
   # Upload malware scanning; the worker refuses to start in production without it (spec 16 SD-8).
   # First start downloads ~300 MB of signatures; clamd holds ~1 GB of RAM.
   clamav:
@@ -158,6 +252,7 @@ services:
 
 volumes:
   postgres-data:
+  postgres-restore-data:
   queue-redis-data:
   minio-data:
   clamav-data:
