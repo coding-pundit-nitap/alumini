@@ -123,8 +123,8 @@ test("disabling email preference for a category results in in-app-only delivery"
   const { emailDeliveries } = JSON.parse(
     execFileSync(
       "node",
-      [path.join(__dirname, "support/email-decision.ts"), ashaEmail],
-      { encoding: "utf8", cwd: path.join(__dirname, "../..") }
+      [path.join(import.meta.dirname, "support/email-decision.ts"), ashaEmail],
+      { encoding: "utf8", cwd: path.join(import.meta.dirname, "../..") }
     )
   ) as { emailDeliveries: number };
   expect(emailDeliveries).toBe(0);

@@ -69,10 +69,12 @@ rules:
     message: The web app never spawns processes; background work goes through the outbox and the worker.
     pattern-regex: from\s+["'](node:)?child_process["']
     paths:
-      # Tooling, tests and the test harness start processes on purpose.
+      # Tooling, tests and the test harness start processes on purpose. apps/web/scripts holds command-line tools
+      # run by pnpm (perf seed, admin bootstrap), never imported by the server.
       exclude:
         [
           "packages/scripts/**",
+          "apps/web/scripts/**",
           "packages/testing/**",
           "**/tests/**",
           "**/*.test.ts",

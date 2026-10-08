@@ -189,8 +189,8 @@ test.describe("events", () => {
     const { eventId, registrantName } = JSON.parse(
       execFileSync(
         "node",
-        [path.join(__dirname, "support/seed-past-event.ts")],
-        { encoding: "utf8", cwd: path.join(__dirname, "../..") }
+        [path.join(import.meta.dirname, "support/seed-past-event.ts")],
+        { encoding: "utf8", cwd: path.join(import.meta.dirname, "../..") }
       )
     ) as { eventId: string; registrantName: string };
 
