@@ -55,6 +55,8 @@ function fakeStore(initial: OutboxEventRow[]) {
     releaseQuarantined: async () => 0,
     countReplayable: async () => 0,
     replay: async () => 0,
+    countSettleable: async () => 0,
+    settle: async () => 0,
   };
   return { store, published, quarantined, claimedTypes };
 }

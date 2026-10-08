@@ -11,6 +11,14 @@ export type OutboxStoreOptions = {
   transactionTimeoutMs?: number;
 };
 
+/** Quarantined rows are left alone: they were never processed, and the operator releases them explicitly. */
+const settleable = (before: Date, type?: string) => ({
+  publishedAt: null,
+  failedAt: null,
+  createdAt: { lt: before },
+  ...(type ? { type } : {}),
+});
+
 export function createOutboxStore(
   prisma: PrismaClient,
   options: OutboxStoreOptions = {}
@@ -106,6 +114,20 @@ export function createOutboxStore(
       const result = await prisma.outboxEvent.updateMany({
         where: { publishedAt: { gte: since }, ...(type ? { type } : {}) },
         data: { publishedAt: null },
+      });
+      return result.count;
+    },
+
+    countSettleable(before, type) {
+      return prisma.outboxEvent.count({
+        where: settleable(before, type),
+      });
+    },
+
+    async settle(before, type) {
+      const result = await prisma.outboxEvent.updateMany({
+        where: settleable(before, type),
+        data: { publishedAt: new Date() },
       });
       return result.count;
     },

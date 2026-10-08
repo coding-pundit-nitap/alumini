@@ -205,4 +205,31 @@ describe("outbox store (real PostgreSQL)", () => {
       await db.prisma.outboxEvent.count({ where: { publishedAt: null } })
     ).toBe(1);
   });
+
+  it("settles unpublished rows created before a restore target, leaving later and quarantined ones", async () => {
+    const before = await insert({ createdAt: minutesAgo(30) });
+    await insert({ createdAt: minutesAgo(30), type: "other.thing" });
+    await insert({ createdAt: minutesAgo(5) });
+    await insert({
+      createdAt: minutesAgo(30),
+      failedAt: minutesAgo(20),
+      failureReason: "x",
+    });
+    await insert({ createdAt: minutesAgo(30), publishedAt: minutesAgo(25) });
+    const target = minutesAgo(10);
+
+    expect(await store.countSettleable(target)).toBe(2);
+    expect(await store.countSettleable(target, "email.send")).toBe(1);
+
+    expect(await store.settle(target, "email.send")).toBe(1);
+    const settled = await db.prisma.outboxEvent.findUniqueOrThrow({
+      where: { id: before.id },
+    });
+    expect(settled.publishedAt).not.toBeNull();
+    expect(await store.countSettleable(target)).toBe(1);
+    expect(await store.settle(target)).toBe(1);
+    expect(
+      await db.prisma.outboxEvent.count({ where: { publishedAt: null } })
+    ).toBe(2);
+  });
 });

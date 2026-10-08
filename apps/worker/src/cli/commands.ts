@@ -21,7 +21,11 @@ const USAGE = `Usage: pnpm worker:cli <command>
   outbox:failed [--limit <n>]                        quarantined outbox rows
   outbox:release (<id>... | --all)                   return quarantined rows to the relay
   outbox:replay --since <2h|7d|ISO> [--type <t>] [--execute]
-                                                     re-publish published rows (dry run unless --execute)`;
+                                                     re-publish published rows (dry run unless --execute)
+  outbox:settle --before <ISO> [--type <t>] [--execute]
+                                                     after a restore: mark rows created before the restore
+                                                     target published without publishing them (dry run
+                                                     unless --execute; reliability §7.3 step 7)`;
 
 const isQueueName = (value: string): value is QueueName =>
   Object.hasOwn(QUEUES, value);
@@ -60,6 +64,7 @@ export async function runCommand(
         limit: { type: "string" },
         all: { type: "boolean" },
         since: { type: "string" },
+        before: { type: "string" },
         type: { type: "string" },
         execute: { type: "boolean" },
       },
@@ -141,6 +146,31 @@ export async function runCommand(
         return 0;
       }
       json({ replayed: await store.replay(since, values.type) });
+      return 0;
+    }
+
+    case "outbox:settle": {
+      if (!values.before) return usage("--before is required");
+      // An absolute time only: it is the restore target, copied from the restore record.
+      const before = /^\d{4}-\d{2}-\d{2}/.test(values.before)
+        ? new Date(values.before)
+        : null;
+      if (!before || Number.isNaN(before.getTime()))
+        return usage(`--before must be an ISO time, got "${values.before}"`);
+      if (before > now()) {
+        err(
+          "Refusing: --before is in the future; it must be the restore target time."
+        );
+        return 2;
+      }
+      if (!values.execute) {
+        json({
+          dryRun: true,
+          wouldSettle: await store.countSettleable(before, values.type),
+        });
+        return 0;
+      }
+      json({ settled: await store.settle(before, values.type) });
       return 0;
     }
 

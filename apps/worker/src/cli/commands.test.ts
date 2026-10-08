@@ -22,6 +22,8 @@ function setup() {
     releaseQuarantined: vi.fn(async () => 1),
     countReplayable: vi.fn(async () => 4),
     replay: vi.fn(async () => 4),
+    countSettleable: vi.fn(async () => 3),
+    settle: vi.fn(async () => 3),
   } as unknown as OutboxStore;
   const admin: QueueAdmin = {
     listFailed: vi.fn(async (queue) => [
@@ -164,6 +166,60 @@ describe("worker CLI", () => {
     const { run } = setup();
     expect(await run("outbox:replay")).toBe(1);
     expect(await run("outbox:replay", "--since", "yesterdayish")).toBe(1);
+  });
+
+  it("outbox:settle is a dry run unless --execute is given", async () => {
+    const { run, lines, store } = setup();
+
+    expect(
+      await run("outbox:settle", "--before", "2026-09-21 09:30:00+00")
+    ).toBe(0);
+
+    expect(store.countSettleable).toHaveBeenCalledWith(
+      new Date("2026-09-21T09:30:00.000Z"),
+      undefined
+    );
+    expect(store.settle).not.toHaveBeenCalled();
+    expect(JSON.parse(lines[0]!)).toEqual({ dryRun: true, wouldSettle: 3 });
+  });
+
+  it("outbox:settle --execute settles, optionally for one type", async () => {
+    const { run, lines, store } = setup();
+
+    expect(
+      await run(
+        "outbox:settle",
+        "--before",
+        "2026-09-21T09:30:00Z",
+        "--type",
+        "email.send",
+        "--execute"
+      )
+    ).toBe(0);
+
+    expect(store.settle).toHaveBeenCalledWith(
+      new Date("2026-09-21T09:30:00.000Z"),
+      "email.send"
+    );
+    expect(JSON.parse(lines[0]!)).toEqual({ settled: 3 });
+  });
+
+  it("outbox:settle needs an absolute time that is not in the future", async () => {
+    const { run, errors, store } = setup();
+
+    expect(await run("outbox:settle")).toBe(1);
+    expect(await run("outbox:settle", "--before", "2h")).toBe(1);
+    expect(
+      await run(
+        "outbox:settle",
+        "--before",
+        "2026-09-22T00:00:00Z",
+        "--execute"
+      )
+    ).toBe(2);
+
+    expect(store.settle).not.toHaveBeenCalled();
+    expect(errors.join(" ")).toMatch(/future/);
   });
 
   it("prints usage and exits 1 for an unknown command", async () => {
