@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Summarises V8 .cpuprofile files (from `node --cpu-prof`, e.g. `scripts/perf/run.mjs pages --server-env
+// Summarises V8 .cpuprofile files (from `node --cpu-prof`, e.g. `scripts/perf/run.ts pages --server-env
 // NODE_OPTIONS=--cpu-prof --server-env ...`): where the web process spent its CPU, by self time per function
 // and by package. Phase 15 uses it to explain a CPU-bound render before changing anything (strategy §13.7).
 //
-//   node scripts/perf/cpuprofile-top.mjs <file-or-dir>… [--top 40]
+//   node scripts/perf/cpuprofile-top.ts <file-or-dir>… [--top 40]
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
@@ -20,19 +20,31 @@ const files = positionals.flatMap((p) =>
     : [p]
 );
 
-const byFunction = new Map();
-const byPackage = new Map();
+/** The parts of a V8 .cpuprofile this reads. */
+type CpuProfile = {
+  nodes: {
+    id: number;
+    callFrame: { functionName: string; url: string; lineNumber: number };
+  }[];
+  samples: number[];
+  timeDeltas: number[];
+};
+
+const byFunction = new Map<string, number>();
+const byPackage = new Map<string, number>();
 let total = 0;
 for (const file of files) {
-  const profile = JSON.parse(readFileSync(file, "utf8"));
+  const profile = JSON.parse(readFileSync(file, "utf8")) as CpuProfile;
   const nodes = new Map(profile.nodes.map((n) => [n.id, n]));
   // timeDeltas[i] is the time before sample i; attribute it to that sample's node (self time).
-  const self = new Map();
+  const self = new Map<number, number>();
   profile.samples.forEach((id, i) => {
     self.set(id, (self.get(id) ?? 0) + (profile.timeDeltas[i] ?? 0));
   });
   for (const [id, micros] of self) {
-    const { callFrame } = nodes.get(id);
+    const node = nodes.get(id);
+    if (!node) continue;
+    const { callFrame } = node;
     total += micros;
     const url = callFrame.url || "(native)";
     const pkg =
@@ -55,7 +67,7 @@ for (const file of files) {
   }
 }
 
-const show = (title, map, n) => {
+const show = (title: string, map: Map<string, number>, n: number) => {
   console.log(`\n${title}`);
   for (const [key, micros] of [...map]
     .sort((a, b) => b[1] - a[1])

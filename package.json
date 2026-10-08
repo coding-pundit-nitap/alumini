@@ -30,15 +30,15 @@
     "worker:dev": "turbo run dev --filter=@nitap/worker",
     "worker:cli": "pnpm --filter @nitap/worker cli",
     "worker:prune": "turbo prune @nitap/worker --docker",
-    "worker:prune:check": "node scripts/verify-worker-prune.mjs",
+    "worker:prune:check": "node scripts/verify-worker-prune.ts",
     "docker:up": "docker compose --env-file .env -f docker/docker-compose.yml up -d",
     "docker:down": "docker compose --env-file .env -f docker/docker-compose.yml down",
     "docker:scan": "docker compose --env-file .env -f docker/docker-compose.yml --profile scan up -d clamav",
     "docker:observability": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml up -d",
     "docker:observability:down": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml down",
-    "ops:check": "node scripts/check-ops.mjs",
+    "ops:check": "node scripts/check-ops.ts",
     "perf:seed": "pnpm --filter @nitap/web perf:seed",
-    "perf:run": "node scripts/perf/run.mjs"
+    "perf:run": "node scripts/perf/run.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",

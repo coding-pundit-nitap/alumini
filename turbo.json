@@ -41,7 +41,10 @@
     "S3_PUBLIC_PATH",
     "PERF_DATABASE_URL",
     "DATABASE_POOL_MAX",
-    "PERF_PASSWORD"
+    "PERF_PASSWORD",
+    "CLAMAV_URL",
+    "DRILL_HOST",
+    "PORT"
   ],
   "tasks": {
     "transit": { "dependsOn": ["^transit"] },

@@ -6,12 +6,13 @@
 //   pnpm --filter @nitap/web build
 //   pnpm docker:up && set -a && . ./.env && set +a
 //   pnpm perf:seed -- --users 10000                      # once; builds alumini_perf and perf/.data/fixture.json
-//   node scripts/perf/run.mjs directory [--rate 50] [--duration 3m] [--ramp 30s] [--label before] \
+//   node scripts/perf/run.ts directory [--rate 50] [--duration 3m] [--ramp 30s] [--label before] \
 //        [--env KEY=VALUE]… [--worker] [--reset-spike] [--smoke] [--server-env KEY=VALUE]…
 //
 // --smoke runs the strategy's smoke shape (RATE=2, 30 s) and writes nothing. Exit code is k6's: 99 when a
 // threshold (an SRS budget) broke.
 import { execFileSync, spawn } from "node:child_process";
+import type { ChildProcess } from "node:child_process";
 import { createRequire } from "node:module";
 import { mkdirSync, openSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
@@ -41,24 +42,26 @@ const { values: args, positionals } = parseArgs({
 });
 const scenario = positionals[0];
 if (!scenario) {
-  console.error("usage: node scripts/perf/run.mjs <scenario> [options]");
+  console.error("usage: node scripts/perf/run.ts <scenario> [options]");
   process.exit(2);
 }
 
 const runLabel = `${scenario}${args.label ? `-${args.label}` : ""}`;
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const origin = `http://localhost:${args.port}`;
 const fixture = JSON.parse(
   readFileSync(path.join(root, "perf/.data/fixture.json"), "utf8")
 );
 const perfUrl = (() => {
   if (process.env.PERF_DATABASE_URL) return process.env.PERF_DATABASE_URL;
+  if (!process.env.DATABASE_URL)
+    throw new Error("PERF_DATABASE_URL (or DATABASE_URL) is not set");
   const url = new URL(process.env.DATABASE_URL);
   url.pathname = "/alumini_perf";
   return url.toString();
 })();
 const dbName = new URL(perfUrl).pathname.slice(1);
-const pairs = (list) =>
+const pairs = (list: string[]) =>
   Object.fromEntries(
     list.map((kv) => [
       kv.slice(0, kv.indexOf("=")),
@@ -67,9 +70,15 @@ const pairs = (list) =>
   );
 
 // ---- Server under test --------------------------------------------------------------------------------------
-const children = [];
+const children: ChildProcess[] = [];
 const healthToken = "perf-health-token-000000000000";
-function start(name, cmd, argv, cwd, env) {
+function start(
+  name: string,
+  cmd: string,
+  argv: string[],
+  cwd: string,
+  env: Record<string, string | undefined>
+) {
   // Server output goes to perf/.data/logs/<run>-<name>.log, so an error during a run can be explained afterwards.
   const logDir = path.join(root, "perf/.data/logs");
   mkdirSync(logDir, { recursive: true });
@@ -92,7 +101,7 @@ async function stopAll() {
   stopping = true;
   for (const child of children) {
     try {
-      process.kill(-child.pid, "SIGTERM");
+      if (child.pid) process.kill(-child.pid, "SIGTERM");
     } catch {
       // already gone
     }
@@ -104,7 +113,7 @@ process.on("SIGINT", async () => {
   process.exit(130);
 });
 
-function redisDb1(value) {
+function redisDb1(value: string | undefined) {
   if (!value) return value;
   const url = new URL(value);
   url.pathname = "/1";
@@ -123,7 +132,7 @@ const serverEnv = {
   QUEUE_REDIS_URL: redisDb1(process.env.QUEUE_REDIS_URL),
   ...pairs(args["server-env"]),
 };
-let web = null;
+let web: ChildProcess | null = null;
 if (!args["no-server"]) {
   // A server left over from another run would answer the readiness probe below, and k6 would measure it
   // instead of the one this run configured.
@@ -185,7 +194,7 @@ if (args["reset-spike"]) {
 await db.query("SELECT pg_stat_reset()").catch(() => {});
 
 const HZ = 100; // USER_HZ on Linux
-const procTree = (pid) => {
+const procTree = (pid: number): number[] => {
   const all = [pid];
   try {
     for (const child of execFileSync("pgrep", ["-P", String(pid)])
@@ -200,7 +209,7 @@ const procTree = (pid) => {
   }
   return all;
 };
-function procUsage(pids) {
+function procUsage(pids: number[]) {
   let ticks = 0;
   let rssKb = 0;
   for (const pid of pids) {
@@ -217,10 +226,26 @@ function procUsage(pids) {
   return { ticks, rssKb };
 }
 
-const samples = [];
-let previous = null;
+type Sample = {
+  t: number;
+  connections: Record<string, number>;
+  lockWaits: number;
+  webRssMb: number;
+  tps?: number;
+  webCpuPct?: number;
+  cacheHitPct?: number;
+};
+type Counters = {
+  t: number;
+  xact: number;
+  blksRead: number;
+  blksHit: number;
+  ticks: number;
+};
+const samples: Sample[] = [];
+let previous: Counters | null = null;
 let sampling = true;
-const webPids = web ? procTree(web.pid) : [];
+const webPids = web?.pid ? procTree(web.pid) : [];
 async function sampleOnce() {
   const t = Date.now();
   const [activity, stats, settings] = await Promise.all([
@@ -239,16 +264,18 @@ async function sampleOnce() {
   ]);
   const s = stats.rows[0];
   const usage = web ? procUsage(webPids) : { ticks: 0, rssKb: 0 };
-  const current = {
+  const current: Counters = {
     t,
     xact: Number(s.xact_commit) + Number(s.xact_rollback),
     blksRead: Number(s.blks_read),
     blksHit: Number(s.blks_hit),
     ticks: usage.ticks,
   };
-  const sample = {
+  const sample: Sample = {
     t,
-    connections: Object.fromEntries(activity.rows.map((r) => [r.state, r.n])),
+    connections: Object.fromEntries(
+      activity.rows.map((r: { state: string; n: number }) => [r.state, r.n])
+    ),
     lockWaits: settings.rows[0].waiting,
     webRssMb: Math.round(usage.rssKb / 1024),
   };
@@ -268,7 +295,7 @@ async function sampleOnce() {
   previous = current;
   samples.push(sample);
 }
-const containerSamples = [];
+const containerSamples: { t: number; cpuPct: number; mem: string }[] = [];
 async function sampleContainer() {
   while (sampling) {
     try {
@@ -293,7 +320,9 @@ async function sampleContainer() {
 }
 const sampler = (async () => {
   while (sampling) {
-    await sampleOnce().catch((e) => console.error("sample failed:", e.message));
+    await sampleOnce().catch((e: unknown) =>
+      console.error("sample failed:", e instanceof Error ? e.message : e)
+    );
     await sleep(2000);
   }
 })();
@@ -320,7 +349,7 @@ const k6 = spawn(
     "--network",
     "host",
     "--user",
-    `${process.getuid()}:${process.getgid()}`,
+    `${process.getuid?.() ?? 0}:${process.getgid?.() ?? 0}`,
     "-v",
     `${path.join(root, "perf")}:/perf`,
     ...Object.entries(env).flatMap(([k, v]) => ["-e", `${k}=${v}`]),
@@ -333,7 +362,7 @@ const k6 = spawn(
   ],
   { stdio: "inherit" }
 );
-const k6Exit = await new Promise((resolve) =>
+const k6Exit = await new Promise<number>((resolve) =>
   k6.once("exit", (code) => resolve(code ?? 1))
 );
 const finishedAt = new Date();
@@ -344,7 +373,8 @@ await db.end();
 await stopAll();
 
 // ---- Result -----------------------------------------------------------------------------------------------------
-let summary = null;
+type K6Metric = Record<string, number>;
+let summary: { metrics: Record<string, K6Metric> } | null = null;
 try {
   summary = JSON.parse(
     readFileSync(
@@ -355,8 +385,8 @@ try {
 } catch {
   console.error("no k6 summary written");
 }
-const stat = (values) => {
-  const v = values.filter((x) => typeof x === "number");
+const stat = (values: (number | undefined)[]) => {
+  const v = values.filter((x): x is number => typeof x === "number");
   if (v.length === 0) return null;
   return {
     avg: Math.round(v.reduce((a, b) => a + b, 0) / v.length),
@@ -387,7 +417,7 @@ const server = {
     containerCpuPct: stat(containerSamples.map((s) => s.cpuPct)),
   },
 };
-const metrics = summary
+const metrics: Record<string, K6Metric> = summary
   ? Object.fromEntries(
       Object.entries(summary.metrics).filter(([name]) =>
         /^(http_req_duration|http_req_failed|http_reqs|iterations|dropped_iterations|vus_max|checks|registrations_|server_errors)/.test(
@@ -432,7 +462,8 @@ const result = {
   containerSamples,
 };
 
-const fmt = (m, key) => (m?.[key] === undefined ? "-" : Math.round(m[key]));
+const fmt = (m: K6Metric | undefined, key: string) =>
+  m?.[key] === undefined ? "-" : Math.round(m[key]);
 console.log(
   `\n${runId}: k6 exit ${k6Exit}${k6Exit === 0 ? " (budgets met)" : k6Exit === 99 ? " (a threshold broke)" : ""}`
 );
@@ -446,7 +477,7 @@ for (const [name, m] of Object.entries(metrics)) {
       metrics[name.replace("http_req_duration", "http_req_failed")];
     console.log(
       `  ${(name.replace("http_req_duration", "") || "(all)").padEnd(52)} p50 ${fmt(m, "med")} p95 ${fmt(m, "p(95)")} p99 ${fmt(m, "p(99)")} ms` +
-        `  ${reqs ? `${reqs.count} req` : ""}  ${failed ? `err ${(failed.value * 100).toFixed(2)}%` : ""}`
+        `  ${reqs ? `${reqs.count} req` : ""}  ${failed?.value !== undefined ? `err ${(failed.value * 100).toFixed(2)}%` : ""}`
     );
   }
 }

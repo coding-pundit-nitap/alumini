@@ -2,7 +2,7 @@
 // Build-output scan (strategy §10.1 "Secrets and data exposure", spec 16 16E): after `next build`, nothing
 // the browser downloads may carry a server environment variable's NAME or a secret's VALUE.
 //
-//   pnpm build && node scripts/security/scan-client-bundle.mjs
+//   pnpm build && node scripts/security/scan-client-bundle.ts
 //
 // Names come from the web app's server env schema (apps/web/src/config/env.ts) and the storage package's;
 // values are those of the variables in the current environment that hold credentials. Exit 1 on any hit.
@@ -16,12 +16,12 @@ if (!fs.existsSync(staticDir)) {
   process.exit(2);
 }
 
-const schemaNames = (file) =>
+const schemaNames = (file: string): string[] =>
   [
     ...fs
       .readFileSync(path.join(root, file), "utf8")
       .matchAll(/^\s{2}([A-Z][A-Z0-9_]{2,}):/gm),
-  ].map((m) => m[1]);
+  ].flatMap((m) => (m[1] ? [m[1]] : []));
 // NODE_ENV is replaced at build time on purpose; NEXT_PUBLIC_* are public by definition.
 const names = [
   ...new Set([
@@ -33,10 +33,14 @@ const names = [
 const SECRET = /SECRET|PASSWORD|TOKEN|DSN|_URL$|KEY/;
 const values = names
   .filter((name) => SECRET.test(name))
-  .map((name) => [name, process.env[name]])
-  .filter(([, value]) => typeof value === "string" && value.length >= 8)
+  .flatMap((name): [string, string][] => {
+    const value = process.env[name];
+    return typeof value === "string" && value.length >= 8
+      ? [[name, value]]
+      : [];
+  })
   // A URL's credentials are the secret part; its host alone (localhost:3000) is not.
-  .flatMap(([name, value]) => {
+  .flatMap(([name, value]): [string, string][] => {
     try {
       const url = new URL(value);
       return url.password
@@ -50,8 +54,8 @@ const values = names
   })
   .filter(([name]) => !/^(APP_URL|BETTER_AUTH_URL|S3_ENDPOINT)$/.test(name));
 
-const files = [];
-const walk = (dir) => {
+const files: string[] = [];
+const walk = (dir: string) => {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) walk(full);
@@ -66,7 +70,7 @@ walk(staticDir);
 // the value check below still runs for both.
 const VENDOR_NAMES = new Set(["BETTER_AUTH_SECRET", "BETTER_AUTH_URL"]);
 
-const hits = [];
+const hits: string[] = [];
 for (const file of files) {
   const text = fs.readFileSync(file, "utf8");
   for (const name of names)

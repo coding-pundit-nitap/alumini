@@ -4,7 +4,7 @@
 //
 //   pnpm --filter @nitap/web build
 //   pnpm docker:up && set -a && . ./.env && set +a
-//   node scripts/drills/web-shutdown.mjs            # PORT=3100 by default
+//   node scripts/drills/web-shutdown.ts            # PORT=3100 by default
 //
 // It starts `next start`, signs in as the dev coordinator (DEV_COORDINATOR_EMAIL/PASSWORD) to hold a real
 // message stream open, then drains and stops the instance the way a deploy does, and prints a pass/fail table
@@ -22,14 +22,18 @@ const root = path.resolve(import.meta.dirname, "../..");
 const port = Number(process.env.PORT ?? 3100);
 const origin = `http://localhost:${port}`;
 const token = "drill-health-token-0000000000";
-const results = [];
-const record = (check, pass, detail) => results.push({ check, pass, detail });
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const results: { check: string; pass: boolean; detail: string }[] = [];
+const record = (check: string, pass: boolean, detail: string) =>
+  results.push({ check, pass, detail });
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 
 // The database goes through a fault proxy so the drill can make requests slow on purpose: a request is only
 // "in flight" if the server is still working on it when SIGTERM arrives.
 const db = await startFaultProxy({
-  upstream: upstreamOf(process.env.DATABASE_URL),
+  upstream: upstreamOf(databaseUrl),
 });
 
 // The next binary itself, not through pnpm, so the signal and the exit are Next.js's own.
@@ -41,20 +45,21 @@ const server = spawn(
     env: {
       ...process.env,
       HEALTH_CHECK_TOKEN: token,
-      DATABASE_URL: db.url(process.env.DATABASE_URL),
+      DATABASE_URL: db.url(databaseUrl),
       BETTER_AUTH_URL: origin,
       LOG_LEVEL: "warn",
     },
     stdio: ["ignore", "inherit", "inherit"],
   }
 );
-const exited = new Promise((resolve) =>
+type Exit = { code: number | null; signal: NodeJS.Signals | null; at: number };
+const exited = new Promise<Exit>((resolve) =>
   server.once("exit", (code, signal) =>
     resolve({ code, signal, at: Date.now() })
   )
 );
 
-async function until(fn, timeoutMs) {
+async function until(fn: () => Promise<boolean>, timeoutMs: number) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (await fn().catch(() => false)) return true;
@@ -73,7 +78,7 @@ try {
   if (!up) throw new Error("server never became ready");
 
   // A real, open message stream (needs a session).
-  let stream = null;
+  let stream: ReadableStreamDefaultReader<Uint8Array> | null = null;
   const signIn = await fetch(`${origin}/api/auth/sign-in/email`, {
     method: "POST",
     headers: { "content-type": "application/json", origin },
@@ -92,7 +97,7 @@ try {
     const response = await fetch(`${origin}/api/v1/messages/stream`, {
       headers: { cookie },
     });
-    if (response.ok) {
+    if (response.ok && response.body) {
       const reader = response.body.getReader();
       await reader.read(); // preamble
       stream = reader;
@@ -143,25 +148,30 @@ try {
   const inFlight = Array.from(
     { length: 10 },
     () =>
-      new Promise((resolve) => {
-        const started = Date.now();
-        const request = http.get(
-          `${origin}${page}`,
-          { agent: false, headers: cookie ? { cookie } : {} },
-          (response) => {
-            response.resume();
-            response.on("end", () =>
-              resolve({ status: response.statusCode, ms: Date.now() - started })
-            );
-          }
-        );
-        request.on("error", (e) =>
-          resolve({
-            status: `error: ${e.code ?? e.message}`,
-            ms: Date.now() - started,
-          })
-        );
-      })
+      new Promise<{ status: number | string | undefined; ms: number }>(
+        (resolve) => {
+          const started = Date.now();
+          const request = http.get(
+            `${origin}${page}`,
+            { agent: false, headers: cookie ? { cookie } : {} },
+            (response) => {
+              response.resume();
+              response.on("end", () =>
+                resolve({
+                  status: response.statusCode,
+                  ms: Date.now() - started,
+                })
+              );
+            }
+          );
+          request.on("error", (e: NodeJS.ErrnoException) =>
+            resolve({
+              status: `error: ${e.code ?? e.message}`,
+              ms: Date.now() - started,
+            })
+          );
+        }
+      )
   );
   await sleep(400); // all ten are accepted and waiting on the database
   const termAt = Date.now();
@@ -196,7 +206,11 @@ try {
     refused ? "refused" : "still answering"
   );
 } catch (error) {
-  record("drill ran to the end", false, error.message);
+  record(
+    "drill ran to the end",
+    false,
+    error instanceof Error ? error.message : String(error)
+  );
 } finally {
   if (server.exitCode === null && server.signalCode === null) {
     server.kill("SIGKILL");
@@ -204,10 +218,10 @@ try {
   await db.close();
 }
 
-const sha = await new Promise((resolve) => {
+const sha = await new Promise<string>((resolve) => {
   const git = spawn("git", ["rev-parse", "--short", "HEAD"], { cwd: root });
   let out = "";
-  git.stdout.on("data", (d) => (out += d));
+  git.stdout.on("data", (d: Buffer) => (out += d));
   git.on("close", () => resolve(out.trim()));
 });
 console.log(

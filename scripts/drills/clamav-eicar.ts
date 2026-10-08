@@ -3,7 +3,7 @@
 // ClamAV:
 //
 //   pnpm docker:scan                     # first start downloads signatures; wait until healthy
-//   node scripts/drills/clamav-eicar.mjs  # CLAMAV_URL=tcp://localhost:3310 by default
+//   node scripts/drills/clamav-eicar.ts  # CLAMAV_URL=tcp://localhost:3310 by default
 //
 // It scans the EICAR test string (every antivirus flags it; it is harmless), a clean PNG, and EICAR hidden
 // after a valid image (a polyglot), prints a pass/fail table for docs/operations/security-verification.md,
@@ -28,7 +28,7 @@ const PNG = Buffer.from(
   "base64"
 );
 
-const cases = [
+const cases: [check: string, bytes: Buffer, expectOk: boolean][] = [
   ["EICAR test string is rejected", EICAR, false],
   ["a clean PNG passes", PNG, true],
   [
@@ -38,7 +38,7 @@ const cases = [
   ],
 ];
 
-const results = [];
+const results: { check: string; pass: boolean; detail: string }[] = [];
 for (const [check, bytes, expectOk] of cases) {
   try {
     const verdict = await scanner.scan(bytes);

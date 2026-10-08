@@ -1,0 +1,19 @@
+{
+  "name": "@nitap/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "check-types": "tsc --noEmit --skipLibCheck",
+    "lint:fix": "eslint --fix"
+  },
+  "devDependencies": {
+    "@nitap/eslint-config": "workspace:*",
+    "@nitap/typescript-config": "workspace:*",
+    "@types/node": "^26.6.2",
+    "eslint": "^10.11.0",
+    "typescript": "^7.0.2"
+  }
+}

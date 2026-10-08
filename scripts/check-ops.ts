@@ -15,18 +15,28 @@ const ALERTMANAGER = "prom/alertmanager:v0.28.1";
 const RUNBOOK_URL =
   /runbook_url: https:\/\/github\.com\/krotrn\/alumini\/blob\/main\/ops\/runbooks\/(R-\d+)\.md/;
 
-const problems = [];
-const docker = (args) =>
+const problems: string[] = [];
+const docker = (args: string[]) =>
   execFileSync("docker", ["run", "--rm", ...args], { stdio: "inherit" });
 
-function step(name, run) {
+function step(name: string, run: () => unknown) {
   console.log(`\n▶ ${name}`);
   try {
     run();
   } catch (error) {
-    problems.push(`${name}: ${error.message.split("\n")[0]}`);
+    const message = error instanceof Error ? error.message : String(error);
+    problems.push(`${name}: ${message.split("\n")[0]}`);
   }
 }
+
+type Dashboard = {
+  uid: string;
+  panels?: {
+    title: string;
+    datasource?: { uid?: string };
+    targets?: { expr?: string }[];
+  }[];
+};
 
 const prometheusDir = path.join(ops, "prometheus");
 const rulesDir = path.join(prometheusDir, "rules");
@@ -87,7 +97,7 @@ step(
     )) {
       const text = readFileSync(path.join(rulesDir, file), "utf8");
       for (const block of text.split(/\n\s+- alert: /).slice(1)) {
-        const name = block.split("\n")[0].trim();
+        const name = (block.split("\n")[0] ?? "").trim();
         const where = `${file} ${name}`;
         if (!/severity: (page|ticket|none)/.test(block))
           problems.push(`${where}: no severity page|ticket|none`);
@@ -110,9 +120,11 @@ step(
 
 step("dashboards are valid JSON on the provisioned datasource", () => {
   const dir = path.join(ops, "grafana", "dashboards");
-  const uids = new Set();
+  const uids = new Set<string>();
   for (const file of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
-    const dashboard = JSON.parse(readFileSync(path.join(dir, file), "utf8"));
+    const dashboard = JSON.parse(
+      readFileSync(path.join(dir, file), "utf8")
+    ) as Dashboard;
     if (uids.has(dashboard.uid))
       problems.push(`${file}: duplicate uid ${dashboard.uid}`);
     uids.add(dashboard.uid);

@@ -2,6 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
   - "database"
+  - "scripts"
 
 allowBuilds:
   "@prisma/engines": true

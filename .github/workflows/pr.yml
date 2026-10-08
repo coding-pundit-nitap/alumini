@@ -90,7 +90,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-      - run: node scripts/check-ops.mjs
+      - run: node scripts/check-ops.ts
 
   dependency-audit:
     name: Dependency audit (high and critical)
@@ -304,7 +304,7 @@ jobs:
           restore-keys: next-${{ hashFiles('pnpm-lock.yaml') }}-
       - run: pnpm build
       # No server variable name or credential in what browsers download (strategy §10.1, spec 16 16E).
-      - run: node scripts/security/scan-client-bundle.mjs
+      - run: node scripts/security/scan-client-bundle.ts
 
   e2e:
     name: E2E smoke (${{ matrix.shard }})
