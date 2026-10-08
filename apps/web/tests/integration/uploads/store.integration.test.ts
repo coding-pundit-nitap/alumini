@@ -120,4 +120,31 @@ describe("upload store (real PostgreSQL)", () => {
     await store.remove(db.prisma, upload.id);
     expect(await store.find(db.prisma, upload.id)).toBeNull();
   });
+
+  it("scanBacklog counts PENDING_SCAN rows and dates the oldest from when it entered the state", async () => {
+    expect(await store.scanBacklog(db.prisma)).toEqual({
+      pending: 0,
+      oldestSince: null,
+    });
+    const waiting = await create();
+    const later = await create();
+    await create(); // still PENDING_UPLOAD: not the scanner's backlog
+    const before = new Date();
+    await store.markPendingScan(db.prisma, waiting.id);
+    await store.markPendingScan(db.prisma, later.id);
+
+    const backlog = await store.scanBacklog(db.prisma);
+    expect(backlog.pending).toBe(2);
+    expect(backlog.oldestSince!.getTime()).toBeGreaterThanOrEqual(
+      before.getTime() - 5
+    );
+
+    await store.markReady(
+      db.prisma,
+      waiting.id,
+      `avatars/${userId}/${waiting.id}.webp`
+    );
+    await store.markRejected(db.prisma, later.id, "infected");
+    expect((await store.scanBacklog(db.prisma)).pending).toBe(0);
+  });
 });

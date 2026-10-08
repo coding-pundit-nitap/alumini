@@ -39,8 +39,15 @@ x-pgbackrest: &pgbackrest
   PGBACKREST_LOG_LEVEL_FILE: "off"
   PGBACKREST_LOG_LEVEL_STDERR: warn
 
+# Docker keeps json-file logs forever by default; an unbounded log is the classic disk-full outage (reliability
+# §6.1, R-7). 5 × 10 MB per container, enough for `docker compose logs` during an incident.
+x-logging: &logging
+  driver: json-file
+  options: { max-size: 10m, max-file: "5" }
+
 x-app: &app
   restart: unless-stopped
+  logging: *logging
   env_file: .env
   # Service addresses are fixed by this file, so they are derived here rather than typed into .env.
   environment: &app-env
@@ -81,6 +88,7 @@ services:
 
   # One-shot: `docker compose run --rm migrate`. Also runs the first-admin bootstrap (deploy/README.md).
   migrate:
+    logging: *logging
     image: ${MIGRATE_IMAGE:?}
     profiles: ["tools"]
     env_file: .env
@@ -91,6 +99,7 @@ services:
   # docker/postgres.Dockerfile: the official image plus pgBackRest. Released like the app images: CI's build, by
   # digest, in pull mode; built here (`docker compose build postgres`) in build mode, under the default name.
   postgres:
+    logging: *logging
     build: &postgres-build
       context: ../docker
       dockerfile: postgres.Dockerfile
@@ -127,6 +136,7 @@ services:
   # Restore tests only (`deploy/backup.sh restore-test`): the same image restoring into its own volume, with
   # archiving off so a restored copy can never push WAL into the production stanza.
   postgres-restore:
+    logging: *logging
     build: *postgres-build
     image: ${POSTGRES_IMAGE:-alumini-postgres:18}
     profiles: ["tools"]
@@ -146,6 +156,7 @@ services:
 
   # Cache / rate limits: may evict, holds nothing unrecoverable.
   redis:
+    logging: *logging
     image: redis:7-alpine
     restart: unless-stopped
     command:
@@ -166,6 +177,7 @@ services:
 
   # Job queue (ADR-007 §4): never evicts, persists every second.
   queue-redis:
+    logging: *logging
     image: redis:7-alpine
     restart: unless-stopped
     command:
@@ -188,6 +200,7 @@ services:
 
   # Browsers reach it only through the web app's /storage route, so it needs no CORS and no public port.
   minio:
+    logging: *logging
     image: cgr.dev/chainguard/minio:latest
     restart: unless-stopped
     command: server /data
@@ -203,6 +216,7 @@ services:
       retries: 10
 
   minio-init:
+    logging: *logging
     image: cgr.dev/chainguard/minio:latest
     depends_on:
       minio: { condition: service_healthy }
@@ -218,6 +232,7 @@ services:
   # mc for deploy/backup.sh (uploads mirror, logical dumps), against the same off-host bucket as pgBackRest.
   # The aliases are written as config rather than `mc alias set`, which needs every endpoint up to define one.
   backup-tools:
+    logging: *logging
     image: cgr.dev/chainguard/minio:latest
     profiles: ["tools"]
     environment:
@@ -242,6 +257,7 @@ services:
   # Upload malware scanning; the worker refuses to start in production without it (spec 16 SD-8).
   # First start downloads ~300 MB of signatures; clamd holds ~1 GB of RAM.
   clamav:
+    logging: *logging
     image: clamav/clamav:1.4
     restart: unless-stopped
     volumes:

@@ -1,0 +1,38 @@
+rule_files:
+  - ../rules/uploads.yml
+evaluation_interval: 1m
+
+tests:
+  # The oldest upload starts at 20 minutes and keeps ageing: over 30 minutes from minute 11, firing 30 minutes later.
+  - interval: 1m
+    input_series:
+      - series: 'upload_scan_oldest_pending_age_seconds{job="worker",instance="worker:3001"}'
+        values: "1200+60x60"
+    alert_rule_test:
+      - eval_time: 40m
+        alertname: UploadScanBacklog
+        exp_alerts: []
+      - eval_time: 42m
+        alertname: UploadScanBacklog
+        exp_alerts:
+          - exp_labels:
+              {
+                severity: ticket,
+                service: worker,
+                job: worker,
+                instance: "worker:3001",
+              }
+            exp_annotations:
+              summary: An upload has waited more than 30 minutes for its malware scan
+              description: The oldest PENDING_SCAN upload has waited 1h 2m 0s. Files stay unusable until scanned.
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-14.md"
+
+  # A backlog that drains in under 30 minutes never fires.
+  - interval: 1m
+    input_series:
+      - series: 'upload_scan_oldest_pending_age_seconds{job="worker",instance="worker:3001"}'
+        values: "0 600 1200 0 0 0"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: UploadScanBacklog
+        exp_alerts: []

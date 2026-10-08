@@ -1,0 +1,12 @@
+# Upload scanning (reliability §5.6 R-14, spec 18C). The worker samples the PENDING_SCAN backlog at scrape time.
+groups:
+  - name: uploads
+    rules:
+      - alert: UploadScanBacklog
+        expr: upload_scan_oldest_pending_age_seconds{job="worker"} > 30 * 60
+        for: 30m
+        labels: { severity: ticket, service: worker }
+        annotations:
+          summary: "An upload has waited more than 30 minutes for its malware scan"
+          description: "The oldest PENDING_SCAN upload has waited {{ $value | humanizeDuration }}. Files stay unusable until scanned."
+          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-14.md

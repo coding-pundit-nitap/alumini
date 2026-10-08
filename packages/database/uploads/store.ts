@@ -57,6 +57,10 @@ export type UploadStore = {
     limit: number
   ): Promise<UploadRow[]>;
   remove(tx: UploadTransaction, id: string): Promise<void>;
+  /** How many rows wait for the scanner, and since when the oldest has (R-14). */
+  scanBacklog(
+    tx: UploadTransaction
+  ): Promise<{ pending: number; oldestSince: Date | null }>;
 };
 
 export function createUploadStore(): UploadStore {
@@ -107,6 +111,16 @@ export function createUploadStore(): UploadStore {
 
     async remove(tx, id) {
       await tx.upload.delete({ where: { id } });
+    },
+
+    // updated_at is when the row became PENDING_SCAN: nothing else writes a row in that state.
+    async scanBacklog(tx) {
+      const { _count, _min } = await tx.upload.aggregate({
+        where: { status: "PENDING_SCAN" },
+        _count: { _all: true },
+        _min: { updatedAt: true },
+      });
+      return { pending: _count._all, oldestSince: _min.updatedAt };
     },
   };
 }

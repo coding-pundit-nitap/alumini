@@ -71,6 +71,9 @@ packages/database/generated
 # Server-side release history written by deploy/deploy.sh
 deploy/releases.log
 deploy/backups.log
+# Monitoring secrets (deploy/monitoring.env.example)
+deploy/monitoring.env
 .drill-restore/
 .drill-release/
+.drill-alerts/
 .migration-locks/

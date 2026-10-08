@@ -1,9 +1,14 @@
-# Release drill (reliability §8.3–§8.5; spec 18B). Runs packages/scripts/drills/release.ts: the production release
-# tooling (deploy/compose.yml, deploy/deploy.sh) in staging and production clones of a local origin with a local
-# registry, through pull → promote → rollback → promote, with an expand migration in between. It measures each
-# release's interruption (PRD-2). Monthly, by hand, and on any change to the files it exercises, so a change to
-# deploy.sh is rehearsed before a server runs it. The result table is the run's summary.
-name: Release drill
+# Release and alert drills (reliability §5.1, §8.3–§8.5, §11; specs 18B, 18C), monthly, by hand, and on any change
+# to the files they exercise, so a change is rehearsed before a server runs it. Each result table is its run's
+# summary.
+#   drill   packages/scripts/drills/release.ts: the production release tooling (deploy/compose.yml, deploy.sh) in
+#           staging and production clones of a local origin with a local registry, through pull → promote →
+#           rollback → promote with an expand migration, measuring each release's interruption (PRD-2); then
+#           deploy/monitoring.sh against production, every target up.
+#   alerts  packages/scripts/drills/alerts.ts: Prometheus and Alertmanager from deploy/monitoring.yml with the
+#           production rules and routing deliver a page, a ticket and the dead-man's-switch heartbeat to a sink,
+#           group and inhibit as configured, and the heartbeat stops when Prometheus does (PRD-8).
+name: Release and alert drills
 
 on:
   schedule:
@@ -13,8 +18,12 @@ on:
     paths:
       - deploy/compose.yml
       - deploy/deploy.sh
+      - deploy/monitoring.yml
+      - deploy/monitoring.sh
       - docker/**
+      - ops/**
       - packages/scripts/drills/release.ts
+      - packages/scripts/drills/alerts.ts
       - .github/workflows/release-drill.yml
 
 permissions:
@@ -77,3 +86,17 @@ jobs:
         env:
           DRILL_HOST: "a GitHub Actions runner (ubuntu-24.04, run ${{ github.run_id }})"
         run: node packages/scripts/drills/release.ts --skip-build --summary "$GITHUB_STEP_SUMMARY"
+
+  alerts:
+    name: Alert drill (page, ticket, inhibition, dead-man's switch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Drill
+        env:
+          DRILL_HOST: "a GitHub Actions runner (ubuntu-24.04, run ${{ github.run_id }})"
+        run: node packages/scripts/drills/alerts.ts --summary "$GITHUB_STEP_SUMMARY"

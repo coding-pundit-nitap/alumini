@@ -9,7 +9,8 @@
 // N+1 carries an expand migration (a nullable column, then a CONCURRENTLY index), so the rollback runs the old
 // release on the new schema, which is the claim that makes rollback safe (§9.3). The interruption of each
 // production release is measured from outside by polling /health/live, which decides PRD-2 (blue/green
-// becomes a launch gate above 30 s).
+// becomes a launch gate above 30 s). Finally deploy/monitoring.sh starts the monitoring stack (spec 18C) against
+// production: every scrape target must be up and the series the alerts need must exist.
 //
 //   node packages/scripts/drills/release.ts [--skip-build] [--record] [--summary f] [--keep]
 //
@@ -25,6 +26,7 @@ import {
   appendFileSync,
   chmodSync,
   copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -45,6 +47,7 @@ const { values: args } = parseArgs({
     "registry-port": { type: "string", default: "55000" },
     "staging-port": { type: "string", default: "3201" },
     "production-port": { type: "string", default: "3200" },
+    "prometheus-port": { type: "string", default: "55290" },
     "skip-build": { type: "boolean", default: false },
     record: { type: "boolean", default: false },
     summary: { type: "string" },
@@ -370,6 +373,14 @@ function publish(sha: string, suffix: "" | "-next") {
 function teardown() {
   for (const env of Object.values(environments)) {
     if (!existsSync(path.join(env.deploy, ".env"))) continue;
+    if (existsSync(path.join(env.deploy, "monitoring.env")))
+      try {
+        run("./monitoring.sh", ["down", "-v", "--remove-orphans"], {
+          cwd: env.deploy,
+        });
+      } catch {
+        // best effort
+      }
     try {
       compose(env, "--profile", "tools", "down", "-v", "--remove-orphans");
     } catch {
@@ -413,6 +424,119 @@ function bootstrap(env: Env, sha: string) {
   );
 }
 
+/**
+ * deploy/monitoring.sh against the running release (spec 18C §5). Stand-ins: receiver URLs that go nowhere, the
+ * probe aimed at web on the compose network (no TLS here), and a backup textfile like backup.sh writes.
+ */
+async function monitoringChecks(env: Env) {
+  const textfile = path.join(work, "node-exporter");
+  mkdirSync(textfile, { recursive: true });
+  writeFileSync(
+    path.join(textfile, "alumini_backup_full.prom"),
+    `alumini_backup_last_success_timestamp_seconds{kind="full"} ${Math.floor(now() / 1000)}\n`
+  );
+  writeFileSync(
+    path.join(env.deploy, "monitoring.env"),
+    [
+      `MONITORING_DB_PASSWORD=${randomBytes(12).toString("hex")}`,
+      `GRAFANA_ADMIN_PASSWORD=${randomBytes(12).toString("hex")}`,
+      "ALERT_PAGER_URL=http://127.0.0.1:9/pager",
+      "ALERT_TICKET_URL=http://127.0.0.1:9/ticket",
+      "ALERT_DEADMANS_SWITCH_URL=http://127.0.0.1:9/deadmans-switch",
+      `PROMETHEUS_PORT=${args["prometheus-port"]}`,
+      `ALERTMANAGER_PORT=${Number(args["prometheus-port"]) + 3}`,
+      `GRAFANA_PORT=${Number(args["prometheus-port"]) + 10}`,
+      "PROBE_URL=http://web:3000/health/ready",
+      `BACKUP_METRICS_DIR=${textfile}`,
+      "",
+    ].join("\n")
+  );
+  const took = now();
+  run("./monitoring.sh", ["up", "-d"], { cwd: env.deploy });
+  const api = `http://127.0.0.1:${args["prometheus-port"]}/api/v1`;
+  type Target = { labels: { job: string }; health: string; lastError: string };
+  const targets = async () =>
+    (
+      (await fetch(`${api}/targets`)
+        .then((r) => r.json())
+        .catch(() => ({ data: { activeTargets: [] } }))) as {
+        data: { activeTargets: Target[] };
+      }
+    ).data.activeTargets;
+  let seen: Target[] = [];
+  for (const until = now() + 180_000; now() < until; await sleep(3000)) {
+    seen = await targets();
+    if (seen.length > 0 && seen.every((t) => t.health === "up")) break;
+  }
+  timings.push({
+    step: `${env.name}: monitoring.sh up -d (all targets up)`,
+    ms: now() - took,
+  });
+  const jobs = [
+    "web",
+    "worker",
+    "postgres",
+    "redis-cache",
+    "redis-queue",
+    "node",
+    "probe",
+    "prometheus",
+    "alertmanager",
+  ];
+  const down = jobs.filter(
+    (job) => !seen.some((t) => t.labels.job === job && t.health === "up")
+  );
+  check(
+    "monitoring: every scrape target up (web and worker with the token, postgres as `monitoring`)",
+    down.length === 0,
+    down.length
+      ? down
+          .map(
+            (job) =>
+              `${job}: ${seen.find((t) => t.labels.job === job)?.lastError ?? "no target"}`
+          )
+          .join("; ")
+      : `${seen.length} targets`
+  );
+  // One scrape after the targets came up is enough for each series.
+  await sleep(16_000);
+  const query = async (expr: string) =>
+    (
+      (await fetch(`${api}/query?query=${encodeURIComponent(expr)}`).then((r) =>
+        r.json()
+      )) as { data: { result: { metric: Record<string, string> }[] } }
+    ).data.result;
+  const required: [string, string][] = [
+    ["probe_success == 1", "public probe succeeds"],
+    ['auth_sign_in_total{outcome="success"} > 0', "smoke sign-in counted"],
+    ["upload_scan_oldest_pending_age_seconds", "scan backlog gauge"],
+    ["pg_wal_size_bytes", "pg_wal size"],
+    ['node_filesystem_avail_bytes{mountpoint="/"}', "host disk"],
+    [
+      'alumini_backup_last_success_timestamp_seconds{kind="full"}',
+      "backup textfile",
+    ],
+  ];
+  const missing: string[] = [];
+  for (const [expr, what] of required)
+    if ((await query(expr)).length === 0) missing.push(what);
+  check(
+    "monitoring: the series the 18C alerts need exist",
+    missing.length === 0,
+    missing.length
+      ? `missing: ${missing.join(", ")}`
+      : required.map(([, w]) => w).join(", ")
+  );
+  const alerts = (await query('ALERTS{alertname!="Watchdog"}')).map(
+    (r) => `${r.metric.alertname} (${r.metric.alertstate})`
+  );
+  check(
+    "monitoring: no alert pending or firing on a healthy release",
+    alerts.length === 0,
+    alerts.join(", ") || "only Watchdog"
+  );
+}
+
 // ---------------------------------------------------------------------------------------------- the drill
 const started = new Date();
 const interruptions: { step: string; ms: number }[] = [];
@@ -444,12 +568,21 @@ try {
   run("git", ["clone", "-q", origin, seed]);
   mkdirSync(path.join(seed, "deploy"));
   mkdirSync(path.join(seed, "docker"));
-  for (const file of ["compose.yml", "deploy.sh", ".env.example"])
+  for (const file of [
+    "compose.yml",
+    "deploy.sh",
+    ".env.example",
+    "monitoring.yml",
+    "monitoring.sh",
+    "monitoring.env.example",
+  ])
     copyFileSync(
       path.join(root, "deploy", file),
       path.join(seed, "deploy", file)
     );
   chmodSync(path.join(seed, "deploy/deploy.sh"), 0o755);
+  chmodSync(path.join(seed, "deploy/monitoring.sh"), 0o755);
+  cpSync(path.join(root, "ops"), path.join(seed, "ops"), { recursive: true });
   copyFileSync(
     path.join(root, "docker/postgres.Dockerfile"),
     path.join(seed, "docker/postgres.Dockerfile")
@@ -605,6 +738,8 @@ try {
         cwd: production.deploy,
       }) === "running"
   );
+
+  await monitoringChecks(production);
 
   const worst = Math.max(...interruptions.map((i) => i.ms));
   check(

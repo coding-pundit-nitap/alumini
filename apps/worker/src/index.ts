@@ -1,3 +1,4 @@
+import { createUploadStore } from "@nitap/database/uploads";
 import {
   canSeeHealthDetails,
   captureError,
@@ -17,6 +18,7 @@ import { createClamdScanner, parseClamavUrl } from "./clamav.ts";
 import { startHealthServer } from "./health.ts";
 import { createPrismaClient } from "./prisma.ts";
 import { registerQueueDepthCollector } from "./queue-depth.ts";
+import { registerUploadScanBacklogCollector } from "./upload-scan-backlog.ts";
 
 const env = loadEnv(process.env);
 const storage = createS3StoragePort(loadStorageEnv(process.env));
@@ -43,6 +45,7 @@ setMetrics(metrics);
 const { prisma, pool } = createPrismaClient(env.DATABASE_URL);
 const queueAdmin = createQueueAdmin({ url: env.QUEUE_REDIS_URL });
 registerQueueDepthCollector(metrics, queueAdmin);
+registerUploadScanBacklogCollector(metrics, prisma, createUploadStore());
 const worker = composeWorker({
   prisma,
   logger,

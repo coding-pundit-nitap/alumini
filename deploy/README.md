@@ -17,6 +17,7 @@ Internet ─▶ Nginx on the host (TLS, rate limit, 6 MB bodies) ─▶ 127.0.0.
 | `.env.example`       | Template for `deploy/.env` (gitignored): environment, secrets, domain, SMTP           |
 | `deploy.sh`          | `build` / `pull` / `promote <sha> <approver>` / `rollback <sha>` / `smoke` / `status` |
 | `nginx/alumini.conf` | Host Nginx site                                                                       |
+| `monitoring.yml`     | Prometheus, Alertmanager, Grafana and exporters, run with `monitoring.sh` (step 9)    |
 
 The server is a clone of this repository. Every release runs exactly one commit: `deploy.sh` refuses a clone
 with local changes, moves it to that commit, and releases that commit's images, built on the server or by CI.
@@ -240,9 +241,55 @@ docker compose run --rm --no-deps -T backup-tools 'mc cat "backup/$BACKUP_S3_BUC
     -pass env:PGBACKREST_REPO1_CIPHER_PASS | pg_restore -U alumini -d alumini --clean --if-exists'
 ```
 
+### 9. Monitoring
+
+The rules, routing, dashboards and runbooks are code in [`ops/`](../ops/README.md). `monitoring.yml` runs them
+on this host as a second compose project, joined to the application's network: Prometheus, Alertmanager,
+Grafana, node_exporter (disk, memory, CPU and the backup timestamps from step 8), postgres and Redis exporters,
+and a blackbox exporter that probes `https://YOUR.DOMAIN/health/ready` the way users reach it (TLS, Nginx,
+certificate expiry). Nothing is published except on `127.0.0.1`.
+
+**Outside this host, before launch** (reliability §5.1; a monitor on the host dies with it):
+
+- **A dead-man's switch:** a service that pages when a heartbeat it expects every minute stops for 3 minutes
+  (Healthchecks.io, Better Stack, Cronitor, PagerDuty's, and so on). Its webhook URL is `ALERT_DEADMANS_SWITCH_URL`.
+- **An external uptime check** on `https://YOUR.DOMAIN/health/ready`, every minute, paging after 2 failures.
+- **Where pages and tickets go:** a webhook for each (a paging service, or a chat channel through its incoming
+  webhook): `ALERT_PAGER_URL` and `ALERT_TICKET_URL`.
+
+```bash
+cd /opt/alumini/deploy
+cp monitoring.env.example monitoring.env && chmod 600 monitoring.env
+openssl rand -hex 24      # MONITORING_DB_PASSWORD
+openssl rand -base64 24   # GRAFANA_ADMIN_PASSWORD
+nano monitoring.env       # the two passwords and the three receiver URLs
+./monitoring.sh up -d
+./monitoring.sh ps
+```
+
+`monitoring.env` is separate from `.env` because every application container receives `.env` as its
+environment, and the receivers' URLs are secrets. `monitoring.sh` passes both files to compose, so the stack
+also reads `DEPLOY_ENV`, `APP_URL`, `HEALTH_CHECK_TOKEN` and `POSTGRES_PASSWORD` from `.env`. On every `up` it
+creates or updates the `monitoring` database role (`pg_monitor`: statistics, no table data) that
+postgres-exporter signs in with.
+
+Check it within a few minutes:
+
+- Grafana over an SSH tunnel: `ssh -L 3030:127.0.0.1:3030 you@server`, then <http://localhost:3030> (`admin`,
+  `GRAFANA_ADMIN_PASSWORD`). Prometheus on 9090 and Alertmanager on 9093 work the same way.
+- Prometheus → Status → Targets: every target is up.
+- The dead-man's switch shows a heartbeat every minute.
+- `./monitoring.sh exec alertmanager amtool alert add DrillTest severity=ticket service=monitoring
+--alertmanager.url=http://localhost:9093` and a ticket arrives within a minute. Pages are tested the same way
+  with `severity=page`.
+
+After a `git pull` that changed `ops/` or `monitoring.yml`: `./monitoring.sh up -d`. Rules and dashboards
+are read at start, so `./monitoring.sh restart prometheus grafana` picks up rule-only changes. A
+`docker compose down` of the application removes its network: run `./monitoring.sh up -d` again after it.
+
 ## Staging
 
-A second, smaller server (2 vCPU, 4 GB) set up with steps 1–8, with these differences in `deploy/.env`:
+A second, smaller server (2 vCPU, 4 GB) set up with steps 1–9, with these differences in `deploy/.env`:
 
 - `DEPLOY_ENV=staging` and `COMPOSE_PROJECT_NAME=alumini-staging`. If it has to share the production host,
   also `WEB_PORT=3001` and a second Nginx site; it then shares that host's disk, memory and failures, which is
@@ -252,6 +299,8 @@ A second, smaller server (2 vCPU, 4 GB) set up with steps 1–8, with these diff
   copied here** (reliability §8.2).
 - Data is synthetic, never a copy of production: register test accounts, or load the performance seed.
 - `SMOKE_EMAIL` and `SMOKE_PASSWORD` are required: without a passing smoke test, nothing can be promoted.
+- Monitoring (step 9) is optional. If you run it, send its pages to the ticket receiver: staging pages wake no
+  one. Every alert carries `environment=staging`.
 
 ## Releasing
 
@@ -312,8 +361,10 @@ docker compose exec postgres psql -U alumini alumini
   images no recent `releases.log` line names with `docker image rm`. Do not run `docker system prune -a`: it deletes the rollback images.
 - **Health:** `/health/live`, `/health/ready` and `/health/startup` are public. `/metrics` and `/health/drain`
   answer only from the host (Nginx) and only with `Authorization: Bearer $HEALTH_CHECK_TOKEN` (the app).
-- **Monitoring:** the Prometheus, Alertmanager and Grafana stack in [`ops/`](../ops/README.md) is not part of
-  this compose file yet. Add an external uptime check on `https://YOUR.DOMAIN/health/ready` at minimum.
+- **Monitoring:** step 9. `./monitoring.sh ps`, `./monitoring.sh logs -f prometheus`. Each alert links its
+  runbook in [`ops/runbooks/`](../ops/runbooks/).
+- **Logs** are capped per container (5 × 10 MB, `compose.yml`), so `docker compose logs` reaches back hours,
+  not weeks. Anything older is in the error tracker, or gone.
 - **PostgreSQL major upgrade:** the data volume belongs to one major version, and a newer image refuses
   it. Dump (`./backup.sh dump`, or `pg_dump -Fc` to a file), `docker compose down`, remove the
   `alumini-prod_postgres-data` volume, release, restore the dump, then `./backup.sh backup full`. Physical
@@ -331,6 +382,10 @@ docker compose exec postgres psql -U alumini alumini
 - [ ] Backup bucket off-host, versioned, key without version-delete; `BACKUP_CIPHER_PASS` escrowed with two people
 - [ ] `./backup.sh init` done, cron installed, `./backup.sh info` shows backups and WAL reaching the present
 - [ ] `./backup.sh restore-test` passes on the server, recorded in [restore-tests](../docs/operations/restore-tests.md)
-- [ ] External uptime check on `/health/ready`
+- [ ] External uptime check on `/health/ready`, paging from outside the host
+- [ ] Monitoring up (step 9): every Prometheus target up, a test ticket and a test page received, the
+      dead-man's switch receiving heartbeats; then `./monitoring.sh stop prometheus` pages within 5 minutes,
+      and `./monitoring.sh start prometheus`
+- [ ] The domain set to auto-renew at the registrar, with its expiry emails going to a shared mailbox
 - [ ] Staging set up and a release promoted from it (`releases.log` on production shows `source=promote`)
 - [ ] A rollback rehearsed on staging and once on production: release, `rollback <previous>`, release again

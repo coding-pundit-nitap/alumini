@@ -11,11 +11,14 @@ route:
   repeat_interval: 24h
   routes:
     # Always firing; the external dead-man's switch pages when these heartbeats STOP (reliability §5.1).
+    # A repeat goes out only on a group_interval tick once repeat_interval has passed. With both at 1m, jitter
+    # makes every other tick fall just short, and the heartbeat arrives every 2 minutes (spec 18C alert drill).
+    # Ticks every 30s with a 50s repeat give one heartbeat a minute.
     - matchers: [alertname="Watchdog"]
       receiver: deadmans-switch
       group_wait: 0s
-      group_interval: 1m
-      repeat_interval: 1m
+      group_interval: 30s
+      repeat_interval: 50s
     - matchers: [severity="page"]
       receiver: pager
       repeat_interval: 1h
@@ -27,13 +30,23 @@ route:
 inhibit_rules:
   - source_matchers: [alertname=~"WebDown|ReadinessFailing"]
     target_matchers:
-      [alertname=~"HighErrorRate|HighLatencyP95|HighLatencyP95Sustained"]
+      [
+        alertname=~"HighErrorRate|HighLatencyP95|HighLatencyP95Sustained|SiteProbeFailing",
+      ]
     equal: [service]
   - source_matchers: [alertname="QueueRedisDown"]
     target_matchers: [alertname=~"QueueBacklogGrowing|OutboxStuck"]
   - source_matchers: [alertname="PostgresDown"]
     target_matchers:
       [alertname=~"ReadinessFailing|DbPoolSaturated|PostgresConnectionsHigh"]
+
+  # The page-level alert of a pair says everything the ticket-level one does.
+  - source_matchers: [alertname="HostDiskFull"]
+    target_matchers: [alertname="HostDiskFilling"]
+    equal: [instance, mountpoint]
+  - source_matchers: [alertname="TlsCertExpiring"]
+    target_matchers: [alertname="TlsCertExpiringSoon"]
+    equal: [instance]
 
 receivers:
   - name: pager

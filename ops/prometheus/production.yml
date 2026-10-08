@@ -1,0 +1,62 @@
+# Production scrape config, run by deploy/monitoring.yml on the application host (spec 18C). Prometheus sits on
+# the application's compose network, so web and worker are scraped directly, not through Nginx. Both answer
+# /metrics in production only with HEALTH_CHECK_TOKEN (ADR-028 OD-2), which monitoring.yml mounts from
+# deploy/.env as health_check_token. The probe target comes from the same .env (probe-targets.json).
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  # --enable-feature=expand-external-labels: DEPLOY_ENV is set on the container from deploy/.env.
+  external_labels:
+    environment: ${DEPLOY_ENV}
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+  - job_name: web
+    authorization:
+      credentials_file: /etc/prometheus/health_check_token
+    static_configs:
+      - targets: ["web:3000"]
+  - job_name: worker
+    authorization:
+      credentials_file: /etc/prometheus/health_check_token
+    static_configs:
+      - targets: ["worker:3001"]
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+  - job_name: redis-cache
+    static_configs:
+      - targets: ["redis-exporter-cache:9121"]
+  - job_name: redis-queue
+    static_configs:
+      - targets: ["redis-exporter-queue:9121"]
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+  # The public URL through DNS, TLS and Nginx (the internal half of R-1) and the certificate's expiry (R-12).
+  - job_name: probe
+    metrics_path: /probe
+    params:
+      module: [http_ready]
+    file_sd_configs:
+      - files: [/etc/prometheus/probe-targets.json]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: alertmanager
+    static_configs:
+      - targets: ["alertmanager:9093"]

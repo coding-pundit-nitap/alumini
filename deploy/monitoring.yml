@@ -1,0 +1,171 @@
+# Monitoring on the application host (spec 18C, PRD-7): Prometheus, Alertmanager, Grafana and the exporters,
+# as their own compose project joined to the application's network. Run it only through deploy/monitoring.sh,
+# which sets the project name and APP_NETWORK and reads deploy/.env and deploy/monitoring.env.
+#
+# The rules, routing and dashboards are the reviewed code in ops/. Secrets reach the containers as compose
+# configs written from the env files. Nothing is published except on 127.0.0.1. The external probe and the
+# dead-man's-switch receiver live off this host (reliability §5.1); the README says what to set up.
+name: alumini-prod-monitoring
+
+x-service: &service
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: 10m, max-file: "3" }
+
+services:
+  prometheus:
+    <<: *service
+    image: prom/prometheus:v3.5.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      # Firing alerts are resent every 15 s and expire in Alertmanager 4 × that after the last resend. The
+      # Watchdog heartbeat therefore stops about a minute after Prometheus does; with the default 1 m, about 4
+      # (spec 18C C-7, measured by the alert drill).
+      - --rules.alert.resend-delay=15s
+      - --enable-feature=expand-external-labels
+    environment:
+      DEPLOY_ENV: ${DEPLOY_ENV:-production}
+    volumes:
+      - ../ops/prometheus/production.yml:/etc/prometheus/prometheus.yml:ro
+      - ../ops/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    configs:
+      - source: health_check_token
+        target: /etc/prometheus/health_check_token
+      - source: probe_targets
+        target: /etc/prometheus/probe-targets.json
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    networks: [default, app]
+
+  alertmanager:
+    <<: *service
+    image: prom/alertmanager:v0.28.1
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    volumes:
+      - ../ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    configs:
+      - source: pager_url
+        target: /etc/alertmanager/secrets/pager_url
+      - source: ticket_url
+        target: /etc/alertmanager/secrets/ticket_url
+      - source: deadmans_switch_url
+        target: /etc/alertmanager/secrets/deadmans_switch_url
+    ports:
+      - "127.0.0.1:${ALERTMANAGER_PORT:-9093}:9093"
+
+  grafana:
+    <<: *service
+    image: grafana/grafana:12.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set in deploy/monitoring.env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes:
+      - ../ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3030}:3000"
+
+  # One-shot on every `up`: postgres-exporter's login role, with pg_monitor (statistics, no table data). Creates
+  # it once, and sets the password from monitoring.env each time, so rotating it is an edit and an `up`.
+  monitoring-db-role:
+    image: ${POSTGRES_IMAGE:-postgres:18-alpine}
+    restart: "no"
+    environment:
+      PGHOST: postgres
+      PGUSER: alumini
+      PGDATABASE: alumini
+      PGPASSWORD: ${POSTGRES_PASSWORD:?}
+      MONITORING_DB_PASSWORD: ${MONITORING_DB_PASSWORD:?set in deploy/monitoring.env}
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        psql -v ON_ERROR_STOP=1 -v pw="$$MONITORING_DB_PASSWORD" <<'SQL'
+        SELECT 'CREATE ROLE monitoring' WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'monitoring')
+        \gexec
+        ALTER ROLE monitoring WITH LOGIN PASSWORD :'pw' CONNECTION LIMIT 5;
+        GRANT pg_monitor TO monitoring;
+        SQL
+    networks: [app]
+
+  postgres-exporter:
+    <<: *service
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    environment:
+      DATA_SOURCE_URI: postgres:5432/alumini?sslmode=disable
+      DATA_SOURCE_USER: monitoring
+      DATA_SOURCE_PASS: ${MONITORING_DB_PASSWORD:?}
+    depends_on:
+      monitoring-db-role: { condition: service_completed_successfully }
+    networks: [app]
+
+  redis-exporter-cache:
+    <<: *service
+    image: oliver006/redis_exporter:v1.74.0
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    networks: [app]
+
+  redis-exporter-queue:
+    <<: *service
+    image: oliver006/redis_exporter:v1.74.0
+    environment:
+      REDIS_ADDR: redis://queue-redis:6379
+    networks: [app]
+
+  # The host's filesystems, memory and CPU, read through / mounted read-only, and deploy/backup.sh's job
+  # timestamps (textfile collector). On the compose network, so no port opens on the host: Docker-published
+  # ports bypass ufw (README step 1). Network metrics describe this container, not the host.
+  node-exporter:
+    <<: *service
+    image: prom/node-exporter:v1.9.1
+    command:
+      - --path.rootfs=/host
+      - --collector.textfile.directory=/textfile
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+      - ${BACKUP_METRICS_DIR:-/var/lib/prometheus/node-exporter}:/textfile:ro
+
+  # Probes the public URL through DNS, TLS and Nginx, the way users reach it (ops/blackbox/blackbox.yml).
+  blackbox-exporter:
+    <<: *service
+    image: prom/blackbox-exporter:v0.27.0
+    command: [--config.file=/etc/blackbox/blackbox.yml]
+    volumes:
+      - ../ops/blackbox/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+    networks: [default, app]
+
+configs:
+  health_check_token:
+    content: ${HEALTH_CHECK_TOKEN:?}
+  probe_targets:
+    content: |
+      [{"targets": ["${PROBE_URL:-${APP_URL:?}/health/ready}"]}]
+  pager_url:
+    content: ${ALERT_PAGER_URL:?set in deploy/monitoring.env}
+  ticket_url:
+    content: ${ALERT_TICKET_URL:?set in deploy/monitoring.env}
+  deadmans_switch_url:
+    content: ${ALERT_DEADMANS_SWITCH_URL:?set in deploy/monitoring.env}
+
+networks:
+  # The application's compose network (deploy/compose.yml), created by its first `up`.
+  app:
+    name: ${APP_NETWORK:?run through deploy/monitoring.sh}
+    external: true
+
+volumes:
+  prometheus-data:
+  alertmanager-data:
+  grafana-data:

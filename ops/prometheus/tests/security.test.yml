@@ -3,6 +3,40 @@ rule_files:
 evaluation_interval: 1m
 
 tests:
+  # 10 failed sign-ins a minute (8 wrong passwords, 2 rate limited) and plenty of successes: over 50 in 10 minutes.
+  - interval: 1m
+    input_series:
+      - series: 'auth_sign_in_total{job="web",instance="web:3000",outcome="invalid_credentials"}'
+        values: "0+8x40"
+      - series: 'auth_sign_in_total{job="web",instance="web:3000",outcome="rate_limited"}'
+        values: "0+2x40"
+      - series: 'auth_sign_in_total{job="web",instance="web:3000",outcome="success"}'
+        values: "0+50x40"
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: LoginFailureSpike
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: LoginFailureSpike
+        exp_alerts:
+          - exp_labels: { severity: ticket, service: web }
+            exp_annotations:
+              summary: Spike in failed and rate-limited sign-ins
+              description: 100 sign-ins failed or were rate limited in 10 minutes. Credential stuffing or a broken login.
+              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md"
+
+  # Forbidden (unverified) sign-ins and invalid requests are not a spike, however many.
+  - interval: 1m
+    input_series:
+      - series: 'auth_sign_in_total{job="web",instance="web:3000",outcome="forbidden"}'
+        values: "0+20x40"
+      - series: 'auth_sign_in_total{job="web",instance="web:3000",outcome="invalid_request"}'
+        values: "0+20x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: LoginFailureSpike
+        exp_alerts: []
+
   # 5 denials a minute on an admin-tier permission; the same rate on a member permission is ignored.
   - interval: 1m
     input_series:

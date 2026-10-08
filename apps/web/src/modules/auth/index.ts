@@ -2,6 +2,7 @@
 export { auth } from "./infrastructure/auth";
 export { getActor, loadGrants } from "./infrastructure/actor";
 export { authorize, can } from "./infrastructure/authorization";
+export { withSignInMetrics } from "./infrastructure/sign-in-metrics";
 export { PERMISSIONS, SELF_SERVICE_PERMISSIONS } from "./domain/permission";
 export type { Permission } from "./domain/permission";
 export type { AccountState, Actor, Resource } from "./domain/actor";

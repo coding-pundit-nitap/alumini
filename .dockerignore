@@ -15,4 +15,5 @@ docs
 perf/results
 .drill-restore
 .drill-release
+.drill-alerts
 .migration-locks

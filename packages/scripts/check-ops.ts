@@ -1,21 +1,32 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 
 /**
- * Checks the monitoring code under ops/ (spec 13C C-8), in the same pinned images the local stack runs:
- * Prometheus config and rules parse, every alert rule's promtool unit tests pass, Alertmanager's config is
- * valid, every alert links a runbook that exists, and every dashboard is valid JSON on the provisioned
- * datasource. Needs Docker; CI runs it in the `observability` job.
+ * Checks the monitoring code under ops/ (spec 13C C-8, 18C), in the same pinned images the stacks run: the
+ * local and production Prometheus configs and the rules parse, every alert rule's promtool unit tests pass,
+ * Alertmanager's and the blackbox exporter's configs are valid, every alert links a runbook that exists, and
+ * every dashboard is valid JSON on the provisioned datasource. Needs Docker; CI runs it in the `observability`
+ * job.
  */
 const root = path.resolve(import.meta.dirname, "../..");
 const ops = path.join(root, "ops");
 const PROMETHEUS = "prom/prometheus:v3.5.0";
 const ALERTMANAGER = "prom/alertmanager:v0.28.1";
+const BLACKBOX = "prom/blackbox-exporter:v0.27.0";
 const RUNBOOK_URL =
   /runbook_url: https:\/\/github\.com\/krotrn\/alumini\/blob\/main\/ops\/runbooks\/(R-\d+)\.md/;
 
 const problems: string[] = [];
+const scratch = mkdtempSync(path.join(tmpdir(), "ops-check-"));
 const docker = (args: string[]) =>
   execFileSync("docker", ["run", "--rm", ...args], { stdio: "inherit" });
 
@@ -54,6 +65,43 @@ step("promtool check config (and the rules it loads)", () =>
     "check",
     "config",
     "/etc/prometheus/prometheus.yml",
+  ])
+);
+
+// deploy/monitoring.yml writes these two from the env files; promtool wants every referenced file to exist.
+writeFileSync(path.join(scratch, "health_check_token"), "token");
+writeFileSync(
+  path.join(scratch, "probe-targets.json"),
+  '[{"targets": ["https://alumni.example.org/health/ready"]}]'
+);
+step("promtool check config ops/prometheus/production.yml", () =>
+  docker([
+    "-e",
+    "DEPLOY_ENV=production",
+    "-v",
+    `${path.join(prometheusDir, "production.yml")}:/etc/prometheus/prometheus.yml:ro`,
+    "-v",
+    `${rulesDir}:/etc/prometheus/rules:ro`,
+    "-v",
+    `${path.join(scratch, "health_check_token")}:/etc/prometheus/health_check_token:ro`,
+    "-v",
+    `${path.join(scratch, "probe-targets.json")}:/etc/prometheus/probe-targets.json:ro`,
+    "--entrypoint",
+    "promtool",
+    PROMETHEUS,
+    "check",
+    "config",
+    "/etc/prometheus/prometheus.yml",
+  ])
+);
+
+step("blackbox exporter --config.check", () =>
+  docker([
+    "-v",
+    `${path.join(ops, "blackbox", "blackbox.yml")}:/etc/blackbox/blackbox.yml:ro`,
+    BLACKBOX,
+    "--config.file=/etc/blackbox/blackbox.yml",
+    "--config.check",
   ])
 );
 
@@ -139,6 +187,7 @@ step("dashboards are valid JSON on the provisioned datasource", () => {
   }
 });
 
+rmSync(scratch, { recursive: true, force: true });
 if (problems.length > 0) {
   console.error(`\nops check failed:\n- ${problems.join("\n- ")}`);
   process.exitCode = 1;

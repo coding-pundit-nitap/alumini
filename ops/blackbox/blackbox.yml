@@ -1,0 +1,12 @@
+# Blackbox exporter modules (spec 18C). http_ready: the public /health/ready must answer 200, over TLS when the
+# URL is https; probe_ssl_earliest_cert_expiry feeds the certificate alerts (R-12).
+modules:
+  http_ready:
+    prober: http
+    timeout: 10s
+    http:
+      method: GET
+      valid_status_codes: [200]
+      follow_redirects: false
+      preferred_ip_protocol: ip4
+      ip_protocol_fallback: true
