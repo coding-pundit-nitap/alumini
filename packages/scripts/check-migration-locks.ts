@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { appendFileSync, existsSync, rmSync } from "node:fs";
 import path from "node:path";
@@ -173,11 +173,15 @@ try {
     }
   })();
   try {
-    execFileSync("pnpm", ["--filter", "@nitap/database", "db:deploy"], {
-      cwd: root,
-      stdio: "inherit",
-      env: { ...process.env, DATABASE_URL: databaseUrl },
-    });
+    // Asynchronous: a synchronous child would block the event loop, and the sampler with it.
+    const code = await new Promise<number>((resolve) =>
+      spawn("pnpm", ["--filter", "@nitap/database", "db:deploy"], {
+        cwd: root,
+        stdio: "inherit",
+        env: { ...process.env, DATABASE_URL: databaseUrl },
+      }).once("exit", (c) => resolve(c ?? 1))
+    );
+    if (code !== 0) throw new Error(`prisma migrate deploy exited ${code}`);
   } finally {
     sampling = false;
     await sampling$;
@@ -202,11 +206,19 @@ try {
     "| Migration | Duration | Write-blocking locks on existing tables |",
     "| --- | --- | --- |"
   );
+  // Each hold belongs to the last migration that had started when it was first seen: migrations run one after
+  // another on one connection, so windows only touch at their ends.
+  const byStart = [...applied].sort(
+    (a, b) => a.started_at.getTime() - b.started_at.getTime()
+  );
+  const owner = (h: Hold) =>
+    byStart.findLast((m) => m.started_at.getTime() <= h.first)
+      ?.migration_name ?? byStart[0]?.migration_name;
   for (const m of applied) {
     const from = m.started_at.getTime();
     const to = m.finished_at.getTime();
     const mine = [...holds.values()].filter(
-      (h) => h.first <= to + SAMPLE_MS && h.last >= from - SAMPLE_MS
+      (h) => owner(h) === m.migration_name
     );
     const described = mine.map((h) => {
       const held = h.last - h.first + SAMPLE_MS;
