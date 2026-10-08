@@ -3,7 +3,7 @@
 // ClamAV:
 //
 //   pnpm docker:scan                     # first start downloads signatures; wait until healthy
-//   node scripts/drills/clamav-eicar.ts  # CLAMAV_URL=tcp://localhost:3310 by default
+//   node packages/scripts/drills/clamav-eicar.ts  # CLAMAV_URL=tcp://localhost:3310 by default
 //
 // It scans the EICAR test string (every antivirus flags it; it is harmless), a clean PNG, and EICAR hidden
 // after a valid image (a polyglot), prints a pass/fail table for docs/operations/security-verification.md,
@@ -11,7 +11,7 @@
 import {
   createClamdScanner,
   parseClamavUrl,
-} from "../../apps/worker/src/clamav.ts";
+} from "../../../apps/worker/src/clamav.ts";
 
 const url = process.env.CLAMAV_URL ?? "tcp://localhost:3310";
 const scanner = createClamdScanner({

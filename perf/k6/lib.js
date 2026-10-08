@@ -1,4 +1,4 @@
-// Shared by every scenario (Phase 15; strategy §13). Run through `node scripts/perf/run.ts <scenario>`, which
+// Shared by every scenario (Phase 15; strategy §13). Run through `node packages/scripts/perf/run.ts <scenario>`, which
 // mounts this directory at /perf in the k6 container and passes BASE_URL, RATE, DURATION and RAMP.
 import { SharedArray } from "k6/data";
 

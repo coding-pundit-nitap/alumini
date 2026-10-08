@@ -16,7 +16,7 @@ blob-report
 playwright/.cache
 
 # Generated Prisma client (run `pnpm db:generate`)
-/database/generated
+/packages/database/generated
 
 # Next.js & Build Outputs
 .next/
@@ -57,14 +57,14 @@ Thumbs.db
 
 # Vercel & Deployment
 .vercel
-database/generated
+packages/database/generated
 # Turborepo
 .turbo
 .superpowers/
 
 # Performance seed output (signed load-user cookies) — never commit
 /perf/.data
-# Raw load-test output (scripts/perf); the dated results page carries the numbers
+# Raw load-test output (packages/scripts/perf); the dated results page carries the numbers
 /docs/operations/perf/data/
 /doc/operations/perf/data/
 

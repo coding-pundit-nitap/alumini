@@ -6,7 +6,7 @@ import { createTestDatabase, type TestDatabase } from "@nitap/testing";
 
 const migration = fileURLToPath(
   new URL(
-    "../../../database/prisma/migrations/20260924000000_retire_job_outbox_backlog/migration.sql",
+    "../../../packages/database/prisma/migrations/20260924000000_retire_job_outbox_backlog/migration.sql",
     import.meta.url
   )
 );

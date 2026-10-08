@@ -9,7 +9,7 @@
 //
 //   pnpm --filter @nitap/web build      # the app is booted with `next start` against the restored database
 //   pnpm docker:up                      # the app's Redis (readiness reports it degraded without)
-//   node scripts/drills/restore.ts [--users 10000] [--soak 420] [--record] [--summary f] [--keep]
+//   node packages/scripts/drills/restore.ts [--users 10000] [--soak 420] [--record] [--summary f] [--keep]
 //
 // The database is migrated to one release behind before the backup, so the restore must apply the newest
 // migration ("migrations reconcile"). --users sizes an alumini_perf database in the same cluster (perf seed)
@@ -34,7 +34,7 @@ import {
 import path from "node:path";
 import { parseArgs } from "node:util";
 
-const root = path.resolve(import.meta.dirname, "../..");
+const root = path.resolve(import.meta.dirname, "../../..");
 // One level below the root, so compose.yml's `../docker` build context still resolves.
 const work = path.join(root, ".drill-restore");
 const project = "alumini-drill";
@@ -397,10 +397,12 @@ try {
 
   // One release behind: every migration except the newest.
   await timed("seed (migrations N-1, base seed, accounts, perf volume)", () => {
-    const all = readdirSync(path.join(root, "database/prisma/migrations"));
+    const all = readdirSync(
+      path.join(root, "packages/database/prisma/migrations")
+    );
     const migrations = all.filter((m) => /^\d/.test(m)).sort();
     const n1 = path.join(work, "migrations-n1");
-    cpSync(path.join(root, "database/prisma/migrations"), n1, {
+    cpSync(path.join(root, "packages/database/prisma/migrations"), n1, {
       recursive: true,
     });
     const last = migrations.at(-1);
@@ -409,7 +411,7 @@ try {
     writeFileSync(
       path.join(work, "prisma.config.n1.ts"),
       `export default ${JSON.stringify({
-        schema: path.join(root, "database/prisma/schema.prisma"),
+        schema: path.join(root, "packages/database/prisma/schema.prisma"),
         migrations: { path: n1 },
         datasource: { url: hostUrl("alumini") },
       })};\n`
@@ -465,7 +467,9 @@ try {
       { db: "dr_probe" }
     );
   });
-  const newest = readdirSync(path.join(root, "database/prisma/migrations"))
+  const newest = readdirSync(
+    path.join(root, "packages/database/prisma/migrations")
+  )
     .filter((m) => /^\d/.test(m))
     .sort()
     .at(-1);
@@ -623,7 +627,7 @@ try {
 const failed = results.filter((r) => !r.pass);
 const report = [
   "",
-  `## ${started.toISOString().slice(0, 16).replace("T", " ")} UTC — drill (scripts/drills/restore.ts) — ${failed.length ? "FAIL" : "PASS"}`,
+  `## ${started.toISOString().slice(0, 16).replace("T", " ")} UTC — drill (packages/scripts/drills/restore.ts) — ${failed.length ? "FAIL" : "PASS"}`,
   "",
   `Production configuration (deploy/compose.yml, deploy/backup.sh) on ${process.env.DRILL_HOST ?? "a developer machine"}; stand-in repository: TLS MinIO on the same host. Cluster ${size}, ${args.users} perf users; heartbeat soak ${args.soak} s.`,
   "",

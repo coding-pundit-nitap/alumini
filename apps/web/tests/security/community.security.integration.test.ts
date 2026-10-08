@@ -43,7 +43,7 @@ import { createPrismaPostsStore } from "@/modules/posts/infrastructure/prisma-po
  * PermissionGrant/RolePermission rows) and `tests/integration/mentorship/mentorship-lifecycle.integration.test.ts`
  * (real Prisma stores wired to real use cases against a per-test database). This file follows that shape.
  *
- * Every permission grant below comes from `database/prisma/seed-data/role-permissions.ts`, not from the
+ * Every permission grant below comes from `packages/database/prisma/seed-data/role-permissions.ts`, not from the
  * task brief's paraphrase of it (which the seed data disagrees with in two places: `achievement.submit` is
  * ALUMNI and FACULTY only, not the general member baseline, and `achievement.review` sits on
  * ALUMNI_COORDINATOR/INSTITUTE_ADMIN/SUPER_ADMIN — MODERATOR does not hold it. `report.review` and

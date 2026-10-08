@@ -7,7 +7,7 @@ pnpm-lock.yaml
 coverage
 playwright-report
 test-results
-database/generated
+packages/database/generated
 .turbo
 *.tsbuildinfo
 next-env.d.ts

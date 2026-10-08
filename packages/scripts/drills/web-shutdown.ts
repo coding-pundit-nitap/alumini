@@ -4,7 +4,7 @@
 //
 //   pnpm --filter @nitap/web build
 //   pnpm docker:up && set -a && . ./.env && set +a
-//   node scripts/drills/web-shutdown.ts            # PORT=3100 by default
+//   node packages/scripts/drills/web-shutdown.ts            # PORT=3100 by default
 //
 // It starts `next start`, signs in as the dev coordinator (DEV_COORDINATOR_EMAIL/PASSWORD) to hold a real
 // message stream open, then drains and stops the instance the way a deploy does, and prints a pass/fail table
@@ -13,12 +13,9 @@ import { spawn } from "node:child_process";
 import http from "node:http";
 import path from "node:path";
 
-import {
-  startFaultProxy,
-  upstreamOf,
-} from "../../packages/testing/src/fault-proxy.ts";
+import { startFaultProxy, upstreamOf } from "../../testing/src/fault-proxy.ts";
 
-const root = path.resolve(import.meta.dirname, "../..");
+const root = path.resolve(import.meta.dirname, "../../..");
 const port = Number(process.env.PORT ?? 3100);
 const origin = `http://localhost:${port}`;
 const token = "drill-health-token-0000000000";

@@ -6,7 +6,7 @@
 //   pnpm --filter @nitap/web build
 //   pnpm docker:up && set -a && . ./.env && set +a
 //   pnpm perf:seed -- --users 10000                      # once; builds alumini_perf and perf/.data/fixture.json
-//   node scripts/perf/run.ts directory [--rate 50] [--duration 3m] [--ramp 30s] [--label before] \
+//   node packages/scripts/perf/run.ts directory [--rate 50] [--duration 3m] [--ramp 30s] [--label before] \
 //        [--env KEY=VALUE]… [--worker] [--reset-spike] [--smoke] [--server-env KEY=VALUE]…
 //
 // --smoke runs the strategy's smoke shape (RATE=2, 30 s) and writes nothing. Exit code is k6's: 99 when a
@@ -20,7 +20,7 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 
 const K6_IMAGE = "grafana/k6:2.3.0";
-const root = path.resolve(import.meta.dirname, "../..");
+const root = path.resolve(import.meta.dirname, "../../..");
 // pg is a dependency of the web app, not of the workspace root.
 const pg = createRequire(path.join(root, "apps/web/package.json"))("pg");
 const { values: args, positionals } = parseArgs({
@@ -42,7 +42,9 @@ const { values: args, positionals } = parseArgs({
 });
 const scenario = positionals[0];
 if (!scenario) {
-  console.error("usage: node scripts/perf/run.ts <scenario> [options]");
+  console.error(
+    "usage: node packages/scripts/perf/run.ts <scenario> [options]"
+  );
   process.exit(2);
 }
 

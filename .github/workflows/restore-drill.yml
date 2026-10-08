@@ -1,4 +1,4 @@
-# Monthly restore drill (reliability §3.6; spec 17, O-11). Runs scripts/drills/restore.ts: the production backup
+# Monthly restore drill (reliability §3.6; spec 17, O-11). Runs packages/scripts/drills/restore.ts: the production backup
 # configuration (deploy/compose.yml, deploy/backup.sh) against a stand-in repository, a host-loss restore with
 # RPO/RTO measured, and a point-in-time restore. The result table is the run's summary; a failed run is the
 # alert, as in nightly.yml. The production server's own monthly `backup.sh restore-test` is separate (it proves
@@ -63,4 +63,4 @@ jobs:
           DRILL_HOST: "a GitHub Actions runner (ubuntu-24.04, run ${{ github.run_id }})"
           USERS: ${{ inputs.users || '10000' }}
           SOAK: ${{ inputs.soak || '420' }}
-        run: node scripts/drills/restore.ts --users "$USERS" --soak "$SOAK" --summary "$GITHUB_STEP_SUMMARY"
+        run: node packages/scripts/drills/restore.ts --users "$USERS" --soak "$SOAK" --summary "$GITHUB_STEP_SUMMARY"

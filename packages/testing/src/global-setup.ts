@@ -90,7 +90,7 @@ export async function provideTemplateDatabase(
     await admin.end();
   }
 
-  // Apply every migration to the template. Runs from database/ so prisma.config.ts's relative
+  // Apply every migration to the template. Runs from packages/database/ so prisma.config.ts's relative
   // .env load and schema path resolve; DATABASE_URL is overridden for this one call.
   execFileSync(
     "pnpm",

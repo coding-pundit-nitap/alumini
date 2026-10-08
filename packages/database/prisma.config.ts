@@ -2,7 +2,7 @@ import { config } from "dotenv";
 import { defineConfig, env } from "prisma/config";
 
 // One .env at the repository root serves the whole workspace; Prisma runs with cwd = database/.
-config({ path: "../.env", quiet: true });
+config({ path: "../../.env", quiet: true });
 
 // Prisma 7 does not read .env or the datasource url from schema.prisma; both live here.
 //

@@ -16,7 +16,7 @@ const mustContain = [
   "packages/jobs",
   "packages/storage",
   "packages/observability",
-  "database",
+  "packages/database",
 ];
 const mustNotContain = ["apps/web", "packages/ui"];
 

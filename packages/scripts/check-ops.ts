@@ -8,7 +8,7 @@ import path from "node:path";
  * valid, every alert links a runbook that exists, and every dashboard is valid JSON on the provisioned
  * datasource. Needs Docker; CI runs it in the `observability` job.
  */
-const root = path.resolve(import.meta.dirname, "..");
+const root = path.resolve(import.meta.dirname, "../..");
 const ops = path.join(root, "ops");
 const PROMETHEUS = "prom/prometheus:v3.5.0";
 const ALERTMANAGER = "prom/alertmanager:v0.28.1";

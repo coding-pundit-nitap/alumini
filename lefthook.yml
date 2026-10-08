@@ -1,6 +1,6 @@
 # Git hooks (replaces husky + lint-staged). Installed by `pnpm install` via the prepare script.
 glob_matcher: doublestar
-rc: scripts/hooks/path.sh
+rc: packages/scripts/hooks/path.sh
 
 pre-commit:
   piped: true # eslint --fix before prettier on the same files
@@ -22,7 +22,7 @@ pre-commit:
       run: pnpm exec prettier --write {staged_files}
       stage_fixed: true
     - name: secret scan
-      run: sh scripts/security/secret-scan-staged.sh
+      run: sh packages/scripts/security/secret-scan-staged.sh
 
 commit-msg:
   jobs:

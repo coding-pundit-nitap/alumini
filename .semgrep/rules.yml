@@ -12,7 +12,7 @@ rules:
       - pattern: $DB.$queryRawUnsafe(...)
       - pattern: $DB.$executeRawUnsafe(...)
     paths:
-      exclude: ["database/generated/**"]
+      exclude: ["packages/database/generated/**"]
 
   - id: nitap-raw-sql-from-input
     languages: [typescript]
@@ -71,4 +71,9 @@ rules:
     paths:
       # Tooling, tests and the test harness start processes on purpose.
       exclude:
-        ["scripts/**", "packages/testing/**", "**/tests/**", "**/*.test.ts"]
+        [
+          "packages/scripts/**",
+          "packages/testing/**",
+          "**/tests/**",
+          "**/*.test.ts",
+        ]

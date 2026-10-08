@@ -1,5 +1,5 @@
 // Notifications (strategy §13.2 "unread polling"): the bell's unread count, polled by every open tab, and the
-// inbox list. Fan-out throughput is measured by scripts/perf/fanout.ts, not here.
+// inbox list. Fan-out throughput is measured by packages/scripts/perf/fanout.ts, not here.
 import http from "k6/http";
 import { check } from "k6";
 

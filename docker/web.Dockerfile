@@ -45,7 +45,7 @@ RUN --mount=type=cache,id=next-cache,target=/repo/apps/web/.next/cache \
 FROM deps AS migrate-deps
 COPY docker/prune-node-modules.mjs /tmp/
 RUN node /tmp/prune-node-modules.mjs /repo \
-    database=@nitap/jobs,@prisma/adapter-pg,@prisma/client,prisma,dotenv \
+    packages/database=@nitap/jobs,@prisma/adapter-pg,@prisma/client,prisma,dotenv \
     apps/web=better-auth,@prisma/adapter-pg,@nitap/database
 
 FROM base AS migrate

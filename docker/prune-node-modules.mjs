@@ -86,7 +86,6 @@ const children = (dir) => (existsSync(dir) ? readdirSync(dir) : []);
 
 // Workspace packages nothing needs, and the root's own links (dev tooling).
 const workspaces = [
-  "database",
   ...["apps", "packages"].flatMap((parent) =>
     children(path.join(repo, parent)).map((name) => path.join(parent, name))
   ),

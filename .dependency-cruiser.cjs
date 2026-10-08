@@ -4,7 +4,7 @@
  * packages/eslint-config/boundaries.mjs.
  *
  * Run from apps/web (`pnpm arch`, which passes --ts-config so `@/` resolves) and from the repo root
- * (`pnpm arch:workspace`, for packages/ and database/). Patterns accept both path prefixes.
+ * (`pnpm arch:workspace`, for packages/). Patterns accept both path prefixes.
  */
 
 // Module DAG (TDS §5.3): each module may import only the public API of the modules listed here.
@@ -82,9 +82,10 @@ module.exports = {
     },
     {
       name: "workspace-packages-never-import-apps",
-      comment: "packages/* and database/ never depend on apps/* (ADR-017).",
+      comment:
+        "packages/* never depend on apps/* (ADR-017). packages/scripts is tooling run by hand or in CI, never imported, so its drills may drive an app's code directly.",
       severity: "error",
-      from: { path: "^(packages|database)/" },
+      from: { path: "^packages/", pathNot: "^packages/scripts/" },
       to: { path: "^apps/" },
     },
     ...moduleDagRules,
@@ -98,7 +99,7 @@ module.exports = {
         "@nitap/queue knows nothing about email or the database; contracts live in @nitap/jobs (spec 2B §3.1).",
       severity: "error",
       from: { path: "^packages/queue/src/", pathNot: "\\.test\\.ts$" },
-      to: { path: "(^|/)(packages/email|database)/" },
+      to: { path: "(^|/)packages/(email|database)/" },
     },
     {
       name: "jobs-is-a-leaf-contract",
@@ -107,7 +108,7 @@ module.exports = {
       severity: "error",
       from: { path: "^packages/jobs/src/" },
       to: {
-        path: "(^|/)(packages/(queue|email|observability|testing)|database|apps)/",
+        path: "(^|/)(packages/(queue|email|observability|testing|database)|apps)/",
       },
     },
     {
@@ -117,7 +118,7 @@ module.exports = {
       severity: "error",
       from: { path: "^packages/search/src/" },
       to: {
-        path: "(^|/)(packages/(queue|jobs|email|observability|storage|testing)|database|apps)/",
+        path: "(^|/)(packages/(queue|jobs|email|observability|storage|testing|database)|apps)/",
       },
     },
     {
@@ -126,7 +127,7 @@ module.exports = {
         "@nitap/email is the provider adapter and templates; it imports no other workspace.",
       severity: "error",
       from: { path: "^packages/email/src/", pathNot: "\\.test\\.ts$" },
-      to: { path: "(^|/)(packages/(queue|jobs)|database|apps)/" },
+      to: { path: "(^|/)(packages/(queue|jobs|database)|apps)/" },
     },
     ...(runningInWorker
       ? []

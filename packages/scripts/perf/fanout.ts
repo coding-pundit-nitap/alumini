@@ -4,11 +4,11 @@
 // measures how many recipients a single job reaches per second, so "batch or chunk?" is answered by a number.
 //
 //   set -a && . ./.env && set +a
-//   node scripts/perf/fanout.ts --recipients 100,500,2000 [--label baseline]
+//   node packages/scripts/perf/fanout.ts --recipients 100,500,2000 [--label baseline]
 //
 // For each size it inserts a cancelled event with that many REGISTERED members and the outbox row the cancel
 // use case would have written, then times the worker from that row to the last notification. The worker runs
-// against alumini_perf on Redis database 1 (as scripts/perf/run.ts does). Results go next to the k6 results.
+// against alumini_perf on Redis database 1 (as packages/scripts/perf/run.ts does). Results go next to the k6 results.
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -17,7 +17,7 @@ import os from "node:os";
 import path from "node:path";
 import { parseArgs } from "node:util";
 
-const root = path.resolve(import.meta.dirname, "../..");
+const root = path.resolve(import.meta.dirname, "../../..");
 const pg = createRequire(path.join(root, "apps/web/package.json"))("pg");
 const { values: args } = parseArgs({
   args: process.argv.slice(2).filter((a) => a !== "--"),

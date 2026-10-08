@@ -36,10 +36,10 @@ export default defineConfig({
             // @nitap/database's own vitest install can't be resolved in this environment's
             // sandboxed pnpm (vitest requires the `vite` peer, and pnpm's release-age policy
             // blocks materializing a fresh peer-qualified variant for that package alone — see
-            // database/package.json's `test` script comment). Run its pure, DB-free unit tests
-            // through this already-working install instead; `database/` still owns the files.
-            "../../database/prisma/seed-data/**/*.test.ts",
-            "../../database/perf/**/*.test.ts",
+            // packages/database/package.json's `test` script comment). Run its pure, DB-free unit tests
+            // through this already-working install instead; `packages/database/` still owns the files.
+            "../../packages/database/prisma/seed-data/**/*.test.ts",
+            "../../packages/database/perf/**/*.test.ts",
             // Runs a store's contract suite against an in-memory fake (no database): the suite itself
             // (mentorship-store.contract.ts) is shared with the real store's own *.contract.test.ts
             // under src, which the "contract" project below runs against Postgres instead.

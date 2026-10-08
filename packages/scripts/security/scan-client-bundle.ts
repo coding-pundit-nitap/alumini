@@ -2,14 +2,14 @@
 // Build-output scan (strategy §10.1 "Secrets and data exposure", spec 16 16E): after `next build`, nothing
 // the browser downloads may carry a server environment variable's NAME or a secret's VALUE.
 //
-//   pnpm build && node scripts/security/scan-client-bundle.ts
+//   pnpm build && node packages/scripts/security/scan-client-bundle.ts
 //
 // Names come from the web app's server env schema (apps/web/src/config/env.ts) and the storage package's;
 // values are those of the variables in the current environment that hold credentials. Exit 1 on any hit.
 import fs from "node:fs";
 import path from "node:path";
 
-const root = path.resolve(import.meta.dirname, "../..");
+const root = path.resolve(import.meta.dirname, "../../..");
 const staticDir = path.join(root, "apps/web/.next/static");
 if (!fs.existsSync(staticDir)) {
   console.error(`No build output at ${staticDir}; run pnpm build first.`);

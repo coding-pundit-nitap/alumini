@@ -42,7 +42,7 @@ Run from the repository root. Deterministic tasks are cached by Turborepo.
 | `pnpm test:integration`                                       | Vitest `integration` and `contract` projects (need `pnpm docker:up` and `.env`)     |
 | `pnpm test:e2e`                                               | Playwright (first run: `pnpm --filter @nitap/web exec playwright install chromium`) |
 | `pnpm format` / `format:check`                                | Prettier                                                                            |
-| `pnpm db:generate` / `db:migrate` / `db:deploy` / `db:studio` | Prisma (run from `database/`, reads the root `.env`)                                |
+| `pnpm db:generate` / `db:migrate` / `db:deploy` / `db:studio` | Prisma (run from `packages/database/`, reads the root `.env`)                       |
 | `pnpm docker:up` / `docker:down`                              | Local Postgres and Redis                                                            |
 
 ## Working agreements

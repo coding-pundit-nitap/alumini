@@ -21,7 +21,7 @@ export type OutboxQuarantinedRow = {
 };
 
 /**
- * The persistence port for the outbox. `database/outbox` implements it with Prisma; `packages/queue`
+ * The persistence port for the outbox. `packages/database/outbox` implements it with Prisma; `packages/queue`
  * consumes it without knowing about Prisma. Every method is safe to run from several relays at once.
  */
 export interface OutboxStore {
