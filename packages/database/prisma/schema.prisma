@@ -2,7 +2,7 @@
 //
 // user / session / account / verification are Better Auth's tables
 // (docs/adr/ADR-005-authentication.md). They were generated with
-//   npx auth@latest generate --config apps/web/src/lib/auth.ts --output database/prisma/schema.prisma
+//   npx auth@latest generate --config apps/web/src/lib/auth.ts --output packages/database/prisma/schema.prisma
 // (rate limiting is stored in Redis, so the generator's rate_limit table is intentionally not kept)
 // and then adapted: snake_case columns via @map, timestamptz, and a real enum for account_state.
 // Better Auth talks to them through the Prisma client, so @map is transparent to it. Re-run the
@@ -56,10 +56,10 @@ model User {
   connectionsRequested Connection[]        @relation("ConnectionRequester")
   connectionsBlocked   Connection[]        @relation("ConnectionBlocker")
   mentorProfile        MentorProfile?
-  mentorshipsAsMentor Mentorship[] @relation("MentorshipMentor")
-  mentorshipsAsMentee Mentorship[] @relation("MentorshipMentee")
-  jobsPosted   Job[] @relation("JobPoster")
-  jobsReviewed Job[] @relation("JobReviewer")
+  mentorshipsAsMentor  Mentorship[]        @relation("MentorshipMentor")
+  mentorshipsAsMentee  Mentorship[]        @relation("MentorshipMentee")
+  jobsPosted           Job[]               @relation("JobPoster")
+  jobsReviewed         Job[]               @relation("JobReviewer")
   organizedEvents      Event[]             @relation("EventOrganizer")
   eventRegistrations   EventRegistration[]
 
@@ -80,9 +80,9 @@ model User {
 
   retentionSettingsUpdated RetentionSetting[]
 
-  campaignsCreated  DonationCampaign[] @relation("CampaignCreator")
-  donations         Donation[]         @relation("DonationDonor")
-  donationsDecided  Donation[]         @relation("DonationDecider")
+  campaignsCreated DonationCampaign[] @relation("CampaignCreator")
+  donations        Donation[]         @relation("DonationDonor")
+  donationsDecided Donation[]         @relation("DonationDecider")
 
   // Case-insensitive uniqueness is a hand-written expression index, uq_user_email_ci
   // (migrations/20260920172049_case_insensitive_email) — not expressible in Prisma's schema language.
@@ -216,7 +216,7 @@ model RolePermission {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   roleId     String   @map("role_id") @db.Uuid
   role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  // Validated against the code-side registry (database/prisma/seed-data/permissions.ts), not by
+  // Validated against the code-side registry (packages/database/prisma/seed-data/permissions.ts), not by
   // PostgreSQL — see the "Role / UserRole / RolePermission / PermissionGrant" note in domain-model.md.
   permission String
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -299,6 +299,10 @@ model Profile {
   @@index([departmentId, graduationYear])
   @@index([degreeId])
   @@index([graduationYear])
+  // Trigram indexes for directory search (ADR-023); pg_trgm is created by the migration that adds them.
+  @@index([fullName(ops: raw("gin_trgm_ops"))], map: "idx_profile_full_name_trgm", type: Gin)
+  @@index([headline(ops: raw("gin_trgm_ops"))], map: "idx_profile_headline_trgm", type: Gin)
+  @@index([location(ops: raw("gin_trgm_ops"))], map: "idx_profile_location_trgm", type: Gin)
   @@map("profile")
 }
 
@@ -358,6 +362,7 @@ model ProfileExperience {
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@index([userId, isCurrent, startDate(sort: Desc)])
+  @@index([company(ops: raw("gin_trgm_ops"))], map: "idx_profile_experience_company_trgm", type: Gin)
   @@map("profile_experience")
 }
 
@@ -388,6 +393,7 @@ model ProfileSkill {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
+  @@index([skill(ops: raw("gin_trgm_ops"))], map: "idx_profile_skill_skill_trgm", type: Gin)
   @@map("profile_skill")
 }
 
@@ -770,7 +776,7 @@ model Post {
   content     String
   /// Phase 12E: required for ANNOUNCEMENT, null for every other type (ck_post_title_announcement).
   title       String?
-  imageUrls   String[]     @map("image_urls")
+  imageUrls   String[]     @default([]) @map("image_urls")
   linkUrl     String?      @map("link_url")
   postType    PostType     @default(TEXT) @map("post_type")
   deleted     Boolean      @default(false)
@@ -830,7 +836,7 @@ model Achievement {
   publishedPostId String?             @unique(map: "uq_achievement_published_post") @map("published_post_id") @db.Uuid
   publishedPost   Post?               @relation(fields: [publishedPostId], references: [id], onDelete: SetNull)
   createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  updatedAt       DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@index([status, createdAt], map: "ix_achievement_status")
   @@map("achievement")
@@ -899,9 +905,11 @@ enum NotificationCategory {
   ENGAGEMENT
 }
 
-/** The granular grouping the preferences UI toggles (N-14) — distinct from NotificationCategory, which
+/**
+ * The granular grouping the preferences UI toggles (N-14) — distinct from NotificationCategory, which
  * only says whether preferences apply at all. Every event in the catalogue maps to exactly one domain
- * via domainFor() in the notifications domain layer (Task 3). */
+ * via domainFor() in the notifications domain layer (Task 3).
+ */
 enum NotificationDomain {
   CONNECTION
   MENTORSHIP

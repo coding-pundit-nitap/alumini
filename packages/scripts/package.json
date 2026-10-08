@@ -13,7 +13,11 @@
     "@nitap/eslint-config": "workspace:*",
     "@nitap/typescript-config": "workspace:*",
     "@types/node": "^26.6.2",
+    "@types/pg": "^8.23.1",
     "eslint": "^10.11.0",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
   }
 }

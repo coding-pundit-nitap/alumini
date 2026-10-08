@@ -21,6 +21,9 @@ pre-commit:
         - "{apps/web,packages/ui}/**/*.{tsx,mts}"
       run: pnpm exec prettier --write {staged_files}
       stage_fixed: true
+    - name: migration drift
+      glob: "packages/database/prisma/{schema.prisma,migrations/**}"
+      run: node --env-file-if-exists=.env packages/scripts/check-migration-drift.ts --skip-unreachable
     - name: secret scan
       run: sh packages/scripts/security/secret-scan-staged.sh
 

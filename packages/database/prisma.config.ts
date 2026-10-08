@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { defineConfig, env } from "prisma/config";
 
-// One .env at the repository root serves the whole workspace; Prisma runs with cwd = database/.
+// One .env at the repository root serves the whole workspace; Prisma runs with cwd = packages/database/.
 config({ path: "../../.env", quiet: true });
 
 // Prisma 7 does not read .env or the datasource url from schema.prisma; both live here.
@@ -25,5 +25,8 @@ export default defineConfig({
       ? (process.env.DATABASE_URL ??
         "postgresql://placeholder:placeholder@localhost:5432/placeholder")
       : env("DATABASE_URL"),
+    // Only `migrate diff --from-migrations` needs it (pnpm db:drift, which sets it). `migrate dev`
+    // creates and drops its own shadow database when this is unset.
+    shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL,
   },
 });

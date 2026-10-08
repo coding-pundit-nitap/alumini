@@ -4,6 +4,7 @@
     "CI",
     "DATABASE_URL",
     "MIGRATE_DATABASE_URL",
+    "SHADOW_DATABASE_URL",
     "REDIS_URL",
     "QUEUE_REDIS_URL",
     "SMTP_URL",

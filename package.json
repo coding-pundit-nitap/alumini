@@ -25,6 +25,7 @@
     "db:migrate": "pnpm --filter @nitap/database db:migrate",
     "db:deploy": "pnpm --filter @nitap/database db:deploy",
     "db:studio": "pnpm --filter @nitap/database db:studio",
+    "db:drift": "node --env-file-if-exists=.env packages/scripts/check-migration-drift.ts",
     "db:seed": "pnpm --filter @nitap/database db:seed && pnpm --filter @nitap/web db:seed:admin",
     "admin:bootstrap": "pnpm --filter @nitap/web admin:bootstrap",
     "worker:dev": "turbo run dev --filter=@nitap/worker",
