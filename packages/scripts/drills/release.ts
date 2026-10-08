@@ -141,6 +141,7 @@ function writeEnv(env: Env) {
       "MIGRATE_IMAGE=",
       "POSTGRES_IMAGE=",
       `POSTGRES_PASSWORD=${randomBytes(12).toString("hex")}`,
+      `APP_DB_PASSWORD=${randomBytes(12).toString("hex")}`,
       "MINIO_ROOT_USER=drill-storage",
       `MINIO_ROOT_PASSWORD=${randomBytes(16).toString("hex")}`,
       // Required by compose; unused, because archiving is off in this drill.

@@ -52,7 +52,8 @@ x-app: &app
   # Service addresses are fixed by this file, so they are derived here rather than typed into .env.
   environment: &app-env
     NODE_ENV: production
-    DATABASE_URL: postgresql://alumini:${POSTGRES_PASSWORD:?}@postgres:5432/alumini
+    # The runtime role: rows only, no DDL (reliability §9.5). The migrate job creates it and grants each release.
+    DATABASE_URL: postgresql://alumini_app:${APP_DB_PASSWORD:?}@postgres:5432/alumini
     REDIS_URL: redis://redis:6379
     QUEUE_REDIS_URL: redis://queue-redis:6379
     S3_ENDPOINT: http://minio:9000
@@ -86,13 +87,16 @@ services:
       clamav: { condition: service_started }
     stop_grace_period: 30s
 
-  # One-shot: `docker compose run --rm migrate`. Also runs the first-admin bootstrap (deploy/README.md).
+  # One-shot: `docker compose run --rm migrate`. Also runs the first-admin bootstrap (deploy/README.md). The only
+  # service that connects as the owner: it migrates, seeds, then grants the runtime role (APP_DB_PASSWORD).
   migrate:
     logging: *logging
     image: ${MIGRATE_IMAGE:?}
     profiles: ["tools"]
     env_file: .env
-    environment: *app-env
+    environment:
+      <<: *app-env
+      DATABASE_URL: postgresql://alumini:${POSTGRES_PASSWORD:?}@postgres:5432/alumini
     depends_on:
       postgres: { condition: service_healthy }
 

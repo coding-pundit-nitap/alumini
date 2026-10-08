@@ -93,7 +93,7 @@ with `sudo certbot renew --dry-run`.
 ```bash
 cd /opt/alumini/deploy
 cp .env.example .env && chmod 600 .env
-openssl rand -hex 24      # run 3×: POSTGRES_PASSWORD, MINIO_ROOT_PASSWORD, HEALTH_CHECK_TOKEN
+openssl rand -hex 24      # run 4×: POSTGRES_PASSWORD, APP_DB_PASSWORD, MINIO_ROOT_PASSWORD, HEALTH_CHECK_TOKEN
 openssl rand -base64 32   # BETTER_AUTH_SECRET
 openssl rand -base64 48   # BACKUP_CIPHER_PASS
 nano .env
@@ -319,7 +319,8 @@ Each release:
 2. Staging pulls `nitap-*:<sha>` and pins each image's digest. Production takes the digests from the staging
    line for `<sha>` and refuses if there is none with `source=pull` and `smoke=pass`.
 3. Runs `prisma migrate deploy` and then the reference seed (roles, permissions, departments; insert-only, so
-   it adds what the release introduces and never changes what an admin edited) as a one-shot container. **If this fails, nothing else changes**: the old
+   it adds what the release introduces and never changes what an admin edited), then grants the runtime role
+   on every table, as a one-shot container. **If this fails, nothing else changes**: the old
    release keeps serving, and `.env` points at it again.
 4. `docker compose up -d` replaces web and worker (and postgres, when its image changed). The site is down for
    a few seconds. This is the documented stop-gap ([reliability §8.3](../docs/operations/reliability-operations.md#83-production-deploy-procedure-single-host-zero-downtime-by-bluegreen));
@@ -372,7 +373,11 @@ docker compose exec postgres psql -U alumini alumini
   PostgreSQL 18 (Phase 17) needs this once.
 - **Secrets rotation:** edit `.env`, then `docker compose up -d`. Changing `POSTGRES_PASSWORD` or
   `MINIO_ROOT_*` after the first start also needs the password changed inside the service, because the
-  volumes keep the old one.
+  volumes keep the old one. For `APP_DB_PASSWORD`, run `docker compose run --rm migrate` before the `up`:
+  the migrate job sets the runtime role's password.
+- **Database roles:** web and worker connect as `alumini_app`, which can read and write rows but not change
+  the schema, and can only add to the audit log (reliability §9.5). Migrations, the seed, backups and
+  `psql` for an investigation use the owner, `alumini`.
 
 ## Before launch
 
@@ -389,3 +394,5 @@ docker compose exec postgres psql -U alumini alumini
 - [ ] The domain set to auto-renew at the registrar, with its expiry emails going to a shared mailbox
 - [ ] Staging set up and a release promoted from it (`releases.log` on production shows `source=promote`)
 - [ ] A rollback rehearsed on staging and once on production: release, `rollback <previous>`, release again
+- [ ] `pnpm launch:check --strict` passes on a full checkout: every row of
+      [launch-readiness](../docs/operations/launch-readiness.md) proven, its owner checklist ticked

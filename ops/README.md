@@ -3,16 +3,16 @@
 Alerts, routing, dashboards and runbooks for the web and worker processes (Phase 13C, ADR-028). Everything
 here is reviewed like code and checked in CI by `pnpm ops:check`.
 
-| Path                            | What                                                                                                                     |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `prometheus/prometheus.yml`     | Local scrape config: web `:3000`, worker `:3001`, PostgreSQL and both Redis exporters                                    |
-| `prometheus/production.yml`     | Production scrape config, run by `deploy/monitoring.yml` (spec 18C): app, exporters, node_exporter, the public probe     |
-| `blackbox/blackbox.yml`         | The public probe's module: `/health/ready` answers 200, certificate expiry (R-12)                                        |
-| `prometheus/rules/*.yml`        | Alert rules. Each has `severity` (`page`/`ticket`/`none`), `service`, `summary`, `description`, `runbook_url`            |
-| `prometheus/tests/*.test.yml`   | promtool unit tests: every rule fires on injected series and stays quiet below its threshold                             |
-| `alertmanager/alertmanager.yml` | Routing (page / ticket / dead-man's switch) and inhibition. Receiver URLs come from files in `/etc/alertmanager/secrets` |
-| `grafana/`                      | Datasource and dashboard provisioning; dashboards in `grafana/dashboards/*.json`                                         |
-| `runbooks/R-<n>.md`             | What to do when an alert fires. Every alert links one                                                                    |
+| Path                            | What                                                                                                                           |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `prometheus/prometheus.yml`     | Local scrape config: web `:3000`, worker `:3001`, PostgreSQL and both Redis exporters                                          |
+| `prometheus/production.yml`     | Production scrape config, run by `deploy/monitoring.yml` (spec 18C): app, exporters, node_exporter, the public probe           |
+| `blackbox/blackbox.yml`         | The public probe's module: `/health/ready` answers 200, certificate expiry (R-12)                                              |
+| `prometheus/rules/*.yml`        | Alert rules. Each has `severity` (`page`/`ticket`/`none`), `service`, `summary`, `description`, `runbook_url`                  |
+| `prometheus/tests/*.test.yml`   | promtool unit tests: every rule fires on injected series and stays quiet below its threshold                                   |
+| `alertmanager/alertmanager.yml` | Routing (page / ticket / dead-man's switch) and inhibition. Receiver URLs come from files in `/etc/alertmanager/secrets`       |
+| `grafana/`                      | Datasource and dashboard provisioning; dashboards in `grafana/dashboards/*.json`                                               |
+| `runbooks/R-<n>.md`             | What to do when an alert fires. Every alert links one. R-10 (suspected compromise) has no alert: other runbooks escalate to it |
 
 ## Run it locally
 

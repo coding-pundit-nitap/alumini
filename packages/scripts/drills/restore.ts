@@ -211,6 +211,7 @@ function prepare() {
       "WORKER_IMAGE=nitap-worker:drill",
       "MIGRATE_IMAGE=nitap-migrate:drill",
       `POSTGRES_PASSWORD=${password}`,
+      `APP_DB_PASSWORD=${randomBytes(12).toString("hex")}`,
       "MINIO_ROOT_USER=drill-storage",
       `MINIO_ROOT_PASSWORD=${randomBytes(16).toString("hex")}`,
       "BACKUP_S3_ENDPOINT=repo-s3",

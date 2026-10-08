@@ -85,7 +85,10 @@ const compose = (...a: string[]) =>
       path.join(work, "monitoring.env"),
       ...a,
     ],
-    { cwd: path.join(root, "deploy") }
+    {
+      cwd: path.join(root, "deploy"),
+      env: { ...process.env, APP_NETWORK: appNetwork },
+    }
   );
 
 // ---------------------------------------------------------------------------------------------- sink and exporter
@@ -268,7 +271,6 @@ try {
   await listen(sink, args["sink-port"]);
   await listen(exporter, args["exporter-port"]);
   run("docker", ["network", "create", appNetwork], { stdio: "ignore" });
-  process.env.APP_NETWORK = appNetwork;
   compose("up", "-d", "--wait", "prometheus", "alertmanager");
   const t0 = Date.now();
 
