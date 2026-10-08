@@ -167,7 +167,7 @@ jobs:
             file: docker/web.Dockerfile
             target: migrate
             scan: false
-          # PostgreSQL + pgBackRest (ADR-011). Built on the server, never published, but it runs in production.
+          # PostgreSQL + pgBackRest (ADR-011). Published with the app images (spec 18 F-3).
           - image: postgres
             file: docker/postgres.Dockerfile
             target: ""
@@ -445,6 +445,10 @@ jobs:
           - image: migrate
             file: docker/web.Dockerfile
             target: migrate
+          # Released by digest like the others (spec 18 F-3), rather than built on the server.
+          - image: postgres
+            file: docker/postgres.Dockerfile
+            target: ""
     steps:
       - uses: actions/checkout@v7
       - id: prefix
@@ -456,7 +460,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       # Same commit, same cache scope as the images job: every layer is a cache hit.
-      - uses: docker/build-push-action@v7
+      - id: push
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ${{ matrix.file }}
@@ -467,3 +472,8 @@ jobs:
             ${{ steps.prefix.outputs.value }}${{ matrix.image }}:${{ github.sha }}
             ${{ steps.prefix.outputs.value }}${{ matrix.image }}:main
           cache-from: type=gha,scope=${{ matrix.image }}
+      # Staging pins these digests when it pulls the tag, and production promotes exactly them (spec 18 PRD-3).
+      - name: Record digest
+        run: >-
+          echo "${{ matrix.image }}: ${{ steps.prefix.outputs.value }}${{ matrix.image }}@${{ steps.push.outputs.digest }}"
+          >> "$GITHUB_STEP_SUMMARY"

@@ -4,7 +4,9 @@
 #
 # Runs from deploy/ in a clone of the repository, next to its `.env` (from deploy/.env.example), which Compose
 # reads both for the ${...} below and as each app container's environment. Releases go through
-# deploy/deploy.sh, which sets IMAGE_PREFIX and IMAGE_TAG; the procedure is in deploy/README.md.
+# deploy/deploy.sh, which writes the *_IMAGE references (by digest when pulled); the procedure is in
+# deploy/README.md. Staging is another clone of the same files: its .env sets COMPOSE_PROJECT_NAME, which takes
+# precedence over the name below, and WEB_PORT when it shares a host with production (spec 18 PRD-1).
 name: alumini-prod
 
 # pgBackRest (ADR-011) takes its whole configuration from these, in the postgres container (for archive-push,
@@ -63,15 +65,15 @@ x-app: &app
 services:
   web:
     <<: *app
-    image: ${IMAGE_PREFIX:?}web:${IMAGE_TAG:?}
+    image: ${WEB_IMAGE:?}
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
     # The drain step (reliability §8.3 step 7) lets in-flight requests finish within this.
     stop_grace_period: 30s
 
   worker:
     <<: *app
-    image: ${IMAGE_PREFIX:?}worker:${IMAGE_TAG:?}
+    image: ${WORKER_IMAGE:?}
     depends_on:
       <<: *app-deps
       clamav: { condition: service_started }
@@ -79,19 +81,20 @@ services:
 
   # One-shot: `docker compose run --rm migrate`. Also runs the first-admin bootstrap (deploy/README.md).
   migrate:
-    image: ${IMAGE_PREFIX:?}migrate:${IMAGE_TAG:?}
+    image: ${MIGRATE_IMAGE:?}
     profiles: ["tools"]
     env_file: .env
     environment: *app-env
     depends_on:
       postgres: { condition: service_healthy }
 
-  # docker/postgres.Dockerfile: the official image plus pgBackRest. `docker compose build postgres` on the server.
+  # docker/postgres.Dockerfile: the official image plus pgBackRest. Released like the app images: CI's build, by
+  # digest, in pull mode; built here (`docker compose build postgres`) in build mode, under the default name.
   postgres:
     build: &postgres-build
       context: ../docker
       dockerfile: postgres.Dockerfile
-    image: alumini-postgres:18
+    image: ${POSTGRES_IMAGE:-alumini-postgres:18}
     restart: unless-stopped
     # Every WAL segment goes to the repository, and a quiet database still switches segment every 5 minutes, which
     # bounds data loss on host loss (RPO, reliability §2). The 18 image enables data checksums at initdb.
@@ -125,7 +128,7 @@ services:
   # archiving off so a restored copy can never push WAL into the production stanza.
   postgres-restore:
     build: *postgres-build
-    image: alumini-postgres:18
+    image: ${POSTGRES_IMAGE:-alumini-postgres:18}
     profiles: ["tools"]
     command: ["postgres", "-c", "archive_mode=off"]
     environment:

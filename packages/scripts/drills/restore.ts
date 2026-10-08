@@ -206,8 +206,10 @@ function prepare() {
     path.join(work, ".env"),
     [
       `COMPOSE_PROJECT_NAME=${project}`,
-      "IMAGE_PREFIX=nitap-",
-      "IMAGE_TAG=drill",
+      // Only migrate and postgres run here; compose needs every image reference to interpolate.
+      "WEB_IMAGE=nitap-web:drill",
+      "WORKER_IMAGE=nitap-worker:drill",
+      "MIGRATE_IMAGE=nitap-migrate:drill",
       `POSTGRES_PASSWORD=${password}`,
       "MINIO_ROOT_USER=drill-storage",
       `MINIO_ROOT_PASSWORD=${randomBytes(16).toString("hex")}`,
