@@ -72,3 +72,5 @@ packages/database/generated
 deploy/releases.log
 deploy/backups.log
 .drill-restore/
+.drill-release/
+.migration-locks/

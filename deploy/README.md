@@ -269,7 +269,8 @@ Each release:
    `<sha>`, which must be on `origin/main`. A dirty clone or a diverged history is refused.
 2. Staging pulls `nitap-*:<sha>` and pins each image's digest. Production takes the digests from the staging
    line for `<sha>` and refuses if there is none with `source=pull` and `smoke=pass`.
-3. Runs `prisma migrate deploy` as a one-shot container. **If this fails, nothing else changes**: the old
+3. Runs `prisma migrate deploy` and then the reference seed (roles, permissions, departments; insert-only, so
+   it adds what the release introduces and never changes what an admin edited) as a one-shot container. **If this fails, nothing else changes**: the old
    release keeps serving, and `.env` points at it again.
 4. `docker compose up -d` replaces web and worker (and postgres, when its image changed). The site is down for
    a few seconds. This is the documented stop-gap ([reliability §8.3](../docs/operations/reliability-operations.md#83-production-deploy-procedure-single-host-zero-downtime-by-bluegreen));

@@ -292,6 +292,56 @@ jobs:
         run: pnpm db:drift
       - run: ${{ matrix.run }}
 
+  # A new migration is measured on volume (spec 18 PRD-6, reliability §9.3): the database is built at the merge
+  # base with the perf seed, then this branch's migrations apply while pg_locks is sampled. A write-blocking lock
+  # over 1 s on an existing table fails. Runs only when migrations are added.
+  migration-locks:
+    name: Migration locks on volume
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.6-alpine3.24
+        env:
+          POSTGRES_USER: alumini
+          POSTGRES_PASSWORD: alumini
+          POSTGRES_DB: alumini
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U alumini" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Were migrations added?
+        id: migrations
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$BASE" ] && [ "$BASE" != "0000000000000000000000000000000000000000" ] \
+            && git cat-file -e "$BASE^{commit}" 2>/dev/null \
+            && [ -n "$(git diff --name-only --diff-filter=A "$BASE" HEAD -- packages/database/prisma/migrations)" ]; then
+            echo "added=true" >> "$GITHUB_OUTPUT"
+            echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          else
+            echo "added=false" >> "$GITHUB_OUTPUT"
+            echo "No migrations added since ${BASE:-the base}."
+          fi
+      - if: steps.migrations.outputs.added == 'true'
+        uses: pnpm/action-setup@v6
+      - if: steps.migrations.outputs.added == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: steps.migrations.outputs.added == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.migrations.outputs.added == 'true'
+        run: >-
+          node packages/scripts/check-migration-locks.ts --base "${{ steps.migrations.outputs.base }}"
+          --summary "$GITHUB_STEP_SUMMARY"
+
   build:
     name: Build
     runs-on: ubuntu-24.04
@@ -425,6 +475,7 @@ jobs:
         images,
         unit,
         integration,
+        migration-locks,
         build,
         e2e,
       ]

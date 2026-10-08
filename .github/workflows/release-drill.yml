@@ -1,0 +1,79 @@
+# Release drill (reliability §8.3–§8.5; spec 18B). Runs packages/scripts/drills/release.ts: the production release
+# tooling (deploy/compose.yml, deploy/deploy.sh) in staging and production clones of a local origin with a local
+# registry, through pull → promote → rollback → promote, with an expand migration in between. It measures each
+# release's interruption (PRD-2). Monthly, by hand, and on any change to the files it exercises, so a change to
+# deploy.sh is rehearsed before a server runs it. The result table is the run's summary.
+name: Release drill
+
+on:
+  schedule:
+    - cron: "30 22 1 * *" # 04:00 IST on the 1st, after the restore drill
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - deploy/compose.yml
+      - deploy/deploy.sh
+      - docker/**
+      - packages/scripts/drills/release.ts
+      - .github/workflows/release-drill.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-drill-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  drill:
+    name: Release drill (staging → promote → rollback)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: docker/setup-buildx-action@v4
+      # The images the drill releases, from the same layer cache as pr.yml's image jobs.
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/web.Dockerfile
+          target: run
+          build-args: GIT_SHA=drill
+          tags: nitap-web:drill
+          load: true
+          cache-from: type=gha,scope=web
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/web.Dockerfile
+          target: migrate
+          build-args: GIT_SHA=drill
+          tags: nitap-migrate:drill
+          load: true
+          cache-from: type=gha,scope=migrate
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/worker.Dockerfile
+          target: run
+          build-args: GIT_SHA=drill
+          tags: nitap-worker:drill
+          load: true
+          cache-from: type=gha,scope=worker
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/postgres.Dockerfile
+          tags: nitap-postgres:drill
+          load: true
+          cache-from: type=gha,scope=postgres
+      - name: Drill
+        env:
+          DRILL_HOST: "a GitHub Actions runner (ubuntu-24.04, run ${{ github.run_id }})"
+        run: node packages/scripts/drills/release.ts --skip-build --summary "$GITHUB_STEP_SUMMARY"

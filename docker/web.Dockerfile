@@ -1,8 +1,9 @@
 # Web app image (spec 16 16E). Build from the repository root:
 #   docker build -f docker/web.Dockerfile --build-arg GIT_SHA=$(git rev-parse HEAD) -t nitap-web .
 # Runtime configuration comes from the environment at `docker run`; nothing secret is baked in.
-# `--target migrate` builds a one-shot image that runs `prisma migrate deploy` (and `admin:bootstrap`); the
-# runtime image carries no Prisma CLI.
+# `--target migrate` builds a one-shot image that runs `prisma migrate deploy` and then the reference seed
+# (roles, RBAC bundles, departments: insert-only upserts, so a release adds what is new and changes nothing an
+# admin edited; spec 18 F-10), and `admin:bootstrap`; the runtime image carries no Prisma CLI.
 ARG NODE_IMAGE=node:24.21.0-alpine3.24
 ARG ALPINE_IMAGE=alpine:3.24
 
@@ -54,7 +55,7 @@ COPY --from=migrate-deps /repo ./
 # Offline: pnpm comes from corepack's cache, and the pruned tree never matches the lockfile, so pnpm must not
 # try to reinstall it before running a script.
 ENV NODE_ENV=production COREPACK_ENABLE_NETWORK=0 pnpm_config_verify_deps_before_run=false
-CMD ["pnpm", "--filter", "@nitap/database", "db:deploy"]
+CMD ["pnpm", "--filter", "@nitap/database", "db:release"]
 
 # Node and its two shared libraries on bare Alpine: no npm, npx, corepack or yarn (nor their CVEs). Deleting
 # them from the node image would not shrink it, since a removed file still sits in the layer below.
