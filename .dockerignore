@@ -13,3 +13,4 @@
 !.env.example
 docs
 perf/results
+.drill-restore

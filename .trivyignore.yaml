@@ -1,0 +1,10 @@
+# Reviewed exceptions to the image scan in .github/workflows/pr.yml (strategy §18.2). Each entry names the
+# file it applies to and why the finding does not apply; review them whenever the base images change.
+vulnerabilities:
+  # gosu in the official postgres image (docker/postgres.Dockerfile) is built with an older Go. It only calls
+  # setuid/setgid and exec when the entrypoint drops root; it never parses URLs, certificates or TLS, which is
+  # where these standard-library CVEs live. Overwriting the file does not help: the scanner still reads it in
+  # the base layer. Drop each entry once the upstream image rebuilds gosu with a fixed Go.
+  - id: CVE-2025-68121
+    paths: ["usr/local/bin/gosu"]
+    statement: Go crypto/tls session resumption; gosu makes no TLS connections.

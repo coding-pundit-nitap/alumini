@@ -167,6 +167,11 @@ jobs:
             file: docker/web.Dockerfile
             target: migrate
             scan: false
+          # PostgreSQL + pgBackRest (ADR-011). Built on the server, never published, but it runs in production.
+          - image: postgres
+            file: docker/postgres.Dockerfile
+            target: ""
+            scan: true
     steps:
       - uses: actions/checkout@v7
       - name: Lint Dockerfile
@@ -187,10 +192,14 @@ jobs:
         if: matrix.scan
         run: |
           image="nitap-${{ matrix.image }}:${{ github.sha }}"
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 image \
-            --quiet --scanners vuln --severity HIGH,CRITICAL "$image"
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.67.2 image \
-            --quiet --scanners vuln --severity CRITICAL --exit-code 1 "$image"
+          # .trivyignore.yaml holds the reviewed exceptions, each scoped to one file.
+          trivy() {
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "$PWD/.trivyignore.yaml:/.trivyignore.yaml:ro" aquasec/trivy:0.67.2 image \
+              --quiet --scanners vuln --ignorefile /.trivyignore.yaml "$@" "$image"
+          }
+          trivy --severity HIGH,CRITICAL
+          trivy --severity CRITICAL --exit-code 1
 
   unit:
     name: Unit and component tests
@@ -235,7 +244,7 @@ jobs:
             run: pnpm --filter @nitap/web test:integration --shard=3/3
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18.6-alpine3.24
         env:
           POSTGRES_USER: alumini
           POSTGRES_PASSWORD: alumini
@@ -323,7 +332,7 @@ jobs:
       EMAIL_RATE_PER_SECOND: "100"
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18.6-alpine3.24
         env:
           POSTGRES_USER: alumini
           POSTGRES_PASSWORD: alumini
