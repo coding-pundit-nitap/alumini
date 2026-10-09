@@ -95,4 +95,82 @@ describe("AlumniList", () => {
     expect(screen.queryByRole("link", { name: "Load more" })).toBeNull();
     vi.unstubAllGlobals();
   });
+
+  it("shows only the details a person has", () => {
+    render(
+      <AlumniList
+        people={[
+          person({
+            headline: null,
+            currentCompany: null,
+            currentDesignation: "Founder",
+            department: null,
+            graduationYear: null,
+            location: null,
+          }),
+          person({
+            id: "u2",
+            fullName: "Bare",
+            headline: null,
+            currentCompany: null,
+            currentDesignation: null,
+            department: null,
+            graduationYear: 2020,
+            location: null,
+          }),
+          person({
+            id: "u3",
+            fullName: "Nothing",
+            headline: null,
+            currentCompany: null,
+            currentDesignation: null,
+            department: null,
+            graduationYear: null,
+            location: null,
+          }),
+        ]}
+      />
+    );
+    const asha = screen.getByRole("link", { name: /Asha Rao/ });
+    expect(asha).toHaveTextContent("Founder");
+    expect(asha).not.toHaveTextContent(" at ");
+    expect(screen.getByRole("link", { name: /Bare/ })).toHaveTextContent("'20");
+    expect(
+      screen.getByRole("link", { name: /Nothing/ }).querySelectorAll("svg")
+    ).toHaveLength(1);
+  });
+
+  it("loads the next page when the end of the list scrolls into view", async () => {
+    let fire: (entries: { isIntersecting: boolean }[]) => void = () => {};
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof fire) {
+          fire = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    const fetchMock = vi.fn(async () =>
+      Response.json({ data: [], page: { nextCursor: null } })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <AlumniList
+        people={[person()]}
+        query="q=ab"
+        nextCursor="CUR"
+        nextHref="/directory?q=ab&cursor=CUR"
+      />
+    );
+    fire([{ isIntersecting: false }]);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fire([{ isIntersecting: true }]);
+    await vi.waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith("/api/v1/alumni?q=ab&cursor=CUR")
+    );
+    vi.unstubAllGlobals();
+  });
 });

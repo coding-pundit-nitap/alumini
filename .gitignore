@@ -10,6 +10,8 @@ node_modules
 
 # Testing & Coverage
 coverage
+# Vitest blob reports (CI shards merge them for coverage)
+.vitest
 playwright-report
 test-results
 blob-report

@@ -2,7 +2,11 @@ import userEvent from "@testing-library/user-event";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { render, screen } from "../../../../../tests/support/test-utils";
+import {
+  fireEvent,
+  render,
+  screen,
+} from "../../../../../tests/support/test-utils";
 import type { FeedPost } from "../../application/posts-store";
 import { PostCard } from "./post-card";
 
@@ -376,5 +380,128 @@ describe("PostCard", () => {
       "href",
       "#add-comment"
     );
+  });
+
+  it("saves an edit with Ctrl+Enter, cancels with Escape, and will not save empty text", async () => {
+    const a = actions();
+    render(
+      <PostCard
+        post={{ ...basePost, content: "Draft" }}
+        currentUserId={authorId}
+        canModerate={false}
+        {...a}
+      />
+    );
+    const user = userEvent.setup();
+    const open = async () => {
+      await user.click(screen.getByRole("button", { name: /post options/i }));
+      await user.click(screen.getByRole("menuitem", { name: "Edit" }));
+      return screen.getByRole("textbox", { name: "Edit post" });
+    };
+    await open();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("textbox", { name: "Edit post" })).toBeNull();
+
+    const box = await open();
+    await user.clear(box);
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+    await user.keyboard("{Control>}{Enter}{/Control}");
+    expect(a.onEdit).not.toHaveBeenCalled();
+    await user.type(box, "Final");
+    await user.keyboard("{Control>}{Enter}{/Control}");
+    expect(a.onEdit).toHaveBeenCalledWith(postId, { content: "Final" });
+  });
+
+  it("lays out two images side by side and replaces a broken one", async () => {
+    render(
+      <PostCard
+        post={{ ...basePost, imageUrls: ["i1", "i2"] }}
+        currentUserId={otherId}
+        canModerate={false}
+        {...actions()}
+      />
+    );
+    const imgs = screen
+      .getAllByRole("img")
+      .filter((el) => el.tagName === "IMG");
+    expect(imgs[0]!.parentElement).toHaveClass("grid-cols-2");
+    fireEvent.error(imgs[0]!);
+    expect(await screen.findByText("Image unavailable")).toBeInTheDocument();
+  });
+
+  it("shows a malformed link as typed", () => {
+    render(
+      <PostCard
+        post={{ ...basePost, linkUrl: "not a url" }}
+        currentUserId={otherId}
+        canModerate={false}
+        {...actions()}
+      />
+    );
+    expect(screen.getByRole("link", { name: /not a url/ })).toHaveAttribute(
+      "href",
+      "not a url"
+    );
+  });
+
+  it("expands a long post with …more", async () => {
+    // happy-dom does no layout: make the clamped body measure as overflowing.
+    const height = vi
+      .spyOn(HTMLElement.prototype, "scrollHeight", "get")
+      .mockReturnValue(500);
+    render(
+      <PostCard
+        post={{ ...basePost, content: "word ".repeat(200) }}
+        currentUserId={otherId}
+        canModerate={false}
+        {...actions()}
+      />
+    );
+    await userEvent.click(screen.getByRole("button", { name: "…more" }));
+    expect(screen.queryByRole("button", { name: "…more" })).toBeNull();
+    height.mockRestore();
+  });
+
+  it("says when the link cannot be copied", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: vi.fn().mockRejectedValue(new Error("denied")) },
+    });
+    render(
+      <PostCard
+        post={basePost}
+        currentUserId={otherId}
+        canModerate={false}
+        {...actions()}
+      />
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Copy link to post" })
+    );
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Couldn't copy"
+    );
+  });
+
+  it("on the post's own page, the comment action focuses the comment box", async () => {
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      '<form id="add-comment"><textarea></textarea></form>'
+    );
+    const form = document.getElementById("add-comment")!;
+    form.scrollIntoView = vi.fn();
+    render(
+      <PostCard
+        post={basePost}
+        currentUserId={otherId}
+        canModerate={false}
+        expanded
+        {...actions()}
+      />
+    );
+    await userEvent.click(screen.getByRole("link", { name: "Comment" }));
+    expect(form.scrollIntoView).toHaveBeenCalled();
+    expect(document.activeElement).toBe(form.querySelector("textarea"));
+    form.remove();
   });
 });

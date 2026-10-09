@@ -272,4 +272,125 @@ describe("PostComposer", () => {
     );
     expect(screen.queryByLabelText("Post content")).not.toBeInTheDocument();
   });
+
+  const refused = (message: string) => ({
+    ok: false as const,
+    error: { code: "X", message },
+    requestId: "q",
+  });
+  const status = (value: string, rejectReason: string | null = null) => ({
+    ok: true as const,
+    data: { status: value, rejectReason },
+  });
+
+  it.each([
+    [
+      "a refused presign",
+      () => ({ presignAction: vi.fn(async () => refused("Too big.")) }),
+      "Too big.",
+    ],
+    [
+      "a failed storage upload",
+      () => {
+        vi.stubGlobal(
+          "fetch",
+          vi.fn(async () => new Response(null, { status: 500 }))
+        );
+        return {};
+      },
+      "The upload did not go through.",
+    ],
+    [
+      "a refused completion",
+      () => ({ completeAction: vi.fn(async () => refused("Gone.")) }),
+      "Gone.",
+    ],
+    [
+      "a refused status check",
+      () => ({
+        completeAction: vi.fn(async () => status("PENDING_SCAN")),
+        statusAction: vi.fn(async () => refused("No access.")),
+      }),
+      "No access.",
+    ],
+    [
+      "a rejected scan, with its reason",
+      () => ({
+        completeAction: vi.fn(async () => status("PENDING_SCAN")),
+        statusAction: vi.fn(async () => status("REJECTED", "Malware found.")),
+      }),
+      "Malware found.",
+    ],
+    [
+      "a rejected scan, without a reason",
+      () => ({
+        completeAction: vi.fn(async () => status("PENDING_SCAN")),
+        statusAction: vi.fn(async () => status("REJECTED")),
+      }),
+      "This image was rejected.",
+    ],
+    [
+      "a scan that never finishes",
+      () => ({
+        completeAction: vi.fn(async () => status("PENDING_SCAN")),
+        statusAction: vi.fn(async () => status("PENDING_SCAN")),
+      }),
+      "Still processing.",
+    ],
+  ])("marks the image failed after %s", async (_label, arrange, message) => {
+    render(
+      <PostComposer
+        {...actions(arrange())}
+        pollIntervalMs={0}
+        pollMaxAttempts={2}
+      />
+    );
+    const user = userEvent.setup();
+    await expandAndFillContent(user);
+    await user.upload(screen.getByLabelText("Add images"), file("p.png"));
+    expect(await screen.findByTitle(message)).toBeInTheDocument();
+  });
+
+  it("accepts an image once a polled scan passes", async () => {
+    const a = actions({
+      completeAction: vi.fn(async () => status("PENDING_SCAN")),
+      statusAction: vi
+        .fn()
+        .mockResolvedValueOnce(status("PENDING_SCAN"))
+        .mockResolvedValueOnce(status("READY")),
+    });
+    render(<PostComposer {...a} pollIntervalMs={0} pollMaxAttempts={3} />);
+    const user = userEvent.setup();
+    await expandAndFillContent(user);
+    await user.upload(screen.getByLabelText("Add images"), file("p.png"));
+    await waitFor(() => expect(a.statusAction).toHaveBeenCalledTimes(2));
+    await user.click(screen.getByRole("button", { name: /^post$/i }));
+    expect(a.onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ imageUrls: [uploadId] })
+    );
+  });
+
+  it("cancels: clears the draft and collapses; an empty pick does nothing", async () => {
+    const a = actions();
+    render(<PostComposer {...a} />);
+    const user = userEvent.setup();
+    await expandAndFillContent(user);
+    fireEvent.change(screen.getByLabelText("Add images"), {
+      target: { files: [] },
+    });
+    expect(a.presignAction).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByLabelText("Post content")).toBeNull();
+    await user.click(screen.getByRole("button", { name: /share something/i }));
+    expect(screen.getByLabelText("Post content")).toHaveValue("");
+  });
+
+  it("ignores Ctrl+Enter on an empty draft", async () => {
+    const a = actions();
+    render(<PostComposer {...a} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /share something/i }));
+    await user.keyboard("{Control>}{Enter}{/Control}");
+    expect(a.onSubmit).not.toHaveBeenCalled();
+  });
 });

@@ -200,4 +200,79 @@ describe("FeedList", () => {
       screen.getByRole("button", { name: /try again/i })
     ).toBeInTheDocument();
   });
+
+  it("retries a failed page from Try again", async () => {
+    const user = (await import("@testing-library/user-event")).default.setup();
+    const fetchMock = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          posts: [
+            {
+              ...makePost(
+                "33333333-3333-4333-8333-333333333333",
+                "Edited later",
+                "2025-12-31"
+              ),
+              createdAt: "2025-12-31T00:00:00.000Z",
+              editedAt: "2026-01-05T00:00:00.000Z",
+            },
+          ],
+          nextCursor: null,
+        }),
+      } as Response);
+    render(
+      <FeedList
+        posts={posts}
+        nextCursor="abc123"
+        currentUserId={null}
+        canModerate={false}
+        {...actions()}
+      />
+    );
+    await user.click(screen.getByRole("link", { name: /load more/i }));
+    await user.click(await screen.findByRole("button", { name: /try again/i }));
+    expect(await screen.findByText("Edited later")).toBeInTheDocument();
+    expect(screen.getByText("· edited")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("fetches the next page when the end of the feed scrolls into view", async () => {
+    let fire: (entries: { isIntersecting: boolean }[]) => void = () => {};
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof fire) {
+          fire = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    const fetchMock = vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({ posts: [], nextCursor: null }),
+    } as Response);
+    render(
+      <FeedList
+        posts={posts}
+        nextCursor="abc123"
+        currentUserId={null}
+        canModerate={false}
+        {...actions()}
+      />
+    );
+    fire([{ isIntersecting: false }]);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fire([{ isIntersecting: true }]);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    vi.unstubAllGlobals();
+  });
 });

@@ -166,4 +166,94 @@ describe("NotificationInbox", () => {
       expect.objectContaining({ method: "POST" })
     );
   });
+
+  it("says why a page failed to load, with a fallback, and when offline", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockImplementationOnce(() =>
+          fail({ error: { message: "Rate limited." } })
+        )
+        .mockImplementationOnce(() =>
+          Promise.resolve(new Response("not json", { status: 500 }))
+        )
+        .mockImplementationOnce(() => Promise.reject(new Error("offline")))
+    );
+    render(
+      <NotificationInbox initialItems={[item("a")]} initialNextCursor="CUR" />
+    );
+    const more = () => screen.getByRole("button", { name: "Load more" });
+    await userEvent.click(more());
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent("Rate limited.")
+    );
+    await userEvent.click(more());
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Could not load more notifications. Please try again."
+      )
+    );
+    await userEvent.click(more());
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        /Check your connection/
+      )
+    );
+  });
+
+  it("puts items back when marking read fails offline", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new Error("offline")))
+    );
+    render(
+      <NotificationInbox initialItems={[item("a")]} initialNextCursor={null} />
+    );
+    await userEvent.click(screen.getByRole("button", { name: /mark read/i }));
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Could not mark as read. Check your connection and try again."
+      )
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Mark all read" })
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Could not mark all as read. Check your connection and try again."
+      )
+    );
+    expect(
+      screen.getByRole("button", { name: /mark read/i })
+    ).toBeInTheDocument();
+  });
+
+  it("loads the next page when the end of the list scrolls into view", async () => {
+    let fire: (entries: { isIntersecting: boolean }[]) => void = () => {};
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof fire) {
+          fire = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    const fetchMock = vi.fn(() =>
+      ok({ data: [item("b")], page: { nextCursor: null } })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <NotificationInbox initialItems={[item("a")]} initialNextCursor="CUR" />
+    );
+    fire([{ isIntersecting: false }]);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fire([{ isIntersecting: true }]);
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith("/api/v1/notifications?cursor=CUR")
+    );
+  });
 });

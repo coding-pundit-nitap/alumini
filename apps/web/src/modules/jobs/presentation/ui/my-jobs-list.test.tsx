@@ -1,8 +1,13 @@
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 
-import { render, screen } from "../../../../../tests/support/test-utils";
+import {
+  render,
+  screen,
+  waitFor,
+} from "../../../../../tests/support/test-utils";
 import type { ListedJob } from "../../application/job-queries";
-import { MyJobsList } from "./my-jobs-list";
+import { MyJobsList, WithdrawButton } from "./my-jobs-list";
 
 const row = (over: Partial<ListedJob> = {}): ListedJob => ({
   id: "job-1",
@@ -89,5 +94,29 @@ describe("MyJobsList", () => {
     expect(
       screen.getByRole("link", { name: "Older postings" })
     ).toHaveAttribute("href", "/jobs/mine?cursor=C");
+  });
+
+  it("withdraws after confirmation, keeps the job on Keep, and shows a refusal", async () => {
+    const closeAction = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { code: "X", message: "Already closed." },
+        requestId: "q",
+      })
+      .mockResolvedValueOnce({ ok: true, data: {} });
+    render(<WithdrawButton jobId="j1" closeAction={closeAction} />);
+    await userEvent.click(screen.getByRole("button", { name: "Withdraw" }));
+    await userEvent.click(screen.getByRole("button", { name: "Keep" }));
+    expect(closeAction).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole("button", { name: "Withdraw" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(await screen.findByText("Already closed.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    await waitFor(() =>
+      expect(screen.queryByText("Already closed.")).toBeNull()
+    );
+    expect(closeAction).toHaveBeenCalledWith("j1");
   });
 });

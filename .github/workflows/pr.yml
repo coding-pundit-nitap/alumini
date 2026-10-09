@@ -227,9 +227,11 @@ jobs:
   integration:
     name: Integration and contract tests (${{ matrix.suite }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     # Web's suite alone needs ~15 min on one runner, so it is split into shards; the other
     # packages' suites are small and run together. Each leg has its own services.
+    # Web's shards run every web project (unit and component too) with coverage, and leave a blob report
+    # that the coverage job merges: the thresholds hold for the whole suite, not for one shard.
     strategy:
       fail-fast: false
       matrix:
@@ -237,11 +239,14 @@ jobs:
           - suite: packages
             run: pnpm turbo run test:integration --filter=!@nitap/web
           - suite: web 1/3
-            run: pnpm --filter @nitap/web test:integration --shard=1/3
+            run: pnpm --filter @nitap/web exec vitest run --coverage --reporter=default --reporter=blob --shard=1/3
+            coverage: true
           - suite: web 2/3
-            run: pnpm --filter @nitap/web test:integration --shard=2/3
+            run: pnpm --filter @nitap/web exec vitest run --coverage --reporter=default --reporter=blob --shard=2/3
+            coverage: true
           - suite: web 3/3
-            run: pnpm --filter @nitap/web test:integration --shard=3/3
+            run: pnpm --filter @nitap/web exec vitest run --coverage --reporter=default --reporter=blob --shard=3/3
+            coverage: true
     services:
       postgres:
         image: postgres:18.6-alpine3.24
@@ -291,6 +296,36 @@ jobs:
       - if: matrix.suite == 'packages'
         run: pnpm db:drift
       - run: ${{ matrix.run }}
+        env:
+          COVERAGE_SHARD: ${{ matrix.coverage && '1' || '' }}
+      - if: matrix.coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-blob-${{ strategy.job-index }}
+          path: apps/web/.vitest/blob/
+          include-hidden-files: true
+          retention-days: 1
+
+  coverage:
+    name: Coverage (web, every suite merged)
+    needs: integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: coverage-blob-*
+          path: apps/web/.vitest/blob
+          merge-multiple: true
+      # Fails when statements, lines or functions fall below 95 % or branches below 90 % (vitest.config.mts).
+      - run: pnpm --filter @nitap/web exec vitest --merge-reports --coverage
 
   # A new migration is measured on volume (spec 18 PRD-6, reliability §9.3): the database is built at the merge
   # base with the perf seed, then this branch's migrations apply while pg_locks is sampled. A write-blocking lock
@@ -475,6 +510,7 @@ jobs:
         images,
         unit,
         integration,
+        coverage,
         migration-locks,
         build,
         e2e,

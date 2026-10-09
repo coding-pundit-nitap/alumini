@@ -4,7 +4,10 @@ import userEvent from "@testing-library/user-event";
 
 import { act, render, screen } from "../../../../../tests/support/test-utils";
 import { ConversationList, type InboxConversation } from "./conversation-list";
-import { MESSAGES_READ_EVENT } from "./conversation-avatar";
+import {
+  MESSAGES_CHANGED_EVENT,
+  MESSAGES_READ_EVENT,
+} from "./conversation-avatar";
 
 const person = (id: string, fullName: string) => ({
   id,
@@ -127,5 +130,160 @@ describe("ConversationList", () => {
     expect(
       screen.getByRole("link", { name: "Older conversations" })
     ).toHaveAttribute("href", "/messages?cursor=x");
+  });
+
+  it("refetches on a change hint and when the tab becomes visible, newest first", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            data: [
+              conv({
+                id: "c2",
+                lastMessageSeq: "9",
+                participants: [person("me", "Asha"), person("m", "Meera")],
+              }),
+            ],
+          })
+        )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    setup([conv({})]);
+    await act(async () => {
+      window.dispatchEvent(new Event(MESSAGES_CHANGED_EVENT));
+    });
+    const links = screen
+      .getAllByRole("link")
+      .filter((a) => /^\/messages\/c/.test(a.getAttribute("href") ?? ""));
+    expect(links[0]).toHaveTextContent("Meera");
+    expect(links[1]).toHaveTextContent("Ravi");
+    expect(fetchMock).toHaveBeenCalledWith("/api/v1/conversations?limit=20");
+
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps the list when a refetch fails or is refused", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockRejectedValueOnce(new Error("offline"))
+        .mockResolvedValueOnce(new Response("", { status: 500 }))
+    );
+    setup([conv({})]);
+    for (let i = 0; i < 2; i += 1) {
+      await act(async () => {
+        window.dispatchEvent(new Event(MESSAGES_CHANGED_EVENT));
+      });
+    }
+    expect(screen.getByRole("link", { name: /Ravi/ })).toBeInTheDocument();
+  });
+
+  it("loads older conversations from the link and drops it on the last page", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            data: [
+              conv({
+                id: "old",
+                lastMessageSeq: "1",
+                participants: [person("me", "Asha"), person("o", "Old Friend")],
+              }),
+            ],
+            page: { nextCursor: null },
+          })
+        )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    setup([conv({})], "cur/1");
+    await userEvent.click(
+      screen.getByRole("link", { name: "Older conversations" })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/conversations?limit=20&cursor=cur%2F1"
+    );
+    expect(
+      await screen.findByRole("link", { name: /Old Friend/ })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Older conversations" })
+    ).toBeNull();
+  });
+
+  it("keeps the older-conversations link when loading fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockRejectedValueOnce(new Error("offline"))
+        .mockResolvedValueOnce(new Response("", { status: 500 }))
+    );
+    setup([conv({})], "x");
+    for (let i = 0; i < 2; i += 1) {
+      await userEvent.click(
+        await screen.findByRole("link", { name: "Older conversations" })
+      );
+    }
+    expect(
+      await screen.findByRole("link", { name: "Older conversations" })
+    ).toBeInTheDocument();
+  });
+
+  it("pages in older conversations when the end of the list scrolls into view", async () => {
+    let fire: (entries: { isIntersecting: boolean }[]) => void = () => {};
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof fire) {
+          fire = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ data: [], page: { nextCursor: null } }))
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    setup([conv({})], "x");
+    await act(async () => {
+      fire([{ isIntersecting: false }]);
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => {
+      fire([{ isIntersecting: true }]);
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/conversations?limit=20&cursor=x"
+    );
+  });
+
+  it("says when no loaded conversation matches the search", async () => {
+    setup([conv({})]);
+    await userEvent.type(screen.getByLabelText("Search conversations"), "zzz");
+    expect(
+      screen.getByText(/No conversations match .zzz./)
+    ).toBeInTheDocument();
+  });
+
+  it("names an unknown group sender as Someone and orders equal sequences stably", () => {
+    setup([
+      conv({
+        id: "g",
+        isGroup: true,
+        title: "Group",
+        lastMessage: { senderId: "gone", body: "hi" },
+      }),
+      conv({ id: "c2", lastMessageSeq: "5", lastMessage: null }),
+    ]);
+    expect(screen.getByRole("link", { name: /Group/ })).toHaveTextContent(
+      "Someone: hi"
+    );
   });
 });

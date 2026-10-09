@@ -74,4 +74,114 @@ describe("AccessList", () => {
     );
     expect(chapter).toBeEnabled();
   });
+
+  const roles = (...names: string[]) =>
+    names.map((name) => ({
+      name,
+      grantedBy: by,
+      grantedAt: new Date("2026-01-01T00:00:00Z"),
+    }));
+  const noOptions = { target: undefined, roles: [], permissions: [] };
+
+  it("says when there are no roles or grants, and offers no actions without permission", () => {
+    render(
+      <AccessList
+        user={{ ...user, grants: [] }}
+        options={noOptions}
+        superAdminRole="SUPER_ADMIN"
+        blocked={undefined}
+        now={new Date()}
+      />
+    );
+    expect(screen.getByText("No roles.")).toBeInTheDocument();
+    expect(screen.getByText("No direct grants.")).toBeInTheDocument();
+    expect(screen.queryByRole("button")).toBeNull();
+  });
+
+  it("explains why a role cannot be removed: blocked, escalation, or the last Super Admin", () => {
+    const { unmount } = render(
+      <AccessList
+        user={{
+          ...user,
+          roles: roles("SUPER_ADMIN", "MODERATOR", "ALUMNI"),
+          isLastSuperAdmin: true,
+        }}
+        options={{
+          ...noOptions,
+          roles: [{ name: "MODERATOR", reason: "ADMIN_ROLE" }],
+        }}
+        superAdminRole="SUPER_ADMIN"
+        blocked={undefined}
+        now={new Date()}
+        revokeRole={vi.fn()}
+      />
+    );
+    const [superAdmin, moderator, alumni] = screen.getAllByRole("button", {
+      name: "Remove",
+    });
+    expect(superAdmin).toHaveAccessibleDescription(
+      "This is the last active Super Admin."
+    );
+    expect(moderator).toHaveAccessibleDescription(
+      ESCALATION_MESSAGES.ADMIN_ROLE
+    );
+    expect(alumni).toBeEnabled();
+    unmount();
+
+    render(
+      <AccessList
+        user={{ ...user, roles: roles("ALUMNI") }}
+        options={noOptions}
+        superAdminRole="SUPER_ADMIN"
+        blocked="You cannot change your own access."
+        now={new Date()}
+        revokeRole={vi.fn()}
+        revokeGrant={vi.fn()}
+      />
+    );
+    for (const button of screen.getAllByRole("button")) {
+      expect(button).toHaveAccessibleDescription(
+        "You cannot change your own access."
+      );
+    }
+  });
+
+  it("marks an expired grant and shows when a grant expires", () => {
+    render(
+      <AccessList
+        user={{
+          ...user,
+          grants: [
+            {
+              ...user.grants[0]!,
+              expiresAt: new Date("2026-01-15T00:00:00Z"),
+            },
+            {
+              ...user.grants[1]!,
+              expiresAt: new Date("2027-01-15T00:00:00Z"),
+            },
+          ],
+        }}
+        options={{
+          ...noOptions,
+          permissions: [
+            {
+              permission: "event.manage",
+              global: undefined,
+              chapter: "NOT_SCOPABLE",
+            },
+          ],
+        }}
+        superAdminRole="SUPER_ADMIN"
+        blocked={undefined}
+        now={new Date("2026-06-01T00:00:00Z")}
+        revokeGrant={vi.fn()}
+      />
+    );
+    expect(screen.getAllByText("Expired")).toHaveLength(1);
+    expect(screen.getByText("Chapter: delhi")).toBeInTheDocument();
+    for (const button of screen.getAllByRole("button", { name: "Revoke" })) {
+      expect(button).toBeEnabled();
+    }
+  });
 });

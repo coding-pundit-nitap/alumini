@@ -167,4 +167,81 @@ describe("PhotoUpload", () => {
       screen.queryByRole("button", { name: "Set as profile photo" })
     ).toBeNull();
   });
+
+  const refused = (message: string) =>
+    vi.fn(async () => ({
+      ok: false as const,
+      error: { code: "X", message },
+      requestId: "r",
+    }));
+  const status = (value: string, rejectReason: string | null = null) =>
+    vi.fn(async () => ({
+      ok: true as const,
+      data: { status: value, rejectReason },
+    })) as never;
+
+  it.each([
+    [
+      "the storage upload fails",
+      () => {
+        vi.stubGlobal(
+          "fetch",
+          vi.fn(async () => new Response(null, { status: 500 }))
+        );
+        return {};
+      },
+      "The upload did not go through. Please try again.",
+    ],
+    [
+      "completion is refused",
+      () => ({ completeAction: refused("Upload expired.") }),
+      "Upload expired.",
+    ],
+    [
+      "the scan rejects it at completion",
+      () => ({ completeAction: status("REJECTED") }),
+      "This image was rejected.",
+    ],
+    [
+      "a status check is refused",
+      () => ({ statusAction: refused("No access.") }),
+      "No access.",
+    ],
+    [
+      "the scan rejects it without a reason",
+      () => ({ statusAction: status("REJECTED") }),
+      "This image was rejected.",
+    ],
+    [
+      "the scan never finishes",
+      () => ({ statusAction: status("PENDING_SCAN") }),
+      "Still processing. Please check back in a moment.",
+    ],
+  ])("says so when %s", async (_label, arrange, message) => {
+    render(
+      <PhotoUpload
+        {...actions(arrange())}
+        pollIntervalMs={0}
+        pollMaxAttempts={2}
+      />
+    );
+    const user = userEvent.setup();
+    await selectFile(screen.getByLabelText(/choose a photo/i), user);
+    expect(await screen.findByText(message)).toBeInTheDocument();
+  });
+
+  it("is ready at once when completion finds it clean, and shows a refused save", async () => {
+    const a = actions({
+      completeAction: status("READY"),
+      setPhotoAction: refused("Not your upload."),
+    });
+    render(<PhotoUpload {...a} />);
+    const user = userEvent.setup();
+    await selectFile(screen.getByLabelText(/choose a photo/i), user);
+    await user.click(
+      await screen.findByRole("button", { name: "Set as profile photo" })
+    );
+    expect(await screen.findByText("Not your upload.")).toBeInTheDocument();
+    expect(a.statusAction).not.toHaveBeenCalled();
+  });
 });

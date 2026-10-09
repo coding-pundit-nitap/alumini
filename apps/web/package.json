@@ -15,7 +15,7 @@
     "test": "vitest run --project unit --project dom",
     "test:integration": "vitest run --project integration --project contract",
     "test:watch": "vitest --project unit --project dom",
-    "test:coverage": "vitest run --project unit --project dom --coverage",
+    "test:coverage": "node --env-file-if-exists=../../.env node_modules/vitest/vitest.mjs run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "db:seed:admin": "node --env-file-if-exists=../../.env scripts/seed-dev-admin.ts",

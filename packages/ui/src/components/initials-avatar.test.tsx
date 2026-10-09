@@ -12,4 +12,11 @@ describe("InitialsAvatar", () => {
       expect(fallback).toHaveClass(cls);
     }
   });
+
+  it("renders the photo when there is one, and stays hidden from screen readers", () => {
+    const { container } = render(
+      <InitialsAvatar name="Asha Rao" seed="u1" src="/api/photos/u1" />
+    );
+    expect(container.firstChild).toHaveAttribute("aria-hidden", "true");
+  });
 });

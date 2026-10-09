@@ -183,4 +183,89 @@ describe("detail collections against real PostgreSQL", () => {
       expect(await c.list(userId)).toHaveLength(10);
     });
   });
+
+  describe("update and remove, for every other collection", () => {
+    it("education: updates and removes for the owner only", async () => {
+      const c = createPrismaEducationCollection({
+        runner: runner(),
+        prisma: db.prisma,
+      });
+      const input = {
+        institution: "NIT AP",
+        qualification: "B.Tech",
+        fieldOfStudy: "CSE",
+        startYear: 2015,
+        endYear: 2019,
+      };
+      const added = await c.add(userId, input);
+      const id = added.ok ? added.item.id : "";
+      expect(await c.update(otherId, id, input)).toEqual({
+        ok: false,
+        reason: "NOT_FOUND",
+      });
+      expect(await c.update(userId, id, { ...input, endYear: null })).toEqual({
+        ok: true,
+        item: { id, ...input, endYear: null },
+      });
+      expect(await c.remove(otherId, id)).toBe(false);
+      expect(await c.remove(userId, id)).toBe(true);
+      expect(await c.list(userId)).toEqual([]);
+    });
+
+    it("skills: renames, refuses a rename onto an existing skill, and removes for the owner only", async () => {
+      const c = createPrismaSkillCollection({
+        runner: runner(),
+        prisma: db.prisma,
+      });
+      const go = await c.add(userId, { skill: "Go" });
+      await c.add(userId, { skill: "Rust" });
+      const id = go.ok ? go.item.id : "";
+      expect(await c.update(otherId, id, { skill: "Zig" })).toEqual({
+        ok: false,
+        reason: "NOT_FOUND",
+      });
+      expect(await c.update(userId, id, { skill: "rust" })).toEqual({
+        ok: false,
+        reason: "DUPLICATE",
+      });
+      expect(await c.update(userId, id, { skill: "Zig" })).toEqual({
+        ok: true,
+        item: { id, skill: "Zig" },
+      });
+      expect(await c.remove(otherId, id)).toBe(false);
+      expect(await c.remove(userId, id)).toBe(true);
+      expect((await c.list(userId)).map((x) => x.skill)).toEqual(["Rust"]);
+    });
+
+    it("links: updates, refuses a duplicate url, and removes for the owner only", async () => {
+      const c = createPrismaLinkCollection({
+        runner: runner(),
+        prisma: db.prisma,
+      });
+      const a = await c.add(userId, {
+        type: "GITHUB",
+        url: "https://github.com/asha",
+      });
+      await c.add(userId, { type: "WEBSITE", url: "https://asha.dev" });
+      const id = a.ok ? a.item.id : "";
+      expect(
+        await c.update(otherId, id, { type: "GITHUB", url: "https://x.dev" })
+      ).toEqual({ ok: false, reason: "NOT_FOUND" });
+      expect(
+        await c.update(userId, id, { type: "WEBSITE", url: "https://asha.dev" })
+      ).toEqual({ ok: false, reason: "DUPLICATE" });
+      expect(
+        await c.update(userId, id, {
+          type: "GITHUB",
+          url: "https://github.com/asha-rao",
+        })
+      ).toEqual({
+        ok: true,
+        item: { id, type: "GITHUB", url: "https://github.com/asha-rao" },
+      });
+      expect(await c.remove(otherId, id)).toBe(false);
+      expect(await c.remove(userId, id)).toBe(true);
+      expect(await c.list(userId)).toHaveLength(1);
+    });
+  });
 });

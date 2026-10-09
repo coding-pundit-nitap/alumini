@@ -23,6 +23,36 @@ export default defineConfig({
     restoreMocks: true,
     // Integration and contract projects are empty until Phase 1; an empty project must not fail the run.
     passWithNoTests: true,
+    // `pnpm test:coverage` runs every project (start Postgres and Redis first, as for test:integration), so
+    // code proven only against real Postgres counts too.
+    // Every source file counts, loaded by a test or not, except what only a running Next.js server
+    // executes: route files (page, layout, …) and the framework wiring below. Playwright covers those.
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.d.ts",
+        "src/app/**/{page,layout,loading,not-found,global-error,template,default,opengraph-image}.tsx",
+        // Starts the server's metrics, error tracker and drain handler.
+        "src/instrumentation.ts",
+        // The live Better Auth instance and its catch-all route; auth-factory.ts holds the tested logic.
+        "src/modules/auth/infrastructure/auth.ts",
+        "src/app/api/auth/[...all]/route.ts",
+      ],
+      reporter: ["text-summary", "html", "json-summary"],
+      // A CI shard covers only part of the code; the coverage job checks these on the merged report.
+      ...(process.env.COVERAGE_SHARD
+        ? {}
+        : {
+            thresholds: {
+              statements: 95,
+              lines: 95,
+              functions: 95,
+              branches: 90,
+            },
+          }),
+    },
     projects: [
       {
         extends: true,

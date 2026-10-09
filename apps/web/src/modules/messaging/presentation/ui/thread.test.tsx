@@ -2,6 +2,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  act,
+  fireEvent,
   render,
   screen,
   waitFor,
@@ -389,5 +391,174 @@ describe("Thread layout and sending (UI-4)", () => {
       "aria-expanded",
       "true"
     );
+  });
+});
+
+describe("Thread edges", () => {
+  const withCursor = () =>
+    render(
+      <Thread
+        conversationId="c1"
+        viewerId={ME}
+        people={people}
+        initialMessages={NEWEST_FIRST}
+        initialNextCursor="CUR"
+      />
+    );
+
+  it("shows the server's reason when a report is refused, a fallback without one, and cancels", async () => {
+    fetchMock.mockImplementation((url: string) =>
+      String(url).endsWith("/reports")
+        ? respond({ error: { message: "Already reported." } }, 409)
+        : respond({}, 204)
+    );
+    setup();
+    await userEvent.click(
+      screen.getAllByRole("button", { name: "Report message from Ravi" })[0]!
+    );
+    const submit = screen.getByRole("button", { name: "Submit report" });
+    await userEvent.click(submit);
+    expect(calls("/reports")).toHaveLength(0);
+    await userEvent.type(screen.getByLabelText("Reason"), "spam");
+    await userEvent.click(submit);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Already reported."
+    );
+
+    fetchMock.mockImplementation((url: string) =>
+      String(url).endsWith("/reports")
+        ? Promise.resolve(new Response("not json", { status: 500 }))
+        : respond({}, 204)
+    );
+    await userEvent.click(submit);
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "The report was not sent. Please try again."
+      )
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Submit report" })).toBeNull()
+    );
+  });
+
+  it("says when older messages fail to load and lets you retry", async () => {
+    fetchMock.mockImplementation((url: string) =>
+      String(url).includes("cursor=") ? respond({}, 500) : respond({}, 204)
+    );
+    withCursor();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Load older messages" })
+    );
+    expect(
+      await screen.findByText("Couldn't load older messages.")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Load older messages" })
+    ).toBeInTheDocument();
+  });
+
+  it("pages older history when the top of the thread scrolls into view", async () => {
+    let fire: (entries: { isIntersecting: boolean }[]) => void = () => {};
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof fire) {
+          fire = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    fetchMock.mockImplementation((url: string) =>
+      String(url).includes("cursor=")
+        ? respond({
+            data: [message(0, "ravi", "ancient")],
+            page: { nextCursor: null },
+          })
+        : respond({}, 204)
+    );
+    withCursor();
+    await act(async () => fire([{ isIntersecting: false }]));
+    expect(calls("cursor=")).toHaveLength(0);
+    await act(async () => fire([{ isIntersecting: true }]));
+    expect(await screen.findByText("ancient")).toBeInTheDocument();
+  });
+
+  it("ignores a malformed hint, refreshes when the tab is shown, and ignores a refused refresh", async () => {
+    setup();
+    await waitFor(() => expect(FakeEventSource.last).toBeDefined());
+    FakeEventSource.last.listeners.get("message")?.({ data: "{not json" });
+    expect(calls("/messages?")).toHaveLength(0);
+
+    fetchMock.mockImplementation(() => respond({}, 500));
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(calls("/messages?")).toHaveLength(1);
+
+    fetchMock.mockImplementation(() => Promise.reject(new Error("offline")));
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(screen.getByText("third")).toBeInTheDocument();
+  });
+
+  it("offers a jump to the latest message when scrolled far up, and counts messages arriving meanwhile", async () => {
+    setup();
+    await waitFor(() => expect(FakeEventSource.last).toBeDefined());
+    const log = screen.getByRole("log", { name: "Messages" });
+    const scrollTo = vi.fn();
+    log.scrollTo = scrollTo;
+    log.scrollTop = -600;
+    fireEvent.scroll(log);
+    const jump = screen.getByRole("button", { name: "Jump to latest message" });
+
+    fetchMock.mockImplementation((url: string) =>
+      String(url).includes("/messages?")
+        ? respond({
+            data: [message(4, "ravi", "fresh"), ...NEWEST_FIRST],
+            page: { nextCursor: null },
+          })
+        : respond({}, 204)
+    );
+    FakeEventSource.last.emit({ conversationId: "c1", messageId: "m4" });
+    await userEvent.click(
+      await screen.findByRole("button", { name: "1 new message" })
+    );
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+    expect(screen.queryByRole("button", { name: "1 new message" })).toBeNull();
+
+    log.scrollTop = -600;
+    fireEvent.scroll(log);
+    expect(jump).toBeDefined();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Jump to latest message" })
+    );
+    expect(scrollTo).toHaveBeenCalledTimes(2);
+
+    log.scrollTop = 0;
+    fireEvent.scroll(log);
+    expect(
+      screen.queryByRole("button", { name: "Jump to latest message" })
+    ).toBeNull();
+  });
+
+  it("opens a group at the beginning of the group, by its title", () => {
+    render(
+      <Thread
+        conversationId="g1"
+        viewerId={ME}
+        people={people}
+        title="Batch of 2020"
+        isGroup
+        initialMessages={[]}
+        initialNextCursor={null}
+      />
+    );
+    expect(
+      screen.getByText(/This is the beginning of Batch of 2020\./)
+    ).toBeInTheDocument();
   });
 });

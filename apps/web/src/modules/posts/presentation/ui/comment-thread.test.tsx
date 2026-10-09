@@ -189,4 +189,110 @@ describe("CommentThread", () => {
     await vi.waitFor(() => expect(screen.queryByText("older 1")).toBeNull());
     vi.unstubAllGlobals();
   });
+
+  it("says when older comments fail to load, and retries", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 500 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ comments: [], nextCursor: null }))
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <CommentThread
+        postId={postId}
+        comments={comments}
+        nextCursor="CUR"
+        currentUserId={otherId}
+        {...actions()}
+      />
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Load more comments" })
+    );
+    expect(await screen.findByText(/Couldn.t load/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await vi.waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: "Load more comments" })
+      ).toBeNull()
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it("pages in older comments when the end of the thread scrolls into view", async () => {
+    let fire: (entries: { isIntersecting: boolean }[]) => void = () => {};
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof fire) {
+          fire = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ comments: [], nextCursor: null }))
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <CommentThread
+        postId={postId}
+        comments={comments}
+        nextCursor="CUR"
+        currentUserId={otherId}
+        {...actions()}
+      />
+    );
+    fire([{ isIntersecting: false }]);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fire([{ isIntersecting: true }]);
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    vi.unstubAllGlobals();
+  });
+
+  it("shows a refused comment, keeps a failed delete, and posts with Ctrl+Enter", async () => {
+    const a = actions({
+      onAddComment: vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: false,
+          error: { code: "X", message: "Slow down." },
+          requestId: "q",
+        })
+        .mockResolvedValueOnce({ ok: true, data: { commentId: "c" } }),
+      onDeleteComment: vi.fn(async () => ({
+        ok: false as const,
+        error: { code: "X", message: "no" },
+        requestId: "q",
+      })),
+    });
+    render(
+      <CommentThread
+        postId={postId}
+        comments={comments}
+        nextCursor={null}
+        currentUserId={authorId}
+        {...a}
+      />
+    );
+    const box = screen.getByPlaceholderText("Add a comment…");
+    await userEvent.click(box);
+    await userEvent.keyboard("{Control>}{Enter}{/Control}");
+    expect(a.onAddComment).not.toHaveBeenCalled();
+    await userEvent.type(box, "hello");
+    await userEvent.keyboard("{Control>}{Enter}{/Control}");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Slow down.");
+    await userEvent.keyboard("{Control>}{Enter}{/Control}");
+    await vi.waitFor(() => expect(box).toHaveValue(""));
+    expect(screen.queryByRole("alert")).toBeNull();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Delete comment" })
+    );
+    expect(screen.getByText("bold")).toBeInTheDocument();
+  });
 });

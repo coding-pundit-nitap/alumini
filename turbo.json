@@ -2,6 +2,7 @@
   "$schema": "https://turborepo.dev/schema.json",
   "globalPassThroughEnv": [
     "CI",
+    "COVERAGE_SHARD",
     "DATABASE_URL",
     "MIGRATE_DATABASE_URL",
     "SHADOW_DATABASE_URL",
@@ -67,7 +68,9 @@
     "test": { "dependsOn": ["transit", "^db:generate"] },
     "test:coverage": {
       "dependsOn": ["transit", "^db:generate"],
-      "outputs": ["coverage/**"]
+      "env": ["EVENT_RACE_ITERATIONS", "SYSTEM_RACE_ITERATIONS", "FUZZ_RUNS"],
+      "outputs": ["coverage/**"],
+      "cache": false
     },
     "test:watch": { "cache": false, "persistent": true },
     "test:integration": {

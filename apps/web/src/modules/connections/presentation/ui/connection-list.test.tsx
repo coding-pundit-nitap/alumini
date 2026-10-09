@@ -2,6 +2,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  fireEvent,
   render,
   screen,
   waitFor,
@@ -162,6 +163,116 @@ describe("ConnectionList", () => {
     expect(messageAction).toHaveBeenCalledWith("u1");
     await waitFor(() =>
       expect(router.push).toHaveBeenCalledWith("/messages/conv1")
+    );
+  });
+
+  it("shows why a conversation could not open", async () => {
+    render(
+      <ConnectionList
+        items={[
+          item({
+            state: "ACCEPTED",
+            user: { id: "u1", fullName: "Asha Rao", hasPhoto: true },
+          }),
+        ]}
+        tab="connections"
+        respondAction={vi.fn(ok)}
+        removeAction={vi.fn(ok)}
+        messageAction={vi.fn(async () => ({
+          ok: false as const,
+          error: { code: "X", message: "They blocked messages." },
+          requestId: "r",
+        }))}
+      />
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Message" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "They blocked messages."
+    );
+  });
+
+  it("removes a row once its leave animation ends", async () => {
+    render(
+      <ConnectionList
+        items={[item({ state: "ACCEPTED" })]}
+        tab="connections"
+        respondAction={vi.fn(ok)}
+        removeAction={vi.fn(ok)}
+      />
+    );
+    const row = screen.getByRole("listitem");
+    fireEvent.animationEnd(row);
+    expect(screen.getByRole("listitem")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Remove" }));
+    fireEvent.animationEnd(screen.getByRole("listitem"));
+    await waitFor(() => expect(screen.queryByRole("listitem")).toBeNull());
+  });
+
+  it("offers a retry when a page fails, and pages in when the end scrolls into view", async () => {
+    let fire: (entries: { isIntersecting: boolean }[]) => void = () => {};
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(cb: typeof fire) {
+          fire = cb;
+        }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 500 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: [
+              {
+                ...item({ id: "c9", state: "ACCEPTED" }),
+                user: { id: "u9", fullName: "Later", hasPhoto: false },
+                requestedAt: new Date().toISOString(),
+                respondedAt: new Date().toISOString(),
+              },
+            ],
+            page: { nextCursor: null },
+          })
+        )
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <ConnectionList
+        items={[item({ state: "ACCEPTED" })]}
+        tab="connections"
+        respondAction={vi.fn(ok)}
+        removeAction={vi.fn(ok)}
+        query={{ state: "ACCEPTED" }}
+        nextCursor="CUR"
+      />
+    );
+    fire([{ isIntersecting: false }]);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fire([{ isIntersecting: true }]);
+    expect(await screen.findByText("Couldn't load more.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByRole("link", { name: "Later" })).toBeVisible();
+    vi.unstubAllGlobals();
+  });
+
+  it("links the next page plainly when it cannot load in place", () => {
+    render(
+      <ConnectionList
+        items={[item()]}
+        tab="incoming"
+        respondAction={vi.fn(ok)}
+        removeAction={vi.fn(ok)}
+        nextCursor="CUR"
+        nextHref="/connections?tab=incoming&cursor=CUR"
+      />
+    );
+    expect(screen.getByRole("link", { name: "Next page" })).toHaveAttribute(
+      "href",
+      "/connections?tab=incoming&cursor=CUR"
     );
   });
 });
