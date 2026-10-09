@@ -28,7 +28,7 @@ async function member(
   return { page, email };
 }
 
-/** Direct DB access, so this suite needs no pre-seeded admin (same approach as jobs.spec.ts). */
+/** Direct DB access, so this suite needs no pre-seeded admin. */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function grantRole(email: string, roleName: RoleName): Promise<void> {
@@ -129,9 +129,7 @@ test("a member reports a message; a Moderator reads the context, resolves it, an
     .click();
   await moderator.page.getByLabel("Reason").selectOption("HARASSMENT");
   await moderator.page.getByRole("button", { name: "Resolve report" }).click();
-  // Scoped to the <h1> status badge: unscoped getByText("Resolved") also matches the flattened
-  // "ClaimResolveDismiss" button-group text (the "e" of Resolve + "D" of Dismiss), which is present
-  // immediately on load and produces a false positive that races the resolve transaction.
+  // Scoped to the heading badge: an unscoped "Resolved" also matches the button group text.
   await expect(
     moderator.page.locator("h1").getByText("Resolved", { exact: true })
   ).toBeVisible({

@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import type { PostsStore } from "./posts-store";
 import { refuse } from "./refusal";
 
-/** Mirrors delete-post at comment granularity: own-content delete, soft-delete only. */
+/** Own-content delete, soft-delete only. */
 export function createDeleteComment(deps: {
   store: PostsStore;
   authorize: Authorize;

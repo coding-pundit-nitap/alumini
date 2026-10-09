@@ -8,11 +8,7 @@ export const metadata: Metadata = { title: "Choose a new password" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/**
- * Better Auth's emailed link (`/api/auth/reset-password/<token>?callbackURL=/reset-password`) checks
- * the token and redirects here with `?token=` when it is valid, or `?error=INVALID_TOKEN` when it is
- * not. A visit with neither is treated as invalid.
- */
+/** Better Auth's emailed link redirects here with `?token=` or `?error=INVALID_TOKEN`. */
 export default async function ResetPasswordPage({
   searchParams,
 }: {

@@ -49,9 +49,8 @@ describe("TransactionRunner against real PostgreSQL", () => {
   });
 
   /**
-   * Two transactions lock two rows in opposite order. On each callback's first attempt both wait
-   * until the other holds its first lock, so PostgreSQL detects a deadlock (40P01) and aborts one
-   * of them. Later attempts skip the barrier and run normally.
+   * Locks two rows in opposite order so PostgreSQL detects a deadlock on the first attempt; retries
+   * skip the barrier.
    */
   async function deadlockingPair(maxRetries: number) {
     const a = await db.prisma.chapter.create({ data: { slug: "row-a" } });

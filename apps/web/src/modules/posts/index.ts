@@ -1,4 +1,3 @@
-/** Public API of the posts module. Other code imports from here, never from the module's internals. */
 export { createAddComment } from "./application/add-comment";
 export { createCreatePost } from "./application/create-post";
 export { createDeleteComment } from "./application/delete-comment";

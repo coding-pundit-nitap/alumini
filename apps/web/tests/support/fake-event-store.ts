@@ -25,11 +25,7 @@ export type FakeEventStoreOptions = {
   failEnqueue?: boolean;
 };
 
-/**
- * In-memory EventStore for unit tests. A transaction that throws restores the previous state
- * (rows, counters, outbox), so "the row and its event commit together" is testable without a
- * database (mirrors fake-mentorship-store.ts's copy-on-write transaction).
- */
+/** A throwing transaction restores the previous state, including the outbox. */
 export function createFakeEventStore(options: FakeEventStoreOptions = {}) {
   const now = options.now ?? (() => new Date());
   let state = {

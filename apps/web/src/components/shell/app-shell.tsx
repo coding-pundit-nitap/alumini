@@ -7,14 +7,9 @@ import { loadShell } from "./load-shell";
 import { MobileBar } from "./mobile-bar";
 import { Rail } from "./rail";
 
-/**
- * The member chrome: rail (md+), mobile top and bottom bars (<md), and the content column. The bell is
- * rendered here and passed down because the notifications index reaches server code a client
- * component must not import. The right rail is per page (`PageColumns`), not part of the shell.
- */
+/** The bell is rendered here and passed down because client components cannot import its server code. */
 export async function AppShell({ children }: { children: ReactNode }) {
   const data = await loadShell();
-  // Signed out: the page itself redirects to /login.
   if (!data) return <main>{children}</main>;
 
   // Only VERIFIED members may read notifications; anyone else's bell would poll into 403s.

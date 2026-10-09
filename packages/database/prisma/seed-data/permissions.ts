@@ -1,8 +1,6 @@
 /**
- * Single source of truth for permission strings. PostgreSQL cannot
- * validate that a `role_permission.permission` or `permission_grant.permission` value exists here —
- * drift is caught by role-permissions.test.ts instead.'s authorization code imports this
- * same registry from @nitap/database; it must never define its own copy.
+ * Single source of truth for permission strings. PostgreSQL can't validate them, so
+ * role-permissions.test.ts catches drift. Never define a second copy.
  */
 export const PERMISSIONS = {
   // Profile & identity

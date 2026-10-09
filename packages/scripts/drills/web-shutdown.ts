@@ -1,14 +1,11 @@
 #!/usr/bin/env node
-// Web graceful-shutdown drill (SIGTERM with requests
-// in flight). Runs against a production build:
+// Graceful shutdown with requests in flight, against a production build:
 //
 //   pnpm --filter @nitap/web build
 //   pnpm docker:up && set -a && . ./.env && set +a
 //   node packages/scripts/drills/web-shutdown.ts            # PORT=3100 by default
 //
-// It starts `next start`, signs in as the dev coordinator (DEV_COORDINATOR_EMAIL/PASSWORD) to hold a real
-// message stream open, then drains and stops the instance the way a deploy does, and prints a pass/fail table
-// for packages/scripts/drills/reports/failure-scenarios.md. Exit code 1 if any check fails.
+// Holds a message stream open as the dev coordinator, then drains and stops the instance like a deploy.
 import { spawn } from "node:child_process";
 import http from "node:http";
 import path from "node:path";

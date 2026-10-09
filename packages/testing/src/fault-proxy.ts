@@ -1,11 +1,10 @@
 import net from "node:net";
 
 /**
- * What the proxy does to traffic:
- * - `down`: drops every open connection and refuses new ones (the service is gone).
- * - `stall`: accepts connections and holds every byte until `clear()` (slow, not dead: only timeouts end it).
- * - `reset`: resets every open and new connection (the peer crashed mid-conversation).
- * - `{ latencyMs }`: forwards everything, each chunk delayed.
+ * - `down`: drops connections and refuses new ones.
+ * - `stall`: accepts but holds every byte until `clear()`.
+ * - `reset`: resets every connection.
+ * - `{ latencyMs }`: forwards with a delay per chunk.
  */
 export type Fault = "down" | "stall" | "reset" | { latencyMs: number };
 
@@ -21,10 +20,7 @@ export type FaultProxy = {
 
 type Pair = { client: net.Socket; server: net.Socket | null };
 
-/**
- * A TCP proxy in front of a real service whose behaviour a test switches. Each test file
- * owns its proxies on ephemeral ports, so faults never leak between files.
- */
+/** Each test file owns its proxies on ephemeral ports, so faults never leak between files. */
 export async function startFaultProxy(options: {
   upstream: { host: string; port: number };
 }): Promise<FaultProxy> {

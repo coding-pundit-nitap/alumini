@@ -25,11 +25,7 @@ const port: IdempotencyPort = {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/**
- * Runs a Route Handler's work under the request's `Idempotency-Key`, if it sent one. Without a key, or with
- * no signed-in user to scope it to, the work simply runs (the database invariants still hold). The request
- * fingerprint is the method, path and raw body, so the same key with a different request is refused.
- */
+/** Without a key or a signed-in user, the work just runs. The fingerprint is method, path and raw body. */
 export async function respondIdempotently(
   request: Request,
   args: {

@@ -52,12 +52,7 @@ const MARKABLE = new Set<Registrant["state"]>([
   "NO_SHOW",
 ]);
 
-/**
- * Organizer/manager tools on the event detail page. A "Cancel event" button behind an
- * `AlertDialog`, and a registrants `Table` with a per-row attendance `Select`, enabled once the
- * event has started. Confirmed and non-optimistic,
- * mirroring `RegistrationButton`: the server stays authoritative.
- */
+/** Cancel and attendance controls. Confirmed and non-optimistic; the server is authoritative. */
 export function OrganizerPanel({
   event,
   registrants,

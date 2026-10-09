@@ -9,11 +9,7 @@ import type { MessagingObserver, MessagingStore } from "./messaging-store";
 import { CREATE_RATE, type RateLimiter } from "./rate-limit";
 import { refuse } from "./refusal";
 
-/**
- * A pair has ONE conversation: two members
- * starting one at the same instant end with the same id, because the unique pair key makes the loser's insert
- * a no-op and it re-reads the winner's row.
- */
+/** A pair has one conversation: the unique pair key makes a concurrent loser re-read the winner's row. */
 export function createCreateDirectConversation(deps: {
   store: MessagingStore;
   authorize: Authorize;

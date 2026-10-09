@@ -19,18 +19,15 @@ function createPool() {
     throw new Error("DATABASE_URL is not set");
   }
 
-  // Prisma 7 requires a driver adapter. Pool caps and timeouts are starting points,
-  // per instance (Stage 1 runs one web instance): measure under load before tuning them, and cap
-  // the pool again per instance before running more than one.
+  // Prisma 7 requires a driver adapter. Pool limits are per instance; revisit them before scaling out.
   return new Pool({
     connectionString: env.DATABASE_URL,
     max: env.DATABASE_POOL_MAX,
     connectionTimeoutMillis: 2_000, // pool acquire
     idleTimeoutMillis: 30_000,
     statement_timeout: 5_000, // PostgreSQL statement (API)
-    // Client-side bound for a server that stops answering (a stall never reaches statement_timeout). Without
-    // it a query on an established connection waits forever. Just above statement_timeout, so
-    // a merely slow query still gets the server's own, clearer error first.
+    // Client-side bound for a server that stops answering. Just above statement_timeout so a slow query
+    // still gets the server's clearer error.
     query_timeout: 6_000,
   });
 }

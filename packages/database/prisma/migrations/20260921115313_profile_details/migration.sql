@@ -76,7 +76,7 @@ ALTER TABLE "profile_skill" ADD CONSTRAINT "profile_skill_user_id_fkey" FOREIGN 
 -- AddForeignKey
 ALTER TABLE "profile_link" ADD CONSTRAINT "profile_link_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "profile"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Experience: dates and "current" are consistent; lengths. Static CHECKs only, never date-dependent.
+-- Experience: dates and "current" are consistent; lengths (spec 3B). Static CHECKs only, never date-dependent.
 ALTER TABLE "profile_experience"
   ADD CONSTRAINT "ck_profile_experience_dates" CHECK ("end_date" IS NULL OR "end_date" >= "start_date"),
   ADD CONSTRAINT "ck_profile_experience_current" CHECK ("is_current" = ("end_date" IS NULL)),

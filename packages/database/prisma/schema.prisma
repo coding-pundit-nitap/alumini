@@ -1,12 +1,7 @@
-// Prisma ORM 7. Models are added per.
-//
-// user / session / account / verification are Better Auth's tables.
-// They were generated with
+// user / session / account / verification are Better Auth's tables, generated with
 //   npx auth@latest generate --config apps/web/src/lib/auth.ts --output packages/database/prisma/schema.prisma
-// (rate limiting is stored in Redis, so the generator's rate_limit table is intentionally not kept)
-// and then adapted: snake_case columns via @map, timestamptz, and a real enum for account_state.
-// Better Auth talks to them through the Prisma client, so @map is transparent to it. Re-run the
-// generator on every Better Auth upgrade and diff the result against this file.
+// then adapted (snake_case via @map, timestamptz, an account_state enum). Rate limits live in Redis,
+// so rate_limit is not kept. Re-run and diff on every Better Auth upgrade.
 
 generator client {
   provider = "prisma-client"
@@ -216,8 +211,7 @@ model RolePermission {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   roleId     String   @map("role_id") @db.Uuid
   role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  // Validated against the code-side registry (packages/database/prisma/seed-data/permissions.ts), not by
-  // PostgreSQL — see the "Role / UserRole / RolePermission / PermissionGrant" note.
+  // Validated against the registry in seed-data/permissions.ts, not by PostgreSQL.
   permission String
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
@@ -243,11 +237,8 @@ model PermissionGrant {
   grantedAt     DateTime        @default(now()) @map("granted_at") @db.Timestamptz(3)
   expiresAt     DateTime?       @map("expires_at") @db.Timestamptz(3)
 
-  // Declared here (unlike ck_grant_scope, a CHECK, which Prisma's schema-vs-db diff ignores
-  // entirely) because Prisma's diff DOES compare plain multi-column unique indexes against
-  // schema.prisma and will propose dropping one it can't find declared. The `NULLS NOT DISTINCT`
-  // modifier itself still can't be expressed here — it lives only in this migration's hand-written
-  // SQL (migrations/20260920172545_rbac) — but the name and columns must match to avoid drift.
+  // Declared so Prisma's diff doesn't propose dropping it. NULLS NOT DISTINCT is only in the migration's
+  // hand-written SQL; name and columns must match.
   @@unique([userId, permission, scopeType, chapterId], map: "uq_permission_grant")
   @@map("permission_grant")
 }
@@ -266,12 +257,11 @@ model Profile {
   headline             String?
   bio                  String?
   // Nullable: faculty, staff and pending accounts may have no institutional record.
-  // Alumni-completeness is an application rule, enforced — not here.
   departmentId         String?            @map("department_id") @db.Uuid
   department           Department?        @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   degreeId             String?            @map("degree_id") @db.Uuid
   degree               Degree?            @relation(fields: [degreeId], references: [id], onDelete: Restrict)
-  // Static CHECK (2010-2100), never date-dependent — see ck_profile_graduation_year in this migration's SQL.
+  // Static CHECK (2010-2100) in the migration SQL, never date-dependent.
   graduationYear       Int?               @map("graduation_year")
   location             String?
   // The photo follows the core visibility level: no fifth override column. Points at a
@@ -905,11 +895,7 @@ enum NotificationCategory {
   ENGAGEMENT
 }
 
-/**
- * The granular grouping the preferences UI toggles — distinct from NotificationCategory, which
- * only says whether preferences apply at all. Every event in the catalogue maps to exactly one domain
- * via domainFor() in the notifications domain layer.
- */
+/** The grouping the preferences UI toggles; see domainFor(). */
 enum NotificationDomain {
   CONNECTION
   MENTORSHIP

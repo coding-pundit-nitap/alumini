@@ -39,23 +39,14 @@ const toAuthor = (u: AuthorJoin): PostAuthor => ({
   hasPhoto: u.profile?.photoUploadId != null,
 });
 
-/**
- * The post/comment/reaction tables inside one transaction. `modules/posts` never imports
- * `modules/connections`: blockedBetween reads `connection` directly, the same cross-module-read
- * pattern messaging uses. `uploadsReady` reads `upload` directly for the same reason (no import of
- * `modules/uploads`'s application layer — only its Prisma table, whose shape is stable schema, not module API).
- */
+/** Reads `connection` and `upload` directly rather than importing those modules. */
 export function createPrismaPostsStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;
   audit: AuditWriter;
 }): PostsStore {
   const forClient = (db: Prisma.TransactionClient): PostsTx => {
-    /**
-     * Joins reaction counts, live comment counts, the viewer's own reaction and any open report onto
-     * a batch of posts already loaded with `author` (via `authorSelect`). One round trip per facet,
-     * run together, regardless of batch size.
-     */
+    /** Adds reaction counts, comment counts, the viewer's reaction and any open report, one query per facet. */
     async function enrich(
       posts: (Post & { author: AuthorJoin })[],
       viewerId: string
@@ -78,10 +69,7 @@ export function createPrismaPostsStore(deps: {
             where: { postId: { in: ids }, userId: viewerId },
             select: { postId: true, type: true },
           }),
-          // Read-only join against `report` (no import of modules/moderation — schema, not module API,
-          // is the shared contract, same as blockedBetween/uploadsReady above). Oldest-first so
-          // `openReportByPostId` below keeps each target's first-filed open report when more than one
-          // exists.
+          // Oldest first, so each post keeps its first open report.
           db.report.findMany({
             where: {
               targetType: "POST",

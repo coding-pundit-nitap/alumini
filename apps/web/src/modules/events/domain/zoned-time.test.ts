@@ -41,14 +41,14 @@ describe("zonedWallTimeToUtc", () => {
 
   it("shifts a nonexistent spring-forward wall time forward by the gap", () => {
     // 2026-03-08 02:30 does not exist in America/New_York (clocks jump 2:00 -> 3:00).
-    // Spec: shift forward by the gap, landing on 03:30 local (EDT, UTC-4) = 07:30 UTC.
+    // Shifts forward by the gap: 03:30 EDT (UTC-4) = 07:30 UTC.
     const result = zonedWallTimeToUtc("2026-03-08T02:30", "America/New_York");
     expect(result.toISOString()).toBe("2026-03-08T07:30:00.000Z");
   });
 
   it("resolves an ambiguous fall-back wall time to the earlier instant", () => {
     // 2026-11-01 01:30 occurs twice in America/New_York (EDT then EST).
-    // Spec: pick the earlier instant -> still EDT (UTC-4) -> 05:30 UTC, not EST's 06:30 UTC.
+    // Picks the earlier instant: EDT (UTC-4) -> 05:30 UTC, not EST's 06:30 UTC.
     const result = zonedWallTimeToUtc("2026-11-01T01:30", "America/New_York");
     expect(result.toISOString()).toBe("2026-11-01T05:30:00.000Z");
   });

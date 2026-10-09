@@ -13,11 +13,8 @@ import type {
 import { refuse } from "./refusal";
 
 /**
- * The organizer or an `event.manage` holder, only after `starts_at`, on a
- * non-cancelled registration. `markAttendance` (the guarded UPDATE) is the one write that decides;
- * `decideAttendance` only classifies a permission or state miss ahead of it. The row and
- * `event.attendance-marked` commit in one transaction; `observe`/`observeRefusal` run only after
- * that transaction settles.
+ * Organizer or `event.manage`, after the start, on a non-cancelled registration. The guarded update
+ * decides; `decideAttendance` only explains a miss.
  */
 export function createMarkAttendance(deps: {
   store: EventStore;

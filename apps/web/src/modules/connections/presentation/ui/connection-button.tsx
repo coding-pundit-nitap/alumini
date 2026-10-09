@@ -10,11 +10,7 @@ import { useConnectionAction } from "./use-connection-action";
 
 type Act = Promise<ActionResult<unknown>>;
 
-/**
- * The connect controls on another member's profile: one primary action for the pair's
- * current state, plus Block behind a confirming second click. What is shown follows `status`, which the
- * server computed from the viewer's side of the pair; every action is re-checked on the server.
- */
+/** The server computes `status` from the viewer's side; every action is re-checked on the server. */
 export function ConnectionButton({
   targetUserId,
   status,

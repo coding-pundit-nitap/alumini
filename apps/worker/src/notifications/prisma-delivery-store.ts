@@ -4,12 +4,7 @@ import type { NotificationDomain } from "@nitap/jobs";
 import type { EmailDeliveryUpdater } from "../processors/email-send.ts";
 import type { DeliveryStore } from "./deliver.ts";
 
-/**
- * Worker-side twin of apps/web's prisma-notification-store (worker cannot import from web). Also
- * implements `EmailDeliveryUpdater`: `deliver.ts` records exactly one EMAIL row per notification,
- * so `updateMany` keyed by notificationId + channel is safe — a missing row (payload predates this
- * feature, or the row was never written) is a no-op, not a throw.
- */
+/** The worker's copy of web's notification store. A missing EMAIL row on update is a no-op. */
 export function createPrismaDeliveryStore(
   prisma: PrismaClient
 ): DeliveryStore & EmailDeliveryUpdater {

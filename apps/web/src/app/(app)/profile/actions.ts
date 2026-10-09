@@ -12,10 +12,7 @@ import { refresh } from "next/cache";
 import { getActor } from "@/modules/auth";
 import { parsePrivacyForm, parseProfileForm } from "@/modules/users";
 
-/**
- * A Server Action is a public POST endpoint, so both actions take the caller from the session, read only
- * the named form fields, and let the use case authorize. There is no user id anywhere in the input.
- */
+/** The caller comes from the session; no user id is read from the form. */
 export async function updateProfileAction(
   formData: FormData
 ): Promise<ActionResult<{ saved: true }>> {

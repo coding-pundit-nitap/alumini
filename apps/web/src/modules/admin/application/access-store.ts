@@ -34,7 +34,7 @@ export type AccessAuditEntry = {
     | "permission.revoked";
   actorId: string;
   targetUserId: string;
-  /** Identifiers and codes only (writer contract). */
+  /** Identifiers and codes only. */
   metadata: Record<string, string | number | null | readonly string[]>;
 };
 

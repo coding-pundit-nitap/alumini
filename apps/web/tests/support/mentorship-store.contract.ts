@@ -22,11 +22,7 @@ export type MentorshipStoreHarness = {
   events?: () => MentorshipEvent[] | Promise<MentorshipEvent[]>;
 };
 
-/**
- * Behaviour every MentorshipStore must satisfy, run once against the fake and once (in a later task)
- * against the Prisma-backed store, so the two never drift (mirrors the connections module's approach
- * to keeping a port and its adapters honest).
- */
+/** Run against the fake and Prisma stores so they never drift. */
 export function describeMentorshipStoreContract(
   name: string,
   factory: () => Promise<MentorshipStoreHarness>

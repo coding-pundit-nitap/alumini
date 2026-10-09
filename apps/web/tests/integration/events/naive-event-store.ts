@@ -1,11 +1,6 @@
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
 
-/**
- * TEST-ONLY negative control for the concurrency suite. Admission here is the classic bug the
- * guarded `claimSeat` UPDATE exists to prevent: read the count, decide in JS, then write
- * `read + 1`. Under READ COMMITTED concurrent callers read the same count, so seats are
- * oversold and increments are lost. Never wire this into the app.
- */
+/** Negative control: read, decide in JS, then write. Oversells under concurrency. Never use in the app. */
 export function createNaiveEventStore(runner: Pick<TransactionRunner, "run">) {
   return {
     /** Resolves true when admitted, false when the (stale) read said the event was full. */

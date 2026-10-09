@@ -1,8 +1,6 @@
-# Local observability stack: Prometheus, Alertmanager, Grafana and the data exporters.
-# An overlay on docker-compose.yml (same project, so `postgres`, `redis` and `queue-redis` resolve):
+# Local observability stack, an overlay on docker-compose.yml:
 #   pnpm docker:observability        → Prometheus :9090, Alertmanager :9093, Grafana :3030 (admin/admin)
-# Web and worker run on the host and are scraped through host.docker.internal. Production placement waits
-# for hosting; there the monitoring stack belongs on a separate host.
+# Web and worker run on the host and are scraped through host.docker.internal.
 services:
   prometheus:
     image: prom/prometheus:v3.5.0

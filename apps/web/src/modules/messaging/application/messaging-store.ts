@@ -123,10 +123,7 @@ export type ListedConversation = {
   unreadCount: number;
   lastMessageSeq: string;
   lastMessageAt: Date | null;
-  /**
-   * The newest message the viewer may see (never one from someone blocked with them). `body` is null when a
-   * moderator hid it. Null when the viewer can see no message at all.
-   */
+  /** Never from a blocked member. `body` is null when a moderator hid it. */
   lastMessage: { senderId: string; body: string | null } | null;
 };
 export type ConversationDetail = ListedConversation & {

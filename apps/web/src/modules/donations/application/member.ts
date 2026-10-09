@@ -143,7 +143,6 @@ export function createListMyDonations(deps: Deps) {
     actor: Actor | null;
   }): Promise<Donation[]> {
     const actor = deps.authorize(args.actor, PERMISSIONS.DONATION_MAKE);
-    // ponytail: one page of 100; add a cursor if anyone ever pledges more than that.
     return deps.queries.listByDonor(actor.userId, 100);
   };
 }

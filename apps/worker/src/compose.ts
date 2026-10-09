@@ -155,10 +155,7 @@ export type ComposedWorker = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * The only place that builds concrete adapters and hands them to the relay and the processors (strategy
- * rule 5). The caller owns the Prisma client.
- */
+/** The only place concrete adapters are built. The caller owns the Prisma client. */
 export function composeWorker(
   deps: {
     prisma: PrismaClient;
@@ -215,7 +212,7 @@ export function composeWorker(
   );
 
   const deliveryStore = createPrismaDeliveryStore(prisma);
-  // The one fan-out-to-a-recipient primitive; later notification processors reuse it.
+  // The one fan-out-to-a-recipient primitive.
   const deliver = createDeliverNotification({
     store: deliveryStore,
     metrics,
@@ -259,7 +256,6 @@ export function composeWorker(
         orderBy: { id: "asc" },
       })
     ).map((row) => row.userId);
-  // ponytail: CHAPTER-scoped grants count as reviewers too (no chapter filter); narrow when review is chapter-scoped.
   const findModerators = async (
     permission:
       "job.approve" | "achievement.review" | "report.review" | "campaign.manage"
@@ -306,7 +302,6 @@ export function composeWorker(
       take: limit,
       select: { id: true, email: true },
     });
-  // ponytail: first 200 distinct prior commenters (by id); raise or chunk if threads outgrow it.
   const findPriorCommenters = async (postId: string, excludeUserId: string) =>
     (
       await prisma.comment.findMany({

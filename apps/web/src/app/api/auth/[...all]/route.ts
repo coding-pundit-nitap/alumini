@@ -6,5 +6,4 @@ import { auth, withSignInMetrics } from "@/modules/auth";
 const handler = toNextJsHandler(auth);
 
 export const { GET } = handler;
-// Sign-ins are counted by outcome for the login-failure alert.
 export const POST = withSignInMetrics(handler.POST);

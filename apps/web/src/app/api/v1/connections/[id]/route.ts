@@ -19,7 +19,6 @@ type Params = { params: Promise<{ id: string }> };
 
 async function connectionId({ params }: Params): Promise<string> {
   const parsed = id.safeParse((await params).id);
-  // A malformed id and an unknown one are the same answer.
   if (!parsed.success) throw new NotFoundError();
   return parsed.data;
 }

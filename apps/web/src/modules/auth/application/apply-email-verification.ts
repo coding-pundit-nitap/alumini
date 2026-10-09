@@ -9,10 +9,8 @@ export type ApplyResult =
   | { outcome: "unchanged" };
 
 /**
- * After an email is confirmed: a recognised institutional address with `autoVerify` becomes VERIFIED
- * with its mapped role, in one transaction. Anything else stays PENDING. Acts only on a
- * PENDING account, so it can never revive a REJECTED, SUSPENDED or DEACTIVATED one, and a second call
- * is a no-op. Non-institutional evidence is never approved here.
+ * A confirmed institutional address with `autoVerify` becomes VERIFIED with its mapped role. Acts
+ * only on PENDING accounts, so it is idempotent and cannot revive any other state.
  */
 export function createApplyEmailVerification(deps: {
   store: MemberStore;

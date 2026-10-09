@@ -25,11 +25,6 @@ import {
 
 import { getOwnProfile } from "./users";
 
-/**
- * Wires the posts module to PostgreSQL (mirrors composition/messaging.ts's shape: flat, pre-bound
- * exports off one store/authorize pair — messaging.ts itself exports each use case as a top-level
- * const, not a single bundled object, despite how some task prose describes it).
- */
 const store = createPrismaPostsStore({
   runner: transactionRunner,
   outbox,

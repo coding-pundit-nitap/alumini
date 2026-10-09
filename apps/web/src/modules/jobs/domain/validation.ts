@@ -9,7 +9,7 @@ const applicationUrl = z
   .url()
   .regex(/^https:\/\//, "The application link must start with https://");
 
-/** Trim, lower-case, de-dupe, cap at 20 (mirrors mentorship's `topics`). */
+/** Trim, lower-case, de-dupe, cap at 20. */
 const skills = z
   .array(z.string().trim().min(1).max(40))
   .max(20)

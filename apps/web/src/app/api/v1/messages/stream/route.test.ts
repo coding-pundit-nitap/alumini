@@ -168,9 +168,7 @@ describe("GET /api/v1/messages/stream", () => {
     const decoder = new TextDecoder();
     await reader.read(); // ": connected"
 
-    // A message hint this actor is not entitled to must never reach the wire, even though the
-    // channel is per-user (never another conversation's traffic): not subscribing its channel at
-    // all, not just relying on the client to ignore it, is the enforcement point.
+    // Hints the actor is not entitled to are never subscribed, not just ignored by the client.
     expect(push).toBeUndefined();
     pushNotification!({ notificationId: "n1" });
 

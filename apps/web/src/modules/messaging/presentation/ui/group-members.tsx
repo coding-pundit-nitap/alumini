@@ -13,10 +13,7 @@ import { photoOf } from "./conversation-avatar";
 
 type Act<T> = Promise<ActionResult<T>>;
 
-/**
- * The member list of a group thread. The creator removes members and adds from their connections; everyone
- * else can only leave (the creator cannot: a group always has its admin). The server enforces all of it.
- */
+/** The creator adds and removes members; everyone else can only leave. The server enforces it. */
 export function GroupMembers({
   conversationId,
   viewerId,

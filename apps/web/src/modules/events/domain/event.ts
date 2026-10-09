@@ -1,8 +1,4 @@
-/**
- * The events domain rules, pure. Nothing here touches a database or a clock beyond
- * the `now` each function is handed. Admission and seat release are NOT decided here: each
- * is a single guarded SQL statement, so nothing here decides who gets a seat — it only classifies a miss.
- */
+/** Pure rules. Admission and seat release are decided by guarded SQL; these functions only explain a miss. */
 export const EVENT_STATUSES = ["SCHEDULED", "CANCELLED"] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
@@ -41,10 +37,8 @@ const canManage = (event: EventFacts, actor: EventActor) =>
   actor.userId === event.organizerId || actor.canManageAny;
 
 /**
- * Classifies why the guarded registration UPDATE (statement 1) missed. Only chooses the error
- * code; it never decides who gets a seat. Precedence: not found, then cancelled, then the caller's
- * own state, then the deadline, then capacity (a fallback that also covers a race that resolved
- * before this read).
+ * Explains why the registration update missed, in order: not found, cancelled, already registered,
+ * deadline, capacity.
  */
 export function classifyRegistrationRefusal(
   event: EventFacts | null,
@@ -71,10 +65,6 @@ export function decideCancelEvent(
   return { ok: true };
 }
 
-/**
- * Classifies why the guarded seat-release UPDATE (statement 1) missed: the event row read first,
- * then the caller's own registration.
- */
 export function decideCancelRegistration(
   event: EventFacts | null,
   own: RegistrationState | null,

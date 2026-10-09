@@ -6,10 +6,7 @@ import { AppError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import { ConversationList, MessengerPanes } from "@/modules/messaging";
 
-/**
- * The messenger: the inbox stays beside whatever conversation is open. Signed-out visitors fall
- * through to the page, which redirects to login with the right `next`.
- */
+/** Keeps the inbox beside the open conversation. */
 export default async function MessagesLayout({
   children,
 }: {

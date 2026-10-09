@@ -24,10 +24,7 @@ import {
   experienceClockProblems,
 } from "@/modules/users";
 
-/**
- * Wires the users module to its adapters and to the auth module's `authorize`/`can`. It lives here, not in
- * the module, because a module's infrastructure may not import another module.
- */
+/** Lives here because a module's infrastructure may not import another module. */
 const store = createPrismaProfileStore(prisma);
 
 export const getOwnProfile = createGetOwnProfile({ store });
@@ -57,12 +54,10 @@ export const updateProfilePhoto = createUpdateProfilePhoto({
 });
 export const updateOwnPrivacy = createUpdateOwnPrivacy({ store, authorize });
 
-// The tick a member shows on their photo.
 const badges = createPrismaBadgeStore(prisma);
 export const getBadgeSettings = createGetBadgeSettings({ badges, authorize });
 export const setBadgeRole = createSetBadgeRole({ badges, authorize });
 
-// The four detail collections: one shared use-case factory, four explicit Prisma stores.
 const now = () => new Date();
 
 export const experienceUseCases = createCollectionUseCases({

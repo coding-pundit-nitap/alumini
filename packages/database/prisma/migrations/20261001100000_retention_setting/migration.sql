@@ -1,4 +1,4 @@
--- configurable retention periods. Rows are seeded from seed-data/retention.ts.
+-- Phase 12G: configurable retention periods (SRS §45). Rows are seeded from seed-data/retention.ts.
 CREATE TABLE "retention_setting" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "category" TEXT NOT NULL,

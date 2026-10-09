@@ -11,11 +11,7 @@ export const MAX_LIMIT = 50;
 export const clampLimit = (limit: number | undefined) =>
   Math.min(Math.max(1, limit ?? DEFAULT_LIMIT), MAX_LIMIT);
 
-/**
- * Every verified member sees every non-deleted post — there is no separate read
- * permission, so this reuses `POST_INTERACT`'s member baseline. Keyset-paged over
- * `(createdAt DESC, id DESC)`: fetches `limit + 1` rows and trims to detect `nextCursor`.
- */
+/** Every verified member sees every non-deleted post; reuses `POST_INTERACT` as the read permission. */
 export function createListFeed(deps: {
   store: PostsStore;
   authorize: Authorize;

@@ -64,10 +64,7 @@ function Select({
   );
 }
 
-/**
- * The evidence an alumnus without an institutional email submits. Sends only the named
- * fields; the applicant is the signed-in user, never a form field.
- */
+/** The applicant is the signed-in user, never a form field. */
 export function EvidenceForm({
   action,
   departments,

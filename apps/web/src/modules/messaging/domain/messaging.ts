@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-/**
- * The messaging rules, pure. A refusal of `NOT_FOUND` means "not yours to know about", so
- * a blocked member learns nothing (same stance as connections).
- */
+/** Pure rules. `NOT_FOUND` means "not yours to know about", so a blocked member learns nothing. */
 export const MAX_GROUP_SIZE = 20;
 export const MAX_BODY = 4000;
 /** How many messages either side of a reported one a moderator sees. */

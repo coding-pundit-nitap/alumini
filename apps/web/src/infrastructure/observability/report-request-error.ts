@@ -19,12 +19,8 @@ type ErrorContext = {
 };
 
 /**
- * Server-side reporting for errors Next.js catches itself: Server Component renders, Server Actions
- * and Route Handlers not wrapped in `routeHandler`. Called from `instrumentation.ts`.
- *
- * The `digest` is what the error UI shows the user; logging it next to `request_id` is what lets
- * support go from "the id on my screen" to the failing request. The same failure goes to the error tracker (13B).
- * Await everything: Next.js requires async work in `onRequestError` to be awaited.
+ * Reports errors Next.js catches itself (renders, Server Actions, unwrapped Route Handlers). The
+ * `digest` is logged with `request_id` so the id a user sees leads to the failing request.
  */
 export async function reportRequestError(
   error: unknown,

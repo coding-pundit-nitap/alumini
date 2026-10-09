@@ -29,7 +29,7 @@ const retry = {
 const idempotency =
   "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.";
 
-/** Facts a job posting changed, written to the outbox with the change. notifies on them. */
+/** Facts a job posting changed, written to the outbox with the change. */
 export const jobEvents = {
   "job.submitted": defineJob({
     name: "job.submitted",

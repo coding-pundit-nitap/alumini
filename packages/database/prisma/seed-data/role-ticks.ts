@@ -1,10 +1,6 @@
 import type { RoleName } from "./role-permissions";
 
-/**
- * Display metadata for roles: the tick on a member's photo. Lives beside the role definitions so the
- * web app never names a role. `kind` picks the tick colour, `label` is what the tick says.
- * Order is priority, highest first: the automatic choice when a member hasn't picked one.
- */
+/** Shown as the tick on a member's photo. Ordered by priority, highest first. */
 export const ROLE_TICKS: readonly {
   role: RoleName;
   label: string;

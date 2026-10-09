@@ -3,10 +3,7 @@ import { Pool } from "pg";
 
 import { PrismaClient } from "@nitap/database";
 
-/**
- * Pool and timeouts are the worker starting points; the relay holds one connection per poll.
- * The pool is returned too so `/metrics` can report its usage.
- */
+/** The pool is returned too so `/metrics` can report it. */
 export function createPrismaClient(connectionString: string): {
   prisma: PrismaClient;
   pool: Pool;

@@ -25,7 +25,7 @@ export type DonationEvent = {
   payload: { v: 1; donationId: string; campaignId: string; donorId: string };
 };
 
-/**; identifiers and codes only (audit writer contract). */
+/** Identifiers and codes only. */
 export type DonationAuditEntry =
   | {
       action: "campaign.changed";

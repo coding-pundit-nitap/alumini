@@ -2,11 +2,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 
 import { RateLimitedError } from "@/lib/errors";
 
-/**
- * The API-wide allowance per signed-in user.
- * A fixed window that allows bursts: far above what any page fans out to, low enough that a script
- * cannot hammer the API. The stricter per-feature limits (search, messaging, connections…) still apply.
- */
+/** A per-user allowance across the API; the per-feature limits still apply. */
 export const API_BUDGET = { windowSeconds: 60, max: 300 } as const;
 
 type Consume = (
@@ -14,10 +10,7 @@ type Consume = (
   rule: { window: number; max: number }
 ) => Promise<{ allowed: boolean; retryAfter: number | null }>;
 
-/**
- * `routeHandler` opens a scope per request; `getActor` charges the caller once it knows who they are. Outside
- * a scope (pages, Server Actions) nothing is charged, and a second `getActor` in one request is free.
- */
+/** Charged once per request when `getActor` resolves the caller. Nothing is charged outside a scope. */
 export function createApiBudget(deps: { consume: Consume }) {
   const scopes = new AsyncLocalStorage<{ charged: boolean }>();
   return {

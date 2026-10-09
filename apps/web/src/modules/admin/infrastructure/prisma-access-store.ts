@@ -14,9 +14,7 @@ import type {
 const isUniqueViolation = (error: unknown) => {
   if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
   if (error.code === "P2002") return true;
-  // The hand-written NULLS NOT DISTINCT unique (uq_permission_grant) can't be expressed in
-  // Prisma's schema, so a raw-SQL-shaped violation on it can surface as P2010 with the
-  // PostgreSQL unique_violation SQLSTATE instead of Prisma's own P2002.
+  // uq_permission_grant is hand-written SQL, so its violation can surface as P2010 instead of P2002.
   if (error.code === "P2010") {
     return (error.meta as { code?: string } | undefined)?.code === "23505";
   }
@@ -40,15 +38,9 @@ const toGrant = (g: {
 });
 
 /**
- * Identity writes for the admin module: user state, sessions, roles and grants, each with its
- * audit row (and its notice event) in the same transaction. Lock order is always the target user row, then the super-admin rows
- * (locked in a fixed `ORDER BY ur.id`), so two admin writes cannot deadlock.
- *
- * The user-row lock uses `FOR NO KEY UPDATE`, not `FOR UPDATE`: it still serializes concurrent admin
- * writes to the same user row against each other, but — unlike `FOR UPDATE` — it doesn't conflict with
- * the FK `KEY SHARE` lock an unrelated insert referencing this user takes (e.g. an `audit_log` row with
- * this user as `actor_id`, or a `user_role`/`permission_grant` row this user is `granted_by`), so those
- * inserts are never blocked behind an in-progress admin write.
+ * Each write carries its audit row and notice event in the same transaction. Locks are taken target
+ * user first, then super-admin rows in id order, so admin writes cannot deadlock. `FOR NO KEY UPDATE`
+ * avoids blocking unrelated inserts that reference the user.
  */
 export function createPrismaAccessStore(deps: {
   runner: Pick<TransactionRunner, "run">;

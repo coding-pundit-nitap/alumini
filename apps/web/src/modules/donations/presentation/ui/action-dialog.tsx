@@ -19,10 +19,7 @@ import type { ActionResult } from "@/lib/action-result";
 
 import { useDonationAction } from "./use-donation-action";
 
-/**
- * A trigger that opens a form dialog, runs one Server Action on submit and refreshes the page on success.
- * The actor is never a field: the server takes the session's.
- */
+/** The server takes the actor from the session, never a field. */
 export function ActionDialog(props: {
   trigger: string;
   triggerVariant?: "default" | "outline" | "ghost";

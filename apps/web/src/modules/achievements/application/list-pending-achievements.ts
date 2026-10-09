@@ -17,10 +17,7 @@ export const MAX_LIMIT = 50;
 const clampLimit = (limit: number | undefined) =>
   Math.min(Math.max(1, limit ?? DEFAULT_LIMIT), MAX_LIMIT);
 
-/**
- * Every SUBMITTED achievement across all users, for reviewers. Gated on `ACHIEVEMENT_REVIEW` and paged like
- * `listOwnAchievements`, over `(createdAt DESC, id DESC)`. Backs the "Pending Review" section on /achievements.
- */
+/** Every SUBMITTED achievement, for reviewers. */
 export function createListPendingAchievements(deps: {
   store: AchievementsStore;
   authorize: Authorize;

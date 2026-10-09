@@ -79,7 +79,6 @@ test("J-06 members connect, see connections-only profiles, block and unblock", a
     asha.getByRole("button", { name: "Cancel request" })
   ).toBeVisible();
 
-  // Ravi sees the request and accepts it.
   await ravi.goto("/connections?tab=incoming");
   await expect(ravi.getByRole("button", { name: "Accept" })).toBeVisible();
   await ravi.getByRole("button", { name: "Accept" }).click();
@@ -112,7 +111,6 @@ test("J-06 members connect, see connections-only profiles, block and unblock", a
   await ravi.goto(ashaPath);
   await expect(ravi.getByText("Page not found")).toBeVisible();
 
-  // Only the blocker can lift it, from their blocked list.
   await ravi.goto("/connections?tab=blocked");
   await expect(ravi.getByText("You have not blocked anyone.")).toBeVisible();
   await asha.goto("/connections?tab=blocked");

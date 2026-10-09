@@ -1,4 +1,4 @@
--- offline fundraising. Money is integer paise.
+-- Phase 12H: offline fundraising (overview XD-6, XD-7; spec H-1). Money is integer paise.
 CREATE TYPE "CampaignStatus" AS ENUM ('DRAFT', 'ACTIVE', 'CLOSED');
 CREATE TYPE "DonationStatus" AS ENUM ('PLEDGED', 'CONFIRMED', 'NOT_RECEIVED', 'CANCELLED');
 
@@ -43,7 +43,7 @@ CREATE TABLE "donation" (
     -- Decided exactly when CONFIRMED or NOT_RECEIVED; a confirmation always names its manager and reference.
     CONSTRAINT "ck_donation_decided" CHECK (("status" IN ('CONFIRMED', 'NOT_RECEIVED')) = ("decided_at" IS NOT NULL)),
     CONSTRAINT "ck_donation_confirmed" CHECK ("status" <> 'CONFIRMED' OR ("decided_by" IS NOT NULL AND "payment_reference" IS NOT NULL)),
-    -- Only the expiry sweep decides without a person.
+    -- Only the expiry sweep (spec H-8) decides without a person.
     CONSTRAINT "ck_donation_decider" CHECK ("status" <> 'NOT_RECEIVED' OR "decided_by" IS NOT NULL OR "note" = 'expired')
 );
 

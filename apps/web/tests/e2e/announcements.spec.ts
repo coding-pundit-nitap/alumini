@@ -28,7 +28,7 @@ async function member(
   return { page, email };
 }
 
-/** Direct DB access, so this suite needs no pre-seeded admin (same approach as admin.spec.ts). */
+/** Direct DB access, so this suite needs no pre-seeded admin. */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function grantRole(email: string, roleName: RoleName): Promise<void> {
@@ -82,9 +82,7 @@ test("an institute admin publishes; a member sees it pinned and notified", async
 test("a moderator cannot open the announcements page", async ({ browser }) => {
   const moderator = await member(browser);
   await grantRole(moderator.email, "MODERATOR");
-  // The not-found page, never the admin content. The HTTP status is 200, not 404: the root
-  // loading.tsx streams every dynamic route, so the status line is sent before notFound() throws
-  // (same as admin.spec.ts's "no Admin link" test).
+  // The status is 200 because loading.tsx streams the response before notFound() throws.
   await moderator.page.goto("/admin/announcements");
   await expect(moderator.page.getByText("Page not found")).toBeVisible();
   await expect(

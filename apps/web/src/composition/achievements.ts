@@ -11,7 +11,6 @@ import {
 } from "@/modules/achievements";
 import { authorize } from "@/modules/auth";
 
-/** Wires the achievements module to PostgreSQL (mirrors composition/posts.ts's shape). */
 const store = createPrismaAchievementsStore({
   runner: transactionRunner,
   outbox,

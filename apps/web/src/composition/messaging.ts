@@ -25,7 +25,6 @@ import {
   type MessagingObserver,
 } from "@/modules/messaging";
 
-/** Wires the messaging module to PostgreSQL and the shared Redis rate limiter. */
 const store = createPrismaMessagingStore({
   runner: transactionRunner,
   outbox,

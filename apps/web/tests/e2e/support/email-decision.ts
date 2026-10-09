@@ -5,14 +5,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@nitap/database";
 
 /**
- * Waits until the worker has FINISHED processing the latest `connection.accepted` event for the member
- * with this email — its BullMQ job (job id = outbox event id, see packages/queue relay) is `completed`,
- * so `deliver()` has made its email decision — then prints `{ emailDeliveries }`: how many EMAIL
- * `notification_delivery` rows that notification has. `deliver()` writes a PENDING one before it ever
- * enqueues an email, so 0 after completion means no email was queued, independent of SMTP timing.
+ * Waits for the latest `connection.accepted` job for this member to complete, then prints how many
+ * EMAIL delivery rows its notification has. 0 means no email was queued.
  *
- * Standalone Node script for the same reason as seed-past-event.ts (the Prisma client needs ESM).
- * Reads DATABASE_URL and QUEUE_REDIS_URL; the recipient's email is argv[2].
+ * Standalone because the Prisma client needs ESM. Reads DATABASE_URL and QUEUE_REDIS_URL; the
+ * recipient's email is argv[2].
  */
 type JobQueue = {
   getJobState(id: string): Promise<string>;

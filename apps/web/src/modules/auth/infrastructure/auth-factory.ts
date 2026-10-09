@@ -38,10 +38,8 @@ export type AuthDeps = {
 const LINK_TTL_SECONDS = AUTH_LINK_TTL_MINUTES * 60;
 
 /**
- * The Better Auth endpoints this app uses. Every /api/auth path is public, so the rest are
- * switched off: change-email would skip the institutional policy, delete-user would hard-delete an
- * audited account, change-password lets the client keep other sessions alive, and the social/OAuth and
- * session-management endpoints back no feature. A test fails when Better Auth adds a path not classified here.
+ * Every /api/auth path is public, so endpoints without a feature are disabled. A test fails when
+ * Better Auth adds an unclassified path.
  */
 export const ENABLED_AUTH_PATHS = [
   "/sign-up/email",
@@ -80,12 +78,8 @@ export const DISABLED_AUTH_PATHS = [
 ];
 
 /**
- * Authentication only (who you are, is the session valid). Authorization is our own model and is
- * deliberately NOT delegated to Better Auth's admin or organization plugins. Every hook and
- * callback here delegates to a use case; the logic lives there and is tested there.
- *
- * Better Auth runs `create.after` hooks AFTER the user transaction commits, so provisioning is
- * idempotent and repaired by getActor() rather than atomic with the insert.
+ * Authentication only; authorization is our own model. Hooks delegate to use cases. `create.after`
+ * hooks run after the user transaction commits, so provisioning is idempotent and getActor() repairs it.
  */
 export function createAuth(deps: AuthDeps) {
   const plugins = deps.nextCookies === false ? [] : [nextCookies()];
@@ -96,7 +90,6 @@ export function createAuth(deps: AuthDeps) {
     trustedOrigins: [deps.baseURL],
     ...(deps.secret ? { secret: deps.secret } : {}),
 
-    // One Prisma 7 client for the whole app; Prisma Migrate owns the schema.
     database: prismaAdapter(deps.prisma, {
       provider: "postgresql",
       transaction: true,

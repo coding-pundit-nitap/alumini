@@ -1,4 +1,3 @@
-/** Public API of the messaging module. Other code imports from here, never from the module's internals. */
 export {
   createAddParticipant,
   createRemoveParticipant,

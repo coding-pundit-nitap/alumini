@@ -1,4 +1,3 @@
-// apps/web/tests/integration/database/community.integration.test.ts
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { runSeed } from "@nitap/database/seed";

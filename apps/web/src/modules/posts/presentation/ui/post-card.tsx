@@ -275,11 +275,8 @@ function PostEditor({
 }
 
 /**
- * A single feed post: Markdown-rendered content (never raw), images, reactions, a comment-count
- * link, own-post edit (TEXT posts) and delete, and — for an actor holding `post.moderate`/`report.review` (`canModerate`) — an
- * inline Report affordance that flips to Resolve/Dismiss once `post.openReportId` is set (`list-feed`
- * joins the `report` table, so this is a durable per-post read, not session-local state: any moderator
- * viewing the feed sees the same affordance, and it clears once the report is resolved/dismissed).
+ * Content is always rendered as Markdown, never raw. Moderators get Report, which becomes
+ * Resolve/Dismiss while a report is open.
  */
 export function PostCard({
   post,
@@ -423,7 +420,6 @@ export function PostCard({
       {/* In the feed the body aligns with the name (40px avatar + 12px gap); on its own page it runs full width. */}
       <div className={expanded ? undefined : "sm:pl-[52px]"}>
         {post.postType === "ACHIEVEMENT" ? (
-          // Achievements read as a certificate: trophy medallion, first line as the title.
           <div className="border-chart-2/25 from-chart-2/10 mt-3 flex gap-3.5 rounded-xl border bg-gradient-to-br to-transparent to-60% p-4">
             <span className="bg-chart-2/15 text-chart-2 ring-chart-2/25 flex size-10 shrink-0 items-center justify-center rounded-full ring-1">
               <Trophy aria-hidden className="size-5" />

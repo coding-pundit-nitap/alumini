@@ -1,18 +1,5 @@
-// apps/web/tests/integration/api/posts.integration.test.ts
-//
-// Route-level, real PostgreSQL, through the composed wiring (composition/posts.ts -> the real Prisma
-// posts store -> a per-file isolated database). The one thing stubbed is session identification
-// (@/modules/auth/infrastructure/actor's getActor): that submodule alone talks to Better Auth and
-// next/headers, both of which need a live Next.js request context this vitest project doesn't have.
-// Everything downstream of "who is the caller" — authorize(), the use cases, the store, the DB — is real.
-//
-// No precedent for this shape exists under tests/integration/api/ (the directory itself didn't exist
-// before this file) or as a real-DB route test anywhere else in the repo: route tests that exist
-// (src/app/api/v1/**/routes.test.ts) mock the whole composed module, and DB-backed integration tests
-// (tests/integration/posts/use-cases.integration.test.ts, tests/security/community.security.integration.test.ts)
-// call use cases directly, never through a Route Handler. This test combines both: real Route Handler,
-// real DB, real authorize, actor resolved for real off seeded RolePermission rows (same construction as
-// the community security suite), with only the session boundary swapped for a test double.
+// Route Handlers against real PostgreSQL through the composed wiring. Only getActor is stubbed, since
+// it needs a live Next.js request context.
 import {
   afterAll,
   beforeAll,
@@ -32,9 +19,7 @@ const mocks = vi.hoisted(() => ({
   getActor: vi.fn(),
 }));
 
-// The composition singletons (composition/posts.ts) capture `prisma`/`transactionRunner` at module
-// load time; this proxy resolves every property against the CURRENT test database at call time, so one
-// mock covers the whole file's tests without re-importing the composition module per test.
+// Resolves every property against the current test database at call time, so one mock covers the file.
 vi.mock("@/infrastructure/database/client", () => {
   const client = () => {
     if (!mocks.dbRef.current) throw new Error("test database not ready");
@@ -62,10 +47,7 @@ vi.mock("@/infrastructure/database/client", () => {
 vi.mock("@/modules/auth/infrastructure/actor", () => ({
   getActor: mocks.getActor,
 }));
-// The `@/modules/auth` barrel re-exports `auth` (Better Auth), which instantiates itself at import
-// time and would otherwise reach for the real database through the client mock above before
-// `dbRef.current` is set in `beforeAll`. Nothing on this test's path calls `auth.api.*` (getActor is
-// stubbed above), so a stub object is enough.
+// Better Auth instantiates at import time; nothing here calls it, so a stub is enough.
 vi.mock("@/modules/auth/infrastructure/auth", () => ({ auth: {} }));
 
 import {

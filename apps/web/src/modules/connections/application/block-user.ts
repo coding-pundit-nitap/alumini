@@ -13,9 +13,8 @@ import type {
 import { cannotConnectSelf, refuse } from "./refusal";
 
 /**
- * Blocking works with or without a prior request and replaces whatever state the pair was in
- * (a pending request or an accepted connection ends). It is by member, not by connection, so it can be done
- * from a profile page. Lifting it is `removeConnection` on the blocked row.
+ * Works with or without a prior request and replaces the pair's current state. Lift it with
+ * `removeConnection` on the blocked row.
  */
 export function createBlockUser(deps: {
   store: ConnectionStore;

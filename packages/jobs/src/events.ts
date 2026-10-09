@@ -50,7 +50,7 @@ const eventJob = <N extends `event.${string}`, S extends z.ZodType>(
       "cancelled/registered deliver notifications keyed by a dedupeKey of (event id, recipient, type), so a rerun finds the existing rows and enqueues no second email; the other events only log. Running twice has the same effect as once.",
   });
 
-/** Facts about events and registrations, written to the outbox with the change. notifies on cancelled and registered. */
+/** Facts about events and registrations, written to the outbox with the change. */
 export const eventJobs = {
   "event.created": eventJob("event.created", eventLifecyclePayload),
   "event.cancelled": eventJob(

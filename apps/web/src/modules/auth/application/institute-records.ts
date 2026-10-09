@@ -7,10 +7,7 @@ export type InstituteEvidence = {
   graduationYear: number;
 };
 
-/**
- * Compares submitted evidence with institute records where they exist. It flags, never
- * decides: the result is shown to the reviewer and nothing is approved or rejected because of it.
- */
+/** Flags mismatches for the reviewer; never approves or rejects on its own. */
 export interface InstituteRecords {
   check(evidence: InstituteEvidence): Promise<CrossCheck>;
 }

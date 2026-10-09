@@ -50,8 +50,6 @@ export function iconFor(type: string): LucideIcon {
   return ICONS[type.split(".")[0]!] ?? Bell;
 }
 
-// ponytail: days are counted in IST so the server render and the browser group alike; the community is
-// in India. Use the viewer's zone (client-only grouping) if members abroad find it confusing.
 const DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" });
 const dayKey = (date: Date) => DAY.format(date); // YYYY-MM-DD
 
@@ -143,10 +141,8 @@ function Row({
 }
 
 /**
- * The full notification inbox, grouped by day. Renders from `type`, the ids in `payload` and `createdAt`
- * alone — a notification whose target content (a post, a job, an event…) has since been deleted still
- * renders fine, since nothing here looks it up; its link just lands on a not-found or list page.
- * Following an unread item's link marks it read, as the bell does.
+ * Renders from the notification alone, so deleted target content still renders; its link just lands
+ * on a not-found page.
  */
 export function NotificationList({
   items,

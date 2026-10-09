@@ -7,11 +7,8 @@ import type { EventStore, EventTx, NewEvent } from "../application/ports";
 import type { EventFacts, RegistrationState } from "../domain/event";
 
 /**
- * The event/event_registration tables inside one transaction. Admission, seat release
- * and cancellation are each a single guarded UPDATE — the WHERE clause is the decision, never a
- * read-then-write. Timestamps come from the database's `now()` inside the SQL, never from JS, so
- * they agree with the guard that ran in the same statement. The outbox event is written on the
- * same client, so it commits or rolls back with the row.
+ * Admission, seat release and cancellation are each one guarded update. Timestamps come from SQL
+ * `now()` so they match the guard. Outbox events share the transaction.
  */
 export function createPrismaEventStore(deps: {
   runner: Pick<TransactionRunner, "run">;

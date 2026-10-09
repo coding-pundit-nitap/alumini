@@ -35,10 +35,7 @@ type Deps = {
 const isStatus = (v: unknown): v is DonationStatus =>
   DONATION_STATUSES.includes(v as DonationStatus);
 
-/**
- * `/admin/donations`. `donation.view_all` sees every pledge with a status filter; a holder of
- * `campaign.manage` alone sees the open pledges — the confirmation queue — and nothing else.
- */
+/** `donation.view_all` sees every pledge; `campaign.manage` alone sees only open pledges to confirm. */
 export function createListDonationsForAdmin(deps: Deps) {
   return async function listDonationsForAdmin(args: {
     actor: Actor | null;
@@ -57,7 +54,6 @@ export function createListDonationsForAdmin(deps: Deps) {
         ? args.status
         : null
       : "PLEDGED";
-    // ponytail: newest 200; add keyset paging when a campaign draws more open pledges than that.
     const rows = await deps.queries.listDonations({
       status: status ?? undefined,
       take: 200,
@@ -77,10 +73,7 @@ async function openPledgeToDecide(tx: DonationTx, actor: Actor, id: string) {
   return row;
 }
 
-/**
- * PLEDGED → CONFIRMED against a payment reference (the donor's, or the one the
- * manager reads off the statement). The per-campaign unique reference is the idempotency key.
- */
+/** The per-campaign unique payment reference is the idempotency key. */
 export function createConfirmDonation(deps: Deps) {
   const now = deps.now ?? (() => new Date());
   return async function confirmDonation(args: {

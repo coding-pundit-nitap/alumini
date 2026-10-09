@@ -30,10 +30,6 @@ function parseId(field: string, value: string): string {
   return value;
 }
 
-/**
- * Connection Server Actions. Plain-value arguments, called from client buttons; each use case
- * authorizes and validates again, and the page re-renders afterwards.
- */
 export async function requestConnectionAction(
   recipientId: string
 ): Promise<ActionResult<{ connectionId: string }>> {

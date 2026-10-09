@@ -54,10 +54,7 @@ const CONTACT_LABEL: Record<(typeof CONTACT_METHODS)[number], string> = {
   PHONE: "Phone",
 };
 
-/**
- * Opt in and edit the mentor offer. Controlled fields, submitted as one object rather
- * than FormData because topics are typed as free text and split into a list before the call.
- */
+/** Submitted as an object, not FormData, because topics are split into a list first. */
 export function MentorSettingsForm({
   defaults,
   listedNote,

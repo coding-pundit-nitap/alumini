@@ -1,7 +1,4 @@
-/**
- * Retention categories. Pure data shared by the seed, the admin domain (bounds)
- * and the worker (which category it enforces). The defaults are MVP placeholders until the institute signs off.
- */
+/** Shared by the seed, the admin domain and the worker. Defaults are placeholders until approved. */
 export const RETENTION_CATEGORIES = [
   "notifications",
   "deactivated_accounts",

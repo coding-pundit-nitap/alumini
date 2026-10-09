@@ -1,8 +1,6 @@
 #!/usr/bin/env node
-// Alert drill ("test page received end-to-end incl. dead-man's switch"). Runs Prometheus and Alertmanager from deploy/monitoring.yml with the production flags, rules
-// (ops/prometheus/rules), routing (ops/alertmanager/alertmanager.yml) and receiver mechanism (compose configs
-// from monitoring.env). Two things are swapped: the scrape targets are a stand-in exporter served by this
-// script, and the receiver URLs point at a webhook sink it also serves.
+// Alert drill. Runs Prometheus and Alertmanager with the production rules and routing against a
+// stand-in exporter and a webhook sink served by this script.
 //
 //   injected                                          expected
 //   two web targets refusing connections              one pager notification with both WebDown alerts (grouping)
@@ -13,8 +11,7 @@
 //
 //   node packages/scripts/drills/alerts.ts [--record] [--summary f] [--keep]
 //
-// --record appends the result to packages/scripts/drills/reports/alert-drills.md, --summary <file> to another file (CI's step
-// summary). Exit code 1 if any check fails. About 7 minutes, most of it waiting for the rules' `for:`.
+// --record appends to packages/scripts/drills/reports/alert-drills.md. Takes about 7 minutes.
 import { execFileSync } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
 import { appendFileSync, mkdirSync, rmSync, writeFileSync } from "node:fs";

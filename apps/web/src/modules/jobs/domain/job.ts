@@ -1,8 +1,6 @@
-// apps/web/src/modules/jobs/domain/job.ts
 /**
- * The job posting/review rules, pure. No DRAFT: create is submit.
- * REJECTED is not terminal: an edit always resubmits it. Self-review is refused here, not only
- * by RBAC: a job.approve holder can never approve or reject their own posting.
+ * No DRAFT: creating submits. REJECTED is not terminal, since an edit resubmits it. Self-review is
+ * refused here as well as by RBAC.
  */
 export const JOB_STATES = [
   "PENDING_REVIEW",
@@ -116,10 +114,6 @@ export function decideCreate(actorHasApprove: boolean): {
       };
 }
 
-/**
- * `materialChanged` and `isOwnerOrManager` are resolved by the caller (the store
- * already has the row; permission is a boolean the application layer already knows), so this stays pure.
- */
 export function decideEdit(
   row: JobRow,
   materialChanged: boolean,
@@ -208,7 +202,7 @@ export function decideReject(
   };
 }
 
-/** (withdrawal). Poster or job.manage only; never sets EXPIRED (worker-only). */
+/** Withdrawal. Poster or job.manage only; never sets EXPIRED (the worker does). */
 export function decideClose(
   row: JobRow,
   isOwnerOrManager: boolean

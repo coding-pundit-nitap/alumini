@@ -1,14 +1,8 @@
 #!/usr/bin/env node
-// Notification fan-out throughput. `event.cancelled` notifies
-// every registrant one at a time (~8–10 round trips each) inside one job bounded by FANOUT_TIMEOUT_MS (120 s). This
-// measures how many recipients a single job reaches per second, so "batch or chunk?" is answered by a number.
+// Notification fan-out throughput: recipients per second for one `event.cancelled` job.
 //
 //   set -a && . ./.env && set +a
 //   node packages/scripts/perf/fanout.ts --recipients 100,500,2000 [--label baseline]
-//
-// For each size it inserts a cancelled event with that many REGISTERED members and the outbox row the cancel
-// use case would have written, then times the worker from that row to the last notification. The worker runs
-// against alumini_perf on Redis database 1 (as packages/scripts/perf/run.ts does). Results go next to the k6 results.
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";

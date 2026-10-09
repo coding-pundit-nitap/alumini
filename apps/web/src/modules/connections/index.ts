@@ -1,4 +1,3 @@
-/** Public API of the connections module. Other code imports from here, never from the module's internals. */
 export { createBlockUser } from "./application/block-user";
 export { createGetConnectionStatus } from "./application/get-connection-status";
 export { createListConnections } from "./application/list-connections";

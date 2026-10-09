@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import type { PostsStore } from "./posts-store";
 import { refuse } from "./refusal";
 
-/** Own-content delete needs no separate permission (mirrors messaging's own-delete pattern). Soft-delete only, never a hard delete or content redaction. */
+/** Own-content delete needs no separate permission. Soft-delete only. */
 export function createDeletePost(deps: {
   store: PostsStore;
   authorize: Authorize;

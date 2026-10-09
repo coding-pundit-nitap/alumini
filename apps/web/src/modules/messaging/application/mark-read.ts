@@ -8,11 +8,7 @@ import type { Authorize } from "./authz";
 import type { MessagingObserver, MessagingStore } from "./messaging-store";
 import { parse } from "./validation";
 
-/**
- * Moves the caller's read marker to `upToSeq` (clamped to the last message, never backwards) and
- * recounts their unread messages. Marking up to what the client actually displayed, not "everything", means a
- * message that arrives meanwhile stays unread.
- */
+/** Never moves backwards. Marking only what the client displayed keeps newer messages unread. */
 export function createMarkRead(deps: {
   store: MessagingStore;
   authorize: Authorize;

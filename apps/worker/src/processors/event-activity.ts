@@ -16,10 +16,6 @@ export type EventActivityDeps = {
   blocked: (a: string, b: string) => Promise<boolean>;
 };
 
-/**
- * Handles event.*. cancelled (fan-out) and registered (confirmation) notify with email; registration-cancelled
- * by someone else notifies in-app + email. Ids only in logs.
- */
 export function createEventActivityProcessor(
   action: string,
   deps: EventActivityDeps
@@ -40,9 +36,8 @@ export function createEventActivityProcessor(
       });
 
     if (action === "cancelled") {
-      // ponytail: sequential, ~2,000 recipients per attempt within FANOUT_TIMEOUT_MS. Past that the loop stops
-      // on the abort signal and the retry resumes cheaply (deliver dedupes per recipient on the stable jobId);
-      // fan out in chunked child jobs if events grow well past that.
+      // Sequential, ~2,000 recipients per attempt. On timeout the retry resumes cheaply because deliver
+      // dedupes per recipient.
       for (const recipientId of await deps.findActiveRegistrants(
         payload.eventId
       )) {

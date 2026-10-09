@@ -5,9 +5,8 @@ export type CrossCheck = "NOT_CHECKED" | "MATCH" | "MISMATCH";
 export type VerificationDecision = "APPROVED" | "REJECTED";
 
 /**
- * How an account gets verified. A recognised institutional domain that needs the institute's
- * confirmation (`autoVerify: false`, i.e. faculty and staff) is NOT an alumni evidence case: it waits
- * for admin tooling, and an alumni approval must never hand it the ALUMNI role.
+ * Institutional domains that need confirmation (faculty, staff) wait for admin tooling and must never
+ * receive the ALUMNI role through an alumni approval.
  */
 export type VerificationTrack = "EVIDENCE" | "AWAITING_STAFF_CONFIRMATION";
 

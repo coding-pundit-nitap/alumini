@@ -1,8 +1,6 @@
 /**
- * The connection rules, pure. One row per unordered pair;
- * `NONE` is "no row". Nothing here touches a database or a clock: callers pass `now`, and the application
- * layer turns a refusal into an error. A `NOT_FOUND` refusal means "this row is not yours to know about", so
- * a blocked member learns nothing.
+ * One row per unordered pair; `NONE` means no row. `NOT_FOUND` means "not yours to know about", so a
+ * blocked member learns nothing.
  */
 export type ConnectionState = "PENDING" | "ACCEPTED" | "REJECTED" | "BLOCKED";
 
@@ -122,10 +120,7 @@ export function decideRespond(
 
 export type RemoveOutcome = "cancelled" | "removed" | "unblocked";
 
-/**
- * Deleting a row: cancel your own request, drop an accepted connection, or lift your own block. A REJECTED
- * row is never deletable, or the rejected side could erase it and skip the cooldown.
- */
+/** A REJECTED row is never deletable, or the rejected side could skip the cooldown. */
 export function decideRemove(
   row: ConnectionRow,
   actorId: string

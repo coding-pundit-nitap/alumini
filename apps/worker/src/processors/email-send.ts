@@ -5,10 +5,7 @@ import type { EmailSendPayload } from "@nitap/jobs";
 import type { JobProcessor } from "@nitap/queue";
 import type { Metrics } from "@nitap/observability";
 
-/**
- * What `lastError` stores: the error kind plus the adapter's SMTP code, never a raw provider message, since SMTP
- * replies often echo the recipient address (PII).
- */
+/** Never the raw provider message: SMTP replies often echo the recipient. */
 const failureKind = (error: unknown) =>
   error instanceof EmailSendError
     ? /^SMTP \w+$/.test(error.message)
@@ -35,14 +32,9 @@ export type EmailSendProcessorDeps = {
 };
 
 /**
- * Sends one templated email. The job id is the Message-ID key, so a re-run of the same event carries the
- * same id. Never logs the recipient or the parameters: they hold an address and a token.
- *
- * When the payload is a `notification` template carrying a `notificationId`, the outcome is also
- * written back onto that notification's EMAIL delivery row: SENT (with `notification_delivered_total`) on success, FAILED (with the
- * `notification_delivery_failed_total` metric) on a permanent error or the final retry attempt. A status
- * write never masks the real send outcome: a `markSent`/`markFailed` failure is logged, not thrown, so a
- * successfully sent email is never re-sent just because the status write failed.
+ * The job id is the Message-ID key. Never logs the recipient or parameters. For notification emails,
+ * the delivery row is marked SENT or FAILED; a failed status write is logged, never thrown, so a sent
+ * email isn't re-sent.
  */
 export function createEmailSendProcessor(
   email: Pick<EmailPort, "send">,

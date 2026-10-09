@@ -1,4 +1,4 @@
--- Directory search, Stage A: PostgreSQL only, behind SearchPort. Prisma cannot express these
+-- Directory search, Stage A (TDS §14): PostgreSQL only, behind SearchPort. Prisma cannot express these
 -- indexes, so they live here (as uq_user_email_ci does).
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 

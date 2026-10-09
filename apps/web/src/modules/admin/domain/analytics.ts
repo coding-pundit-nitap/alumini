@@ -31,7 +31,7 @@ export const analyticsWindow = (
 export type SectionKey =
   "members" | "jobs" | "events" | "community" | "donations";
 
-/** / a section needs `analytics.view` and the permission that owns its data. */
+/** A section needs `analytics.view` and the permission that owns its data. */
 export const SECTION_PERMISSIONS: Record<SectionKey, Permission> = {
   members: PERMISSIONS.ALUMNI_VERIFY,
   jobs: PERMISSIONS.JOB_APPROVE,

@@ -21,9 +21,8 @@ export type RateLimiter = {
 export type RequestConnectionResult = { connectionId: string };
 
 /**
- * The row and its `connection.requested` event commit together. Two members asking each other at
- * the same instant end with ONE row: the loser's insert is a no-op on the unique pair, it re-reads, and the
- * pair's state then refuses it as CONNECTION_EXISTS (the client should accept instead).
+ * Two members requesting each other at once end with one row: the loser's insert is a no-op and the
+ * re-read refuses it as CONNECTION_EXISTS.
  */
 export function createRequestConnection(deps: {
   store: ConnectionStore;

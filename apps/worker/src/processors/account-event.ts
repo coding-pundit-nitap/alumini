@@ -6,10 +6,7 @@ import type { JobProcessor } from "@nitap/queue";
 
 import type { DeliverNotification } from "../notifications/deliver.ts";
 
-/**
- * In-app row for the applicant. No email: the decision already sent its own transactional email in the
- * same transaction. Ids only in logs.
- */
+/** In-app only: the decision already sent its own email. */
 export function createVerificationDecidedProcessor(deps: {
   deliver: DeliverNotification;
 }): JobProcessor<VerificationDecidedPayload> {
@@ -31,10 +28,7 @@ export function createVerificationDecidedProcessor(deps: {
   };
 }
 
-/**
- * Suspension and reactivation notices. Email goes only while the account is still in the announced state,
- * so a suspension undone before this runs sends no suspension email.
- */
+/** Email only while the account is still in the announced state, so an undone suspension sends nothing. */
 export function createAccountStateProcessor(
   type: "user.suspended" | "user.reactivated",
   deps: {

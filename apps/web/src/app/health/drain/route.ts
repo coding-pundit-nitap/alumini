@@ -3,12 +3,8 @@ import { routeHandler } from "@/infrastructure/http/route-handler";
 import { logger } from "@/infrastructure/observability";
 
 /**
- * POST /health/drain — take this instance out of rotation before it is stopped:
- * readiness answers 503 from now on and open message streams end so they reconnect to the live instance.
- * In-flight requests are untouched; the SIGTERM that follows lets Next.js finish them.
- *
- * Same access rule as health details and /metrics: open outside production, the monitoring bearer token in
- * production, and a plain 404 to anyone else so the endpoint is not advertised.
+ * Takes this instance out of rotation: readiness returns 503 and open message streams end.
+ * Same access rule as /metrics; 404 to anyone else.
  */
 export const POST = routeHandler(async (request) => {
   if (!healthDetailsVisible(request)) {

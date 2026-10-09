@@ -52,13 +52,8 @@ export type DeliveryStore = {
 };
 
 /**
- * Delivers one notification to one recipient: the in-app row first (durable even if email fails), then
- * email if the category, channel and stored preference allow it. Idempotent: a duplicate dedupe key skips
- * the in-app step, and email is skipped once its delivery is SENT or FAILED.
- *
- * The EMAIL delivery row is written PENDING before the job is enqueued. Writing it after would let the
- * job mark it SENT first, so the late insert would fail or strand the row PENDING. This order makes a retry
- * safe: both the write and the enqueue are idempotent, and the job id is the dedupe key.
+ * In-app row first, then email if category, channel and preference allow. Idempotent on the dedupe key.
+ * The EMAIL row is written PENDING before enqueueing, so the job can never mark it SENT before it exists.
  */
 export function createDeliverNotification(deps: {
   store: DeliveryStore;

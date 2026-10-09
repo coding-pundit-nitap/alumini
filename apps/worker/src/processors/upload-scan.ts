@@ -24,10 +24,8 @@ export type UploadScanStore = {
 };
 
 /**
- * Scans and re-encodes one pending upload. Idempotent: a row already READY or REJECTED is a
- * no-op, so a re-delivered job (BullMQ at-least-once) is harmless. A bad image or a scanner rejection is
- * a SUCCESSFUL outcome (the row moves to REJECTED, the job does not throw) — only a storage outage
- * throws, so the queue retries and the row stays PENDING_SCAN (fails closed).
+ * Idempotent. A bad image or scanner rejection moves the row to REJECTED without throwing; only a
+ * storage outage throws, leaving it PENDING_SCAN.
  */
 export function createUploadScanProcessor(deps: {
   store: UploadScanStore;

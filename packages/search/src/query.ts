@@ -14,11 +14,7 @@ export const DEFAULT_LIMIT = 20;
 const text = z.string().trim().min(1).max(100);
 const year = z.coerce.number().int().min(2010).max(2100);
 
-/**
- * The provider-neutral directory query. Nothing SQL- or engine-shaped: a Postgres adapter
- * and a later OpenSearch one both take this. Empty strings count as absent, so a plain HTML form with
- * blank fields validates.
- */
+/** Provider-neutral. Empty strings count as absent, so a plain HTML form validates. */
 const schema = z
   .object({
     q: z.string().trim().min(2).max(100).optional(),

@@ -62,10 +62,7 @@ export function NavIcon({
   return <Icon aria-hidden="true" className={className} />;
 }
 
-/**
- * The entry the current path belongs to: exact match or a sub-path, with the longest href winning so
- * `/jobs/mine` lights "My job posts", not "Jobs". Home (`/dashboard`) matches exactly only.
- */
+/** Longest matching href wins, so `/jobs/mine` lights "My job posts". `/dashboard` matches exactly. */
 export function activeHref(
   pathname: string,
   entries: readonly NavEntry[]

@@ -1,4 +1,3 @@
-// apps/web/src/modules/jobs/domain/job.test.ts
 import { describe, expect, it } from "vitest";
 
 import {

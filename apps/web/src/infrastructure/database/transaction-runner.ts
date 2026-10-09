@@ -12,13 +12,8 @@ import {
 
 export type TransactionRunner = {
   /**
-   * Opens one Prisma interactive transaction and passes `tx` to the callback. On a
-   * serialization failure or deadlock it retries the WHOLE callback, never just the commit, up to
-   * `maxRetries` attempts with jittered backoff.
-   *
-   * Because the callback can run more than once it must perform no I/O except through `tx`: no
-   * email, HTTP, Redis or queue calls. Write an outbox row instead and let a worker
-   * act after commit.
+   * Runs the callback in an interactive transaction, retrying the whole callback on serialization
+   * failures and deadlocks. It may run more than once, so do no I/O outside `tx`; use the outbox.
    */
   run: <T>(fn: (tx: Prisma.TransactionClient) => Promise<T>) => Promise<T>;
 };

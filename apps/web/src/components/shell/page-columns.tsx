@@ -1,9 +1,5 @@
 import type { ReactNode } from "react";
 
-/**
- * The framed centre column (hairline sides, optional sticky header) plus the optional right rail (≥xl).
- * Pages render narrower fallbacks for the aside themselves.
- */
 export function PageColumns({
   header,
   aside,

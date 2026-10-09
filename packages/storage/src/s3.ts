@@ -36,13 +36,8 @@ function wrapFailure(error: unknown, key: string): never {
   );
 }
 
-/**
- * The only file in this package that imports the AWS SDK. It speaks the S3 API, so MinIO now and any
- * S3-compatible provider later are the same code; only `env` changes.
- */
+/** Works with any S3-compatible store; only `env` changes. */
 export function createS3StoragePort(env: StorageEnv): StoragePort {
-  // ponytail: assumes path-style URLs (bucket in the path), which is what MinIO uses; a virtual-hosted
-  // bucket would lose its host here.
   const toBrowserUrl = (url: string) => {
     if (!env.publicPath) return url;
     const { pathname, search } = new URL(url);
@@ -57,9 +52,7 @@ export function createS3StoragePort(env: StorageEnv): StoragePort {
       accessKeyId: env.accessKeyId,
       secretAccessKey: env.secretAccessKey,
     },
-    // Without throwOnRequestTimeout the SDK only logs a warning past requestTimeout and keeps waiting, so a
-    // stalled store hung requests forever. One attempt: the caller owns retries (the user's
-    // retry on a 503, the queue's backoff in the worker), so the bound stays one timeout, not three.
+    // Without throwOnRequestTimeout the SDK only warns and keeps waiting. One attempt: callers own retries.
     requestHandler: {
       connectionTimeout: CONNECTION_TIMEOUT_MS,
       requestTimeout: REQUEST_TIMEOUT_MS,

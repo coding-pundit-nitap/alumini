@@ -45,11 +45,7 @@ function preview(c: InboxConversation, viewerId: string) {
   );
 }
 
-/**
- * The inbox: newest activity first, with the last visible message, unread badges and the open conversation
- * highlighted. Seeded by the server, then kept fresh by the SSE hint, a 30 s poll and tab focus; scrolling to
- * the end pages in older conversations (the "Older conversations" link is the no-JS/no-observer fallback).
- */
+/** Kept fresh by the SSE hint, a 30 s poll and tab focus. Older conversations load on scroll. */
 export function ConversationList({
   conversations: initial,
   viewerId,

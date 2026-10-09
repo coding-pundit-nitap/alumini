@@ -8,12 +8,7 @@ import {
   bootstrapSuperAdmin,
 } from "@nitap/database/seed";
 
-/**
- * Creates the first super admin of an environment (`pnpm admin:bootstrap`). Lives in apps/web because
- * Better Auth's password hashing does; @nitap/database only receives the finished hash. Works in any
- * environment, unlike the dev seed, and refuses when a super admin already exists. The password is read
- * from the environment and never printed.
- */
+/** Creates the first super admin (`pnpm admin:bootstrap`). Refuses if one already exists. */
 async function main() {
   const email = process.env.BOOTSTRAP_ADMIN_EMAIL;
   const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;

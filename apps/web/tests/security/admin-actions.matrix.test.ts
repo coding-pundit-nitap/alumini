@@ -1,7 +1,5 @@
-// Every administrative action × every role × {allowed, denied, unauthenticated}.
-// Composed with role-matrix.integration.test.ts (role → permission against the seeded database), this proves
-// action × role. Each use case runs with the real authorize() and a tripwire store: reaching the store means
-// authorization let the call through.
+// Every admin action × every role × {allowed, denied, unauthenticated}. The store is a tripwire:
+// reaching it means authorization let the call through.
 import { describe, expect, it } from "vitest";
 
 import { PERMISSIONS, type Permission } from "@nitap/database/permissions";
@@ -81,7 +79,7 @@ const { authorize, can } = createAuthorization({
 });
 type Run = (actor: Actor | null) => Promise<unknown>;
 
-/** Every admin action, the permission it needs, and how to invoke it. Later sub-phases append here. */
+/** Every admin action, the permission it needs, and how to invoke it. */
 const ADMIN_ACTIONS: ReadonlyArray<{
   name: string;
   permission: Permission;

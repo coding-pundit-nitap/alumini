@@ -3,12 +3,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client.ts";
 
 /**
- * The runtime database role. Web and worker connect as it; the migrate job
- * keeps the owner role, and runs this after every migration so a new table is granted before the release that
- * uses it starts. Rights: read and write rows, use sequences. No DDL (it owns nothing and has no CREATE on the
- * schema), so a compromised application cannot DROP or ALTER a table. The audit log is insert-only for it,
- * on top of the triggers that refuse UPDATE and DELETE for everyone; the migration history
- * is out of its reach.
+ * The role web and worker connect as: read/write rows and use sequences, no DDL, and insert-only on the
+ * audit log. Migrations keep the owner role and re-run these grants after every migration.
  */
 export const RUNTIME_ROLE = "alumini_app";
 

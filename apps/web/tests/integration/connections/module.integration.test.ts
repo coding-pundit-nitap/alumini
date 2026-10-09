@@ -179,11 +179,7 @@ describe("connections module against real PostgreSQL", () => {
         (await events()).filter((e) => e.type === "connection.accepted")
           .length - before;
 
-      // The transitions are serialised by guarded updates, so one order or the other happened:
-      //  - accept first, then the cancel either lost its guard (INVALID_STATE_TRANSITION) or, having read
-      //    the accepted row, legitimately removed the accepted connection;
-      //  - cancel first, then the accept found nothing.
-      // Whatever happened, the row, the event and the outcomes must agree.
+      // Guarded updates serialize the race either way; the row, events and outcomes must agree.
       expect(acceptedEvents).toBe(accepted === "ok" ? 1 : 0);
       if (accepted === "ok") {
         expect(["ok", "INVALID_STATE_TRANSITION"]).toContain(cancelled);

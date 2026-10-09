@@ -28,7 +28,7 @@ function parseId(field: string, value: string): string {
   return value;
 }
 
-/** The "Message" button on a profile. Plain-value argument; the use case authorizes and validates again. */
+/** The "Message" button on a profile. */
 export async function startConversationAction(
   recipientId: string
 ): Promise<ActionResult<{ conversationId: string }>> {

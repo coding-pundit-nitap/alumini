@@ -16,12 +16,9 @@ import { refuse } from "./refusal";
 import { parse } from "./validation";
 
 /**
- * The message, every recipient's unread counter and the `message.sent` event commit
- * together; nothing about delivery runs in the request. The conversation row lock serialises sends, so `seq`
- * is commit-ordered within a conversation and a retried `clientMessageId` finds its first result.
- *
- * The send budget is consumed inside that transaction, after the idempotency lookup: only a message that is
- * actually written costs budget. The price is one Redis round-trip while the conversation row lock is held.
+ * The message, unread counters and `message.sent` commit together. The conversation lock orders `seq`
+ * and lets a retried `clientMessageId` find its first result. The send budget is charged only for
+ * messages actually written.
  */
 export function createSendMessage(deps: {
   store: MessagingStore;

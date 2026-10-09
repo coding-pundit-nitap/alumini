@@ -247,10 +247,8 @@ type WireConnection = Omit<ListedConnection, "requestedAt" | "respondedAt"> & {
 };
 
 /**
- * One list of the caller's connections, requests or blocks, with the actions that fit its tab. The server
- * renders the first page; with `query` and `nextCursor`, later pages load from `GET /api/v1/connections` as
- * you scroll ("Load more"; `nextHref` is the no-JS fallback). `messageAction` adds Message to connections —
- * passed in because this module does not depend on messaging.
+ * The server renders the first page; later pages load from `GET /api/v1/connections`. `messageAction`
+ * is passed in because this module does not depend on messaging.
  */
 export function ConnectionList({
   items,

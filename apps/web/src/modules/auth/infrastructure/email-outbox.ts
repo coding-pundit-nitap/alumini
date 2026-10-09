@@ -4,10 +4,7 @@ import type { TransactionRunner } from "@/infrastructure/database/transaction-ru
 
 import type { EmailOutbox } from "../application/auth-emails";
 
-/**
- * One transaction per message. The writer validates the payload against the `email.send` contract
- * first, so a malformed message throws here and nothing is written.
- */
+/** The payload is validated against the `email.send` contract before anything is written. */
 export function createEmailOutbox(deps: {
   runner: Pick<TransactionRunner, "run">;
   writer: OutboxWriter;

@@ -1,4 +1,3 @@
-// apps/web/tests/security/community.security.integration.test.ts
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createAuditWriter } from "@nitap/database/audit";
@@ -34,13 +33,8 @@ import { createUnreact } from "@/modules/posts/application/unreact";
 import { createPrismaPostsStore } from "@/modules/posts/infrastructure/prisma-posts-store";
 
 /**
- * RBAC matrix coverage and IDOR cases for posts, achievements and moderation, against real PostgreSQL, the
- * real seed and the real `authorize`/`resolveActor`, with no doubles. Same shape as
- * `tests/integration/auth/role-matrix.integration.test.ts`.
- *
- * Grants come from `packages/database/prisma/seed-data/role-permissions.ts`. Note that `achievement.submit` is
- * ALUMNI and FACULTY only, and `achievement.review` is held by ALUMNI_COORDINATOR, INSTITUTE_ADMIN and
- * SUPER_ADMIN, not MODERATOR.
+ * RBAC and IDOR cases for posts, achievements and moderation against real PostgreSQL and the real
+ * seed. `achievement.review` is held by the coordinator and admin roles, not MODERATOR.
  */
 describe("community security", () => {
   let db: TestDatabase;

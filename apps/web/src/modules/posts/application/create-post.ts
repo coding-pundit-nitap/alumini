@@ -10,9 +10,8 @@ import type { PostsStore } from "./posts-store";
 import { parse } from "./validation";
 
 /**
- * Every `imageUrls` id must be a READY upload owned by the caller (mirrors
- * uploads' set-profile-photo.ts); an id that isn't refuses UPLOAD_NOT_READY. `postType` is always
- * `TEXT` here — `ACHIEVEMENT` is set only by `modules/achievements`' own publish path.
+ * Every image id must be a READY upload owned by the caller. ACHIEVEMENT posts are created only by
+ * the achievements module.
  */
 export function createCreatePost(deps: {
   store: PostsStore;

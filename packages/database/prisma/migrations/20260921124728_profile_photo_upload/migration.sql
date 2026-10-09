@@ -37,7 +37,7 @@ ALTER TABLE "profile" ADD CONSTRAINT "profile_photo_upload_id_fkey" FOREIGN KEY 
 ALTER TABLE "upload" ADD CONSTRAINT "upload_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 
--- Size and type bounds match the domain rules; this CHECK is the backstop.
+-- Size and type bounds match the domain rules (spec 3C); this CHECK is the backstop.
 ALTER TABLE "upload"
   ADD CONSTRAINT "ck_upload_size" CHECK ("size" BETWEEN 1 AND 5242880),
   ADD CONSTRAINT "ck_upload_mime" CHECK ("mime" IN ('image/jpeg', 'image/png', 'image/webp'));

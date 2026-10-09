@@ -36,7 +36,7 @@ import { FirstRun, Greeting, Widgets, WidgetStrip } from "./_components/data";
 
 export const metadata: Metadata = { title: "Home" };
 
-/** Home is the feed, with the blocks as a highlights rail. Access. */
+/** Home is the feed, with the blocks as a highlights rail. */
 export default async function DashboardPage({
   searchParams,
 }: {

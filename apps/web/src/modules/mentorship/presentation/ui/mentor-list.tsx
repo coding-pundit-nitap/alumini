@@ -93,10 +93,7 @@ function Row({
   );
 }
 
-/**
- * Mentors a student can browse. `requestSlot` renders the request control per row so this
- * list never needs to know about the request use case.
- */
+/** `requestSlot` renders the request control so this list stays unaware of the request use case. */
 export function MentorList({
   items,
   requestSlot,

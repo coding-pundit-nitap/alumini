@@ -15,7 +15,6 @@ import {
   createPrismaNotificationStore,
 } from "@/modules/notifications";
 
-/** Wires the notifications module to PostgreSQL and the shared Redis unread counter (Redis-optional). */
 const store = createPrismaNotificationStore(prisma);
 const useCases = createNotificationUseCases({
   store,

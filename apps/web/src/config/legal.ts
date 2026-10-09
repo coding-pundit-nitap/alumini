@@ -1,9 +1,4 @@
-/**
- * The supporting pages' institute-owned facts. The copy in
- * app/terms and app/contact is a draft written from how the app works; the institute approves or replaces
- * it before launch (owner checklist), then sets `approved` and fills the alumni office's details.
- * Until then each page says it is a draft.
- */
+/** Draft copy for the terms and contact pages until the institute approves it and sets `approved`. */
 export const legalConfig = {
   approved: false,
   lastUpdated: "2026-10-09",

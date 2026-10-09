@@ -37,7 +37,6 @@ export default async function JobsPage({
   const actor = await getActor();
   if (!actor) redirect("/login?next=%2Fjobs");
 
-  // Unknown enum values in the URL are ignored.
   const filters: JobFilterValues = {
     employmentType: (EMPLOYMENT_TYPES as readonly string[]).includes(
       employmentType ?? ""

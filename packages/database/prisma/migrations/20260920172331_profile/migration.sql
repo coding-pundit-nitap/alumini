@@ -37,7 +37,7 @@ ALTER TABLE "profile" ADD CONSTRAINT "profile_department_id_fkey" FOREIGN KEY ("
 -- AddForeignKey
 ALTER TABLE "profile" ADD CONSTRAINT "profile_degree_id_fkey" FOREIGN KEY ("degree_id") REFERENCES "degree"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- Static range, never date-dependent. "Is this year plausible for this user, right
--- now" is an application rule, not a database constraint.
+-- Static range, never date-dependent (D-d, spec §2). "Is this year plausible for this user, right
+-- now" is an application rule (Phase 3), not a database constraint.
 ALTER TABLE "profile" ADD CONSTRAINT ck_profile_graduation_year
   CHECK (graduation_year IS NULL OR graduation_year BETWEEN 2010 AND 2100);

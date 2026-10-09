@@ -9,10 +9,7 @@ const WEEK = Prisma.sql`to_char(date_trunc('week', created_at AT TIME ZONE 'Asia
 const inWindow = (column: string, w: AnalyticsWindow) =>
   Prisma.sql`${Prisma.raw(column)} >= ${w.from}::timestamptz AND ${Prisma.raw(column)} < ${w.to}::timestamptz`;
 
-/**
- * Cross-module, read-only aggregates. Only counts leave this file — no
- * row identifies a person. Table and column names passed to Prisma.raw are constants, never input.
- */
+/** Only counts leave this file. Names passed to Prisma.raw are constants, never input. */
 export function createPrismaAnalyticsStore(db: PrismaClient): AnalyticsStore {
   const weekly = (table: string, w: AnalyticsWindow, extra = Prisma.empty) =>
     db.$queryRaw<WeekPoint[]>`
@@ -23,7 +20,6 @@ export function createPrismaAnalyticsStore(db: PrismaClient): AnalyticsStore {
 
   return {
     async membersSection(w) {
-      // ponytail: seq scan on user.created_at; add ix_user_created_at if sign-ups show in slow logs.
       const [states, signups, byRole, byGraduationYear, [decided]] =
         await Promise.all([
           db.user.groupBy({ by: ["accountState"], _count: { _all: true } }),

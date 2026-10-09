@@ -19,9 +19,7 @@ vi.mock("@/config/env", () => ({
 }));
 vi.mock("@/modules/auth", () => ({ getActor: mocks.getActor }));
 vi.mock("@/composition/messaging", () => mocks);
-// GET /api/v1/reports (in ../reports/route, imported below) now pulls in
-// composition/moderation for listReports; that module wires the real Prisma
-// client, so it must be doubled here too or this suite fails at import time.
+// The reports route imports composition/moderation, which wires a real Prisma client.
 vi.mock("@/composition/moderation", () => mocks);
 
 import { AuthenticationError, NotFoundError } from "@/lib/errors";

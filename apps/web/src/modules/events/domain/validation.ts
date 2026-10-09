@@ -2,12 +2,7 @@ import { z } from "zod";
 
 import { isValidTimeZone } from "./zoned-time";
 
-/**
- * The `POST /events` request shape, pure zod: no `@/lib/errors`, so a client-side
- * react-hook-form form can import this directly. `superRefine` carries the checks that need a
- * clock (future dates, deadline ordering) or the stdlib zone check; issues land on the offending
- * field path so the UI can show them per field.
- */
+/** Pure zod with no server imports, so client forms can use it. Clock-dependent checks are in `superRefine`. */
 export const EVENT_TITLE_MIN = 3;
 export const EVENT_TITLE_MAX = 150;
 export const EVENT_DESCRIPTION_MIN = 10;
@@ -86,11 +81,7 @@ export function makeCreateEventInput(now: () => Date) {
 export const createEventInput = makeCreateEventInput(() => new Date());
 export type CreateEventInput = z.infer<typeof createEventInput>;
 
-/**
- * The `/events/new` form shape: wall times from `<input type="datetime-local">` plus the zone they
- * are in. It checks presence and bounds only; the server action converts the wall times and
- * `createEventInput` stays authoritative for the future/deadline rules.
- */
+/** Presence and bounds only; `createEventInput` stays authoritative for date rules. */
 export const eventFormSchema = z
   .object({
     title: z

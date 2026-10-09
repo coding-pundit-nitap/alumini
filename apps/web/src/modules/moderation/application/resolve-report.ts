@@ -61,11 +61,8 @@ async function applyResolution(
 }
 
 /**
- * `tx.patchReport` and the per-type side effect (`applyResolution`) run inside the
- * SAME transaction as the store's `.transaction()` call, so a mid-transaction failure leaves neither the
- * report's status changed nor the target touched. Resolving soft-deletes a post/comment, hides a message,
- * or (USER) changes nothing beyond the report itself. Resolving your own report or your own content is
- * refused SELF_REVIEW_FORBIDDEN; resolving an already-terminal report is refused INVALID_STATE_TRANSITION.
+ * The status change and its side effect share one transaction. Resolving soft-deletes a post or
+ * comment, hides a message, or changes nothing else for a user report.
  */
 export function createResolveReport(deps: {
   store: ModerationStore;

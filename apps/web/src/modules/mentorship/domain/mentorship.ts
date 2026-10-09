@@ -1,7 +1,6 @@
 /**
- * The mentorship rules, pure. Nothing here touches a database or a clock.
- * A `NOT_FOUND` refusal means "this is not yours to know about": a stranger, a blocked-out party and a
- * hidden mentor all read the same. Checks run in a fixed order: participant → block → role → state → capacity.
+ * Pure rules. `NOT_FOUND` means "not yours to know about". Checks run in order: participant, block,
+ * role, state, capacity.
  */
 export const MENTORSHIP_STATES = [
   "REQUESTED",

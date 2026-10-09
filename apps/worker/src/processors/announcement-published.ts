@@ -16,10 +16,8 @@ type Deps = {
 };
 
 /**
- * Every verified member except the author gets an in-app row and, preference
- * permitting, an email. ponytail: one job walks all members; a timed-out run retries from the first batch
- * and deliver() dedupes on (type, job id, recipient). Split into per-batch child jobs if a full walk
- * regularly exceeds FANOUT_TIMEOUT_MS.
+ * Every verified member except the author. One job walks all members; deliver() dedupes on retry.
+ * Split into per-batch jobs if a walk regularly exceeds FANOUT_TIMEOUT_MS.
  */
 export function createAnnouncementPublishedProcessor(
   deps: Deps

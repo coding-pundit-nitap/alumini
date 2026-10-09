@@ -21,12 +21,8 @@ const rel = (root: string, full: string) =>
   path.relative(root, full).split(path.sep).join("/");
 
 /**
- * The worker must not depend on the Next.js app: they are two deployables sharing packages,
- * not code. Test files are ignored.
- *
- * A hand-written substitute for the dependency-cruiser rule `worker-never-imports-web`: with the
- * workspace on TypeScript 7, dependency-cruiser@18.3.1 (which requires TypeScript <7) parses 0 files
- * and enforces nothing. This checker is the one that actually runs.
+ * Web and worker share packages, not code. Hand-written because dependency-cruiser does not support
+ * TypeScript 7.
  */
 export function checkNoWebImports(appRoot: string): string[] {
   const violations: string[] = [];

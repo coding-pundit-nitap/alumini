@@ -8,11 +8,7 @@ type RateLimitStorage = NonNullable<
 >;
 type Rule = { window: number; max: number };
 
-/**
- * Fixed-window counter, atomic in Redis (one Lua script, so concurrent requests cannot all pass
- * a stale read). A rejected request does not extend the window.
- * Returns { allowed (1|0), retryAfterSeconds }.
- */
+/** Fixed window, atomic in one Lua script. A rejected request does not extend the window. */
 const CONSUME_SCRIPT = `
 local count = tonumber(redis.call('GET', KEYS[1]) or '0')
 if count >= tonumber(ARGV[1]) then
@@ -30,9 +26,7 @@ end
 return {1, 0}
 `;
 
-// --- Fallback used only while Redis is unreachable ----------
-// Per-instance and therefore weaker across instances, so it is deliberately stricter than the
-// configured rule: half the allowance, never below 1.
+// Fallback while Redis is unreachable. Per-instance, so it allows half the configured limit.
 const fallback = new Map<string, { count: number; resetAt: number }>();
 
 function consumeInMemory(key: string, rule: Rule) {

@@ -19,11 +19,7 @@ export function signInOutcome(status: number): SignInOutcome {
   return "error";
 }
 
-/**
- * Counts email sign-ins by outcome for the login-failure alert. Wraps the whole Better Auth
- * handler rather than an endpoint hook: the rate limiter answers 429 in Better Auth's router, before any
- * endpoint hook runs.
- */
+/** Wraps the whole handler because Better Auth's rate limiter answers 429 before endpoint hooks run. */
 export function withSignInMetrics(
   handler: (request: Request) => Promise<Response>
 ) {

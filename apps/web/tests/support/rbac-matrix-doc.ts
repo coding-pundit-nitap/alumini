@@ -5,13 +5,7 @@ import { ROLE_NAMES, type RoleName } from "@nitap/database/role-permissions";
 
 const DOC = path.resolve(import.meta.dirname, "rbac-permission-matrix.md");
 
-/**
- * Reads of the RBAC matrix (the human-reviewed source of truth) into role → permissions.
- * Column order in the doc is Guest, then the nine seeded roles in ROLE_NAMES order, then the Chapter
- * Admin bundle. A ● or ○ cell means the role holds the permission (○ adds conditions, which are
- * not part of the grant). Any other symbol in a role column is an error: change this parser with the
- * doc, never silently.
- */
+/** Parses the RBAC matrix doc into role → permissions. ● and ○ mean held; any other symbol is an error. */
 export function readRoleMatrixFromDoc(): Record<RoleName, ReadonlySet<string>> {
   if (!fs.existsSync(DOC)) {
     throw new Error(

@@ -3,11 +3,7 @@ import type { PrismaClient } from "../generated/prisma/client.ts";
 
 export type StalePledge = { id: string };
 
-/**
- * The `donation.expire-pledges` sweep's store, shaped like `jobs/store.ts`: each
- * row's flip and its `donation.not-received` event commit together, and a row that already moved (decided,
- * cancelled, or given a reference in the meantime) is a harmless no-op.
- */
+/** Each flip and its `donation.not-received` event commit together; a row that already moved is a no-op. */
 export type PledgeExpiryStore = {
   /** PLEDGED rows with no reference created before `before`, oldest first. */
   listStale(before: Date, limit: number): Promise<StalePledge[]>;

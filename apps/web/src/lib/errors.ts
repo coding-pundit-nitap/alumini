@@ -1,8 +1,4 @@
-/**
- * Error taxonomy and the API error envelope.
- * Pure: no framework, no I/O. Adapters turn these into responses with `toApiError`;
- * the boundary logs once (infrastructure/http/error-response.ts).
- */
+/** Error taxonomy and the API error envelope. Pure: adapters convert with `toApiError`. */
 
 /** Safe, human-readable message and HTTP status for every code. Clients branch on `code`. */
 export const ERROR_CATALOG: Record<
@@ -409,11 +405,7 @@ export class DependencyUnavailableError extends AppError {
   }
 }
 
-/**
- * A serialization failure or deadlock that survived TransactionRunner's bounded retry.
- * Deliberately not a DependencyUnavailableError: this is contention between concurrent requests,
- * not an unreachable dependency, and the two page differently.
- */
+/** Contention between requests, not an unreachable dependency, so it is not a DependencyUnavailableError. */
 export class TransactionRetryExhaustedError extends AppError {
   readonly kind = "transaction_conflict";
   constructor(options: ErrorOptions = {}) {

@@ -182,7 +182,7 @@ describe("alumni verification against real PostgreSQL", () => {
       targetId: asha.id,
       metadata: { requestId, crossCheck: "NOT_CHECKED" },
     });
-    // / institutional changes are audited with old and new values.
+    // Institutional changes are audited with old and new values.
     expect(
       audits.find((a) => a.action === "profile.institutional_changed")
     ).toMatchObject({

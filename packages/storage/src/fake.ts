@@ -6,10 +6,7 @@ import type {
 } from "./port.ts";
 import { StorageError } from "./port.ts";
 
-/**
- * In-memory StoragePort for unit tests. `failWith` makes every operation reject the way the real
- * adapter would for an unreachable store, so a use case's failure handling can be tested without MinIO.
- */
+/** `failWith` makes every operation reject as if the store were unreachable. */
 export function createFakeStoragePort(
   options: { failWith?: "unavailable" } = {}
 ): StoragePort {

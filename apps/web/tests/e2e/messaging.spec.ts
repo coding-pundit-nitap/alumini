@@ -9,11 +9,7 @@ const BASE_URL =
 const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
-/**
- * Uncaught page errors per member. A hydration mismatch is the one that matters here: React then throws the
- * server HTML away and re-renders the whole tree, which loses clicks and makes a freshly loaded page flicker
- * through an empty state — the flakiness these journeys used to paper over with reload-and-retry loops.
- */
+/** Uncaught page errors per member, mainly hydration mismatches, which drop clicks and cause flicker. */
 const pageErrors = new WeakMap<Page, string[]>();
 const hydrationErrors = (page: Page) =>
   (pageErrors.get(page) ?? []).filter((m) => m.includes("Hydration failed"));
@@ -42,17 +38,11 @@ async function setLevel(page: Page, label: string) {
   await expect(page.getByText("Privacy settings saved.")).toBeVisible();
 }
 
-/**
- * The posted messages, never the draft box: React mirrors a controlled textarea's value into its text
- * content, so a bare getByText("…") matches what was merely TYPED and races ahead of the send.
- */
+/** Excludes the draft box: React mirrors a textarea's value into its text, so getByText matches typed text. */
 const posted = (page: Page, body: string) =>
   page.getByRole("log", { name: "Messages" }).getByText(body);
 
-/**
- * A sent message shows at once as an optimistic bubble marked "Sending"; it is stored only when the marker
- * goes. Wait for that before another member loads the thread, or their page can render without it.
- */
+/** Wait until the "Sending" marker clears, or another member's page may load without the message. */
 async function expectSent(page: Page, body: string) {
   await expect(posted(page, body)).toBeVisible({ timeout: 15_000 });
   await expect(
@@ -80,7 +70,6 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await setLevel(asha, "Verified members");
   const raviPath = await profilePath(ravi);
 
-  // Asha opens Ravi's profile and starts a conversation.
   await asha.goto(raviPath);
   await asha.getByRole("button", { name: "Message" }).click();
   await expect(asha).toHaveURL(/\/messages\/[0-9a-f-]{36}$/);
@@ -91,7 +80,6 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await asha.getByRole("button", { name: "Send" }).click();
   await expectSent(asha, "Hello Ravi, nice to meet you");
 
-  // Ravi sees it unread in his inbox, opens it, and the badge clears.
   await ravi.goto("/messages");
   await expect(ravi.getByLabel("1 unread")).toBeVisible({ timeout: 15_000 });
   await ravi
@@ -116,7 +104,6 @@ test("J-10 members message each other, see unread counts, report and block", asy
     timeout: 40_000,
   });
 
-  // Ravi reports Asha's first message.
   await ravi
     .getByRole("button", { name: /Report message from/ })
     .first()
@@ -125,11 +112,9 @@ test("J-10 members message each other, see unread counts, report and block", asy
   await ravi.getByRole("button", { name: "Submit report" }).click();
   await expect(ravi.getByText("Report sent.")).toBeVisible();
 
-  // Someone outside the conversation gets the not-found page.
   await outsider.goto(threadUrl);
   await expect(outsider.getByText("Page not found")).toBeVisible();
 
-  // Asha blocks Ravi: she is told to unblock, he no longer sees the thread.
   await asha.goto(raviPath);
   await asha.getByRole("button", { name: "Block" }).click();
   await asha.getByRole("button", { name: "Confirm block" }).click();
@@ -201,7 +186,6 @@ test("J-11 a member starts a group from their connections and manages it", async
   await expect(posted(ravi, "Welcome to the group")).toBeVisible({
     timeout: 15_000,
   });
-  // Group management sits in the Members sheet.
   await ravi.getByRole("button", { name: "Members" }).click();
   await expect(ravi.getByRole("button", { name: "Leave group" })).toBeVisible();
   await expect(ravi.getByLabel("Add member")).toHaveCount(0);

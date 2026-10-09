@@ -1,9 +1,6 @@
 /**
- * Wall-clock-in-a-zone → UTC instant conversion, stdlib `Intl` only (Temporal is not available on
- * Node 24). Ambiguous wall time
- * (DST fall-back) resolves to the earlier instant. Nonexistent wall time (DST spring-forward gap)
- * shifts forward by the gap. Algorithm: the standard two-pass offset fix (as used by Luxon for
- * Intl-backed zones) — guess an offset, refine it, and detect a gap when refining doesn't converge.
+ * Wall time in a zone to a UTC instant with `Intl` only (no Temporal on Node 24). Ambiguous times
+ * resolve to the earlier instant; times in a DST gap shift forward by the gap.
  */
 const WALL_TIME_RE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 
@@ -43,10 +40,8 @@ function offsetMinutesAt(instant: Date, timeZone: string): number {
 }
 
 /**
- * Refines a naive "wall time treated as UTC millis" guess into a real UTC instant, given the zone's
- * offset at that guess. Converges in one more step for ordinary times. When the two refinements
- * disagree, the wall time falls in a spring-forward gap: resolved by shifting forward using the
- * smaller (more-negative / more-west) offset, which is what pushes the instant past the gap.
+ * Two-pass offset fix. If the passes disagree the time is in a DST gap, so shift forward using the
+ * smaller offset.
  */
 function fixOffset(
   localMillis: number,

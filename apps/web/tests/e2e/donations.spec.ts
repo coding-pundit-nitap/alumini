@@ -12,7 +12,7 @@ const BASE_URL =
 const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
-/** Direct DB access, so this suite needs no pre-seeded admin (same approach as admin.spec.ts). */
+/** Direct DB access, so this suite needs no pre-seeded admin. */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function memberWithRole(
@@ -94,7 +94,6 @@ test("a coordinator runs a campaign; a member pledges and sees it received once 
   });
   await expect(member.getByText("Awaiting confirmation")).toBeVisible();
 
-  // The coordinator confirms it against the reference.
   await coordinator.goto("/admin/donations");
   const pledge = coordinator.getByRole("row", { name: new RegExp(reference) });
   await pledge.getByRole("button", { name: "Confirm" }).click();

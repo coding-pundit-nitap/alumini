@@ -4,12 +4,8 @@ import { defineConfig, env } from "prisma/config";
 // One .env at the repository root serves the whole workspace; Prisma runs with cwd = packages/database/.
 config({ path: "../../.env", quiet: true });
 
-// Prisma 7 does not read .env or the datasource url from schema.prisma; both live here.
-//
-// `prisma generate` never connects to the database, but env() throws when the variable is
-// unset, which would break `postinstall`, CI and typecheck on machines without a database.
-// So generate gets a placeholder; every command that does touch the database (migrate, db,
-// studio) still fails loudly if DATABASE_URL is missing.
+// Prisma 7 reads the datasource url here, not from schema.prisma. `generate` gets a placeholder so it
+// works without DATABASE_URL; commands that connect still fail loudly when it is missing.
 const isGenerate = process.argv.includes("generate");
 
 export default defineConfig({

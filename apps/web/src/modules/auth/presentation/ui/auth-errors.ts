@@ -15,10 +15,7 @@ const MESSAGES: Record<string, string> = {
 
 const GENERIC = "Something went wrong. Please try again.";
 
-/**
- * Better Auth's error format is not ours, so the UI maps its codes to copy in one place.
- * Unknown codes get a generic message; a raw code or server message is never shown.
- */
+/** Maps Better Auth codes to copy. Unknown codes get a generic message; raw codes are never shown. */
 export function authErrorMessage(
   error: { code?: string; status?: number } | null | undefined
 ): string {

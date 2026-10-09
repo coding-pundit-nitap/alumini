@@ -1,6 +1,3 @@
-/**
- * Public API of the donations module. The Prisma store lives in `./server.ts`.
- */
 export {
   createChangeCampaignStatus,
   createCreateCampaign,

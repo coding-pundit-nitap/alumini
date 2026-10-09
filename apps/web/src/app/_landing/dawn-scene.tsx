@@ -24,7 +24,6 @@ const RIDGES = [
   },
 ];
 
-// Deterministic star field, top of the sky only.
 const STARS = Array.from({ length: 28 }, (_, i) => ({
   left: `${(i * 37.3) % 100}%`,
   top: `${(i * 23.7) % 55}%`,

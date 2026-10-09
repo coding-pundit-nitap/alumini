@@ -4,9 +4,8 @@ import Markdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
 /**
- * Renders Post.content / Comment.body (raw Markdown source) through an explicit allow-list: bold,
- * italic, links, lists only. No images, headings or raw HTML — this is the ONLY place these strings are
- * ever rendered, so there is no server-side sanitization step; the allow-list here is the whole defense.
+ * The only place post and comment Markdown is rendered, so this allow-list (bold, italic, links,
+ * lists) is the whole defense. No images, headings or raw HTML.
  */
 const schema = {
   ...defaultSchema,

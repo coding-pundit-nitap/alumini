@@ -21,7 +21,6 @@ import {
   createPrismaJobStore,
 } from "@/modules/jobs/server";
 
-/** Wires the jobs module to PostgreSQL and the shared Redis rate limiter. */
 const queries = createPrismaJobQueries(prisma);
 const store = createPrismaJobStore({
   runner: transactionRunner,

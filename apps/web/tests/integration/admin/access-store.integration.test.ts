@@ -178,13 +178,8 @@ describe("PrismaAccessStore", () => {
         await tx.deleteUserRole(target, "SUPER_ADMIN");
       });
 
-    // Deterministic instead of racing both transactions freely: T1 (s1) is forced to acquire
-    // lockSuperAdmins' FOR UPDATE first and then pause on a gate. Only once T1 has signalled that
-    // it holds the lock do we start T2 (s2); T2's own lockSuperAdmins() call then has to block in
-    // Postgres behind T1's lock. We give that blocked query a moment to actually reach Postgres
-    // before releasing T1, so T1 provably finishes (and commits its delete) before T2's lock can be
-    // granted. Without the FOR UPDATE lock, T2 would read the stale active=[s1,s2] immediately,
-    // both transactions would delete their own role unopposed, and both would fulfill.
+    // T1 takes the super-admin lock and waits on a gate; T2 then blocks behind it. Releasing T1 proves the
+    // lock serializes them. Without it, both would delete their own role.
     let releaseT1: () => void;
     const t1Gate = new Promise<void>((resolve) => {
       releaseT1 = resolve;

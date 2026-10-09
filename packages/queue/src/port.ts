@@ -2,10 +2,7 @@ import type { JobDefinition } from "@nitap/jobs";
 
 /** What the relay and the worker need from a queue. BullMQ is one adapter; nothing outside `packages/queue` imports it. */
 export interface QueuePort {
-  /**
-   * Adds a job. `jobId` makes it idempotent: adding the same id twice keeps one job. Rejects if the
-   * queue cannot be reached quickly (the relay treats that as "leave the row unpublished").
-   */
+  /** Idempotent on `jobId`. Rejects quickly if the queue is unreachable. */
   add(
     job: JobDefinition,
     payload: unknown,

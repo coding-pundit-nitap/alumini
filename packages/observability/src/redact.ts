@@ -1,7 +1,4 @@
-/**
- * Central redaction for logs and the error tracker's `beforeSend`.
- * Enforced here, not by convention: anything under a secret-bearing key is masked at any depth.
- */
+/** Anything under a secret-bearing key is masked at any depth. */
 export const REDACTED = "[REDACTED]";
 
 const MAX_DEPTH = 8;

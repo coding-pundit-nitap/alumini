@@ -28,7 +28,7 @@ export const grantAuditMetadata = (g: GrantRow) => ({
   expiresAt: g.expiresAt?.toISOString() ?? null,
 });
 
-/** RBAC permission.granted; E2 and chapter/expiry rules. */
+/** Applies E2 and the chapter and expiry rules. */
 export function createGrantPermission(deps: GrantDeps) {
   return async function grantPermission(args: {
     actor: Actor | null;

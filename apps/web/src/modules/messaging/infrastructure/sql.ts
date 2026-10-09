@@ -4,10 +4,7 @@ import { Prisma } from "@nitap/database";
 export const col = (name: string) => Prisma.raw(name);
 export const uuid = (value: string) => Prisma.sql`${value}::uuid`;
 
-/**
- * "A BLOCKED connection row exists between these two members." The connection table stores the pair in
- * canonical order, hence LEAST/GREATEST. A member is never paired with themselves (CHECK a_id < b_id).
- */
+/** Pairs are stored in canonical order, hence LEAST/GREATEST. */
 export const blockedBetween = (a: Prisma.Sql, b: Prisma.Sql) =>
   Prisma.sql`EXISTS (SELECT 1 FROM "connection" bc WHERE bc."state" = 'BLOCKED' AND bc."user_a_id" = LEAST(${a}, ${b}) AND bc."user_b_id" = GREATEST(${a}, ${b}))`;
 

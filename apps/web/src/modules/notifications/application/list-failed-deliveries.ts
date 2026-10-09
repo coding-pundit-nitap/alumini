@@ -21,10 +21,7 @@ const clip = (row: EmailDeliveryRow): EmailDeliveryRow => ({
     row.lastError === null ? null : row.lastError.slice(0, LAST_ERROR_MAX),
 });
 
-/**
- * FAILED email deliveries (replayable, keyset-paged) and PENDING ones idle for over an hour
- * (read-only: the replay contract covers FAILED only). Concealed from non-holders.
- */
+/** FAILED deliveries (replayable) and PENDING ones idle for over an hour (read-only). */
 export function createListFailedDeliveries(deps: {
   store: Pick<NotificationStore, "listEmailDeliveries">;
   authorize: Authorize;

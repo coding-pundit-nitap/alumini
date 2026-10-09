@@ -31,11 +31,7 @@ type ButtonState =
   | { mode: "none" }
   | { mode: "register" | "cancel"; disabledReason: string | null };
 
-/**
- * Derives the button's mode and any disabled reason from `EventDetail`, mirroring the precedence of
- * `classifyRegistrationRefusal`/`decideCancelRegistration` (domain/event.ts). Display only: the server
- * remains authoritative and returns the real error on a race.
- */
+/** Mirrors the server's refusal precedence for display only. */
 function deriveState(event: EventDetail, now: Date): ButtonState {
   if (event.viewer.registrationState === "REGISTERED") {
     if (event.status === "CANCELLED") {

@@ -9,7 +9,7 @@ const fromBase64Url = (value: string) => {
   return atob(padded + "=".repeat((4 - (padded.length % 4)) % 4));
 };
 
-/** Opaque keyset cursor over (created_at DESC, id DESC), listOwn's order. Not signed. Mirrors posts' feed cursor. */
+/** Opaque keyset cursor over (created_at DESC, id DESC). Not signed. */
 export function encodeAchievementCursor(cursor: AchievementCursor): string {
   return toBase64Url(
     JSON.stringify({ t: cursor.createdAt.toISOString(), i: cursor.id })

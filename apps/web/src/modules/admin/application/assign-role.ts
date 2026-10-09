@@ -38,7 +38,6 @@ export function checkRole(
   if (reason) throw escalationError(reason);
 }
 
-/** RBAC role.assigned.1, via authorize + checkRole + guardTarget. */
 export function createAssignRole(deps: RoleDeps) {
   return async function assignRole(args: {
     actor: Actor | null;

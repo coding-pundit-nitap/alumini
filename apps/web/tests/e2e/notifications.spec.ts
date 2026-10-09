@@ -61,7 +61,6 @@ test("a connection acceptance shows up in the bell without a reload, and in /not
     asha.getByRole("button", { name: "Notifications" })
   ).toBeVisible();
 
-  // Ravi accepts from his own session.
   await ravi.goto("/connections?tab=incoming");
   await ravi.getByRole("button", { name: "Accept" }).click();
   await expect(ravi.getByText("No requests waiting for you.")).toBeVisible();
@@ -76,7 +75,6 @@ test("a connection acceptance shows up in the bell without a reload, and in /not
   await asha.getByRole("button", { name: "Notifications" }).click();
   await expect(asha.getByText("Connection accepted")).toBeVisible();
 
-  // And it's listed on the full inbox page too.
   await asha.goto("/notifications");
   await expect(asha.getByText("Connection accepted")).toBeVisible();
 });
@@ -89,13 +87,11 @@ test("disabling email preference for a category results in in-app-only delivery"
   await setLevel(ravi, "Verified members");
   const raviPath = await profilePath(ravi);
 
-  // Asha turns connection emails off before anything happens.
   await asha.goto("/settings/notifications");
   const connectionToggle = asha.getByRole("switch", { name: "Connections" });
   await connectionToggle.click();
   await expect(connectionToggle).not.toBeChecked();
 
-  // Only the account-confirmation email has gone to her inbox so far.
   const baseline = await countEmails(ashaEmail);
   expect(baseline).toBe(1);
 
@@ -116,10 +112,8 @@ test("disabling email preference for a category results in in-app-only delivery"
     });
   }).toPass({ timeout: 20_000 });
 
-  // ...but no email. The in-app row only proves deliver() got past its first step, so wait for the
-  // worker's job for this event to COMPLETE (its email decision has run), then check what it decided:
-  // deliver() records a PENDING EMAIL delivery row before it ever enqueues mail, so none means none
-  // was queued. A standalone script for the same reason as seed-past-event.ts.
+  // The in-app row alone doesn't prove the email decision ran, so wait for the job to complete and
+  // check for an EMAIL delivery row (written before any email is queued).
   const { emailDeliveries } = JSON.parse(
     execFileSync(
       "node",

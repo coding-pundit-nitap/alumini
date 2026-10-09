@@ -1,4 +1,3 @@
-// apps/web/src/modules/messaging/application/list-conversations.ts
 import { PERMISSIONS } from "@nitap/database/permissions";
 
 import type { Actor } from "@/modules/auth";

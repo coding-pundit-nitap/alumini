@@ -15,9 +15,8 @@ export const ROLE_NAMES = [
 export type RoleName = (typeof ROLE_NAMES)[number];
 
 /**
- * Roles reachable through self-service onboarding: an institutional email or, later, an
- * approved verification request (2D). The institutional-email policy may name only these, so an admin
- * role can never be configured through an email domain.
+ * Roles reachable through self-service onboarding. The email policy may only name these, so an admin
+ * role can never come from an email domain.
  */
 export const ONBOARDING_ROLE_NAMES = [
   "STUDENT",
@@ -26,11 +25,7 @@ export const ONBOARDING_ROLE_NAMES = [
   "STAFF",
 ] as const satisfies readonly RoleName[];
 
-/**
- * The role an approved alumni verification request grants. Named here, not in
- * apps/web/src, because application code names permissions, never roles: the web
- * composition root imports this constant and injects it into the use case.
- */
+/** Defined here because application code names permissions, never roles. */
 export const VERIFIED_ALUMNI_ROLE = "ALUMNI" as const satisfies RoleName;
 
 /** The role guarded against removal (the last active Super Admin can't be removed); injected into admin use cases. */

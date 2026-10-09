@@ -7,19 +7,14 @@ import { parseArgs } from "node:util";
 import pg from "pg";
 
 /**
- * Fails when a new migration blocks writes to a populated table for longer than --max-hold-ms (
- *). The release applies migrations while the previous release still serves, so a lock that
- * blocks writes is user-visible downtime; on an empty CI database every migration looks instant.
- *
- * New migrations are those added since the merge base with --base. The database is built at that merge base
- * by its own code (a git worktree running its perf seed, so the seed matches the schema), then this tree's
- * `prisma migrate deploy` applies the new ones while a second connection samples pg_locks every 20 ms. A lock
- * counts when it is ShareLock or stronger (blocks INSERT/UPDATE/DELETE) on a table that existed before.
+ * Fails when a new migration blocks writes to a populated table for longer than --max-hold-ms.
+ * Builds the database at the merge base with --base, seeds it, then applies the new migrations while
+ * sampling pg_locks every 20 ms.
  *
  *   node packages/scripts/check-migration-locks.ts [--base origin/main] [--users 10000] [--max-hold-ms 1000]
  *                                                  [--summary f] [--keep]
  *
- * DATABASE_URL names the server; the check creates and drops `alumini_locks_perf` on it, so it must be local.
+ * Creates and drops `alumini_locks_perf` on DATABASE_URL's server, so it must be local.
  */
 const root = path.resolve(import.meta.dirname, "../..");
 const worktree = path.join(root, ".migration-locks");

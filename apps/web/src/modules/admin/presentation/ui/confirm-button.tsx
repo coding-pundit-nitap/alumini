@@ -23,8 +23,8 @@ export type AccessAction = (
 ) => Promise<ActionResult<unknown>>;
 
 /**
- * A trigger button that opens a confirmation, posts `fields` (undefined ones are left out) to a Server
- * Action, and refreshes the page on success. The actor is never a field: the server takes the session's.
+ * Confirms, posts `fields` to a Server Action and refreshes on success. The server takes the actor
+ * from the session.
  */
 export function ConfirmButton(props: {
   label: string;

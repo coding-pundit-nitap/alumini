@@ -3,10 +3,7 @@ import type { ReactNode } from "react";
 import type { OwnVerification } from "../../application/get-own-verification";
 import { AuthCard } from "./auth-card";
 
-/**
- * Which panel of /onboarding applies. Pure presentation of an OwnVerification: the
- * form arrives as a slot so this stays testable. It promises no turnaround.
- */
+/** The form arrives as a slot so this stays testable. */
 export function OnboardingPanel({
   own,
   form,

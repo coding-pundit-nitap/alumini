@@ -25,10 +25,8 @@ const toMessage = (row: {
 }): MessageRow => ({ ...row, seq: row.seq.toString() });
 
 /**
- * The messaging tables inside one transaction. Every write that touches a conversation's counters first
- * takes `lockConversation` (FOR UPDATE), so sends, adds and read-marks on one conversation are serialised:
- * `seq` is then commit-ordered within it, and counters cannot be lost. The outbox event is written on the
- * same client, so it commits or rolls back with the message.
+ * Writes that touch a conversation's counters lock it first, so `seq` is commit-ordered and counters
+ * are never lost. Outbox events share the transaction.
  */
 export function createPrismaMessagingStore(deps: {
   runner: Pick<TransactionRunner, "run">;

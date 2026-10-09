@@ -11,7 +11,7 @@ import type { Authorize } from "./authz";
 import type { JobObserver, JobStore } from "./job-store";
 import { parse } from "./validation-parse";
 
-/** `job.create`: 10 requests an hour per member, same shape as mentorship.create. */
+/** `job.create`: 10 requests an hour per member. */
 export const JOB_CREATE_RATE = { max: 10, window: 60 * 60 } as const;
 
 export type RateLimiter = {
@@ -21,10 +21,7 @@ export type RateLimiter = {
   ): Promise<{ allowed: boolean; retryAfter: number | null }>;
 };
 
-/**
- * Create and submit are one action: the outcome depends only on whether the actor
- * also holds `job.approve`. The row and its outbox event commit together.
- */
+/** Creating also submits; the outcome depends on whether the actor holds `job.approve`. */
 export function createCreateJob(deps: {
   store: JobStore;
   authorize: Authorize;

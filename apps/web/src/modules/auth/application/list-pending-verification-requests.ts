@@ -14,10 +14,7 @@ export type PendingPage = {
   nextCursor: string | null;
 };
 
-/**
- * The review queue: pending requests, oldest first, keyset-paged. A caller without `alumni.verify`
- * gets 404, not 403, so the queue's existence is not revealed (`concealed`).
- */
+/** Pending requests, oldest first. 404 without `alumni.verify`, so the queue isn't revealed. */
 export function createListPendingVerificationRequests(deps: {
   store: VerificationStore;
   authorize: Authorization["authorize"];

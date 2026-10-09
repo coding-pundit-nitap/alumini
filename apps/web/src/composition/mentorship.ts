@@ -18,7 +18,6 @@ import {
   type MentorshipObserver,
 } from "@/modules/mentorship";
 
-/** Wires the mentorship module to PostgreSQL and the shared Redis rate limiter. */
 const queries = createPrismaMentorQueries(prisma);
 const profileStore = createPrismaMentorProfileStore(prisma);
 

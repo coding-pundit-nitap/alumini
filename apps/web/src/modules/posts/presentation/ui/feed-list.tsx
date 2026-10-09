@@ -106,9 +106,7 @@ export function FeedList({
     staleTime: Infinity,
   });
 
-  // The server hands fresh page-1 props on every `refresh()`; key the cache on them
-  // rather than local state, so a new post from the composer flows straight into
-  // the infinite-query cache page 1 replaces.
+  // The server sends fresh page-1 props on every `refresh()`; sync them into the query cache.
   useEffect(() => {
     queryClient.setQueryData(queryKey, (data: typeof query.data) =>
       data

@@ -16,11 +16,8 @@ import {
 } from "@/lib/errors";
 
 /**
- * Runs a Server Action's work inside the request context and turns any failure into an ActionResult,
- * logged once at the boundary at the level of its class, like `routeHandler`.
- * The message is the catalogue's safe one; an unexpected error is always the generic message.
- *
- * Never call `redirect()` or `notFound()` inside `work`: they work by throwing and would be caught here.
+ * Runs a Server Action and turns any failure into an ActionResult, logged once.
+ * Never call `redirect()` or `notFound()` inside `work`: they throw and would be caught here.
  */
 export async function runAction<T>(
   work: () => Promise<T>

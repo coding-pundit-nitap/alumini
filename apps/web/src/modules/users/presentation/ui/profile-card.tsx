@@ -76,12 +76,7 @@ function Cover() {
   );
 }
 
-/**
- * The member-facing profile. Renders exactly the keys the visibility rule left in the view; a missing key
- * renders nothing, and an empty (but visible) list renders nothing either — there is nothing to show. Item
- * ids are never present on a `ProfileView` (they are stripped in `projectProfile`), so a viewer never sees
- * one. `actions` sits beside the avatar: Connect/Message for someone else, Edit profile for yourself.
- */
+/** Renders only the keys visibility left in the view. */
 export function ProfileCard({
   view,
   actions,

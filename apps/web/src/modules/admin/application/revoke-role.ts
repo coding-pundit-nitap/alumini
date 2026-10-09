@@ -6,7 +6,7 @@ import type { Actor } from "@/modules/auth";
 import { guardTarget } from "./access-guards";
 import { checkRole, type RoleDeps } from "./assign-role";
 
-/** RBAC role.revoked; last Super Admin under the role-row lock. */
+/** Refuses to remove the last super admin, checked under the role-row lock. */
 export function createRevokeRole(deps: RoleDeps) {
   return async function revokeRole(args: {
     actor: Actor | null;

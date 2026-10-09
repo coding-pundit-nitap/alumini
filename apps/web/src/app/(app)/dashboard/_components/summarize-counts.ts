@@ -9,11 +9,7 @@ export type CountResults = {
   unreadNotifications: Loaded<number>;
 };
 
-/**
- * A real failure in one count must not silently read as "zero" — it's excluded from its tile
- * and `failed` tells the caller to render an inline error. A missing/denied count (`absent`) is a
- * legitimate zero, not a failure.
- */
+/** A failed count is reported through `failed` instead of reading as zero; an absent one is zero. */
 export function summarizeCounts(results: CountResults): {
   counts: AttentionCounts;
   failed: boolean;

@@ -1,4 +1,3 @@
-// apps/web/src/modules/messaging/infrastructure/prisma-messaging-queries.ts
 import { Prisma, type PrismaClient } from "@nitap/database";
 
 import type {
@@ -31,10 +30,7 @@ const hiddenFrom = (viewer: string) => Prisma.sql`(NOT c.is_group AND EXISTS (
     AND EXISTS (SELECT 1 FROM "connection" bc WHERE bc.state = 'BLOCKED' AND bc.blocked_by_id = o.user_id
       AND bc.user_a_id = LEAST(o.user_id, ${uuid(viewer)}) AND bc.user_b_id = GREATEST(o.user_id, ${uuid(viewer)}))))`;
 
-/**
- * Every conversation read carries the newest message the viewer may see, under the same block filter
- * `listMessages` applies, so a preview never shows what the thread would hide.
- */
+/** Previews use the same block filter as `listMessages`, so they never show what the thread hides. */
 const select = (
   viewer: string
 ) => Prisma.sql`SELECT c.id, c.is_group AS "isGroup", c.title,

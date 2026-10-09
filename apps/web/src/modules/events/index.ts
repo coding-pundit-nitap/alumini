@@ -1,4 +1,3 @@
-/** Public API of the events module. Other code imports from here, never from the module's internals. */
 export { createCreateEvent, CREATE_RATE } from "./application/create-event";
 export { createGetEvent } from "./application/get-event";
 export { createListEvents } from "./application/list-events";

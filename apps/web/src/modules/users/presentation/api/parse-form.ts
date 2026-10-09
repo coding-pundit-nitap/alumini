@@ -3,10 +3,7 @@ import type { z } from "zod";
 import { ValidationError } from "@/lib/errors";
 import { pickFields } from "@/lib/form-data";
 
-/**
- * Reads ONLY the named fields of a Server Action's form and validates them against a strict schema. A
- * forged id, `userId`, or any field React adds to every form, never reaches a use case.
- */
+/** Reads only the named fields and validates them strictly, so forged fields never reach a use case. */
 export function parseForm<S extends z.ZodType>(
   schema: S,
   fields: readonly string[],

@@ -49,10 +49,8 @@ function relevanceScore(query: DirectoryQuery): Prisma.Sql {
 }
 
 /**
- * Stage A of the directory query straight against PostgreSQL, so there is no index to lag or
- * rebuild. Visibility is applied here, in the WHERE clause and per section — a hidden section can neither
- * be shown nor be used to match, or a search on "Acme" would reveal a hidden employer. This file is the
- * only place that reads profile tables for the directory.
+ * Queries PostgreSQL directly. Visibility applies per section in the WHERE clause, so a hidden section
+ * can neither be shown nor matched.
  */
 export function createPostgresSearch(prisma: PrismaClient): SearchPort {
   return {
@@ -71,9 +69,8 @@ export function createPostgresSearch(prisma: PrismaClient): SearchPort {
 
       if (query.q) {
         const pattern = like(query.q);
-        // A UNION of single-index lookups, not an OR over correlated EXISTS: the planner can then use each
-        // trigram index instead of scanning every profile. The experience and skill branches are gated by
-        // the experience section's visibility, so a hidden employer or skill cannot match.
+        // A UNION of single-index lookups instead of an OR over EXISTS, so each trigram index is used. Hidden
+        // experience sections cannot match.
         where.push(Prisma.sql`p.user_id IN (
           SELECT user_id FROM profile WHERE full_name ILIKE ${pattern}
           UNION SELECT user_id FROM profile WHERE full_name %> ${query.q}

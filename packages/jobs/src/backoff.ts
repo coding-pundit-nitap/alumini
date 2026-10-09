@@ -1,10 +1,6 @@
 import type { RetryPolicy } from "./define-job.ts";
 
-/**
- * Delay before the next attempt, after `attemptsMade` attempts have failed (1-based): exponential from
- * `baseDelayMs`, capped at `maxDelayMs`, with ±`jitter` so a burst of failures does not retry in lockstep.
- * `random` is injectable for tests.
- */
+/** Exponential from `baseDelayMs`, capped at `maxDelayMs`, with jitter so failures don't retry in lockstep. */
 export function computeBackoffMs(
   policy: RetryPolicy,
   attemptsMade: number,

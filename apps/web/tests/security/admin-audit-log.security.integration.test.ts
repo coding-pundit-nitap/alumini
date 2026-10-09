@@ -1,5 +1,4 @@
 // Route-level, real PostgreSQL, real authorize; only the session (getActor) is doubled.
-// Same construction as tests/security/notifications.security.integration.test.ts.
 import {
   afterAll,
   beforeAll,

@@ -11,10 +11,6 @@ import {
   provisionMember,
 } from "./composition";
 
-/**
- * The application's Better Auth instance: the factory called with the real dependencies. Authentication
- * only; authorization is our own model.
- */
 export const auth = createAuth({
   prisma,
   baseURL: env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL,

@@ -19,9 +19,9 @@ const FORBIDDEN_FOLDERS = new Set([
   "controllers",
 ]);
 
-// Reviewed exceptions. Add here only with a reason:
-//  - modules/*/application/services: the one sanctioned use, when two use cases share orchestration
-//  - components/common: the app shell (header, footer) named
+// Reviewed exceptions:
+//  - modules/*/application/services: shared orchestration between use cases
+//  - components/common: the app shell
 const ALLOWED_FOLDERS = [
   /^modules\/[^/]+\/application\/services$/,
   /^components\/common$/,
@@ -105,11 +105,7 @@ export function checkStructure(srcRoot: string): string[] {
   return violations;
 }
 
-/**
- * Handlers, pages and use cases declare permissions, never role names. A role name inside a
- * quoted string in application source is a role check in disguise. Test files are ignored; the seed
- * and the RBAC tests legitimately name roles and live outside `src/`.
- */
+/** Code declares permissions, never role names. Test files are ignored. */
 export function checkNoRoleNames(
   srcRoot: string,
   roleNames: readonly string[]
@@ -134,12 +130,8 @@ const QUEUE_IMPORT =
 const QUEUE_ADMIN_COMPOSITION = "composition/notifications.ts";
 
 /**
- * The web app only produces outbox events; the queue, the relay and every provider live in the worker.
- * Test files are ignored. The cache Redis client (`ioredis`) is unrelated and allowed.
- *
- * This is a hand-written substitute for the dependency-cruiser rule of the same name below: with the
- * workspace on TypeScript 7, dependency-cruiser@18.3.1 (which requires TypeScript <7) parses 0 files
- * and enforces nothing. This checker is the one that actually runs.
+ * Web only produces outbox events; the queue and providers live in the worker. Hand-written because
+ * dependency-cruiser does not support TypeScript 7.
  */
 export function checkNoQueueImports(srcRoot: string): string[] {
   const violations: string[] = [];
@@ -159,11 +151,7 @@ export function checkNoQueueImports(srcRoot: string): string[] {
 
 const WORKER_IMPORT = /from\s+["'](?:\.\.\/)+(?:apps\/)?worker\//;
 
-/**
- * The web app must not depend on the worker either: they share packages, not code. Test
- * files are ignored. A hand-written substitute for dependency-cruiser's
- * `web-and-worker-never-import-each-other` rule, currently inert (see checkNoQueueImports above).
- */
+/** Web and worker share packages, not code. */
 export function checkNoWorkerImports(srcRoot: string): string[] {
   const violations: string[] = [];
   for (const file of walk(srcRoot).files) {
@@ -181,11 +169,7 @@ export function checkNoWorkerImports(srcRoot: string): string[] {
 const UNBOUNDED_BODY_READ =
   /\b(?:request|req)\.(json|text|arrayBuffer|formData|blob)\(\)/;
 
-/**
- * Route Handlers read bodies only through `readJson` / `readBodyText` (app/api/v1/_lib/request.ts), which
- * check the media type and cap the size. A direct `request.json()` buffers whatever the
- * client sends. Test files are ignored.
- */
+/** Bodies must be read through `readJson` / `readBodyText`, which check type and size. */
 export function checkBoundedBodyReads(srcRoot: string): string[] {
   const violations: string[] = [];
   for (const file of walk(path.join(srcRoot, "app")).files) {
@@ -202,10 +186,8 @@ export function checkBoundedBodyReads(srcRoot: string): string[] {
 }
 
 /**
- * A form handled by a client `onSubmit` must say `method="post"`:
- * submitted before hydration — a slow network, Enter pressed early — a form with no method is a GET, and the
- * password, roll number or message ends up in the URL, browser history, access logs and Referer.
- * Forms with `action={serverAction}` are POSTed by React even before hydration and are not checked.
+ * Client `onSubmit` forms need `method="post"`: submitted before hydration, a GET would put passwords
+ * in the URL. Forms with a Server Action `action` are exempt.
  */
 export function checkClientFormsPost(srcRoot: string): string[] {
   const violations: string[] = [];

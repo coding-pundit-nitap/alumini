@@ -3,10 +3,7 @@ import type { JobProcessor } from "@nitap/queue";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * Read notifications older than the retention period go, in bounded batches until a short one.
- * The period is read at the start of every run, so an admin's change applies from the next run.
- */
+/** The period is read each run, so an admin's change applies from the next one. */
 export function createNotificationRetentionSweepProcessor(deps: {
   sweep: (before: Date, limit: number) => Promise<number>;
   retentionDays?: () => Promise<number>;

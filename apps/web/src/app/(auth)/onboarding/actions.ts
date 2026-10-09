@@ -10,11 +10,6 @@ import {
   submitVerificationRequest,
 } from "@/modules/auth";
 
-/**
- * Submits alumni verification evidence. A Server Action is a public POST endpoint, so it
- * takes the caller from the session, reads only the named fields (parseEvidenceForm), and lets the use
- * case authorize.
- */
 export async function submitVerificationAction(
   formData: FormData
 ): Promise<ActionResult<{ requestId: string }>> {

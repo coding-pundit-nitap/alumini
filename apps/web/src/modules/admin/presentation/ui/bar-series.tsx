@@ -7,10 +7,7 @@ const weekLabel = (week: string) =>
     timeZone: "UTC",
   });
 
-/**
- * Weekly volume as CSS columns. The total is printed, each column carries its
- * value in a tooltip, and a screen-reader table holds every point, so nothing depends on colour or shape.
- */
+/** The total, a tooltip per column and a screen-reader table, so nothing depends on colour alone. */
 export function BarSeries({
   label,
   points,

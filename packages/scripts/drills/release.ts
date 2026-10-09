@@ -1,24 +1,17 @@
 #!/usr/bin/env node
-// Release drill. Runs the production release
-// tooling (deploy/compose.yml, deploy/deploy.sh) for real, in two throwaway clones of a local git origin, with a
-// local registry standing in for CI's:
+// Release drill. Runs deploy/compose.yml and deploy/deploy.sh in two throwaway clones with a local
+// registry:
 //
 //   staging     deploy.sh pull N, pull N+1                     (digests pinned, smoke tested)
 //   production  promote N, promote N+1, rollback N, promote N+1  (staging's digests only)
 //
-// N+1 carries an expand migration (a nullable column, then a CONCURRENTLY index), so the rollback runs the old
-// release on the new schema, which is the claim that makes rollback safe. The interruption of each
-// production release is measured from outside by polling /health/live, which decides whether blue/green
-// becomes a launch gate (above 30 s). Finally deploy/monitoring.sh starts the monitoring stack against
-// production: every scrape target must be up and the series the alerts need must exist.
+// N+1 carries an expand migration, so the rollback runs the old release on the new schema. Downtime
+// is measured by polling /health/live. Finally checks the monitoring stack against production.
 //
 //   node packages/scripts/drills/release.ts [--skip-build] [--record] [--summary f] [--keep]
 //
-// --skip-build uses existing alumini-{web,worker,migrate,postgres}:drill images (CI builds them with its layer
-// cache). Stand-ins, not under test: the registry; Mailpit for SMTP; a no-op for clamd, which the worker needs
-// only when a scan runs; archiving off, because the restore drill covers backups. --record appends the result to
-// packages/scripts/drills/reports/release-drills.md, --summary <file> to another file (CI's step summary). Exit code 1 if any
-// check fails.
+// --skip-build reuses alumini-{web,worker,migrate,postgres}:drill images. --record appends to
+// packages/scripts/drills/reports/release-drills.md.
 import { execFileSync, spawn } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -425,10 +418,7 @@ function bootstrap(env: Env, sha: string) {
   );
 }
 
-/**
- * deploy/monitoring.sh against the running release. Stand-ins: receiver URLs that go nowhere, the
- * probe aimed at web on the compose network (no TLS here), and a backup textfile like backup.sh writes.
- */
+/** Stand-ins: dead receiver URLs, a plain-HTTP probe and a fake backup textfile. */
 async function monitoringChecks(env: Env) {
   const textfile = path.join(work, "node-exporter");
   mkdirSync(textfile, { recursive: true });

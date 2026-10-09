@@ -1,10 +1,6 @@
 /**
- * Which paths anonymous users may load. Used by proxy.ts, which is optimistic only: it
- * never authorizes, it just saves rendering a gated page for someone with no session cookie.
- * Extend the list in the same change that adds a public page.
- *
- * `/api` is public HERE because handlers answer 401 themselves; redirecting a fetch() to an HTML login
- * page would only confuse API clients. `/health` must stay reachable for probes.
+ * Paths anonymous users may load. proxy.ts only uses this to skip rendering gated pages; it never
+ * authorizes. `/api` handlers answer 401 themselves, and `/health` must stay reachable for probes.
  */
 const PUBLIC_PREFIXES = [
   "/login",
@@ -41,11 +37,7 @@ export function isPublicPath(pathname: string): boolean {
 /** Where a signed-in person goes when `next` is absent or unsafe. */
 const FALLBACK = "/dashboard";
 
-/**
- * Validates a post-login `next` target. Only a same-origin absolute path is kept; anything a browser
- * could read as another origin (`//host`, `/\host`, a scheme, control characters that browsers strip
- * from URLs) becomes `FALLBACK`.
- */
+/** Keeps only same-origin absolute paths; anything a browser could read as another origin becomes `FALLBACK`. */
 export function safeNextPath(candidate: string | null | undefined): string {
   if (!candidate) return FALLBACK;
   if (!candidate.startsWith("/")) return FALLBACK;

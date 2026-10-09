@@ -11,15 +11,9 @@ export type ReplayQueue = {
 type Authorize = (actor: Actor | null, permission: Permission) => Actor;
 
 /**
- * Admin replay: re-queues the failed EMAIL job of one notification (its job id is the notification's dedupe
- * key). Only a FAILED email delivery qualifies, so no other queue's job can be replayed. The worker's email
- * processor rewrites the delivery row itself (SENT or FAILED) when the retried job runs. The audit row is the only
- * write in the database transaction; the BullMQ retry happens first and outside it. If the retry throws there is
- * no audit row (nothing changed that we know of). The result is counts only: job payloads hold personal data.
- *
- * If the audit write fails after the retry succeeded, the job is already re-queued: the failure is reported through
- * `onAuditFailed` (logged at error and sent to the tracker) and the call still succeeds, since a 500
- * would invite a second replay of a job that is already running.
+ * Re-queues the failed email job of one notification; only FAILED deliveries qualify. The retry
+ * happens before the audit write. If the audit then fails, it is reported through `onAuditFailed` and
+ * the call still succeeds, since a 500 would invite a second replay. Returns counts only.
  */
 export function createReplayNotifications(deps: {
   authorize: Authorize;

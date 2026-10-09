@@ -1,10 +1,6 @@
 import type { AccountState } from "../../domain/actor";
 
-/**
- * What a person who cannot use the network yet (or any more) is told.
- * Honest and specific, no promised turnaround, and no reason for a suspension or rejection.
- * `VERIFIED` has no status page.
- */
+/** No promised turnaround, and no reason given for a suspension or rejection. */
 export function accountStatusCopy(
   state: AccountState
 ): { title: string; body: string } | null {

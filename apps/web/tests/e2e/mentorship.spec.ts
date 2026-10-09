@@ -62,7 +62,6 @@ test("J-07 a student asks an alumnus to mentor them; the alumnus accepts, starts
   const token = `sql${Date.now().toString(36)}`;
   const find = `/mentorship?tab=find&topic=${token}`;
 
-  // The alumnus opts in with a single slot.
   await mentor.goto("/mentorship?tab=settings");
   await mentor.getByLabel("Expertise").fill(`Databases ${token}`);
   await mentor.getByLabel("Topics").fill(`${token}, careers`);
@@ -71,7 +70,6 @@ test("J-07 a student asks an alumnus to mentor them; the alumnus accepts, starts
   await mentor.getByRole("button", { name: "Save" }).click();
   await expect(mentor.getByText("Saved.")).toBeVisible();
 
-  // Both students find the mentor (one spot left) and ask.
   const ask = async (page: Page, message: string) => {
     await page.goto(find);
     const card = row(page, `Databases ${token}`);
@@ -89,7 +87,6 @@ test("J-07 a student asks an alumnus to mentor them; the alumnus accepts, starts
   await ask(first, firstMessage);
   await ask(second, secondMessage);
 
-  // The alumnus sees both, accepts one and declines the other with a note.
   await mentor.goto("/mentorship?tab=requests");
   await row(mentor, firstMessage)
     .getByRole("button", { name: "Accept" })
@@ -110,11 +107,9 @@ test("J-07 a student asks an alumnus to mentor them; the alumnus accepts, starts
   await expect(row(second, secondMessage).getByText("Declined")).toBeVisible();
   await expect(second.getByText("Not this term.")).toBeVisible();
 
-  // The only slot is taken: the mentor drops out of discovery.
   await second.goto(find);
   await expect(second.getByText("No mentors match yet.")).toBeVisible();
 
-  // Start, then complete.
   await mentor.goto("/mentorship?tab=mentees");
   await row(mentor, firstMessage)
     .getByRole("button", { name: "Mark as started" })
@@ -128,7 +123,6 @@ test("J-07 a student asks an alumnus to mentor them; the alumnus accepts, starts
   await first.goto("/mentorship?tab=my-requests");
   await expect(row(first, firstMessage).getByText("Completed")).toBeVisible();
 
-  // The slot is free again, so the mentor is listed again.
   await second.goto(find);
   await expect(
     row(second, `Databases ${token}`).getByText("1 spot left")

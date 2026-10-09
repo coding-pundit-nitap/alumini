@@ -8,11 +8,7 @@ export const loadTicks = createTickLoader(prisma);
 
 type Ticked = { tick?: Tick | null };
 
-/**
- * Sets `tick` on the object `targetOf` picks out of each row (keyed by `idOf`), in one query. Rows are the
- * use case's fresh result, so setting the field in place is safe. A tick is decoration: if the lookup
- * fails, people simply show without one.
- */
+/** Adds `tick` to each row in one query. Best effort: on failure, rows show without one. */
 export async function addTicks<T>(
   rows: readonly T[],
   idOf: (row: T) => string,

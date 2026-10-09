@@ -19,11 +19,7 @@ import { createTestDatabase } from "../../support/test-database";
 
 const SECRET = "perf-secret-perf-secret-perf-secret-0000";
 
-/**
- * the performance seed is "verified by an integration test that loads a small variant". The
- * full run is `pnpm perf:seed`; this proves the same generator and writer satisfy every constraint of the
- * current schema, and that the minted cookies are ones Better Auth accepts.
- */
+/** A small run of the perf seed: every row satisfies the schema and the cookies are accepted. */
 describe("performance seed (small variant, real PostgreSQL)", () => {
   let db: TestDatabase;
   let data: PerfData;

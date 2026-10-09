@@ -4,12 +4,8 @@ import { canSeeHealthDetails } from "./access";
 import { createHealthService } from "./health-service";
 
 /**
- * The web process's health service, wired to PostgreSQL and the cache Redis. Clients are imported
- * lazily so the liveness route never loads them and a missing DATABASE_URL cannot fail a build.
- *
- * Kept on `globalThis` (like the metrics registry): Next.js can bundle `instrumentation.ts`
- * and the route handlers into separate module graphs, and the SIGTERM listener registered there must drain
- * the same instance the readiness route and the message streams use.
+ * Clients load lazily so the liveness route never touches them. Kept on `globalThis` because Next.js
+ * can bundle instrumentation and routes separately, and both must share one instance.
  */
 const HEALTH = Symbol.for("nitap.web.health");
 const slot = globalThis as unknown as {

@@ -1,9 +1,8 @@
 import { z } from "zod";
 
 /**
- * The report review/resolution rules, pure. Extends's filing-only shape:
- * `claimReport` is optional UI sugar (not enforced before resolve/dismiss); `report.review` may never act on
- * the actor's own filing or their own content.
+ * Pure rules. Claiming is optional before resolve/dismiss, and a reviewer may never act on their own
+ * report or content.
  */
 export type ReportState = "OPEN" | "UNDER_REVIEW" | "RESOLVED" | "DISMISSED";
 

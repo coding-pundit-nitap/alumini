@@ -1,7 +1,5 @@
-// Mixed load.'s user model: 1 000 concurrent active members, one
-// request each every ~10 s → ~100 requests/s, in the proportions below (page renders and the bell's poll
-// dominate). RATE sets the arrival rate; STRESS=1 keeps raising it until the run is stopped or a budget breaks,
-// to find the breaking point and the first bottleneck.
+// 1,000 active members, one request every ~10 s each (~100 req/s). STRESS=1 keeps raising the rate
+// until a budget breaks.
 import http from "k6/http";
 import type { RefinedResponse, ResponseType } from "k6/http";
 import type { Options } from "k6/options";

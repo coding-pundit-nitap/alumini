@@ -1,22 +1,16 @@
 #!/usr/bin/env node
-// Restore drill. Runs the production stack's database and backup
-// tooling (deploy/compose.yml, deploy/backup.sh) in a throwaway compose project, against a TLS MinIO standing
-// in for the off-host repository, and times two scenarios:
+// Restore drill. Runs the production database and backup tooling against a TLS MinIO:
 //
-//   D  host loss: the Postgres container and its volume are destroyed mid-traffic; restore the latest state,
-//      reconcile migrations, verify integrity, boot the app and sign in. Measures RPO and RTO.
-//   C  point-in-time: rows deleted after a recorded moment come back when restoring to that moment.
+//   D  host loss: destroy Postgres mid-traffic, restore, reconcile migrations, boot and sign in (RPO, RTO).
+//   C  point-in-time: rows deleted after a recorded moment come back.
 //
-//   pnpm --filter @nitap/web build      # the app is booted with `next start` against the restored database
-//   pnpm docker:up                      # the app's Redis (readiness reports it degraded without)
+//   pnpm --filter @nitap/web build
+//   pnpm docker:up
 //   node packages/scripts/drills/restore.ts [--users 10000] [--soak 420] [--record] [--summary f] [--keep]
 //
-// The database is migrated to one release behind before the backup, so the restore must apply the newest
-// migration ("migrations reconcile"). --users sizes an alumini_perf database in the same cluster (perf seed)
-// so timings reflect real volume; --soak is how long the heartbeat writes before the host is lost (longer than
-// archive_timeout, 300 s, so the measured RPO is the archive interval, not the drill's luck). --record appends
-// the results to packages/scripts/drills/reports/restore-tests.md, --summary <file> to another file (CI's step summary). Exit
-// code 1 if any check fails.
+// The backup is taken one release behind, so the restore must apply the newest migration. --soak
+// should exceed archive_timeout (300 s). --record appends to
+// packages/scripts/drills/reports/restore-tests.md.
 import { execFileSync, spawn } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
 import { randomBytes } from "node:crypto";

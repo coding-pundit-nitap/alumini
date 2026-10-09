@@ -7,10 +7,7 @@ type Storage = {
   ): Promise<{ allowed: boolean; retryAfter: number | null }>;
 };
 
-/**
- * The same atomic Redis limiter Better Auth uses (with its stricter per-instance fallback while Redis is
- * unreachable), under its own key namespace so verification limits never collide with sign-in limits.
- */
+/** Its own key namespace, so verification limits never collide with sign-in limits. */
 export function createRedisRateLimiter(storage: Storage): RateLimiter {
   return {
     async consume(key, rule) {

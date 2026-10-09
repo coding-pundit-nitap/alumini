@@ -10,7 +10,7 @@ const dateFormat = new Intl.DateTimeFormat("en-IN", {
   timeZone: "Asia/Kolkata",
 });
 
-/** 12G: one row category, with its sign-off state and whether a sweep enforces it. */
+/** One row per category, with its sign-off state and whether a sweep enforces it. */
 export function RetentionTable(props: {
   settings: readonly RetentionSettingView[];
   action: AccessAction;

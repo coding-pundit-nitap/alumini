@@ -17,7 +17,7 @@ export const REPORT_FILTER_LABELS: Record<string, string> = {
 const SELECT_CLASS =
   "border-input bg-background h-9 rounded-full border px-3 text-sm";
 
-/** A plain GET form: works without JavaScript and produces a shareable URL (mirrors admin/users-filters.tsx). */
+/** A plain GET form: works without JavaScript and gives a shareable URL. */
 export function ReportFilters({ values }: { values: Record<string, string> }) {
   return (
     <form method="get" className="flex flex-wrap items-end gap-3">

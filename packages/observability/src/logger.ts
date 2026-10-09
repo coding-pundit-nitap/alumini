@@ -2,9 +2,8 @@ import { redact } from "./redact.ts";
 import { getRequestContext } from "./request-context.ts";
 
 /**
- * Structured JSON logger. One object per line to stdout/stderr; the runtime ships it.
- * Fixed fields: timestamp, level, service, env, version, request_id, user_id, event, error, metadata.
- * `event` is `domain.subject.outcome` (`auth.login.failed`). Secrets are masked centrally (redact.ts).
+ * JSON lines to stdout/stderr. `event` is `domain.subject.outcome`, e.g. `auth.login.failed`. Secrets
+ * are masked in redact.ts.
  */
 export type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
 export type LogThreshold = LogLevel | "silent";

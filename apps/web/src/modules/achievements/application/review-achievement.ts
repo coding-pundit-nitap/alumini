@@ -12,11 +12,7 @@ import type { Authorize } from "./authz";
 import type { AchievementsStore } from "./achievements-store";
 import { refuse } from "./refusal";
 
-/**
- * Approve publishes: `tx.publishAsPost` and `tx.patchAchievement` run inside the
- * SAME transaction as the store's `.transaction()` call, so a mid-transaction failure leaves neither the
- * achievement's status changed nor any post created (no orphaned PUBLISHED without a post, and vice versa).
- */
+/** Publishing and the status change share one transaction, so neither happens without the other. */
 export function createReviewAchievement(deps: {
   store: AchievementsStore;
   authorize: Authorize;

@@ -1,8 +1,6 @@
 /**
- * Re-exports the role catalogue behind infrastructure/: pure data, but the
- * package path itself is `@nitap/database/*`, which only infrastructure/ may import directly.
- * Composition roots inject this into use cases;
- * role-matrix.integration.test.ts proves it matches the seeded database.
+ * Only infrastructure/ may import `@nitap/database/*`. role-matrix.integration.test.ts checks this
+ * matches the seeded database.
  */
 export {
   ROLE_NAMES,

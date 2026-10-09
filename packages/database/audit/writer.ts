@@ -22,10 +22,7 @@ export type AuditEntry = {
 export type AuditTransaction = Pick<Prisma.TransactionClient, "auditLog">;
 
 export type AuditWriter = {
-  /**
-   * Writes the entry in the CALLER's transaction: if that transaction rolls back, the audit row never
-   * existed. The table is append-only in the database (trigger), so there is no update or delete here.
-   */
+  /** Writes in the caller's transaction. The table is append-only (trigger). */
   record(tx: AuditTransaction, entry: AuditEntry): Promise<void>;
 };
 

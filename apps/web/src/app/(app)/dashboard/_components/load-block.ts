@@ -8,10 +8,7 @@ import {
 export type Loaded<T> =
   { status: "ok"; value: T } | { status: "absent" } | { status: "error" };
 
-/**
- * One block's failure stays in that block. A denial or a missing record means "this block does not
- * apply to you"; anything else is a real failure, logged and shown as an inline error.
- */
+/** A denial or missing record hides the block; any other error is logged and shown inline. */
 export async function loadBlock<T>(load: () => Promise<T>): Promise<Loaded<T>> {
   try {
     return { status: "ok", value: await load() };

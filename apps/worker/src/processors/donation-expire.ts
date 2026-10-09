@@ -8,10 +8,7 @@ export type PledgeExpiryStoreLike = {
   expireOne(id: string, before: Date, now: Date): Promise<boolean>;
 };
 
-/**
- * Open pledges with no payment reference after `days` become NOT_RECEIVED, in bounded batches
- * until a short one (modeled on `job-expire.ts`). Each flip and its donor notice commit together in the store.
- */
+/** Open pledges with no reference after `days` become NOT_RECEIVED, in bounded batches. */
 export function createDonationExpireProcessor(deps: {
   store: PledgeExpiryStoreLike;
   days?: number;

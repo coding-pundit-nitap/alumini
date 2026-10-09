@@ -7,10 +7,7 @@ import type { ProfileRecord } from "../domain/profile";
 /** A `date` column arrives as a UTC-midnight Date; the domain speaks YYYY-MM-DD. */
 const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
-/**
- * The only file that reads or writes `profile` for this module. It selects institutional data by NAME for
- * display and has no write path for it: those columns change only through the verification workflow.
- */
+/** Institutional data is read for display only; it changes only through verification. */
 export function createPrismaProfileStore(prisma: PrismaClient): ProfileStore {
   return {
     async find(userId) {

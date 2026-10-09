@@ -1,10 +1,6 @@
 /**
- * Public API of the jobs module. Other code imports from here, never from the module's internals.
- *
- * Client-safe only, same rule as `modules/moderation/index.ts`: no export here may reach
- * `@nitap/database`'s generated Prisma client at runtime. `presentation/ui/*` are client components, and
- * Turbopack pulls whatever a barrel's importer reaches through into the client bundle. Server-only exports
- * (the Prisma store/queries creators) live in `./server.ts` instead.
+ * Client-safe exports only. Server-only ones are in `./server.ts`, because anything reachable from
+ * here can end up in the client bundle.
  */
 export { createCreateJob, JOB_CREATE_RATE } from "./application/create-job";
 export { createEditJob } from "./application/edit-job";

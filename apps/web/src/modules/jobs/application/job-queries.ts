@@ -47,7 +47,7 @@ export type JobQueries = {
   }): Promise<ListedJob[]>;
   /** PUBLISHED, deadline >= current_date, exact-match filters, newest first. */
   listPublished(filter: PublishedJobFilter): Promise<PublishedJobCard[]>;
-  /** The raw row, unfiltered by visibility — the use case applies J-8's visibility rule. */
+  /** The raw row, unfiltered; the use case applies visibility. */
   get(id: string): Promise<JobRow | null>;
 };
 

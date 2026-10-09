@@ -19,9 +19,8 @@ import {
 } from "@/modules/events";
 
 /**
- * Creates an event from the `/events/new` form. The form sends wall times plus a zone;
- * they become UTC instants here, and `createEvent` validates the rest. The client navigates to the
- * returned id (no action here redirects: `redirect()` throws, and `runAction` would catch it).
+ * Converts the form's wall times and zone to UTC. Returns the id instead of redirecting, because
+ * `redirect()` throws and `runAction` would catch it.
  */
 export async function createEventAction(
   form: EventFormValues
@@ -72,7 +71,6 @@ export async function createEventAction(
   });
 }
 
-/** Registers the caller for an event from the detail page. */
 export async function registerForEventAction(
   eventId: string
 ): Promise<ActionResult<{ registrationId: string }>> {
@@ -81,7 +79,6 @@ export async function registerForEventAction(
   );
 }
 
-/** Cancels the caller's own registration from the detail page. */
 export async function cancelRegistrationAction(
   eventId: string
 ): Promise<ActionResult<{ registrationId: string }>> {

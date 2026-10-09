@@ -332,11 +332,7 @@ function Row({
   );
 }
 
-/**
- * One list of the caller's own mentorships, with the actions that fit its tab and each row's state.
- * `messageAction` adds Message to accepted and active mentorships — passed in because this module does not
- * depend on messaging.
- */
+/** `messageAction` is passed in because this module does not depend on messaging. */
 export function MentorshipList({
   items,
   tab,

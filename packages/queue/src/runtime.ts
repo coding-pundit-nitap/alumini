@@ -67,10 +67,9 @@ export type ExecuteDeps = {
 };
 
 /**
- * Everything that happens to one job, independent of BullMQ's Worker so it is unit-testable:
- * validate, defer unknown versions, restore the request context, enforce the timeout, and translate
- * errors into BullMQ's retry / fail / delay semantics. Processors must not put personal data in error
- * messages: the message is logged.
+ * Runs one job independently of BullMQ's Worker so it is unit-testable: validates, restores context,
+ * enforces the timeout and maps errors to retry/fail/delay. Error messages are logged, so keep personal
+ * data out of them.
  */
 export async function executeJob(
   deps: ExecuteDeps,
@@ -212,21 +211,14 @@ export type WorkerRuntimeOptions = {
   queueOverrides?: Partial<Record<QueueName, QueueOverride>>;
   /** Default 60 s. */
   unknownVersionDelayMs?: number;
-  /**
-   * How long a job's lock lives without renewal, and how often stalled jobs are looked for. A worker that
-   * dies mid-job stops renewing, so its job returns to the queue within about these two. BullMQ's 30 s
-   * defaults are kept in production; tests shorten them.
-   */
+  /** A dead worker's job returns to the queue within about these two. Tests shorten them. */
   lockDurationMs?: number;
   stalledIntervalMs?: number;
 };
 
 export type WorkerRuntime = {
   start(): Promise<void>;
-  /**
-   * Stops taking jobs, lets in-flight ones finish for up to `timeoutMs` (default 30 s), then forces. With no
-   * job running it forces after a short grace instead, should BullMQ's own close not return.
-   */
+  /** Lets in-flight jobs finish for up to `timeoutMs` (default 30 s), then forces. */
   close(options?: { timeoutMs?: number }): Promise<void>;
   health(): { running: boolean; draining: boolean };
 };
@@ -329,11 +321,8 @@ export function createWorkerRuntime(
 
     async close({ timeoutMs = 30_000 } = {}) {
       draining = true;
-      // BullMQ memoizes close(): once `worker.close()` (non-forced) is in flight, a later
-      // `worker.close(true)` on the SAME worker just returns that same promise and ignores `force`
-      // (confirmed against bullmq 6.3.8's source). So there is no second, "make it forceful now" call;
-      // the only real lever is the shared connection. `allSettled` means we never need to await this
-      // again, so a job that never returns cannot leave an unhandled rejection behind.
+      // BullMQ memoizes close(), so a later close(true) can't force it; closing the shared connection is the
+      // only lever. allSettled avoids an unhandled rejection from a job that never returns.
       const graceful = Promise.allSettled(
         workers.map((worker) => worker.close())
       );

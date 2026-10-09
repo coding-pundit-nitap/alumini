@@ -20,10 +20,8 @@ type Deps = {
 };
 
 /**
- * Handles the nine Community outbox events. post.created and reaction.added deliberately notify no
- * one. achievement.submitted, report.filed, and report.resolved notify moderators/reporters
- * in-app + email. Every notifying processor re-reads current state at delivery time
- * and returns quietly if the row is gone (never throws into an endless retry). Ids only in logs and payloads.
+ * post.created and reaction.added notify no one. Processors re-read state at delivery time and return
+ * quietly if the row is gone.
  */
 export function createPostCreatedProcessor(): JobProcessor<PostCreatedPayload> {
   return async (payload, { logger }) => {
@@ -64,7 +62,6 @@ export function createCommentCreatedProcessor(
     );
     const recipients = new Set([author, ...prior]);
     recipients.delete(payload.authorId);
-    // ponytail: sequential (≤201 recipients); a midway failure or timeout retries safely (deliver dedupes per recipient).
     for (const recipientId of recipients) {
       signal.throwIfAborted();
       if (await deps.blocked(payload.authorId, recipientId)) continue;

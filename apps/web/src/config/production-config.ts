@@ -1,8 +1,4 @@
-/**
- * What a production web instance cannot run without. Checked once at startup
- * (instrumentation.ts), so a release missing its auth secret fails to start instead of starting, reporting
- * healthy and answering every sign-in with a 500. Names the problems, never the values.
- */
+/** Checked at startup so a release missing a required secret fails to start. Names problems, never values. */
 const REQUIRED = [
   "DATABASE_URL",
   "BETTER_AUTH_SECRET",
@@ -41,10 +37,7 @@ export function assertProductionConfig(
   }
 }
 
-/**
- * The startup hook's entry point. Next.js catches an error thrown from `register()` and keeps serving 500s,
- * so a refusal exits the process instead: the container stops and the orchestrator sees a failed release.
- */
+/** Next.js swallows errors thrown from `register()`, so exit instead and let the release fail. */
 export function exitIfMisconfigured(
   source: Record<string, string | undefined> = process.env
 ): void {

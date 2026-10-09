@@ -6,11 +6,7 @@ import type { Viewer } from "../domain/visibility";
 import type { Can } from "./authz";
 import type { ConnectionLookup, Relation } from "./connection-lookup";
 
-/**
- * Resolves what kind of viewer an actor is for one profile (shared by every use case that reads a
- * profile: `getProfileForViewer`, `getProfilePhotoKey`). A connection-lookup failure fails closed — the
- * viewer is a plain member, never a connection — and is reported, never thrown.
- */
+/** A failed connection lookup fails closed: the viewer is treated as a plain member. */
 export function classifyViewer(deps: {
   connections: ConnectionLookup;
   can: Can;

@@ -1,6 +1,5 @@
-// Session security and the Better Auth surface, through
-// Better Auth's real handler on a test database. Every /api/auth endpoint is reachable by any client, so
-// each one that could change identity, sessions or account state is tested here, not assumed.
+// Session security through Better Auth's real handler: every /api/auth endpoint that could change
+// identity, sessions or account state is tested.
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { createOutboxWriter } from "@nitap/database/outbox";

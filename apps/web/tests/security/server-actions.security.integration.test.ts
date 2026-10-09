@@ -1,7 +1,4 @@
-// Every Server Action, signed out. Actions are discovered, not listed: any
-// exported function in a "use server" file under src/app is called with several argument shapes and must
-// never succeed and never write a row. Role-level checks for actions live in the per-feature suites and
-// admin-actions.matrix.test.ts; this proves the floor holds for all of them, including future ones.
+// Every Server Action, signed out, discovered from "use server" files: none may succeed or write a row.
 import fs from "node:fs";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";

@@ -55,10 +55,7 @@ type SubmitAction = (input: {
 type UploadResult =
   { ok: true; uploadId: string } | { ok: false; message: string };
 
-/**
- * Runs one file through the presign → upload → complete → poll flow.
- * Module-level so it carries no component state — the composer only tracks the result by slot key.
- */
+/** Presign, upload, complete, then poll until the scan finishes. */
 async function uploadImage(
   file: File,
   actions: {
@@ -111,11 +108,7 @@ type Slot = {
   message?: string;
 };
 
-/**
- * The compose form: collapsed to a single prompt row until clicked or focused
- * (the shell's Create action jumps focus here), then an autosizing textarea, up to 4 images
- * wired to the upload flow, and an optional https link.
- */
+/** Collapsed until focused; then a textarea, up to 4 images and an optional https link. */
 export function PostComposer({
   onSubmit,
   presignAction,

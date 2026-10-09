@@ -9,10 +9,6 @@ import {
   parseDecisionForm,
 } from "@/modules/auth";
 
-/**
- * A reviewer approves or rejects a verification request. The reviewer is the session's user, never a
- * form field; the use case authorizes, enforces separation of duties and writes everything atomically.
- */
 export async function decideVerificationAction(
   formData: FormData
 ): Promise<ActionResult<{ outcome: "decided" | "already_decided" }>> {

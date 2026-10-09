@@ -3,10 +3,8 @@ import { UnexpectedError } from "@/lib/errors";
 import type { MemberStore } from "./member-store";
 
 /**
- * Makes sure a signed-up user has a profile row. Idempotent, so it can be called from
- * the post-commit sign-up hook, from email verification and from getActor() as a repair. It assigns no
- * role: RBAC denies role-derived permissions to PENDING accounts, and the role arrives with the
- * VERIFIED transition.
+ * Idempotent, so sign-up, email verification and getActor() can all call it. Assigns no role; that
+ * comes with the VERIFIED transition.
  */
 export function createProvisionMember(deps: { store: MemberStore }) {
   return async function provisionMember(

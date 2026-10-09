@@ -6,7 +6,7 @@ import { updateRetentionSetting } from "@/composition/admin";
 import type { ActionResult } from "@/lib/action-result";
 import { getActor } from "@/modules/auth";
 
-/** 12G: the category names the row; only the two editable fields reach the strict schema. */
+/** Only the two editable fields reach the strict schema. */
 export async function updateRetentionAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {

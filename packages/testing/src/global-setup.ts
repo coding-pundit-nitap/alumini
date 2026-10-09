@@ -4,14 +4,8 @@ import path from "node:path";
 import type { TestProject } from "vitest/node";
 
 /**
- * Global setup for the `integration` and `contract` projects.
- *
- * These projects run against a real PostgreSQL and Redis. Fail fast with an
- * actionable message instead of letting every test time out on a refused connection.
- *
- * PostgreSQL: migrates ONE template database (`<db>_template`) here, once, then every test file
- * clones it with `CREATE DATABASE … TEMPLATE` via `test-database.ts`. The
- * template's connection string is published to test files with `provide`/`inject`.
+ * Fails fast if PostgreSQL or Redis is unreachable. Migrates one template database that each test
+ * file clones (see test-database.ts).
  */
 
 // Safety rail: this setup creates and force-drops databases, so it only ever runs
@@ -53,10 +47,7 @@ function toTemplateUrl(
 }
 
 export type TemplateDatabaseOptions = {
-  /**
-   * Names this suite's template database (`<db>_template_<name>`), so suites that turbo runs in parallel
-   * (web, worker) never drop each other's template.
-   */
+  /** Per-suite template name so parallel suites never drop each other's. */
   name: string;
   /** Environment variables the suite cannot run without (fail fast with an actionable message). */
   requiredEnv: readonly string[];
@@ -69,7 +60,7 @@ export async function provideTemplateDatabase(
   const missing = options.requiredEnv.filter((name) => !process.env[name]);
   if (missing.length > 0) {
     throw new Error(
-      `Integration tests need ${missing.join(", ")}. Run \`pnpm docker:up\` and copy .env.example to .env, then load it: set -a; . ./.env; set +a.`
+      `Integration tests need ${missing.join(", ")}. Run \`pnpm docker:up\` and copy .env.example to .env.`
     );
   }
 
@@ -90,8 +81,8 @@ export async function provideTemplateDatabase(
     await admin.end();
   }
 
-  // Apply every migration to the template. Runs from packages/database/ so prisma.config.ts's relative.
-  // Env load and schema path resolve; DATABASE_URL is overridden for this one call.
+  // Runs from packages/database/ so prisma.config.ts's relative paths resolve; DATABASE_URL is
+  // overridden for this call.
   execFileSync(
     "pnpm",
     ["--filter", "@nitap/database", "exec", "prisma", "migrate", "deploy"],
@@ -117,10 +108,7 @@ export async function provideTemplateDatabase(
   };
 }
 
-// Duplicated from test-database.ts (declaration merging, not a conflict): this file also calls
-// `project.provide` on the same key, and a program that only pulls in THIS file (e.g. another
-// package's tsc run over workspace source, importing only "@nitap/testing/global-setup") needs the
-// augmentation here too.
+// Also declared in test-database.ts; repeated here for programs that only import this file.
 declare module "vitest" {
   export interface ProvidedContext {
     templateDatabaseUrl: string;

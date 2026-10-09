@@ -7,10 +7,7 @@ import { CONTEXT_EACH_SIDE } from "../domain/messaging";
 import type { Authorize } from "./authz";
 import type { MessagingStore, ReportedMessageView } from "./messaging-store";
 
-/**
- * `message.read_reported`: the reported message and at most CONTEXT_EACH_SIDE either side,
- * never a cursor. The audit row is written in the read's transaction, on every call: no read without its record.
- */
+/** The reported message plus CONTEXT_EACH_SIDE either side. Every read is audited in the same transaction. */
 export function createReadReportedMessage(deps: {
   store: MessagingStore;
   authorize: Authorize;

@@ -42,10 +42,10 @@ const DOMAIN_COPY: Record<string, { title: string; description: string }> = {
 
 const ROW = "flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5";
 
-/** Email toggle per ENGAGEMENT domain. A domain with no preference row still arrives here as `email: true`
- * (the API defaults a missing row to enabled) — this form just renders whatever it is given. Each
- * switch is named by its row title via `aria-labelledby`: Base UI puts `id` on a hidden input, so the
- * `<Label htmlFor>` alone names nothing on the visible `role="switch"`. */
+/**
+ * Email toggle per ENGAGEMENT domain. Switches are named via `aria-labelledby` because Base UI puts
+ * `id` on a hidden input.
+ */
 export function PreferencesForm({
   preferences,
   onChange,
@@ -53,9 +53,7 @@ export function PreferencesForm({
 }: {
   preferences: PreferenceRow[];
   onChange: (domain: string, enabled: boolean) => void;
-  /** Domains with a PATCH in flight: their switch is disabled so a second toggle can't race the first
-   * (finding: a same-domain double-toggle before the first PATCH resolves could revert to the first
-   * call's optimistic value instead of the true server state). */
+  /** Disabled while a PATCH is in flight so a second toggle can't race the first. */
   pendingDomains?: ReadonlySet<string>;
 }) {
   return (

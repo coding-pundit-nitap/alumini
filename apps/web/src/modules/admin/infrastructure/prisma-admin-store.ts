@@ -9,10 +9,7 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 // literal search term must be backslash-escaped first (Postgres' default LIKE escape character).
 const escapeLike = (text: string) => text.replace(/[\\%_]/g, "\\$&");
 
-/**
- * Cross-module, read-only SQL. Every queue count is on an indexed status column; the audit
- * keyset uses (created_at DESC, id DESC) and lands on ix_audit_actor / ix_audit_action / ix_audit_target.
- */
+/** Read-only cross-module queries, all on indexed columns. */
 export function createPrismaAdminStore(db: PrismaClient): AdminStore {
   const counters: Record<Exclude<TileKey, "members">, () => Promise<number>> = {
     pendingVerifications: () =>
@@ -42,7 +39,6 @@ export function createPrismaAdminStore(db: PrismaClient): AdminStore {
   return {
     async countTile(key, now) {
       if (key !== "members") return counters[key]();
-      // ponytail: seq scan on user.created_at; add ix_user_created_at if the members tile gets slow.
       const [groups, newLast7Days] = await Promise.all([
         db.user.groupBy({ by: ["accountState"], _count: { _all: true } }),
         db.user.count({
@@ -88,8 +84,6 @@ export function createPrismaAdminStore(db: PrismaClient): AdminStore {
       }));
     },
 
-    // ponytail: ILIKE '%q%' seq-scans user; add a pg_trgm GIN index on lower(name), lower(email) if the
-    // list exceeds ~10^5 rows.
     async listUsers({ filter, after, take }) {
       const rows = await db.user.findMany({
         where: {

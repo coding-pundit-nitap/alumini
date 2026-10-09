@@ -14,7 +14,6 @@ type Params = { params: Promise<{ id: string }> };
 export const DELETE = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const eventId = id.safeParse((await ctx.params).id);
-  // A malformed id and an unknown one are the same answer.
   if (!eventId.success) throw new NotFoundError();
 
   await cancelRegistration({

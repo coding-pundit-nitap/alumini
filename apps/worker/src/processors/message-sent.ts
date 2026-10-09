@@ -7,11 +7,8 @@ import type { DeliverNotification } from "../notifications/deliver.ts";
 import type { MessageDebounce } from "../notifications/message-debounce.ts";
 
 /**
- * Turns a committed message into a real-time hint for every participant (keeps the message safe
- * without this: delivery never depends on the recipient being online), then delivers an in-app notification
- * to every other participant: one row per (recipient, conversation, debounce window), bumped by each later
- * message in the window, and one email per window.
- * Ids only. A Redis failure on hints is logged, never fatal: clients refetch on their poll/focus.
+ * Publishes a real-time hint to every participant, then one in-app row and one email per recipient
+ * per debounce window. Hint failures are logged, never fatal.
  */
 export function createMessageSentProcessor(deps: {
   participants(conversationId: string): Promise<string[]>;

@@ -28,7 +28,7 @@ async function member(
   return { page, email };
 }
 
-/** Direct DB access against the dev database, so this suite needs no pre-seeded admin/coordinator role. */
+/** Direct DB access, so this suite needs no pre-seeded admin. */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function userId(email: string): Promise<string> {

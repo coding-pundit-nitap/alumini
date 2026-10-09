@@ -10,10 +10,7 @@ import type { CommentRow, PostsStore } from "./posts-store";
 import { refuse } from "./refusal";
 import { parse } from "./validation";
 
-/**
- * A blocked pair and a deleted post both refuse as NOT_FOUND (decideInteract):
- * a block is never revealed, in either direction.
- */
+/** Blocked pairs and deleted posts both read as NOT_FOUND, so a block is never revealed. */
 export function createAddComment(deps: {
   store: PostsStore;
   authorize: Authorize;

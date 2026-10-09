@@ -17,7 +17,7 @@ export type JobEventDeps = {
 
 type Payload = JobEventPayload | JobPublishedPayload | JobExpiredPayload;
 
-/** Handles job.submitted/published/rejected/closed/expired. Registered in compose.ts. */
+/** Handles job.submitted/published/rejected/closed/expired. */
 export function createJobEventProcessor(
   action: "submitted" | "published" | "rejected" | "closed" | "expired",
   deps: JobEventDeps

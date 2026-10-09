@@ -2,10 +2,7 @@ import type { PrismaClient } from "@nitap/database";
 
 import { pickTick, type Tick, type TickLoader } from "@/lib/role-tick";
 
-/**
- * One query for a batch of users: account state, the stored preference and every held role name. The pick
- * itself is `pickTick`, so the rules live in one tested place.
- */
+/** One query per batch of users; the rules live in `pickTick`. */
 export function createTickLoader(prisma: PrismaClient): TickLoader {
   return async (userIds) => {
     const ticks = new Map<string, Tick>();

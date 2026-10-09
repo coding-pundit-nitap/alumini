@@ -5,10 +5,6 @@ interface DawnMarkProps {
   className?: string;
 }
 
-/**
- * The Dawn mark: a sun rising behind two peaks. Ember sun, ink/paper peaks
- * (currentColor so it reads on either background), 1px horizon line.
- */
 export function DawnMark({ className }: DawnMarkProps) {
   return (
     <svg

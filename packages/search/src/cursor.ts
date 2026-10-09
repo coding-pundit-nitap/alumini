@@ -19,10 +19,7 @@ const VALUE_SHAPE: Record<Sort, RegExp> = {
   "-graduationYear": /^-?\d{1,5}$/,
 };
 
-/**
- * Opaque and validated, not signed: a cursor only says "continue after this row" inside a result set
- * that visibility already filtered, so forging one can reorder or skip rows but never reveal any.
- */
+/** Not signed: visibility is already applied, so a forged cursor can only skip rows, never reveal them. */
 export function encodeCursor(sort: Sort, position: CursorPosition): string {
   return Buffer.from(
     JSON.stringify({ s: sort, v: position.value, i: position.id })

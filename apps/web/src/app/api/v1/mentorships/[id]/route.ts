@@ -33,7 +33,6 @@ export const PATCH = routeHandler(async (request, ctx: Params) => {
   }
 
   const mentorshipId = id.safeParse((await ctx.params).id);
-  // A malformed id and an unknown one are the same answer.
   if (!mentorshipId.success) throw new NotFoundError();
 
   const { state } = await transitionMentorship({

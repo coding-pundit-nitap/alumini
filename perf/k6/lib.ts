@@ -89,19 +89,13 @@ export function uuid(): string {
   return out;
 }
 
-/**
- * P50 < 200 ms, p95 < 500 ms, p99 < 1 s, error rate < 0.1 %. In the script, so a run
- * that breaks a budget exits non-zero.
- */
+/** p50 < 200 ms, p95 < 500 ms, p99 < 1 s, errors < 0.1%. A breach exits non-zero. */
 export const SRS_THRESHOLDS: NonNullable<Options["thresholds"]> = {
   http_req_duration: ["p(50)<200", "p(95)<500", "p(99)<1000"],
   http_req_failed: ["rate<0.001"],
 };
 
-/**
- * Open model: requests arrive at RATE per second whether or not the server keeps up, so a slow
- * server shows up as latency, not as fewer requests. Ramps for RAMP, holds for DURATION.
- */
+/** Open model: requests arrive at RATE regardless of server speed, so slowness shows as latency. */
 export function arrival(defaults: {
   rate: number;
   ramp?: string;
@@ -134,10 +128,7 @@ export const summaryTrendStats: string[] = [
   "count",
 ];
 
-/**
- * Non-failing thresholds on each endpoint's tag, so the end-of-run summary (and the runner's result file)
- * carries p50/p95/p99, throughput and error rate per endpoint, not only for the whole run.
- */
+/** Non-failing per-endpoint thresholds, so the summary reports each endpoint. */
 export function perEndpoint(
   names: readonly string[],
   thresholds: NonNullable<Options["thresholds"]>

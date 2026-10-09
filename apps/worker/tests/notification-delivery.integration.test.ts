@@ -240,9 +240,7 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     await startWorker();
 
     await eventually(() => expect(smtp.received).toHaveLength(1));
-    // The resumed step recorded exactly one EMAIL delivery row (not a second one on top of a lost first
-    // try, now enforced by a DB-level unique (notificationId, channel) constraint); its status races the
-    // send outcome (PENDING then SENT), so only PENDING/SENT are acceptable, never a second row or FAILED.
+    // Exactly one EMAIL row; its status may be PENDING or SENT, never FAILED.
     await eventually(async () => {
       const rows = await emailDeliveries(recipient.id);
       expect(rows).toHaveLength(1);
@@ -373,7 +371,7 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     expect(smtp.received).toHaveLength(1);
   });
 
-  // / retry exhaustion must end in NotificationDelivery FAILED with an alert-worthy metric.
+  // Retry exhaustion must end in NotificationDelivery FAILED with an alert-worthy metric.
   it("permanent email failure ends in NotificationDelivery FAILED with a metric, not infinite retry", async () => {
     const [actor, recipient] = await Promise.all([
       makeUser("actor"),
@@ -563,7 +561,7 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     expect(await emailDeliveries(recipient.id)).toHaveLength(0);
   });
 
-  // Spec tests: fan-out correctness through the real Prisma lookups in compose.ts.
+  // Fan-out correctness through the real Prisma lookups in compose.ts.
   describe("fan-out recipients (real lookups)", () => {
     const makeUserIn = (name: string, accountState = "VERIFIED" as const) =>
       db.prisma.user.create({

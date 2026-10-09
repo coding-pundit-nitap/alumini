@@ -47,11 +47,8 @@ function errorFor(block: SubmissionBlock): Error {
 }
 
 /**
- * An account without a recognised institutional email submits evidence. The applicant is
- * always the caller: there is no user id in the input, so a forged one cannot be honoured.
- *
- * Order: authorize → eligibility (cheap, so a blocked account spends no rate limit) → rate limits →
- * cross-check → create. The unique index on open requests is the backstop for a concurrent submit.
+ * The applicant is always the caller. Eligibility is checked before rate limits so a blocked account
+ * spends none; a unique index catches concurrent submits.
  */
 export function createSubmitVerificationRequest(deps: {
   store: VerificationStore;

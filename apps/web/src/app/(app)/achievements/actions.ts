@@ -23,7 +23,6 @@ function parseId(field: string, value: string): string {
   return value;
 }
 
-/** Achievement Server Actions. Mirrors app/feed/actions.ts's wrapper pattern. */
 export async function submitAchievementAction(
   input: unknown
 ): Promise<ActionResult<{ achievementId: string }>> {

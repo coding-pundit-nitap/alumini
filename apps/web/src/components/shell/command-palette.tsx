@@ -26,10 +26,7 @@ function toOptions(
   return [...entries, ...create].map(({ href, label }) => ({ href, label }));
 }
 
-/**
- * ⌘K / Ctrl+K palette: filters nav entries and create actions by label, and offers a directory
- * search fallback (`/directory?q=`) for a query nothing else matches, when Directory is in the nav.
- */
+/** Filters nav entries and actions by label, falling back to a directory search. */
 export function CommandPalette({ nav }: { nav: NavModel }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);

@@ -18,7 +18,6 @@ export const PATCH = routeHandler(async (request, ctx: Params) => {
   const { id: rawId, registrationId: rawRegistrationId } = await ctx.params;
   const eventId = id.safeParse(rawId);
   const registrationId = id.safeParse(rawRegistrationId);
-  // A malformed id and an unknown one are the same answer.
   if (!eventId.success || !registrationId.success) throw new NotFoundError();
 
   const raw = await readJson(request);

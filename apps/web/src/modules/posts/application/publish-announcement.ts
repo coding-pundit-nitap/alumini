@@ -9,11 +9,7 @@ import type { Authorize } from "./authz";
 import type { PostsStore } from "./posts-store";
 import { parse } from "./validation";
 
-/**
- * The only path that writes an ANNOUNCEMENT post. GLOBAL
- * `announcement.publish` only: a chapter-scoped grant does not match a resource-less check.
- * Post, audit row and outbox event commit together; no `post.created` is emitted.
- */
+/** The only path that writes an ANNOUNCEMENT. Requires a global grant; no `post.created` is emitted. */
 export function createPublishAnnouncement(deps: {
   store: PostsStore;
   authorize: Authorize;

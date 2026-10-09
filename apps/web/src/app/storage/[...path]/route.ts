@@ -1,8 +1,6 @@
 /**
- * Same-origin path to object storage: presigned URLs point here when S3_PUBLIC_PATH=/storage,
- * so the browser never talks to the store. A Route Handler rather than a next.config rewrite because
- * rewrites are fixed at `next build`, and the image is built once and promoted with only its environment
- * changing; this reads S3_ENDPOINT per request. Every URL is presigned, so the store does the authorization.
+ * Proxies presigned storage URLs when S3_PUBLIC_PATH=/storage. A route rather than a rewrite
+ * because rewrites are fixed at build time; the store does the authorization.
  */
 const PUBLIC_PATH = "/storage";
 

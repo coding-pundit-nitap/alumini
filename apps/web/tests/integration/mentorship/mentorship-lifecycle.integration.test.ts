@@ -214,11 +214,8 @@ describe("mentorship lifecycle against real PostgreSQL", () => {
   });
 
   it("accept racing cancel: the guarded update serialises them, the row and its events always agree", async () => {
-    // Cancel is valid from ACCEPTED too, so when the two
-    // transactions run one after the other rather than truly overlapping, accept can win and then cancel
-    // legitimately cancels the now-ACCEPTED row. What must never happen is either both refusing, or an
-    // outcome whose event counts disagree with what the row actually shows (mirrors the connections
-    // module's accept-vs-remove race).
+    // If the transactions run sequentially, accept can win and cancel then cancels the ACCEPTED row.
+    // Neither may both refuse, and event counts must match the row.
     const { request, transition } = build();
     for (let round = 0; round < 10; round += 1) {
       const m = await mentor(`Mentor Race ${round}`);

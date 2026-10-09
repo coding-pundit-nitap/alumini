@@ -28,7 +28,7 @@ async function member(
   return { page, email };
 }
 
-/** Direct DB access, so this suite needs no pre-seeded admin (same approach as admin.spec.ts). */
+/** Direct DB access, so this suite needs no pre-seeded admin. */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function grantRole(email: string, roleName: RoleName): Promise<void> {
@@ -86,7 +86,7 @@ test("an Institute Admin suspends and reinstates a member; the member is signed 
   await confirm.click();
   await expect(stateBadge(admin.page)).toContainText("Suspended");
 
-  // Review focus 5: the open tab's next request is signed out (the session row is gone).
+  // The open tab's next request is signed out (the session row is gone).
   await target.page.reload();
   await expect(target.page).toHaveURL(/\/login/);
   await signIn(target.page, target.email);
@@ -117,7 +117,7 @@ test("an Institute Admin cannot assign INSTITUTE_ADMIN and cannot change their o
   await expect(option).toContainText("Only a Super Admin");
   await admin.page.getByRole("button", { name: "Cancel" }).click();
 
-  // Review focus 3: on their own page no action is offered.
+  // On their own page no action is offered.
   await openUser(admin.page, admin.email);
   const selfNote = (panel: string) =>
     admin.page

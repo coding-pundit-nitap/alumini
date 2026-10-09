@@ -4,16 +4,11 @@ import path from "node:path";
 import pg from "pg";
 
 /**
- * Fails when the migration history and schema.prisma describe different databases (drift
- * check). Hand-written SQL in a migration that the schema does not declare (an index, a default) is drift:
- * the next `prisma migrate dev` would generate a migration that undoes it. Replays every migration into a
- * shadow database and diffs the result against the schema; the diff must be empty.
+ * Fails when the migrations and schema.prisma describe different databases: replays every migration
+ * into a shadow database and diffs it against the schema.
  *
- * The shadow database is SHADOW_DATABASE_URL, or `<db>_shadow` next to DATABASE_URL, created when
- * missing. Prisma wipes it on every run, so a derived one must be on a local host.
- *
- * `--skip-unreachable` (the pre-commit hook) warns and passes when Postgres is not running; CI still
- * runs the check.
+ * The shadow database is SHADOW_DATABASE_URL, or `<db>_shadow` on a local DATABASE_URL host.
+ * `--skip-unreachable` passes with a warning when Postgres isn't running.
  */
 const root = path.resolve(import.meta.dirname, "../..");
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);

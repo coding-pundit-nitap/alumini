@@ -15,11 +15,6 @@ import {
 
 import { updateProfilePhoto } from "./users";
 
-/**
- * Wires the uploads module to its adapters. Storage is used directly here (the one place
- * both web and the worker legitimately talk to `@nitap/storage`, unlike queue/email which are
- * worker-only).
- */
 const store = createPrismaUploadStore({ runner: transactionRunner, outbox });
 export const storage = createS3StoragePort(loadStorageEnv(process.env));
 

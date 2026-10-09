@@ -56,10 +56,7 @@ export const EXPERIENCE_FIELDS = [
   "isCurrent",
 ] as const;
 
-/**
- * A role is current exactly when it has no end date (the database CHECK says the same). A checkbox sends
- * "on" when ticked and nothing otherwise. Strict: a forged `userId` fails validation.
- */
+/** A role is current exactly when it has no end date. Strict, so a forged `userId` fails. */
 export const experienceSchema = z
   .object({
     company: requiredText("Enter the company.", 100),
@@ -249,9 +246,8 @@ export type LinkUrlResult =
   { ok: true; url: string } | { ok: false; message: string };
 
 /**
- * Only public `https` links are stored: no other scheme (`javascript:` and `data:` included), no
- * credentials, no bare or private-looking hosts. The host is lowercased, the fragment dropped and a
- * default port stripped, so the same page cannot be added twice. A typed link must point at its site.
+ * Public `https` links only. Normalized (lowercase host, no fragment or default port) so the same page
+ * cannot be added twice.
  */
 export function normaliseLinkUrl(raw: string, type: LinkType): LinkUrlResult {
   const bad = (message: string): LinkUrlResult => ({ ok: false, message });

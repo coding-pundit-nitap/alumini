@@ -6,11 +6,7 @@ import type { Actor } from "@/modules/auth";
 import type { Authorize } from "./authz";
 import type { ProfileStore } from "./profile-store";
 
-/**
- * Attaches (or removes, with `null`) the caller's own profile photo. The upload's ownership,
- * purpose and READY status are the `uploads` module's responsibility (`setProfilePhoto`, which calls
- * this); this use case only ever writes the caller's own `photoUploadId`.
- */
+/** Pass `null` to remove. Upload checks belong to the uploads module. */
 export function createUpdateProfilePhoto(deps: {
   store: ProfileStore;
   authorize: Authorize;

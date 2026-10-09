@@ -63,7 +63,7 @@ describe("readReportedMessage against real PostgreSQL", () => {
       .conversationId;
     const b = (await direct({ actor: actor(asha), recipientId: meera }))
       .conversationId;
-    // Interleave the two conversations so the global seq alternates (Review Focus 3).
+    // Interleave the two conversations so the global seq alternates.
     const inA: string[] = [];
     for (let i = 0; i < 13; i += 1) {
       inA.push((await say(i % 2 ? ravi : asha, a, `a${i}`)).id);

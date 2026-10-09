@@ -32,10 +32,7 @@ const ACCOUNT = [
   { label: "Forgot password", href: "/forgot-password" },
 ];
 
-/**
- * Header + footer for public pages (landing, 404, error, loading). Takes `signedIn` rather than
- * calling getActor itself, so client pages (error.tsx) can use it too.
- */
+/** Takes `signedIn` instead of calling getActor so client pages (error.tsx) can use it. */
 export function PublicShell({
   signedIn,
   children,

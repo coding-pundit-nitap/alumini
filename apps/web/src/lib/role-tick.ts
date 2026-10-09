@@ -1,7 +1,4 @@
-/**
- * Role ticks: the seal on a member's photo. The colour says what kind of account it is (Twitter-style);
- * the label names the role. Pure, so the server picks the tick and every client just draws it.
- */
+/** The colour says what kind of account it is; the label names the role. */
 import { ROLE_TICKS } from "@nitap/database/role-ticks";
 import type { TickKind } from "@nitap/ui/components/role-tick";
 
@@ -21,10 +18,7 @@ export function tickOptions(roles: readonly string[]): Tick[] {
   );
 }
 
-/**
- * The tick to show: none for a non-verified account, none when hidden, the chosen role while it is still held,
- * else the highest held role.
- */
+/** None for unverified or hidden; the chosen role while still held; else the highest held role. */
 export function pickTick(input: {
   verified: boolean;
   roles: readonly string[];

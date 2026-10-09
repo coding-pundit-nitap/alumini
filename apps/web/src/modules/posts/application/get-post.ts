@@ -6,7 +6,7 @@ import type { Actor } from "@/modules/auth";
 import type { Authorize } from "./authz";
 import type { FeedPost, PostsStore } from "./posts-store";
 
-/** Single-post read of the enriched feed model, e.g. a post's own page. Mirrors list-feed's baseline permission. */
+/** Single-post read of the enriched feed model. */
 export function createGetPost(deps: {
   store: PostsStore;
   authorize: Authorize;

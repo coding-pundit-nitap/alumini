@@ -8,11 +8,7 @@ import type { Authorize } from "./authz";
 import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { refuse } from "./refusal";
 
-/**
- * Recipient only. The transition is a guarded update, so an accept racing a cancel (or a block)
- * has exactly one winner; the loser gets INVALID_STATE_TRANSITION. Accepting writes `connection.accepted`
- * in the same transaction; rejecting is silent.
- */
+/** Recipient only. The guarded update gives a racing accept and cancel exactly one winner. */
 export function createRespondToConnection(deps: {
   store: ConnectionStore;
   authorize: Authorize;

@@ -1,10 +1,8 @@
 "use client";
 
 /**
- * One `EventSource` per browser tab for `/api/v1/messages/stream`, shared and ref-counted across every
- * subscriber (the header bell and any open message thread) instead of each opening its own connection
- * (deferred finding 1: `/messages/[id]` used to hold two concurrent SSE connections for the same user).
- * Opens the connection on the first subscriber (or reopens a dead one), closes it after the last one unsubscribes.
+ * One ref-counted `EventSource` per tab, shared by every subscriber. Opens on the first subscriber and
+ * closes after the last.
  */
 
 type Listener = (event: MessageEvent) => void;
@@ -12,9 +10,8 @@ type Listener = (event: MessageEvent) => void;
 let source: EventSource | null = null;
 const subscriptions = new Set<{ eventName: string; listener: Listener }>();
 
-// (Re)opens when there is no live source: first subscriber, a constructor that threw earlier, or a
-// source the browser gave up on (CLOSED — e.g. a non-200 connect is never retried). Every current
-// listener moves to the new source so earlier subscribers keep receiving events.
+// Reopens when there is no live source, including one the browser gave up on (CLOSED). Existing
+// listeners move to the new source.
 function ensureOpen() {
   if (source && source.readyState !== EventSource.CLOSED) return;
   source?.close();

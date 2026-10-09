@@ -10,12 +10,7 @@ import type { ModerationStore } from "./moderation-store";
 import { refuse } from "./refusal";
 import { parse } from "./validation";
 
-/**
- * Same shape as resolve-report, but the outcome is "dismiss": no content is touched, and only
- * `report.resolved` (outcome: "dismissed") is emitted — no `content.removed`. Dismissing your own report or
- * your own content is refused SELF_REVIEW_FORBIDDEN; dismissing an already-terminal report is refused
- * INVALID_STATE_TRANSITION.
- */
+/** Touches no content and emits only `report.resolved` (dismissed). */
 export function createDismissReport(deps: {
   store: ModerationStore;
   authorize: Authorize;

@@ -41,10 +41,8 @@ function createRedis() {
 }
 
 /**
- * Returns a connected client. Rejects quickly if Redis is unreachable.
- * Concurrent first callers share one in-flight connection attempt; without that, all but the
- * first would see a not-yet-ready client, fail fast (offline queue is off) and needlessly hit
- * the weaker fallback path on a cold start under load.
+ * Concurrent first callers share one connection attempt, so a cold start under load doesn't fall
+ * back unnecessarily.
  */
 export async function getRedis(): Promise<Redis> {
   const client = (globalForRedis.redis ??= createRedis());

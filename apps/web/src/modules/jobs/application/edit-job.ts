@@ -23,10 +23,7 @@ const materialChanged = (row: JobContent, next: JobContent): boolean =>
     return row[field] !== next[field];
   });
 
-/**
- * The poster's own-resource right, or `job.manage`, is resolved once the row is
- * loaded (the actor doesn't know the poster's id up front) and handed to the pure `decideEdit` as a flag.
- */
+/** Ownership is only known after loading the row, so it is passed to `decideEdit` as a flag. */
 export function createEditJob(deps: {
   store: JobStore;
   authorize: Authorize;

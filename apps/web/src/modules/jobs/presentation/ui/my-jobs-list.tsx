@@ -30,11 +30,7 @@ const STATUS_BADGE: Record<
   CLOSED: "secondary",
 };
 
-/**
- * The caller's own postings, any status. `closeAction`, when given, renders a
- * Withdraw control on rows still eligible to close. It must be the `closeJobAction` Server Action itself —
- * not a closure — since this is a Client Component and only a Server Action reference crosses that boundary.
- */
+/** `closeAction` must be the Server Action itself, not a closure, to cross into this Client Component. */
 export function MyJobsList({
   items,
   closeAction,

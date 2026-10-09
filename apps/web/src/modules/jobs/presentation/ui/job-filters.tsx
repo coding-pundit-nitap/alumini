@@ -29,10 +29,7 @@ export function jobsHref(filters: JobFilterValues) {
 const PILL =
   "bg-muted/60 focus-within:ring-ring/60 flex h-10 items-center gap-2 rounded-full px-4 focus-within:ring-2";
 
-/**
- * A plain GET form: the URL is the state, so filters and pages are linkable and need no client JS. Submitting
- * drops `cursor`. Employment type is a row of links that keep the other filters; the form carries it hidden.
- */
+/** A plain GET form: the URL is the state, so it works without JavaScript. Submitting drops `cursor`. */
 export function JobFilters({ filters }: { filters: JobFilterValues }) {
   const types: (EmploymentType | undefined)[] = [
     undefined,

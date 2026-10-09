@@ -23,12 +23,7 @@ const actor = (userId: string): Actor => ({
   grants: [],
 });
 
-/**
- * A composition-root-style authorize: like the posts test's pass-through, except it actually enforces
- * `ACHIEVEMENT_REVIEW` against `reviewers`, mapping a denial to the domain-specific `NOT_REVIEWER` code
- * (the same code `decideTransition` would produce) rather than a generic `PERMISSION_DENIED` — this is
- * the only permission review-achievement.ts checks up front, so it is the one worth modelling here.
- */
+/** Enforces `ACHIEVEMENT_REVIEW` against `reviewers`, refusing with `NOT_REVIEWER` like the domain would. */
 const authorizeWith =
   (reviewers: ReadonlySet<string>) => (a: Actor | null, permission: string) => {
     if (!a) throw new AuthenticationError();

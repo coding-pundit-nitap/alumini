@@ -11,7 +11,7 @@ const migration = fileURLToPath(
   )
 );
 
-/** First consumes job.*; rows written since had no consumer and must not replay as emails. */
+/** Rows written before job.* had a consumer must not replay as emails. */
 describe("job.* outbox backlog migration (real PostgreSQL)", () => {
   let db: TestDatabase;
   beforeEach(async () => {

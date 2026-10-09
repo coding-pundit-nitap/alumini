@@ -12,11 +12,7 @@ import type {
 } from "./ports";
 import { refuse } from "./refusal";
 
-/**
- * `claimSeat` is the one guarded UPDATE that decides admission; this only
- * classifies its miss for the caller. The row, the registration and `event.registered` commit in
- * one transaction; `observe`/`observeRefusal` run only after that transaction settles.
- */
+/** The guarded `claimSeat` update decides admission; this only explains a miss. */
 export function createRegisterForEvent(deps: {
   store: EventStore;
   authorize: Authorize;

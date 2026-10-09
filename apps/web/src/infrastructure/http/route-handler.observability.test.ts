@@ -9,9 +9,8 @@ import { ValidationError } from "@/lib/errors";
 import { routeHandler } from "./route-handler";
 
 /**
- * Over the real wrapper: the request id reaches the response
- * header, the error body, the log line and the tracker event; none of the request's secrets reach the
- * log line or the tracker.
+ * The request id reaches the header, error body, log line and tracker; the request's secrets reach
+ * neither the log nor the tracker.
  */
 const secrets = ["hunter2", "session=cookie-abc", "bearer-abc", "query-abc"];
 

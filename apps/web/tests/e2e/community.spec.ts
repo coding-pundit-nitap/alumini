@@ -4,10 +4,7 @@ import { Pool } from "pg";
 
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
 
-/**
- * Imports from `@nitap/database` pull in the generated Prisma client, which fails to load under
- * Playwright's transform, so a raw `pg` pool is used for the few queries needed here.
- */
+/** `@nitap/database` fails to load under Playwright's transform, so this uses raw `pg`. */
 type RoleName =
   | "STUDENT"
   | "ALUMNI"
@@ -50,10 +47,7 @@ async function member(
   return { page, email };
 }
 
-/**
- * Direct DB access against the dev database the webServer uses. There is no admin UI to promote a member
- * to a reviewer role, so reviewer fixtures are inserted straight into user_role.
- */
+/** There is no UI to grant reviewer roles, so fixtures insert into user_role directly. */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function userId(email: string): Promise<string> {
@@ -101,14 +95,12 @@ test.describe("community journey", () => {
     const ravi = await member(browser);
     const content = `Hello from Asha ${unique(DOMAIN)}`;
 
-    // Asha creates a text post from Home (/feed redirects there) and sees it rendered there.
     await asha.page.goto("/feed");
     await publishPost(asha.page, content);
     await expect(postArticle(asha.page, content)).toBeVisible({
       timeout: 15_000,
     });
 
-    // Ravi sees the post in his own feed, comments on it, and reacts to it.
     await ravi.page.goto("/feed");
     const raviArticle = postArticle(ravi.page, content);
     await expect(raviArticle).toBeVisible({ timeout: 15_000 });
@@ -140,15 +132,12 @@ test.describe("community journey", () => {
       expect(rows[0]?.type).toBe("LIKE");
     }).toPass({ timeout: 15_000 });
 
-    // Asha refreshes and sees Ravi's comment.
     await asha.page.goto(`/feed/${postId}`);
     await expect(asha.page.getByText(commentBody)).toBeVisible({
       timeout: 15_000,
     });
 
-    // Asha deletes her own post; it disappears from the feed for both of them on refresh.
     await asha.page.goto("/feed");
-    // Delete lives in the post's options menu and asks for confirmation.
     await postArticle(asha.page, content)
       .getByRole("button", { name: "Post options" })
       .click();
@@ -188,7 +177,6 @@ test.describe("community journey", () => {
     await expect(asha.page.getByText(title)).toBeVisible({ timeout: 15_000 });
     await expect(asha.page.getByText("Awaiting review")).toBeVisible();
 
-    // The moderator opens the same page and sees Asha's submission under "Pending review".
     await moderator.page.goto("/achievements");
     await expect(moderator.page.getByText("Pending review")).toBeVisible();
     const pendingCard = moderator.page
@@ -201,7 +189,6 @@ test.describe("community journey", () => {
       .click();
     await expect(pendingCard).toHaveCount(0, { timeout: 15_000 });
 
-    // Approving publishes the achievement as an ACHIEVEMENT post; it shows up in the feed.
     await moderator.page.goto("/feed");
     await expect(postArticle(moderator.page, title)).toBeVisible({
       timeout: 15_000,
@@ -212,10 +199,7 @@ test.describe("community journey", () => {
       expect(hydrationErrors(page)).toEqual([]);
   });
 
-  /**
-   * Any actor holding `report.review` sees the same durable Resolve/Dismiss state, including one who never
-   * filed the report. The Report button is gated on `canModerate`, so the reporter is granted MODERATOR too.
-   */
+  /** Any `report.review` holder sees the same Resolve/Dismiss state, including one who never filed the report. */
   test("report a post, moderator resolves, it disappears from both feeds", async ({
     browser,
   }) => {
@@ -255,7 +239,6 @@ test.describe("community journey", () => {
       .click();
     await expect(modArticle).toHaveCount(0, { timeout: 15_000 });
 
-    // Resolving soft-deletes the reported content; it disappears from both feeds.
     await asha.page.goto("/feed");
     await expect(postArticle(asha.page, content)).toHaveCount(0, {
       timeout: 15_000,

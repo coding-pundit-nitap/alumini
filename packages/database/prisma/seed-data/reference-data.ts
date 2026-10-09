@@ -1,8 +1,6 @@
 /**
- * Provisional department/degree list for local development, tests and staging. Confirm against
- * NIT Arunachal Pradesh's official programme list before seeding a production database — this
- * table is designed to be extended (new rows, `is_active = false` to retire one), never edited
- * destructively, once alumni profiles reference it.
+ * Provisional list for development, tests and staging; confirm against the official programme list
+ * before production. Extend or retire rows (`is_active = false`); never edit them destructively.
  */
 export const DEPARTMENTS = [
   { code: "CSE", name: "Computer Science and Engineering", shortName: "CSE" },

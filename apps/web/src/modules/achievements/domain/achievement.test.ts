@@ -144,10 +144,8 @@ describe("achievement state machine", () => {
       expectedTo?: AchievementState;
     }> = [];
 
-    // Build expected results table
     for (const status of ACHIEVEMENT_STATES) {
       for (const actorRole of ["owner", "other"] as const) {
-        // withdraw action
         cases.push({
           status,
           actorRole,
@@ -166,7 +164,6 @@ describe("achievement state machine", () => {
               : undefined,
         });
 
-        // review actions with each outcome and isReviewer combo
         for (const outcome of outcomes) {
           for (const isReviewer of [true, false]) {
             let expectedOk: boolean;
@@ -186,7 +183,6 @@ describe("achievement state machine", () => {
               expectedOk = false;
               expectedCode = "INVALID_STATE_TRANSITION";
             } else {
-              // Valid review
               expectedOk = true;
               expectedTo = outcome === "approve" ? "PUBLISHED" : "REJECTED";
             }
@@ -206,7 +202,6 @@ describe("achievement state machine", () => {
       }
     }
 
-    // Execute and verify each case
     for (const testCase of cases) {
       const actorId = testCase.actorRole === "owner" ? OWNER : OTHER;
       const result = decideTransition(
@@ -219,11 +214,9 @@ describe("achievement state machine", () => {
         testCase.isReviewer
       );
 
-      // Verify ok/false status
       expect(result.ok).toBe(testCase.expectedOk);
 
       if (testCase.expectedOk) {
-        // For successful transitions, verify to, patch, and event
         expect(result.ok).toBe(true);
         if (result.ok) {
           expect(result.to).toBe(testCase.expectedTo);
@@ -237,7 +230,6 @@ describe("achievement state machine", () => {
           }
         }
       } else {
-        // For failures, verify the error code
         expect(result.ok).toBe(false);
         if (!result.ok) {
           expect(result.code).toBe(testCase.expectedCode);
@@ -245,7 +237,6 @@ describe("achievement state machine", () => {
       }
     }
 
-    // Verify case count
     expect(cases.length).toBe(ACHIEVEMENT_STATES.length * 2 * (1 + 2 * 2));
   });
 });

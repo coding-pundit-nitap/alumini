@@ -1,6 +1,6 @@
 import { ValidationError } from "@/lib/errors";
 
-/** Keyset cursor over (createdAt desc, id) — same shape as connections/mentorship/messaging. */
+/** Keyset cursor over (createdAt desc, id). */
 export function encodeCursor(createdAt: Date, id: string): string {
   return Buffer.from(`${createdAt.toISOString()}|${id}`, "utf8").toString(
     "base64url"

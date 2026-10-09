@@ -9,9 +9,8 @@ import type { ModerationStore } from "./moderation-store";
 import { refuse } from "./refusal";
 
 /**
- * Claim only flips status OPEN -> UNDER_REVIEW; it never sets `resolvedById` (that column is
- * reserved for the terminal outcome written by resolve/dismiss). Claiming your own report or your own
- * content is refused SELF_REVIEW_FORBIDDEN.
+ * OPEN -> UNDER_REVIEW only; `resolvedById` is reserved for resolve/dismiss. No claiming your own
+ * report or content.
  */
 export function createClaimReport(deps: {
   store: ModerationStore;

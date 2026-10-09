@@ -26,10 +26,7 @@ export type OwnVerification = {
   } | null;
 };
 
-/**
- * What the applicant's own status page shows. It reads only the caller's rows and returns a DTO: no
- * reviewer identity, no other user's data, and never the raw record.
- */
+/** Returns only the caller's own data, with no reviewer identity. */
 export function createGetOwnVerification(deps: {
   store: VerificationStore;
   authorize: Authorization["authorize"];

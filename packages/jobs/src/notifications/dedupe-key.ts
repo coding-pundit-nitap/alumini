@@ -11,10 +11,7 @@ export function dedupeKeyFor(input: {
     .digest("hex");
 }
 
-/**
- * One debounced message notification per (recipient, conversation, window): every message in
- * the window maps to the same row. `windowBucket` names the window, e.g. the event id that opened it.
- */
+/** Every message in the window maps to the same notification row. */
 export function messageDedupeKeyFor(input: {
   recipientId: string;
   conversationId: string;

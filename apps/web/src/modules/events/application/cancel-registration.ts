@@ -12,12 +12,7 @@ import type {
 } from "./ports";
 import { refuse } from "./refusal";
 
-/**
- * `releaseSeat` is the one guarded UPDATE that decides seat release; this only
- * classifies its miss for the caller. The seat release, the registration and
- * `event.registration-cancelled` commit in one transaction; `observe`/`observeRefusal` run only
- * after that transaction settles.
- */
+/** The guarded `releaseSeat` update decides; this only explains a miss. */
 export function createCancelRegistration(deps: {
   store: EventStore;
   authorize: Authorize;

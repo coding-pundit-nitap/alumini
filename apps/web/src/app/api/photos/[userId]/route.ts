@@ -7,10 +7,7 @@ import { getActor } from "@/modules/auth";
 
 const PHOTO_URL_TTL_SECONDS = 60;
 
-/**
- * Stable photo path: visibility is re-checked on every request and a fresh short-lived
- * presigned GET is issued, so a raw storage URL never reaches a page and revoking access takes effect.
- */
+/** Re-checks visibility on every request and redirects to a short-lived presigned URL. */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ userId: string }> }

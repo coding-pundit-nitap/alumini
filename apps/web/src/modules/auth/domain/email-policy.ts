@@ -9,9 +9,8 @@ export type EmailClass =
   | { kind: "INSTITUTIONAL"; role: string; autoVerify: boolean };
 
 /**
- * Classifies an address against the institutional-email policy. Pure. The domain is the
- * part after the LAST `@`, lowercased, and is looked up exactly: never a suffix or subdomain match, so
- * `nitap.ac.in.evil.com`, `evilnitap.ac.in` and `"a@nitap.ac.in"@evil.com` are all external.
+ * The domain after the last `@` is matched exactly, never as a suffix, so `nitap.ac.in.evil.com` and
+ * `"a@nitap.ac.in"@evil.com` are external.
  */
 export function classifyEmail(email: string, policy: EmailPolicy): EmailClass {
   if (/\s/.test(email)) return { kind: "EXTERNAL" };

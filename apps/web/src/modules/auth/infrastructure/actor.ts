@@ -25,17 +25,9 @@ export const loadGrants = (userId: string, now: Date) =>
   grantSource.loadGrants(userId, now);
 
 /**
- * The only way server code obtains the current caller (Data Access Layer; replaces getSession()).
- *
- * Reads the session and user rows from the database on every request (Better Auth's cookie cache is
- * disabled), so a revoked session or a changed account state is seen at once. Grants are loaded for
- * VERIFIED accounts only. Memoised per render by React `cache`; Route Handlers and Server Actions
- * call it once at the top and pass the actor down. Returns null when signed out. This proves
- * identity; permissions are checked by `authorize()`.
- *
- * It also repairs the two gaps Better Auth's post-commit hooks can leave: a user with no
- * profile, and a PENDING account whose email was confirmed but whose policy transition did not run.
- * Both use cases are idempotent, and a repair failure never fails the request.
+ * The only way server code gets the current caller. Reads the session from the database on every
+ * request, so revocations apply at once; memoised per render. Also repairs a missing profile or a
+ * skipped email-verification transition; a failed repair never fails the request.
  */
 export const getActor = cache(async (): Promise<Actor | null> => {
   const requestHeaders = await headers();

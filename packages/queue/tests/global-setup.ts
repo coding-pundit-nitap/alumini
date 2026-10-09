@@ -2,7 +2,7 @@
 export default function setup() {
   if (!process.env.QUEUE_REDIS_URL) {
     throw new Error(
-      "Queue integration tests need QUEUE_REDIS_URL. Run `pnpm docker:up` and load .env: set -a; . ./.env; set +a."
+      "Queue integration tests need QUEUE_REDIS_URL. Run `pnpm docker:up` and copy .env.example to .env."
     );
   }
 }

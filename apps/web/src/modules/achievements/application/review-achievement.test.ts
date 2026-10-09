@@ -70,17 +70,7 @@ describe("reviewAchievement", () => {
     expect(tx.patchAchievement).not.toHaveBeenCalled();
   });
 
-  /**
-   * `review-achievement.ts` hardcodes `isReviewer: true` at its only call site to `decideTransition` — by
-   * design (spec: `ACHIEVEMENT_REVIEW` is a role-wide permission, no per-achievement reviewer assignment),
-   * so `deps.authorize` having already accepted the caller means the domain's `NOT_REVIEWER` branch can
-   * never fire through the full `reviewAchievement()` call in production. That makes it untestable via a
-   * through-the-stack call (any such test would pass even if the branch were deleted). This test instead
-   * exercises, directly, the exact two-step composition `reviewAchievement()`'s transaction body performs —
-   * `decideTransition(...)` then `refuse` on failure — with `isReviewer: false`, proving that
-   * composition (both the domain check and its mapping to an AppError) is wired correctly and would break
-   * if either half were removed.
-   */
+  /** `reviewAchievement` always passes `isReviewer: true`, so this checks the refusal path directly. */
   it("propagates the domain's NOT_REVIEWER refusal as AuthorizationError when isReviewer is false", () => {
     const decision = decideTransition(
       row(),

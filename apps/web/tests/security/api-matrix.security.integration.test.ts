@@ -1,7 +1,5 @@
-// The whole-API authorization matrix, generated from
-// tests/security/api-inventory.ts and the RBAC doc. Every session route × method runs through its real
-// handler on a test database with real authorize(); only getActor is doubled, and the authorization
-// observer is replaced by a recorder so a refusal can be traced to authorize(), not to a missing row.
+// The API authorization matrix, generated from api-inventory.ts. Real handlers and authorize(); only
+// getActor is doubled, and an observer records refusals.
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 

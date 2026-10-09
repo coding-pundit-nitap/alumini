@@ -10,10 +10,8 @@ import type { UploadStatus, UploadStore } from "./upload-store";
 export type CompleteUploadResult = { status: UploadStatus };
 
 /**
- * The browser told us its POST to the store finished; this confirms it. Idempotent: calling it
- * again for a row that already moved past PENDING_UPLOAD is a harmless no-op (a client retry, or a
- * second tab), not an error. `storage.head` runs before the transaction — real network I/O never happens
- * inside a `TransactionRunner` callback (it can retry the whole callback on contention).
+ * Idempotent: a row already past PENDING_UPLOAD is a no-op. `storage.head` runs outside the
+ * transaction, which may retry.
  */
 export function createCompleteUpload(deps: {
   store: UploadStore;

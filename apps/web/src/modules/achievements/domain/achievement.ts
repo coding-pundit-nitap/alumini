@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-/**
- * The achievement review state machine, pure. Mirrors
- * modules/mentorship/domain/mentorship.ts's shape: fixed check order (actor → self-review →
- * role → current state → target transition validity), whole-row-patch transitions.
- */
 export const ACHIEVEMENT_STATES = [
   "SUBMITTED",
   "UNDER_REVIEW",
@@ -61,10 +56,8 @@ const REVIEWABLE_FROM: readonly AchievementState[] = [
 ];
 
 /**
- * `action: "withdraw"` needs no `outcome`; `action: "review"` needs `outcome`. `isReviewer` is whether the
- * actor holds `achievement.review` — the caller (application layer) has already checked that; this function
- * only enforces that a reviewer never reviews their own submission, C-7's fixed
- * SUBMITTED-only withdraw rule, and the transition table itself.
+ * The caller has already checked `achievement.review`; this enforces no self-review, SUBMITTED-only
+ * withdrawal and the transition table.
  */
 export function decideTransition(
   row: AchievementRow,

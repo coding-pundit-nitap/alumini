@@ -9,7 +9,6 @@ import {
 
 import { addTicks } from "./ticks";
 
-/** Wires the directory module to PostgreSQL search (Stage A) and the shared Redis rate limiter. */
 const searchDirectoryBare = createSearchDirectory({
   authorize,
   search: createPostgresSearch(prisma),

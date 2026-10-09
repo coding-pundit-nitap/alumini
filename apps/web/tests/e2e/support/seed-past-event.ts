@@ -3,15 +3,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@nitap/database";
 
 /**
- * Seeds an event with a past `starts_at` plus one REGISTERED registrant, directly through Prisma.
- * The `/events/new` form refuses a start time that isn't in the future (validation.ts), so the
- * attendance journey (events.spec.ts) needs this fixture instead. Run as a standalone Node script,
- * never imported into the Playwright spec: the generated Prisma client uses `import.meta`, which
- * Playwright's CJS test transform cannot load, but Next.js and plain Node (both ESM) handle it the same
- * way `scripts/seed-dev-admin.ts` does.
- *
- * Reads DATABASE_URL and DEV_COORDINATOR_EMAIL from the environment (same as the app); prints
- * `{ eventId, registrantName }` as JSON on stdout for the spec to parse.
+ * Seeds a past event with one registrant, since the form refuses past start times. Standalone because
+ * the Prisma client needs ESM. Prints `{ eventId, registrantName }` as JSON.
  */
 async function main() {
   const connectionString = process.env.DATABASE_URL;

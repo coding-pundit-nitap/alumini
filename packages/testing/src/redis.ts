@@ -6,7 +6,7 @@ export function queueRedisUrl(): string {
   const url = process.env.QUEUE_REDIS_URL;
   if (!url) {
     throw new Error(
-      "QUEUE_REDIS_URL is not set. Run `pnpm docker:up` and load .env: set -a; . ./.env; set +a."
+      "QUEUE_REDIS_URL is not set. Run `pnpm docker:up` and copy .env.example to .env."
     );
   }
   return url;

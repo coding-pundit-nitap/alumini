@@ -8,7 +8,6 @@ import { NotFoundError } from "@/lib/errors";
 import { isUuid } from "@/modules/admin";
 import { getActor } from "@/modules/auth";
 
-/** The use case authorizes and validates; the action only adapts input. */
 export async function publishAnnouncementAction(input: {
   title: string;
   content: string;

@@ -1,4 +1,3 @@
-/** Public API of the users module. Other code imports from here, never from the module's internals. */
 export { createGetOwnProfile } from "./application/get-own-profile";
 export { createGetProfileForViewer } from "./application/get-profile-for-viewer";
 export { createGetProfilePhotoKey } from "./application/get-profile-photo-key";

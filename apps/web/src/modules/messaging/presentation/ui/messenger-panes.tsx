@@ -5,10 +5,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-/**
- * Inbox beside the open pane from md up. On a phone only one shows: the inbox at `/messages`, the
- * conversation (or new-group form) anywhere below it.
- */
+/** Side by side from md up; on phones only one pane shows. */
 export function MessengerPanes({
   inbox,
   children,

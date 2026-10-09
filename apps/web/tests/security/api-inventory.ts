@@ -4,10 +4,8 @@ import path from "node:path";
 import { PERMISSIONS, type Permission } from "@nitap/database/permissions";
 
 /**
- * Every Route Handler × method, classified. The file system is the source of truth for what
- * exists; this table is the source of truth for who may call it. `api-inventory.test.ts` fails when they
- * differ, so a new endpoint cannot ship unclassified, and `api-matrix.security.integration.test.ts`
- * generates the role × account-state × action matrix from it.
+ * Every Route Handler × method, classified. `api-inventory.test.ts` fails when this and the file
+ * system differ, so a new endpoint can't ship unclassified.
  */
 
 export const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
@@ -18,23 +16,14 @@ export type Access =
   | { kind: "public" }
   /** Open outside production; the monitoring bearer token in production, else a bare 404. */
   | { kind: "monitoring" }
-  /** Better Auth's own handler, with its own origin, CSRF and rate-limit checks (tested in 16C). */
+  /** Better Auth's own handler, with its own origin, CSRF and rate-limit checks. */
   | { kind: "better-auth" }
-  /**
-   * No session needed: a resource's visibility decides (a profile photo follows the profile's level), and
-   * anything not visible, unknown or not — signed in or not — is the same 404.
-   */
+  /** No session needed: visibility decides, and anything not visible is the same 404. */
   | { kind: "visibility" }
-  /**
-   * A signed-in member. A caller holding none of `anyOf` is refused by `authorize()`; holding one is
-   * necessary, not sufficient (ownership, party and visibility rules decide the rest).
-   */
+  /** Holding one of `anyOf` is necessary, not sufficient. */
   | { kind: "session"; anyOf: readonly Permission[] };
 
-/**
- * A schema-valid request, for routes that validate input before the use case authorizes: without
- * it the matrix would see a 400 and never reach authorize(). Ids are placeholders for unknown rows.
- */
+/** A valid request for routes that validate before authorizing; otherwise the matrix would only see 400s. */
 export type Sample = { body?: unknown; query?: string };
 
 export type Entry = { access: Access; mutates: boolean; sample?: Sample };

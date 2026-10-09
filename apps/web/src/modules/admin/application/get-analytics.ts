@@ -73,8 +73,8 @@ function loader(
 }
 
 /**
- * Aggregates only, one section per data permission the actor co-holds with
- * `analytics.view`; each section loads on its own and a failure renders "Unavailable", never the page.
+ * Aggregates only, one section per permission held alongside `analytics.view`. A failed section shows
+ * "Unavailable" without taking the page down.
  */
 export function createGetAnalytics(deps: {
   store: AnalyticsStore;

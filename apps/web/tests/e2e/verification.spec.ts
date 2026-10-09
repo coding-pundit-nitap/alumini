@@ -123,10 +123,7 @@ test.describe("alumni verification", () => {
     // Wait for sign-in to finish: navigating away mid-sign-in would leave no session and land on /login.
     await expect(page).toHaveURL(/\/onboarding/);
 
-    // The applicant gets the not-found page and never the queue. The HTTP status is 200, not 404: the root
-    // loading.tsx makes every dynamic route stream, so the status line is sent before notFound() throws
-    // (Next.js docs, "Calling notFound() after streaming has started"). A real 404 needs the check
-    // before streaming, and the only pre-stream hook, proxy.ts, must never authorize.
+    // The status is 200 because loading.tsx streams the response before notFound() throws.
     await page.goto("/admin/verification");
     await expect(page.getByText("Page not found")).toBeVisible();
     await expect(page.getByText("Verification requests")).toHaveCount(0);

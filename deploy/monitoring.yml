@@ -1,10 +1,5 @@
-# Monitoring on the application host: Prometheus, Alertmanager, Grafana and the exporters,
-# as their own compose project joined to the application's network. Run it only through deploy/monitoring.sh,
-# which sets the project name and APP_NETWORK and reads deploy/.env and deploy/monitoring.env.
-#
-# The rules, routing and dashboards are the reviewed code in ops/. Secrets reach the containers as compose
-# configs written from the env files. Nothing is published except on 127.0.0.1. The external probe and the
-# dead-man's-switch receiver live off this host; the README says what to set up.
+# Monitoring on the application host, as its own compose project joined to the app network. Run it only
+# through deploy/monitoring.sh. Rules, routing and dashboards live in ops/.
 name: alumini-prod-monitoring
 
 x-service: &service

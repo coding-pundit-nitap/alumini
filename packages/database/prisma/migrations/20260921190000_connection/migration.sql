@@ -38,12 +38,12 @@ ALTER TABLE "connection" ADD CONSTRAINT "connection_blocked_by_id_fkey" FOREIGN 
 
 -- One row per unordered pair: the canonical order makes the unique index catch A->B and B->A alike, and a
 -- user can never connect to themselves (a_id < b_id excludes equality). The application canonicalises;
--- these CHECKs are the backstop.
+-- these CHECKs are the backstop (domain-model §3).
 ALTER TABLE "connection"
   ADD CONSTRAINT "ck_connection_order" CHECK ("user_a_id" < "user_b_id"),
   ADD CONSTRAINT "ck_connection_requester" CHECK ("requested_by_id" IN ("user_a_id", "user_b_id")),
   -- Explicit IS NOT NULL: `NULL IN (...)` is NULL and a CHECK passes on NULL, so a BLOCKED row without a
-  -- blocker would otherwise slip through (the draft of this CHECK has that hole).
+  -- blocker would otherwise slip through (the domain-model §3 draft of this CHECK has that hole).
   ADD CONSTRAINT "ck_connection_blocker" CHECK (
     ("state" = 'BLOCKED' AND "blocked_by_id" IS NOT NULL AND "blocked_by_id" IN ("user_a_id", "user_b_id"))
     OR ("state" <> 'BLOCKED' AND "blocked_by_id" IS NULL)

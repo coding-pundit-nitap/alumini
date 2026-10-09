@@ -6,11 +6,6 @@ import { buttonVariants } from "@nitap/ui/components/button";
 
 import { cn } from "@/lib/utils";
 
-/**
- * Shared, server-safe presentational surfaces for admin pages (no hooks, no "use client" — server
- * pages import these directly).
- */
-
 export function AdminPageHeader({
   title,
   description,

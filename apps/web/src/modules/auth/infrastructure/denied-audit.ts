@@ -7,9 +7,8 @@ type DeniedEvent = Extract<AuthzEvent, { outcome: "denied" }>;
 const ADMIN_TIER: ReadonlySet<string> = new Set(ADMIN_TIER_PERMISSIONS);
 
 /**
- * `authz.denied`, admin-tier only. `authorize()` is synchronous and there is no business
- * write to join, so this is the one non-transactional audit: fire-and-forget, at most `maxInFlight` writes
- * pending, drops and failures counted by the caller's callbacks. Never throws into the request.
+ * The one non-transactional audit: `authorize()` is synchronous, so writes are fire-and-forget,
+ * bounded by `maxInFlight`, and never throw into the request.
  */
 export function createDeniedAudit(deps: {
   write: (entry: AuditEntry) => Promise<void>;

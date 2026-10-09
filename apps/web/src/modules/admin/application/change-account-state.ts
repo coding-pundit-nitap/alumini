@@ -14,10 +14,7 @@ import { guardTarget } from "./access-guards";
 import type { Authorize, LoadGrants } from "./authorize-port";
 import { toValidationError } from "./validation";
 
-/**
- * Suspend, deactivate or reactivate. The requested state picks the permission, so the raw
- * field is read before validation; anything that is not "VERIFIED" needs user.suspend.
- */
+/** The requested state picks the permission; anything but "VERIFIED" needs user.suspend. */
 export function createChangeAccountState(deps: {
   store: AccessStore;
   authorize: Authorize;
@@ -83,7 +80,6 @@ export function createChangeAccountState(deps: {
             ? { previousState }
             : { reason: reason ?? null, previousState, sessionsRevoked },
       });
-      // Deactivation notifies nobody.
       if (to !== "DEACTIVATED")
         await tx.enqueue({
           type: to === "SUSPENDED" ? "user.suspended" : "user.reactivated",

@@ -3,12 +3,8 @@ import net from "node:net";
 import type { ScannerPort } from "./scanner.ts";
 
 /**
- * ClamAV over clamd's TCP INSTREAM protocol, no client library:
- * `zINSTREAM\0`, then the bytes as chunks each prefixed with a 4-byte big-endian length, then a zero length;
- * clamd answers one NUL-terminated line: `stream: OK`, `stream: <signature> FOUND`, or `… ERROR`.
- *
- * A FOUND verdict is a successful scan that rejects the file. Anything else — an ERROR reply, a hang-up, a
- * timeout, a refused connection — throws, so the job retries and the upload stays PENDING_SCAN (fails closed).
+ * ClamAV over clamd's INSTREAM protocol: length-prefixed chunks, then a zero length. FOUND rejects the
+ * file; anything else throws so the job retries and the upload stays PENDING_SCAN.
  */
 export function createClamdScanner(options: {
   host: string;

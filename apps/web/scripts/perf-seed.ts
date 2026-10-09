@@ -18,14 +18,10 @@ import {
 import { runSeed } from "@nitap/database/seed";
 
 /**
- * The performance seed. Creates and migrates the `_perf`
- * database if needed, refuses one that already has members (pass --reset to drop and recreate it), writes the
- * base seed and the generated rows, then writes `perf/.data/fixture.json` for the k6 scenarios: load-user
- * cookies signed with BETTER_AUTH_SECRET exactly as Better Auth signs them, so the server accepts them.
+ * Creates and seeds the `_perf` database and writes `perf/.data/fixture.json` with signed session
+ * cookies for the k6 scenarios.
  *
  *   pnpm perf:seed -- --users 10000 [--seed 1] [--sessions 2000] [--spike-capacity 500] [--reset]
- *
- * PERF_DATABASE_URL defaults to DATABASE_URL with the database renamed to `alumini_perf`.
  */
 const root = path.resolve(import.meta.dirname, "../../..");
 

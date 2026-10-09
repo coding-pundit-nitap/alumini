@@ -40,7 +40,6 @@ export default async function UsersPage({
   const values: Record<string, string> = {};
   for (const [key, value] of Object.entries(await searchParams)) {
     const v = first(value);
-    // An empty select ("Any") is no filter at all.
     if (v !== undefined && v !== "") values[key] = v;
   }
 
@@ -50,7 +49,6 @@ export default async function UsersPage({
     page = await listUsers({ actor: await getActor(), query: values });
   } catch (error) {
     if (error instanceof AppError && error.status === 404) notFound();
-    // A stale or tampered cursor: start again from the newest user, keeping the filters.
     if (error instanceof AppError && error.code === "INVALID_CURSOR") {
       const filters = new URLSearchParams(values);
       filters.delete("cursor");

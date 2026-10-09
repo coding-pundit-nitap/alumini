@@ -29,7 +29,7 @@ import {
 } from "@/modules/admin/server";
 import { authorize, can, loadGrants } from "@/modules/auth";
 
-/** Wires the admin module to PostgreSQL. A failed tile is logged and counted, never thrown. */
+/** A failed tile is logged and counted, never thrown. */
 const store = createPrismaAdminStore(prisma);
 
 export const getDashboard = createGetDashboard({
@@ -90,7 +90,6 @@ export const revokeRole = createRevokeRole(roleDeps);
 export const grantPermission = createGrantPermission(access);
 export const revokeGrant = createRevokeGrant(access);
 
-// The retention catalogue is data injected here, like the role catalogue.
 const settings = {
   store: createPrismaSettingsStore({
     db: prisma,

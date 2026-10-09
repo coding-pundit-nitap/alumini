@@ -8,11 +8,7 @@ import { overridesNotLooser } from "../domain/visibility";
 import type { Authorize } from "./authz";
 import type { ProfileStore } from "./profile-store";
 
-/**
- * A member sets who sees their profile. The five settings are replaced as a whole, so a
- * stale override can never survive a change of level. An override looser than the level is refused here
- * with a field error; the database CHECK behind it should never fire.
- */
+/** All five settings are replaced together. An override looser than the level is a field error. */
 export function createUpdateOwnPrivacy(deps: {
   store: ProfileStore;
   authorize: Authorize;

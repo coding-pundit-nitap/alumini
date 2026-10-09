@@ -1,7 +1,4 @@
-/**
- * Display helpers for events. Always formats with an explicit `timeZone`: on the server the
- * "local" zone is the server's, which is nobody's, so the event's own zone is the one shown.
- */
+/** Always formats in the event's own zone; the server's local zone is nobody's. */
 export function formatEventTime(instant: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-US", {
     timeZone,

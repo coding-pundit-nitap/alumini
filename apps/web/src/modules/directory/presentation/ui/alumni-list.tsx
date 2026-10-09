@@ -95,10 +95,7 @@ function Person({ person, isYou }: { person: AlumniSummary; isYou: boolean }) {
   );
 }
 
-/**
- * Directory results. The server renders the first page; later pages load from `GET /api/v1/alumni` (same
- * `query`, plus the cursor) as you scroll or press "Load more", which is a plain link to `nextHref` without JS.
- */
+/** The server renders the first page; later pages load from `GET /api/v1/alumni`. */
 export function AlumniList({
   people,
   viewerId,

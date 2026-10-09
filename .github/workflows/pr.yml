@@ -1,8 +1,5 @@
-# Pull-request pipeline.
-# Every gate starts at once, so a run takes as long as its slowest job rather than the sum of a chain; images
-# are published only after all of them pass. Turbo's task cache, Next's build cache, Playwright's browsers and
-# the image layers persist between runs.
-# Every job reproduces a local command: pnpm lint | typecheck | arch | test | test:integration | build | test:e2e.
+# Pull-request pipeline. Every gate runs in parallel; images are published only after all of them pass.
+# Each job reproduces a local command: pnpm lint | typecheck | arch | test | test:integration | build | test:e2e.
 name: PR
 
 on:
@@ -145,8 +142,7 @@ jobs:
           --config p/typescript --config p/react --config p/nodejs --config p/secrets
           --config .semgrep/rules.yml --exclude .semgrep --severity ERROR --error
 
-  # Container images (web + worker images, image scan). Dockerfile lint
-  # and CRITICAL vulnerabilities block; HIGH ones are listed in the log for triage.
+  # Container images: Dockerfile lint and CRITICAL vulnerabilities block; HIGH ones are logged for triage.
   images:
     name: Image ${{ matrix.image }} (hadolint, build, Trivy)
     runs-on: ubuntu-24.04
@@ -228,10 +224,8 @@ jobs:
     name: Integration and contract tests (${{ matrix.suite }})
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    # Web's suite alone needs ~15 min on one runner, so it is split into shards; the other
-    # packages' suites are small and run together. Each leg has its own services.
-    # Web's shards run every web project (unit and component too) with coverage, and leave a blob report
-    # that the coverage job merges: the thresholds hold for the whole suite, not for one shard.
+    # Web's suite is sharded (~15 min on one runner); other packages run together. Shards leave blob reports
+    # that the coverage job merges, so the thresholds hold for the whole suite.
     strategy:
       fail-fast: false
       matrix:
@@ -280,8 +274,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Every migration must apply to an empty database.
-      # MinIO cannot be a `services:` entry (no command override there), so start it directly and make the bucket.
+      # Every migration must apply to an empty database. MinIO can't be a `services:` entry (no command
+      # override), so start it directly and create the bucket.
       - name: Start MinIO
         run: |
           docker run -d --name minio -p 9000:9000 \
@@ -327,9 +321,8 @@ jobs:
       # Fails when statements, lines or functions fall below 95 % or branches below 90 % (vitest.config.mts).
       - run: pnpm --filter @nitap/web exec vitest --merge-reports --coverage
 
-  # A new migration is measured on volume: the database is built at the merge
-  # base with the perf seed, then this branch's migrations apply while pg_locks is sampled. A write-blocking lock
-  # over 1 s on an existing table fails. Runs only when migrations are added.
+  # New migrations run against a seeded database while pg_locks is sampled: a write-blocking lock over
+  # 1 s on an existing table fails. Runs only when migrations are added.
   migration-locks:
     name: Migration locks on volume
     runs-on: ubuntu-24.04
@@ -494,9 +487,8 @@ jobs:
           path: apps/web/playwright-report
           retention-days: 7
 
-  # Release images. Only a main commit
-  # that passed every gate is published, so `deploy/deploy.sh pull` never finds an image for a red commit.
-  # Tagged with the full SHA; `main` points at the newest. ghcr.io needs a lowercase owner.
+  # Release images: only main commits that passed every gate are published, tagged with the full SHA;
+  # `main` points at the newest. ghcr.io needs a lowercase owner.
   publish:
     name: Publish images
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

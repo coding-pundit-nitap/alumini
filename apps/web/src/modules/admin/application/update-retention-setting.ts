@@ -12,10 +12,7 @@ import type { SettingsStore } from "./admin-store";
 import type { Authorize } from "./authorize-port";
 import { toValidationError } from "./validation";
 
-/**
- * Changes one category's period and sign-off under a row lock; an unchanged submit
- * writes nothing and audits nothing. Every change audits `config.changed` in the same transaction.
- */
+/** An unchanged submit writes and audits nothing. */
 export function createUpdateRetentionSetting(deps: {
   store: SettingsStore;
   authorize: Authorize;

@@ -17,10 +17,7 @@ function knownError(code: string, meta?: Record<string, unknown>) {
   });
 }
 
-/**
- * A fake whose `$transaction` runs the callback and then decides whether the COMMIT succeeds, so
- * a failed commit proves the callback body executes again on the next attempt.
- */
+/** A fake whose commit can fail, to prove the callback runs again on retry. */
 function fakePrisma(commitFailures: unknown[]) {
   const remaining = [...commitFailures];
   const $transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => {

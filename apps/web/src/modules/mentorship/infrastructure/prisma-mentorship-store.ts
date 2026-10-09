@@ -16,10 +16,8 @@ import { activeMentorSql } from "./active-mentor-sql";
 const toRow = (r: MentorshipRow): MentorshipRow => ({ ...r });
 
 /**
- * The mentorship table inside one transaction. Uniqueness of the open pair is the database's job
- * (`uq_mentorship_open_pair`): `insert` is `INSERT … ON CONFLICT DO NOTHING`, and every state change is
- * `UPDATE … WHERE id AND state = <expected>`. The outbox event is written on the same client, so it commits
- * or rolls back with the row. Never a read-then-write for a decision another request could race.
+ * Open-pair uniqueness is enforced by the database (`uq_mentorship_open_pair`). State changes are
+ * guarded updates, and outbox events share the transaction.
  */
 export function createPrismaMentorshipStore(deps: {
   runner: Pick<TransactionRunner, "run">;

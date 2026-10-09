@@ -3,10 +3,7 @@ import type { ErrorEvent } from "@sentry/node";
 
 import { closeErrorTracker, initErrorTracker } from "./error-tracker.ts";
 
-/**
- * Tests only: turns the error tracker on with a transport that keeps the serialized envelopes instead of
- * sending them, so a test can assert on exactly what would leave the process.
- */
+/** Keeps envelopes in memory so tests can assert on what would be sent. */
 export function startRecordingErrorTracker(service: "web" | "worker" = "web") {
   const sent: string[] = [];
   initErrorTracker({

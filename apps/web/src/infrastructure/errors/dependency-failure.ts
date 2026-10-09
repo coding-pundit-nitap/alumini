@@ -76,10 +76,8 @@ function databaseUnavailable(error: unknown): boolean {
 }
 
 /**
- * Better Auth's session read catches whatever its database adapter throws, logs it, and rethrows a bare
- * `FAILED_TO_GET_SESSION` (500) with no `cause` (better-auth api/routes/session.mjs). That read only touches
- * PostgreSQL, so the code alone says the database did not answer: measured under load as pool-acquire
- * timeouts that reached the client as 500s. Matched on shape, so this file needs no Better Auth.
+ * Better Auth rethrows database failures during session reads as a bare FAILED_TO_GET_SESSION,
+ * which can only mean PostgreSQL did not answer.
  */
 function failedSessionLookup(error: unknown): boolean {
   return (
@@ -114,12 +112,7 @@ function classify(error: unknown): Dependency | null {
   return null;
 }
 
-/**
- * Turns a failure of PostgreSQL or object storage into `DependencyUnavailableError` (503 SERVICE_UNAVAILABLE,
- * `Retry-After`), so an outage reads as "try again" rather than a 500 bug.
- * Text PostgreSQL refuses to store (a NUL byte) is the caller's input: 400 MALFORMED_REQUEST.
- * Returns the error unchanged when it is already an AppError or is neither.
- */
+/** Maps PostgreSQL and storage outages to a 503, and text PostgreSQL rejects (NUL bytes) to a 400. */
 export function asDependencyFailure(error: unknown): unknown {
   if (error instanceof AppError) return error;
   if (unstorableText(error))

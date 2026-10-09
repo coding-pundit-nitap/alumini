@@ -15,10 +15,7 @@ export function uuidParam(value: string): string {
   return parsed.data;
 }
 
-/**
- * The largest JSON body any route accepts. The largest legitimate body, a job or event
- * description, is a few KiB; this leaves room without letting a client make the server buffer megabytes.
- */
+/** Far above the largest legitimate body (a few KiB) without letting a client make us buffer megabytes. */
 export const MAX_JSON_BODY_BYTES = 64 * 1024;
 
 function isJsonMediaType(header: string | null): boolean {
@@ -28,11 +25,7 @@ function isJsonMediaType(header: string | null): boolean {
   );
 }
 
-/**
- * The raw text of a JSON body, for routes that need it (idempotent creates hash it). Refuses a non-JSON
- * Content-Type with 415 and a body over the cap with 413. The bytes are counted as they stream, so a
- * missing or understated Content-Length does not get past it; an overstated one is refused unread.
- */
+/** Refuses non-JSON with 415 and oversized bodies with 413, counting bytes as they stream. */
 export async function readBodyText(request: Request): Promise<string> {
   // No body (a bodiless POST such as an event registration): nothing to type-check or bound.
   if (!request.body || request.headers.get("content-length") === "0") return "";

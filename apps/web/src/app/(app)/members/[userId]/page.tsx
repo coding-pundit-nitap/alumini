@@ -46,7 +46,6 @@ export default async function MemberPage({
     throw error;
   }
 
-  // Only a verified member looking at someone else gets the connect controls.
   const status =
     actor && actor.accountState === "VERIFIED" && actor.userId !== userId
       ? await getConnectionStatus({ actor, otherUserId: userId })

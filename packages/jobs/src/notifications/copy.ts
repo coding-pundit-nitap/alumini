@@ -5,9 +5,8 @@ export type NotificationCopy = {
 };
 
 /**
- * One line of copy per notification type, shared by the email and the in-app bell/inbox. Payload is ids-only,
- * so copy never names people — it says what happened generically. A payload id only deepens the
- * link; a missing or odd one (content gone, older row) falls back to the list page.
+ * One line of copy per type, shared by email and in-app. Payloads are ids only, so copy never names
+ * people; a missing id falls back to the list page.
  */
 export function renderNotificationCopy(
   type: string,

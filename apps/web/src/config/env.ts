@@ -39,9 +39,6 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
 });
 
-/**
- * Validate environment variables at build & runtime.
- */
 function validateEnv() {
   const isServer = typeof window === "undefined";
 

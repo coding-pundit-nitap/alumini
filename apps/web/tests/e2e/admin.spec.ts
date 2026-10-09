@@ -28,7 +28,7 @@ async function member(
   return { page, email };
 }
 
-/** Direct DB access, so this suite needs no pre-seeded admin (same approach as jobs.spec.ts). */
+/** Direct DB access, so this suite needs no pre-seeded admin. */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function grantRole(email: string, roleName: RoleName): Promise<void> {
@@ -129,9 +129,7 @@ test("a member sees no Admin link and gets not-found at /admin and /admin/audit"
   await expect(
     page.getByRole("link", { name: "Admin", exact: true })
   ).toHaveCount(0);
-  // The not-found page, never the admin content. The HTTP status is 200, not 404: the root loading.tsx
-  // streams every dynamic route, so the status line is sent before notFound() throws (same as
-  // verification.spec.ts). The API answers a real 404 (admin-audit-log.security.integration.test.ts).
+  // The status is 200 because loading.tsx streams the response before notFound() throws.
   for (const path of ["/admin", "/admin/audit"]) {
     await page.goto(path);
     await expect(page.getByText("Page not found")).toBeVisible();

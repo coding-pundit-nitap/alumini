@@ -5,11 +5,7 @@ import type { TransactionRunner } from "@/infrastructure/database/transaction-ru
 
 import type { UploadStore, UploadTx } from "../application/upload-store";
 
-/**
- * Adapts the shared `@nitap/database/uploads` store (also used by the worker) to this module's
- * transaction-scoped port, and writes the `upload.scan` outbox event in the same transaction as the
- * status change (the same shape as `prisma-verification-store.ts`'s `enqueueEmail`).
- */
+/** Writes the `upload.scan` outbox event in the same transaction as the status change. */
 export function createPrismaUploadStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;

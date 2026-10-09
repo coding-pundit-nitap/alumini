@@ -1,8 +1,5 @@
 export { cn } from "@nitap/ui/lib/utils";
 
-/**
- * Format date to human-readable string.
- */
 export function formatDate(
   date: Date | string | number,
   options: Intl.DateTimeFormatOptions = {
@@ -16,9 +13,6 @@ export function formatDate(
   );
 }
 
-/**
- * Delays execution for a specified duration in milliseconds.
- */
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

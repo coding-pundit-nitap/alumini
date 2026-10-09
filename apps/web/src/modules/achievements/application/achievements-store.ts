@@ -39,11 +39,7 @@ export type AchievementsTx = {
     id: string,
     patch: { status: string; reviewedById?: string; publishedPostId?: string }
   ): Promise<void>;
-  /**
-   * The write: creates the ACHIEVEMENT-type Post and links it via published_post_id, in the SAME
-   * transaction as the status patch. This is modules/achievements writing a Post row directly by SQL —
-   * not an import of modules/posts — the same cross-module-write-by-SQL shape as moderation's soft-delete.
-   */
+  /** Creates the ACHIEVEMENT post and links it in the same transaction as the status change. */
   publishAsPost(
     achievementId: string,
     input: { authorId: string; title: string; description: string }

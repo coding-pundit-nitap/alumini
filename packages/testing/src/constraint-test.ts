@@ -9,11 +9,7 @@ export type ConstraintCase = {
   violate: (prisma: import("@nitap/database").PrismaClient) => Promise<unknown>;
 };
 
-/**
- * Asserts `error` is a PostgreSQL constraint violation naming exactly `constraintName` — never
- * just "an error was thrown". Catches an accidentally renamed or dropped constraint that some
- * other error still happens to be thrown for.
- */
+/** Asserts a violation of exactly `constraintName`, not just any error. */
 export function expectConstraintViolation(
   error: unknown,
   constraintName: string
@@ -22,11 +18,7 @@ export function expectConstraintViolation(
   const known = error as InstanceType<
     typeof Prisma.PrismaClientKnownRequestError
   >;
-  // P2002 unique, P2003 foreign key, P2010 raw query failed ($queryRaw). P2039 is what Prisma 7's
-  // pg driver adapter (@prisma/adapter-pg) actually raises for a CHECK constraint hit through a
-  // normal create/update call — its `meta` is empty, so the constraint name lives in `message`
-  // (confirmed empirically against ck_profile_graduation_year; not documented in Prisma's error
-  // code reference at the time of writing).
+  // P2039 is what the pg adapter raises for CHECK violations; the constraint name is only in `message`.
   expect(["P2002", "P2003", "P2010", "P2039"]).toContain(known.code);
   const meta = known.meta as
     | { target?: string[] | string; constraint?: string; message?: string }

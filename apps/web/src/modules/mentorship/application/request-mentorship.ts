@@ -28,9 +28,8 @@ export const requestInput = z
   .strict();
 
 /**
- * The row and its `mentorship.requested` event commit together. Two identical requests at the
- * same instant end with ONE row: the partial unique index makes the loser's insert a no-op and it is told
- * MENTORSHIP_REQUEST_EXISTS. Capacity is advisory here (accept is authoritative).
+ * A partial unique index turns a duplicate concurrent request into MENTORSHIP_REQUEST_EXISTS.
+ * Capacity is advisory here; accept enforces it.
  */
 export function createRequestMentorship(deps: {
   store: MentorshipStore;

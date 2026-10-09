@@ -12,7 +12,6 @@ type Params = { params: Promise<{ id: string }> };
 /** GET /api/v1/events/:id — the detail with live counts. */
 export const GET = routeHandler(async (_request, ctx: Params) => {
   const eventId = id.safeParse((await ctx.params).id);
-  // A malformed id and an unknown one are the same answer.
   if (!eventId.success) throw new NotFoundError();
 
   const data = await getEvent({

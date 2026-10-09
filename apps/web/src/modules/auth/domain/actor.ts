@@ -27,10 +27,7 @@ export type Grant =
       expiresAt: Date | null;
     };
 
-/**
- * The authenticated caller. `grants` is empty unless `accountState` is VERIFIED; it is
- * loaded once per request.
- */
+/** `grants` is empty unless `accountState` is VERIFIED. */
 export type Actor = {
   userId: string;
   accountState: AccountState;

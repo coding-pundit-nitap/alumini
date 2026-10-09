@@ -4,10 +4,7 @@ import { pool } from "@/infrastructure/database/client";
 import { healthDetailsVisible } from "@/infrastructure/health";
 import { logger } from "@/infrastructure/observability";
 
-/**
- * Prometheus scrape target. Not wrapped in routeHandler: a scrape is not API traffic.
- * Refused callers get a bare 404 so the endpoint is not advertised.
- */
+/** Prometheus scrape target. Refused callers get a bare 404. */
 export async function GET(request: Request): Promise<Response> {
   const metrics = getPrometheusMetrics();
   if (!metrics || !healthDetailsVisible(request)) {

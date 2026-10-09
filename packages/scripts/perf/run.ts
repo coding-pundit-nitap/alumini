@@ -1,16 +1,14 @@
 #!/usr/bin/env node
-// Load-test runner. Starts the production build against the performance database,
-// runs one k6 scenario from the official container, samples the server while it runs, and writes the k6 summary
-// plus the samples to packages/scripts/perf/results/data/<date>/<scenario>[-label].json.
+// Starts the production build against the perf database, runs one k6 scenario and writes the summary
+// and server samples to packages/scripts/perf/results/data/<date>/<scenario>[-label].json.
 //
 //   pnpm --filter @nitap/web build
 //   pnpm docker:up && set -a && . ./.env && set +a
-//   pnpm perf:seed -- --users 10000                      # once; builds alumini_perf and perf/.data/fixture.json
+//   pnpm perf:seed -- --users 10000                      # once
 //   node packages/scripts/perf/run.ts directory [--rate 50] [--duration 3m] [--ramp 30s] [--label before] \
 //        [--env KEY=VALUE]… [--worker] [--reset-spike] [--smoke] [--server-env KEY=VALUE]…
 //
-// --smoke runs the strategy's smoke shape (RATE=2, 30 s) and writes nothing. Exit code is k6's: 99 when a
-// threshold (a performance budget) broke.
+// --smoke runs a short check and writes nothing. Exits 99 when a threshold breaks.
 import { execFileSync, spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import { createRequire } from "node:module";

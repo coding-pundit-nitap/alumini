@@ -11,14 +11,8 @@ import { authorize, can, getActor } from "@/modules/auth";
 const HEARTBEAT_MS = 25_000;
 
 /**
- * GET /api/v1/messages/stream — Server-Sent Events. Carries ids-only message and notification hints for the caller's own channels; the
- * browser refetches through the authorized list endpoints, so nothing here can leak a message. Without Redis
- * the answer is 503 and the client falls back to polling.
- *
- * A caller needs MESSAGE_SEND, NOTIFICATION_READ, or both — permissions, never a role — to open the
- * connection at all (401/403 otherwise); each hint kind is then only ever written to the wire for a
- * caller who holds the matching permission, so an actor with only NOTIFICATION_READ gets notification
- * hints and no message traffic, and vice versa.
+ * Server-Sent Events carrying id-only message and notification hints; the client refetches through
+ * the authorized endpoints. Each hint kind needs its matching permission. 503 without Redis.
  */
 export const GET = routeHandler(async (request) => {
   const actor = await getActor();

@@ -20,10 +20,8 @@ import { composeWorker, type ComposedWorker } from "../src/compose.ts";
 import { createPrismaClient } from "../src/prisma.ts";
 import { recordingMetrics, silentLogger } from "./support.ts";
 
-// Dependency faults for the worker at system level. The worker uses the
-// production pool (createPrismaClient) and a real queue Redis, each THROUGH a fault proxy, so the
-// timeouts under test are the ones that ship. The test writes outbox rows on a direct connection: the
-// database is up, only the worker's path to it fails.
+// The worker's production pool and queue Redis each go through a fault proxy, so the shipped timeouts
+// are tested.
 const fastEmailJob = defineJob({
   ...emailSend,
   retry: { attempts: 20, baseDelayMs: 40, maxDelayMs: 200, jitter: 0 },

@@ -4,18 +4,16 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 
 /**
- * Checks the launch report, packages/scripts/launch/launch-readiness.md. Every evidence reference on a row
- * must resolve:
+ * Checks packages/scripts/launch/launch-readiness.md. Every evidence reference must resolve:
  *
- *   test:<path>[#<name>]   a test file that a suite CI runs collects; with a name, that test is in it, not skipped
- *   drill:<file>[#<check>] the newest entry of packages/scripts/drills/reports/<file> passed within 35 days, and lists the check
+ *   test:<path>[#<name>]   a test file CI collects; with a name, that test exists and isn't skipped
+ *   drill:<file>[#<check>] the newest entry in packages/scripts/drills/reports/<file> passed within 35 days
  *   doc:<path>[#<text>]    a repository file exists and contains the text
- *   ci:<workflow>          the newest completed run of that workflow on main succeeded (needs gh; else open)
- *   owner:<OW-n>           an owner checklist row (of the report); open until ticked
+ *   ci:<workflow>          the newest run of that workflow on main succeeded (needs gh)
+ *   owner:<OW-n>           an owner checklist row; open until ticked
  *
- * Also: every acceptance box has a row, and the documentation audit (runbooks R-1 … R-15, the deploy README's
- * sections). Broken evidence exits 1. Open items are listed and exit 0, or 2 with --strict: the launch gate.
- * Run locally: it reads the drill logs in packages/scripts/drills/reports and the acceptance criteria in packages/scripts/launch.
+ * Also checks acceptance boxes, runbooks R-1 … R-15 and the deploy README. Broken evidence exits 1;
+ * open items exit 0, or 2 with --strict.
  *
  *   node packages/scripts/launch-check.ts [--strict] [--report path]
  */
@@ -31,7 +29,7 @@ const { values: args } = parseArgs({
 });
 
 const DRILL_MAX_AGE_DAYS = 35;
-// Is donation reconciliation: there is no payment provider to reconcile against (ops/README).
+// Donation reconciliation: there is no payment provider to reconcile against (ops/README).
 const RUNBOOKS_NOT_SHIPPED = new Set(["R-13"]);
 const README_SECTIONS = [
   ...Array.from({ length: 9 }, (_, i) => `### ${i + 1}. `),

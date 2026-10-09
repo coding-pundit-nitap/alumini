@@ -16,9 +16,8 @@ const POLL_MS = 30_000;
 const RECENT_LIMIT = 5;
 
 /**
- * Unread count and the most recent notifications for the header bell. Refreshes on a 30 s poll, on
- * `visibilitychange` and on an SSE "notification" hint (falls back to the poll alone when the stream 503s —
- * Redis being down must never break reading the count or the list).
+ * Unread count and recent notifications for the bell. Refreshes on a 30 s poll, tab focus and SSE
+ * hints, and falls back to polling if the stream is unavailable.
  */
 export function useNotifications() {
   const [count, setCount] = useState(0);

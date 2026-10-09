@@ -15,11 +15,7 @@ export type DevAdmin = {
   passwordHash: string;
 };
 
-/**
- * Roles, role→permission bundles, departments and degrees. Safe in every environment.
- * Idempotent: every write is an upsert on a natural key, so running it twice changes no rows
- *.
- */
+/** Roles, permissions, departments and degrees. Safe in every environment and idempotent. */
 export async function runSeed(prisma: PrismaClient): Promise<void> {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, create: { name }, update: {} });
@@ -94,11 +90,7 @@ export type SeedUser = {
   passwordHash: string;
 };
 
-/**
- * A verified user with a credential, a profile and one role, granted by the user themselves (the
- * bootstrap convention: nobody exists yet to grant it). Idempotent, and never overwrites an existing
- * password hash. Requires runSeed to have created the roles.
- */
+/** Self-granted, since nobody exists yet to grant it. Idempotent and never overwrites a password hash. */
 export async function seedAdminUser(
   prisma: PrismaClient,
   seedUser: SeedUser
@@ -141,11 +133,7 @@ export async function seedAdminUser(
   });
 }
 
-/**
- * Development-only super admin. The password hash comes from the caller: hashing lives with Better
- * Auth in apps/web, so this package needs no dependency on it, and the caller decides whether the
- * environment allows it.
- */
+/** The caller supplies the hash, so this package doesn't depend on Better Auth. */
 export async function seedDevAdmin(
   prisma: PrismaClient,
   admin: DevAdmin
@@ -179,11 +167,7 @@ export class BootstrapRefusedError extends Error {
   }
 }
 
-/**
- * Creates the FIRST super admin of an environment, in any environment. Refuses when one exists, so it
- * cannot be used to mint a second. (Two operators running it at the very same instant with different
- * emails could both pass the check; it is a manual, one-time operation.)
- */
+/** Refuses when a super admin already exists. A manual, one-time operation. */
 export async function bootstrapSuperAdmin(
   prisma: PrismaClient,
   admin: DevAdmin & { name?: string }

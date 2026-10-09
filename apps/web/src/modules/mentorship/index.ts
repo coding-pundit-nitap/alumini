@@ -1,4 +1,3 @@
-/** Public API of the mentorship module. Other code imports from here, never from the module's internals. */
 export { createGetMentorProfile } from "./application/get-mentor-profile";
 export { createListMentors } from "./application/list-mentors";
 export { createListMentorships } from "./application/list-mentorships";

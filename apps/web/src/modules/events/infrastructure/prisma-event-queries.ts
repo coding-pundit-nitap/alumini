@@ -39,10 +39,6 @@ const toSummary = (row: Row): EventSummaryRow => ({
   viewer: { registrationState: row.viewerState },
 });
 
-/**
- * Read side for `listEvents`/`getEvent`. One `SELECT` per call; admission and cancellation
- * are each a guarded write elsewhere (`prisma-event-store.ts`), never decided here.
- */
 export function createPrismaEventQueries(prisma: PrismaClient): EventQueries {
   return {
     async list(viewerId, filter) {

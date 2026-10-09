@@ -30,9 +30,8 @@ export type DirectoryPage = {
 };
 
 /**
- * Directory search for a verified member. Which profiles and fields the searcher may see is the
- * search adapter's job, in the query; there is no privileged reach (see `SearchViewer`). There are no totals or counts anywhere,
- * so a private profile leaks through neither.
+ * Visibility is enforced in the search adapter's query. No totals or counts are returned, so private
+ * profiles cannot leak through them.
  */
 export function createSearchDirectory(deps: {
   authorize: Authorize;

@@ -12,7 +12,7 @@ const BASE_URL =
 const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
-/** Direct DB access, so this suite needs no pre-seeded admin (same approach as admin.spec.ts). */
+/** Direct DB access, so this suite needs no pre-seeded admin. */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function memberWithRole(
@@ -76,7 +76,7 @@ test("a moderator has no analytics.view and gets not-found", async ({
   const page = await memberWithRole(browser, "MODERATOR");
   await page.goto("/admin");
   await expect(page.getByRole("link", { name: "Analytics" })).toHaveCount(0);
-  // 200 + not-found page, for the reason given in admin.spec.ts.
+  // The status is 200 because loading.tsx streams the response before notFound() throws.
   await page.goto("/admin/analytics");
   await expect(page.getByText("Page not found")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Analytics" })).toHaveCount(0);

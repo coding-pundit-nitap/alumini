@@ -44,21 +44,18 @@ test("J-05 members find each other in the directory, and private profiles stay o
   await owner.getByRole("button", { name: "Save profile" }).click();
   await expect(owner.getByText("Profile saved.")).toBeVisible();
 
-  // Search finds the member, and the result leads to their profile page.
   await viewer.goto(`/directory?q=${token}`);
   const result = viewer.getByRole("link", { name: new RegExp(token) });
   await expect(result).toBeVisible();
   await result.click();
   await expect(viewer).toHaveURL(/\/members\/[0-9a-f-]{36}$/);
 
-  // PRIVATE: the member vanishes from the directory.
   await setLevel(owner, "Only me");
   await viewer.goto(`/directory?q=${token}`);
   await expect(
     viewer.getByText("No members match these filters.")
   ).toBeVisible();
 
-  // A guest is sent to sign in.
   const guest = await (
     await browser.newContext({ baseURL: BASE_URL })
   ).newPage();

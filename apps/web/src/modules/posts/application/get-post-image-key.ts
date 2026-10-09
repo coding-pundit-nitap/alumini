@@ -6,10 +6,7 @@ import type { Actor } from "@/modules/auth";
 import type { Authorize } from "./authz";
 import type { PostsStore } from "./posts-store";
 
-/**
- * Serves only images a live post references, so an upload id alone (e.g. a private profile photo)
- * never resolves.
- */
+/** Only images a live post references, so an upload id alone never resolves. */
 export function createGetPostImageKey(deps: {
   store: PostsStore;
   authorize: Authorize;

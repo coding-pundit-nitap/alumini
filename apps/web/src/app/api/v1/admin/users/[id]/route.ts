@@ -16,7 +16,6 @@ const userId = async (ctx: Params) => {
 };
 const json = (request: Request) => readJson(request);
 
-/** GET /api/v1/admin/users/:id. */
 export const GET = routeHandler(async (_request, ctx: Params) => {
   const view = await getUser({
     actor: await getActor(),

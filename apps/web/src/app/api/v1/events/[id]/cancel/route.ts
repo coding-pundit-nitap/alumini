@@ -10,11 +10,10 @@ const id = z.uuid();
 
 type Params = { params: Promise<{ id: string }> };
 
-/** POST /api/v1/events/:id/cancel — organizer/manager cancels the event. Not in E-14's idempotent-routes list. */
+/** POST /api/v1/events/:id/cancel — the organizer or a manager cancels the event. */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const eventId = id.safeParse((await ctx.params).id);
-  // A malformed id and an unknown one are the same answer.
   if (!eventId.success) throw new NotFoundError();
 
   const { eventId: cancelledId } = await cancelEvent({

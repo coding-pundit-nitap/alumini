@@ -11,10 +11,7 @@ export type SmtpEmailPortOptions = {
   connectionTimeoutMs?: number;
   greetingTimeoutMs?: number;
   socketTimeoutMs?: number;
-  /**
-   * Suppression lookup by `hashEmail`. The provider has no bounce webhook yet, so the composition root
-   * passes a read of the email_suppression table; default: nothing is suppressed.
-   */
+  /** Lookup by `hashEmail`. Defaults to nothing suppressed. */
   isSuppressed?: (emailHash: string) => Promise<boolean>;
 };
 
@@ -28,10 +25,7 @@ const RETRYABLE_CODES = new Set([
   "EPROTOCOL",
 ]);
 
-/**
- * Maps whatever nodemailer threw to retryable or permanent, without copying its message: SMTP servers
- * often echo the recipient address in their reply and this error reaches logs.
- */
+/** Classifies as retryable or permanent without copying the message, which often echoes the recipient. */
 function classify(error: unknown): EmailSendError {
   if (error instanceof EmailSendError) return error;
   const { code, responseCode } = error as {

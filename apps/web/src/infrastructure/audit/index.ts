@@ -2,10 +2,7 @@ import { createAuditWriter } from "@nitap/database/audit";
 
 import { getRequestContext } from "@/infrastructure/observability";
 
-/**
- * The audit writer for use cases: call `audit.record(tx, entry)` inside a
- * `transactionRunner.run` callback so the audit row commits or rolls back with the change it records.
- */
+/** Call inside a `transactionRunner.run` callback so the audit row commits with the change. */
 export const audit = createAuditWriter({
   requestId: () => getRequestContext()?.requestId,
 });

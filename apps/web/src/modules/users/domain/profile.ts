@@ -60,10 +60,7 @@ export type ProfileView = {
   links?: Shown<LinkItem>[];
 };
 
-/**
- * Null means "not found" for this viewer. Guests and
- * unverified accounts get only the reduced set: name, headline and, if allowed, location.
- */
+/** Null means not found. Guests and unverified accounts get name, headline and possibly location. */
 export function projectProfile(
   profile: ProfileRecord,
   viewer: Viewer

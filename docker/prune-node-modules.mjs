@@ -1,14 +1,9 @@
-// Cuts an installed pnpm workspace down to what some of its packages need at runtime. Build-time only (Docker).
+// Prunes an installed pnpm workspace to what the given packages need at runtime (Docker build only).
 //
 //   node prune-node-modules.mjs <repo> <package dir>[=<dependency>,...] ...
 //
-// A bare package dir keeps its `dependencies`; `dir=a,b` keeps exactly a and b (for a package used for only a
-// few files, or one that needs a devDependency). Workspace dependencies are followed through their own
-// `dependencies`, third-party ones through dependencies, optionalDependencies and required peers, never optional
-// peers (better-auth lists next and vitest, @prisma/client the Prisma CLI). Everything else goes: other
-// workspace packages, links the kept packages do not need, and every unreached package in node_modules/.pnpm
-// (pnpm extracts the whole lockfile there whatever the filter). Then source maps, type declarations and
-// Prisma's query compilers for databases other than PostgreSQL, none of which is loaded at runtime.
+// A bare dir keeps its `dependencies`; `dir=a,b` keeps exactly a and b. Also removes source maps,
+// type declarations and non-PostgreSQL Prisma query compilers.
 import {
   existsSync,
   readdirSync,

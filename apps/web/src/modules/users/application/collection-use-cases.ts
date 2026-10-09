@@ -17,11 +17,7 @@ function fail(details: FieldProblem[]): never {
   });
 }
 
-/**
- * The add/update/remove use cases every detail collection needs, built once. Institutional fields are
- * never in scope: `Input` types for experience/education/skills/links (domain/profile-items.ts) have no
- * such keys, and no operation here takes anything but the caller's own id.
- */
+/** Operations only ever take the caller's own id, and input types have no institutional fields. */
 export function createCollectionUseCases<
   Input,
   Item extends { id: string },

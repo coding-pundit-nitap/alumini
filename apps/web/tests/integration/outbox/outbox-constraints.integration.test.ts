@@ -8,9 +8,8 @@ import {
 } from "@nitap/testing";
 
 /**
- * Every outbox constraint, by its PostgreSQL name: violating it is rejected and the
- * error names exactly that constraint; in a scratch database where it is dropped, the same write
- * succeeds, which proves the first assertion is not vacuous.
+ * For each constraint: a violation is rejected naming that constraint, and with it dropped the same
+ * write succeeds.
  */
 type Case = {
   name: string;

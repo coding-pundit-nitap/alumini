@@ -1,6 +1,5 @@
-# Local development services. Production topology is described in.
-# Run from the repo root: `pnpm docker:up`. `name` is fixed so the project (and its named volumes) does not
-# depend on this file's directory: moving the file here would otherwise have orphaned the existing data volume.
+# Local development services. Run from the repo root: `pnpm docker:up`. `name` is fixed so the
+# project and its volumes don't depend on this file's location.
 name: alumini
 
 services:
@@ -24,8 +23,7 @@ services:
       timeout: 3s
       retries: 10
 
-  # Cache / rate-limit Redis: evicts under memory pressure, holds nothing unrecoverable.
-  # The job queue will need a SEPARATE Redis with maxmemory-policy noeviction and AOF.
+  # Cache / rate-limit Redis: may evict under memory pressure, so it holds nothing unrecoverable.
   redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -47,8 +45,7 @@ services:
       timeout: 3s
       retries: 10
 
-  # Queue Redis: a job queue must never lose keys, so this instance must NOT evict and must
-  # persist. It is a different instance from the cache Redis above on purpose.
+  # Queue Redis: a job queue must never lose keys, so this one never evicts and persists (AOF).
   queue-redis:
     image: redis:7-alpine
     restart: unless-stopped
@@ -72,12 +69,8 @@ services:
       timeout: 3s
       retries: 10
 
-  # Object storage for uploads. MinIO no longer publishes images anonymously (quay.io and Docker
-  # Hub both return 401 since its community-edition change; bitnami/minio is also gone, and this project does
-  # not build on the unmaintained bitnamilegacy/minio), so this uses Chainguard's free source build. It ships
-  # `sh` and `mc`, so one image serves both services. It has no env-var bucket auto-create, so `minio-init`
-  # creates the bucket once and exits; CI cannot use this as a `services:` entry (no command override there),
-  # so the CI workflow starts it with a plain `docker run` step instead.
+  # MinIO no longer publishes images, so this uses Chainguard's source build, which ships `sh` and `mc`.
+  # It can't auto-create buckets, so `minio-init` creates one and exits.
   minio:
     image: cgr.dev/chainguard/minio:latest
     # The image runs as uid 65532, but volumes created by the old official image are root-owned.
@@ -115,10 +108,7 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     restart: unless-stopped
-    # Reverse-DNS lookups on the connecting IP block the SMTP greeting in this environment (no working
-    # PTR resolution for the docker-bridge gateway address), which reads as a hung "greeting never
-    # received" to any client outside the container's own loopback. Disabling rDNS is a dev-mailbox-only
-    # concern; it never talks to real mail servers.
+    # Reverse-DNS lookups on the bridge gateway stall the SMTP greeting; disable them (dev mailbox only).
     command: ["--smtp-disable-rdns"]
     ports:
       - "${MAILPIT_SMTP_PORT:-1025}:1025"

@@ -45,10 +45,7 @@ function Field({
   );
 }
 
-/**
- * Own-profile core form. Uses a form action, so it submits without JavaScript and, with it, shows the
- * per-field errors the Server Action returns. The institutional fields are not here and cannot be sent.
- */
+/** Uses a form action, so it works without JavaScript. */
 export function ProfileForm({
   action,
   defaults,

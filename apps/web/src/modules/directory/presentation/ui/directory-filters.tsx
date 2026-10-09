@@ -31,10 +31,7 @@ const CHIP_LABEL: Record<string, string> = {
 const values = (value: string | string[] | undefined) =>
   (Array.isArray(value) ? value : value ? [value] : []).filter(Boolean);
 
-/**
- * One chip per applied filter value, each linking to the same search without that value (and without
- * `cursor`, so it starts from the first page). Departments show by name.
- */
+/** Each chip links to the same search without that value, starting from the first page. */
 export function chipsFor(params: Params, departments: Department[]) {
   const chips: { key: string; label: string; href: string }[] = [];
   for (const [key, prefix] of Object.entries(CHIP_LABEL)) {
@@ -72,11 +69,7 @@ export function clearFiltersHref(params: Params) {
 const SELECT =
   "border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border px-2 text-sm outline-none focus-visible:ring-[3px]";
 
-/**
- * A plain GET form: the URL is the state, so filters and pages are linkable and need no client JS.
- * Submitting drops `cursor`, which starts the list from the first page. The filters fold into a native
- * `<details>`; inputs in a closed one still submit.
- */
+/** A plain GET form: the URL is the state, so it works without JavaScript. Submitting drops `cursor`. */
 export function DirectoryFilters({
   params,
   departments,

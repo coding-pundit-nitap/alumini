@@ -9,11 +9,7 @@ export const metadata: Metadata = { title: "Confirm your email" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/**
- * Renders the OUTCOME only. The emailed link goes to Better Auth's GET /api/auth/verify-email, which
- * verifies and redirects here with `?status=confirmed`, or with `&error=TOKEN_EXPIRED|INVALID_TOKEN`.
- * The token never reaches this page.
- */
+/** Shows the outcome only: Better Auth verifies the token and redirects here with `?status` or `?error`. */
 export default async function VerifyEmailPage({
   searchParams,
 }: {

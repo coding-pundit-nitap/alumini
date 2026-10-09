@@ -2,9 +2,8 @@ import { env } from "@/config/env";
 import { AuthorizationError } from "@/lib/errors";
 
 /**
- * CSRF guard for cookie-authenticated mutations on Route Handlers (Server Actions get Next.js's own
- * Origin check; Better Auth checks its own routes). A browser always sends `Origin` on a cross-site POST,
- * so a missing header is a non-browser client (no ambient cookie to abuse) and a foreign one is refused.
+ * CSRF guard for cookie-authenticated Route Handlers. Browsers always send `Origin` cross-site, so a
+ * missing header means a non-browser client.
  */
 export function assertSameOrigin(request: Request): void {
   const origin = request.headers.get("origin");

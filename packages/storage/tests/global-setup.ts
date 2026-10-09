@@ -8,7 +8,7 @@ export default function setup() {
   ].filter((name) => !process.env[name]);
   if (missing.length > 0) {
     throw new Error(
-      `Storage integration tests need ${missing.join(", ")}. Run \`pnpm docker:up\` and load .env: set -a; . ./.env; set +a.`
+      `Storage integration tests need ${missing.join(", ")}. Run \`pnpm docker:up\` and copy .env.example to .env.`
     );
   }
 }

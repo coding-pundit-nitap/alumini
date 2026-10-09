@@ -15,12 +15,7 @@ import {
   type EventStoreHarness,
 } from "../../support/event-store.contract";
 
-/**
- * Builds the same contract harness the fake store satisfies, but backed by real PostgreSQL. Seed
- * calls insert directly via `db.prisma` (bypassing use-case validation is fine in a seed, per the
- * task ruling) so a test can create an event row with an arbitrary status/startsAt/deadline/
- * capacity/registeredCount, and registrations in an arbitrary state.
- */
+/** The contract harness backed by real PostgreSQL. Seeds insert directly so tests can set any state. */
 function buildHarness(db: TestDatabase): EventStoreHarness {
   const store = createPrismaEventStore({
     runner: createTransactionRunner(db.prisma),

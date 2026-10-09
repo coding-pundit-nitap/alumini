@@ -9,7 +9,7 @@ import type { Authorize } from "./authz";
 import type { JobObserver, JobStore } from "./job-store";
 import { refuse } from "./refusal";
 
-/** (withdrawal). Poster or job.manage only; never sets EXPIRED (worker-only). */
+/** Withdrawal. Poster or job.manage only; never sets EXPIRED (the worker does). */
 export function createCloseJob(deps: {
   store: JobStore;
   authorize: Authorize;

@@ -1,12 +1,5 @@
-// Authentication: POST /api/auth/sign-in/email. scrypt hashing is CPU-heavy by design
-// ("intentionally long"), so this measures sign-ins per second per instance and their CPU cost, with
-// its own latency budget rather than the 500 ms p95.
-//
-// Not measured here: the session read. The app never calls /api/auth/get-session over HTTP (getActor() calls
-// Better Auth in-process), so every other scenario already pays it; over HTTP that endpoint sits behind Better
-// Auth's default per-IP limiter (100 per 10 s), which a single load generator only measures itself against.
-// Each sign-in comes from its own client address (x-forwarded-for, as behind the platform proxy), so the
-// sign-in limiter (10/min per IP) is not what is measured either; it has its own tests.
+// Sign-in throughput and CPU cost. scrypt is deliberately slow, so this has its own latency budget.
+// Each sign-in uses its own client address so the per-IP limiter isn't what gets measured.
 import http from "k6/http";
 import type { Options } from "k6/options";
 import { check } from "k6";

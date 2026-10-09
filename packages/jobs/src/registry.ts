@@ -34,7 +34,7 @@ import {
   verificationDecided,
 } from "./account.ts";
 
-/** Jobs a use case can request by writing an outbox event. In 2B an event type maps 1:1 to a job. */
+/** Jobs a use case can request by writing an outbox event. */
 export const OUTBOX_EVENTS = {
   "email.send": emailSend,
   "connection.requested": connectionRequested,

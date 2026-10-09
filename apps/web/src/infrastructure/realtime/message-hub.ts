@@ -70,10 +70,8 @@ function join(client: Redis, channel: string, listener: Listener) {
 }
 
 /**
- * Listens for one member's hints on both channels: `msg:user:` (message hints) and `notif:user:` (notification
- * hints). A channel with no listener passed is never subscribed. Subscribes to a channel with its first listener and leaves it with the last. ponytail: two
- * channels per connected member; a single pattern subscription is simpler but every process then receives every
- * member's traffic, so switch only if per-channel churn shows up in metrics.
+ * Subscribes to `msg:user:` and `notif:user:` channels on first listener, leaves on last. Per-member
+ * channels rather than a pattern subscription, so a process only receives its own members' traffic.
  */
 export function subscribeToUser(
   userId: string,

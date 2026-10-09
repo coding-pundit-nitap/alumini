@@ -4,10 +4,8 @@ import { debounceKeyFor, MESSAGE_DEBOUNCE_MS } from "@nitap/jobs";
 
 export type MessageDebounce = {
   /**
-   * Claims or joins the (recipient, conversation) window. The first message's event id opens the window
-   * and names it (`window`, the notification's windowBucket); only that event emails (`owner`), and it is
-   * re-granted on retry, so a crash after the in-app insert still sends the email on the next attempt. The
-   * window ends by TTL, or when reading the conversation in the web app deletes the key.
+   * The first message's event opens and owns the window and is the only one to email; it is re-granted
+   * on retry. The window ends by TTL or when the conversation is read.
    */
   claim(
     recipientId: string,

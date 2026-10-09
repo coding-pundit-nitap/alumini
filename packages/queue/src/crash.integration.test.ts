@@ -16,9 +16,8 @@ import {
   type WorkerRuntime,
 } from "./runtime.ts";
 
-// Worker crash mid-job and shutdown during a long job. A worker that
-// dies stops renewing its job's lock; the next worker's stalled check returns the job to the queue and runs
-// it. Real Redis, a real child process and a real SIGKILL: nothing is simulated.
+// A killed worker stops renewing its lock, so the next worker's stalled check picks the job up.
+// Real Redis, a real child process and a real SIGKILL.
 const eventually = (assertion: () => unknown | Promise<unknown>) =>
   vi.waitFor(assertion, { timeout: 15_000, interval: 50 });
 

@@ -17,7 +17,6 @@ const id = (value: unknown) => {
   return value;
 };
 
-/** Member actions. Each use case authorizes and validates again. */
 export async function pledgeAction(
   campaignId: string,
   input: { amount: string; paymentReference: string }

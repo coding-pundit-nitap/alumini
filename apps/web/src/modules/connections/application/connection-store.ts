@@ -16,10 +16,7 @@ export type NewConnection = ConnectionPatch & {
   userBId: string;
 };
 
-/**
- * Everything a write does happens through one of these, inside ONE database transaction, so a row and its
- * outbox event commit or roll back together.
- */
+/** All writes go through one transaction, so a row and its outbox event commit together. */
 export type ConnectionTx = {
   findByPair(userAId: string, userBId: string): Promise<ConnectionRow | null>;
   findById(id: string): Promise<ConnectionRow | null>;

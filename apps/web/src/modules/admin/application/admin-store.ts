@@ -116,7 +116,7 @@ export type SettingsTx = {
   audit(entry: {
     actorId: string;
     targetId: string;
-    /** Identifiers and outcomes only (writer contract): the sign-off name stays in the table. */
+    /** Identifiers and outcomes only; the sign-off name stays in the table. */
     metadata: {
       key: string;
       from: { retentionDays: number; approved: boolean };

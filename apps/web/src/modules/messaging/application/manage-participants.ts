@@ -1,4 +1,3 @@
-// apps/web/src/modules/messaging/application/manage-participants.ts
 import { PERMISSIONS } from "@nitap/database/permissions";
 
 import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
@@ -17,10 +16,7 @@ type Deps = {
 };
 type Args = { actor: Actor | null; conversationId: string; userId: string };
 
-/**
- * Creator-only add. The conversation row lock (taken by `requireParticipant`) makes the count and
- * the insert one atomic step, so the 20-member cap holds under concurrent adds.
- */
+/** Creator only. The conversation lock keeps the 20-member cap under concurrent adds. */
 export function createAddParticipant(deps: Deps) {
   return async function addParticipant(
     args: Args

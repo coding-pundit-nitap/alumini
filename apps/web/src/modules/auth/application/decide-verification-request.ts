@@ -20,14 +20,8 @@ export type DecideResult =
   { outcome: "decided" } | { outcome: "already_decided" };
 
 /**
- * A human reviewer approves or rejects a verification request. There is no other path
- * to APPROVED. Everything a decision changes happens in ONE transaction, so it commits or rolls back
- * as a whole: request, account state, role, institutional profile fields, audit row, the email and
- * the in-app notice event.
- *
- * Authorization is the grant check first; the self-review rule is then explicit so the client gets
- * SELF_REVIEW_FORBIDDEN (the DECIDE guardrail and a database CHECK back it). The role is injected:
- * application code names permissions, never roles.
+ * The only path to APPROVED. Everything a decision changes commits in one transaction. Self-review is
+ * checked explicitly so the client gets SELF_REVIEW_FORBIDDEN; a database CHECK backs it.
  */
 export function createDecideVerificationRequest(deps: {
   store: VerificationStore;

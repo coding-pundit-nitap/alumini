@@ -31,7 +31,6 @@ test("J-05 a member adds, edits and removes experience, education, skills and li
 
   await owner.goto("/profile/details");
 
-  // Experience
   await owner.getByLabel("Company").fill("Acme");
   await owner.getByLabel("Role").fill("Engineer");
   await owner.getByLabel("Start date").fill("2020-01-15");
@@ -42,7 +41,6 @@ test("J-05 a member adds, edits and removes experience, education, skills and li
     .click();
   await expect(owner.getByText("Engineer · Acme")).toBeVisible();
 
-  // Education
   await owner.getByLabel("Institution").fill("IIT Madras");
   await owner.getByLabel("Qualification").fill("M.Tech");
   await owner.getByLabel("Start year").fill("2019");
@@ -53,18 +51,15 @@ test("J-05 a member adds, edits and removes experience, education, skills and li
     .click();
   await expect(owner.getByText("IIT Madras")).toBeVisible();
 
-  // Skill
   await owner.getByLabel("Add a skill").fill("TypeScript");
   await owner.locator("#skills").getByRole("button", { name: "Add" }).click();
   await expect(owner.locator("#skills").getByText("TypeScript")).toBeVisible();
 
-  // Link
   await owner.getByLabel("Type").selectOption("GITHUB");
   await owner.getByLabel("URL").fill("https://github.com/asha");
   await owner.locator("#links").getByRole("button", { name: "Add" }).click();
   await expect(owner.getByText("https://github.com/asha")).toBeVisible();
 
-  // Edit the experience entry: change the role.
   await owner
     .locator("#experience")
     .getByRole("link", { name: "Edit" })
@@ -75,7 +70,6 @@ test("J-05 a member adds, edits and removes experience, education, skills and li
   await editForm.getByRole("button", { name: "Save" }).click();
   await expect(owner.getByText(/Senior Engineer/)).toBeVisible();
 
-  // A second member sees everything by default (MEMBERS_ONLY).
   await owner.goto("/profile");
   const memberUrl = await owner
     .getByRole("link", { name: "View my profile" })
@@ -108,7 +102,6 @@ test("J-05 a member adds, edits and removes experience, education, skills and li
   await expect(viewer.getByText("Education")).toBeVisible();
   await expect(viewer.getByText("Links")).toBeVisible();
 
-  // Remove the skill; re-open the details page as owner to confirm it is gone.
   await owner.goto("/profile/details");
   await owner
     .locator("#skills")

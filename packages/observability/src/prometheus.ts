@@ -9,9 +9,8 @@ import {
 import type { MetricLabels, Metrics } from "./metrics.ts";
 
 /**
- * Prometheus adapter for the `Metrics` port. Pull model: the process serves
- * `render()` on `/metrics`. Metrics are created on first use with that call's label keys; a later call
- * with other keys, or the same name as another type, is dropped and counted — never thrown into a call site.
+ * Served on `/metrics`. A later call with different label keys or a conflicting type is dropped and
+ * counted, never thrown.
  */
 export type PrometheusMetrics = Metrics & {
   readonly registry: Registry;

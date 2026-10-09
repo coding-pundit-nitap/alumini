@@ -1,7 +1,4 @@
-/**
- * Server-only public API of the donations module: composition roots import from here (it reaches the
- * generated Prisma client at runtime; see modules/moderation/index.ts).
- */
+/** Server-only exports: this reaches the generated Prisma client. */
 export {
   createPrismaDonationQueries,
   createPrismaDonationStore,

@@ -14,11 +14,7 @@ export const MAX_LIMIT = 50;
 const clampLimit = (limit: number | undefined) =>
   Math.min(Math.max(1, limit ?? DEFAULT_LIMIT), MAX_LIMIT);
 
-/**
- * Own-content read. There is no separate read permission for achievements, so this reuses
- * `ACHIEVEMENT_SUBMIT` (own-content: a member reads only their own submissions). Keyset-paged over
- * `(createdAt DESC, id DESC)`, same shape as posts' feed.
- */
+/** Reuses `ACHIEVEMENT_SUBMIT`: a member reads only their own submissions. */
 export function createListOwnAchievements(deps: {
   store: AchievementsStore;
   authorize: Authorize;

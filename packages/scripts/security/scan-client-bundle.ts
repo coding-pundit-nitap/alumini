@@ -1,11 +1,7 @@
 #!/usr/bin/env node
-// Build-output scan: after `next build`, nothing
-// the browser downloads may carry a server environment variable's NAME or a secret's VALUE.
+// Fails if the client bundle contains a server env variable's name or a secret's value.
 //
 //   pnpm build && node packages/scripts/security/scan-client-bundle.ts
-//
-// Names come from the web app's server env schema (apps/web/src/config/env.ts) and the storage package's;
-// values are those of the variables in the current environment that hold credentials. Exit 1 on any hit.
 import fs from "node:fs";
 import path from "node:path";
 
@@ -65,9 +61,7 @@ const walk = (dir: string) => {
 };
 walk(staticDir);
 
-// Reviewed: Better Auth's browser client ships its generic env reader, whose getters look these names up in
-// process.env at runtime (undefined in a browser). The names are the library's, and no value is inlined:
-// the value check below still runs for both.
+// Better Auth's browser client references these names but never inlines a value; values are still checked.
 const VENDOR_NAMES = new Set(["BETTER_AUTH_SECRET", "BETTER_AUTH_URL"]);
 
 const hits: string[] = [];

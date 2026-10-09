@@ -45,11 +45,6 @@ function parseId(field: string, value: string): string {
   return value;
 }
 
-/**
- * Feed Server Actions. Plain-value arguments, called from client buttons/forms; each
- * use case authorizes and validates again, and the page re-renders afterwards (mirrors
- * app/connections/actions.ts and app/messages/actions.ts's wrapper pattern).
- */
 export async function createPostAction(
   input: unknown
 ): Promise<ActionResult<{ postId: string }>> {
@@ -88,7 +83,7 @@ export async function updatePostAction(
   });
 }
 
-/** Same as deletePostAction, but for the post's own page: after a successful delete there's nothing left to show, so send the caller home. */
+/** After deleting, there is nothing left to show, so go home. */
 export async function deletePostAndGoHomeAction(
   postId: string
 ): Promise<ActionResult<Record<string, never>>> {
@@ -213,12 +208,7 @@ export async function dismissReportAction(
   });
 }
 
-/**
- * PostComposer's image pickers: the underlying upload rows are still
- * tagged `purpose: "PROFILE_PHOTO"` (uploads' one current purpose) and gated on `profile.update`, which
- * every verified member holds (MEMBER_BASELINE) — `createPost`'s `uploadsReady` check only cares about
- * ownership and READY status, not purpose, so this works today. Mirrors app/profile/photo-actions.ts.
- */
+/** Post images reuse the PROFILE_PHOTO upload purpose; `createPost` only checks ownership and READY status. */
 export async function presignPostImageAction(input: {
   mime: string;
   size: number;

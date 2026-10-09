@@ -12,11 +12,7 @@ import {
   TOPICS,
 } from "./words.ts";
 
-/**
- * The performance seed's generator: options in, rows out, no I/O. The same
- * options always produce the same rows, so two load-test results on the same `users`/`seed` ran against the
- * same data. Volumes scale with `users`; the ratios are recorded with every result through `options`.
- */
+/** Deterministic: the same options always produce the same rows. */
 export type PerfOptions = {
   /** Member accounts (staff accounts come on top: 1 super admin, 3 coordinators, 5 moderators). */
   users: number;

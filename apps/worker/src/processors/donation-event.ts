@@ -4,9 +4,8 @@ import type { JobProcessor } from "@nitap/queue";
 import type { DeliverNotification } from "../notifications/deliver.ts";
 
 /**
- * `donation.pledged` tells every campaign manager except the donor;
- * `donation.confirmed` / `donation.not-received` tell the donor. In-app + email, TRANSACTIONAL:
- * they are records of money, not engagement. Payload ids only.
+ * Pledges notify campaign managers; confirmations and non-receipts notify the donor. Transactional,
+ * since they are records of money.
  */
 export function createDonationEventProcessor(
   type: "donation.pledged" | "donation.confirmed" | "donation.not-received",

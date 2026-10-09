@@ -3,11 +3,7 @@ import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-/**
- * `turbo prune @nitap/worker --docker` builds the minimal workspace the worker image needs. This proves
- * the worker's dependency graph is what we intend: the worker and its packages are in, the web app and
- * the design system are out. It is also the Docker layer-caching input for the deploy phase.
- */
+/** Checks that `turbo prune @nitap/worker` includes the worker's packages and excludes web and ui. */
 const out = mkdtempSync(path.join(tmpdir(), "worker-prune-"));
 const mustContain = [
   "apps/worker",

@@ -34,10 +34,7 @@ export type UploadTx = {
   enqueueScan(payload: UploadScanPayload): Promise<void>;
 };
 
-/**
- * Every operation runs inside the caller's transaction, so a row and its outbox event commit or roll
- * back together (the same shape as `VerificationStore`, `ProfileStore`'s siblings in `auth`).
- */
+/** Every operation runs in the caller's transaction, so a row and its outbox event commit together. */
 export type UploadStore = {
   transaction<T>(work: (tx: UploadTx) => Promise<T>): Promise<T>;
 };

@@ -10,10 +10,7 @@ import type { PostsStore } from "./posts-store";
 import { refuse } from "./refusal";
 import { parse } from "./validation";
 
-/**
- * `upsertReaction` is a DB-level upsert on `uq_reaction_per_user`, replacing any prior reaction type
- * in one atomic operation — never "delete then insert", which would race under concurrency.
- */
+/** A single upsert on `uq_reaction_per_user`, never delete-then-insert. */
 export function createReact(deps: { store: PostsStore; authorize: Authorize }) {
   return async function react(args: {
     actor: Actor | null;

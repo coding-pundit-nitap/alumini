@@ -50,10 +50,7 @@ export const PROFILE_FIELDS = [
   "location",
 ] as const;
 
-/**
- * Strict: `departmentId`, `degreeId`, `graduationYear` and any other key fail validation.
- * Self-service cannot express an institutional change at all.
- */
+/** Strict: institutional fields fail validation. */
 export const updateProfileSchema = z
   .object({
     fullName: z

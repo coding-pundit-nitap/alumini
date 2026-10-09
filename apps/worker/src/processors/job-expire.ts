@@ -9,10 +9,8 @@ export type JobExpireStoreLike = {
 };
 
 /**
- * Flips overdue PUBLISHED jobs to EXPIRED in bounded batches, each row's flip and its
- * `job.expired` outbox event committed atomically by the store (`expireOne`). Modeled on `upload-sweep.ts`:
- * walks batches until a short one ends the run, so one large backlog cannot hold the job open past its
- * timeout, and `context.signal.aborted` is checked between batches so a shutdown stops promptly.
+ * Bounded batches, each row's flip and `job.expired` event committed together. Checks the abort
+ * signal between batches.
  */
 export function createJobExpireProcessor(deps: {
   store: JobExpireStoreLike;

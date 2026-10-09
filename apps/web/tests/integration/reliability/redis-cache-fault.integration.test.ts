@@ -1,9 +1,5 @@
-// Cache Redis down and slow, at system level.
-//
-// The production Redis client (@/infrastructure/redis/client: 250 ms command timeout, no offline queue)
-// reaches the real cache Redis THROUGH a fault proxy. Cache Redis down is "degraded, not down":
-// readiness stays 200, the unread count comes from PostgreSQL, the auth rate
-// limiter falls back to its stricter in-memory twin. Only the session lookup is stubbed.
+// Cache Redis down and slow, through a fault proxy. Redis down is degraded, not down: readiness stays
+// 200 and dependants fall back. Only the session lookup is stubbed.
 import {
   afterAll,
   beforeAll,

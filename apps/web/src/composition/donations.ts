@@ -22,7 +22,6 @@ import {
   createPrismaDonationStore,
 } from "@/modules/donations/server";
 
-/** Wires the donations module to PostgreSQL, the audit writer and the outbox. */
 const deps = {
   store: createPrismaDonationStore({
     runner: transactionRunner,

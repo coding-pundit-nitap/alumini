@@ -1,8 +1,5 @@
-// Object storage down and slow, at system level.
-//
-// The production S3 adapter (5 s request timeout) reaches the real MinIO THROUGH a fault proxy, driven by
-// the real photo-upload Server Actions: presign → the browser's POST straight to the store → complete.
-// Only the session lookup and next/headers are stubbed (no Next.js request context here).
+// Object storage down and slow: the production S3 adapter reaches MinIO through a fault proxy, driven
+// by the photo-upload Server Actions.
 import {
   afterAll,
   beforeAll,

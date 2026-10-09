@@ -1,4 +1,3 @@
-// apps/web/src/modules/messaging/application/list-messages.ts
 import { PERMISSIONS } from "@nitap/database/permissions";
 
 import { NotFoundError } from "@/lib/errors";

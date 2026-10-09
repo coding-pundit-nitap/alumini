@@ -1,4 +1,3 @@
-/** Public API of the directory module. Other code imports from here, never from the module's internals. */
 export { createSearchDirectory } from "./application/search-directory";
 export type {
   AlumniSummary,

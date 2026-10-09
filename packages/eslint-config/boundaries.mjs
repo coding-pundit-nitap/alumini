@@ -1,10 +1,7 @@
 /**
- * Layer and module boundary rules.3–2.4).
- * `no-restricted-imports` replaces (does not merge) its options per matching block, so every block below
- * is built from the shared groups and lists everything that layer may not import.
- *
- * Inside a module use relative imports; across modules only `@/modules/<name>` (the index).
- * The module DAG and cycles are checked separately by dependency-cruiser (`.dependency-cruiser.cjs`).
+ * Layer and module boundary rules. `no-restricted-imports` replaces rather than merges options per
+ * block, so each block lists everything its layer may not import. Across modules, import only
+ * `@/modules/<name>`.
  */
 
 const infrastructureSdks = {
@@ -12,15 +9,11 @@ const infrastructureSdks = {
     // The bare "@nitap/database" is banned through `databaseRoot` below (`paths`, exact match): as a
     // gitignore-style pattern it would also cover every subpath and defeat the negation.
     "@nitap/database/*",
-    // The permission registry is pure data shared with the seed. It is the
-    // one @nitap/database subpath the domain and application layers may import. Order matters: the
-    // negation must come after the pattern it re-allows.
+    // The permission registry is pure data. The negation must come after the pattern it re-allows.
     "!@nitap/database/permissions",
     // Role display labels (ticks): pure data beside the role definitions, so app code never names a role.
     "!@nitap/database/role-ticks",
-    // Prisma-generated enum types are pure type data (no client, no runtime I/O) and are the single
-    // source of truth for schema-backed unions such as NotificationDomain; domain code re-exports them
-    // instead of hand-declaring a parallel literal union that could drift from the schema.
+    // Prisma enum types are pure type data and the source of truth for schema-backed unions.
     "!@nitap/database/enums",
     "@prisma/*",
     "ioredis",
@@ -83,9 +76,7 @@ const anyModule = {
 const deepModuleImport = {
   group: [
     "@/modules/*/*",
-    // A module's server-only entry point (mirrors `index.ts`, kept separate so a client component that
-    // imports the module's client-safe index never drags server-only infrastructure, e.g. the generated
-    // Prisma client, into the browser bundle). Only composition roots (app-ui-lib) import it in practice.
+    // Server-only module entry points, kept apart so client bundles never pull in Prisma.
     "!@/modules/*/server",
     // A module's client-safe entry point, for client components whose module index reaches server code.
     "!@/modules/*/client",
@@ -197,9 +188,8 @@ export const layerRules = [
     ),
   },
   {
-    // The one sanctioned exception: Better Auth's Next.js integration and the request-scoped identity read
-    // (`next/headers`, React `cache` in getActor()) are framework code by nature. Keep it confined to
-    // src/modules/auth/infrastructure; the rules in domain/ and application/ stay framework-free.
+    // Better Auth's Next.js integration and the request-scoped identity read are framework code by nature.
+    // Keep them in src/modules/auth/infrastructure.
     name: "boundaries/auth-infrastructure-exception",
     files: ["src/modules/auth/infrastructure/**"],
     rules: restrict(designSystem, components, anyModule, anyPresentation),

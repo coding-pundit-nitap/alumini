@@ -1,5 +1,11 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+
+// One .env at the repository root serves the workspace. Values already set in the environment win.
+const rootEnv = path.resolve(import.meta.dirname, "../../.env");
+if (existsSync(rootEnv)) process.loadEnvFile(rootEnv);
 
 // The file suffix is the classifier:
 //   *.test.ts             unit (node)
@@ -21,7 +27,7 @@ export default defineConfig({
   test: {
     globals: true,
     restoreMocks: true,
-    // Integration and contract projects are empty until; an empty project must not fail the run.
+    // An empty project must not fail the run.
     passWithNoTests: true,
     // `pnpm test:coverage` runs every project (start Postgres and Redis first, as for test:integration), so
     // code proven only against real Postgres counts too.

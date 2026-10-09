@@ -20,11 +20,7 @@ export type IdempotencyClient = Pick<
   "idempotencyKey" | "$executeRaw"
 >;
 
-/**
- * Shared between the web app (claims and replays, on the request path) and the worker (the daily sweep),
- * the same relationship `@nitap/database/uploads` has to both. A claim MUST commit on its own, not inside
- * the business transaction, or a concurrent duplicate could never see it.
- */
+/** A claim must commit on its own, outside the business transaction, or concurrent duplicates can't see it. */
 export type IdempotencyStore = {
   /** True when this call created the claim (the caller runs the request); false when one already exists. */
   claim(

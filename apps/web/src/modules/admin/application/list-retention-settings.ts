@@ -9,10 +9,7 @@ import type {
 import type { SettingsStore } from "./admin-store";
 import type { Authorize } from "./authorize-port";
 
-/**
- * Rows in catalogue order, each with its bounds and whether a sweep enforces it; a category the
- * catalogue no longer knows is left out. Concealed from non-holders (404), like the audit log.
- */
+/** Rows in catalogue order; unknown categories are left out. 404 for non-holders. */
 export function createListRetentionSettings(deps: {
   store: SettingsStore;
   authorize: Authorize;

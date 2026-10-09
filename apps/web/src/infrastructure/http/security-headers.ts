@@ -1,7 +1,4 @@
-/**
- * Response security headers. Dependency-free on purpose:
- * both the proxy (per request) and next.config.ts (static headers, read at build and start) import it.
- */
+/** Dependency-free: imported by both the proxy and next.config.ts. */
 
 /** The request header the proxy uses to hand the nonce to the root layout. */
 export const NONCE_HEADER = "x-nonce";
@@ -13,9 +10,8 @@ export function createNonce(): string {
 }
 
 /**
- * The page policy. Scripts run only with this response's nonce, or when loaded by a script that had it
- * ('strict-dynamic'); `unsafe-eval` is added under `next dev` only, where React needs it for error stacks.
- * Styles allow inline: server-rendered `style` attributes cannot carry a nonce.
+ * Scripts run only with this response's nonce or via 'strict-dynamic'. `unsafe-eval` is dev-only.
+ * Inline styles are allowed because server-rendered `style` attributes cannot carry a nonce.
  */
 export function buildPageCsp(options: {
   nonce: string;
@@ -45,10 +41,7 @@ export function buildPageCsp(options: {
   ].join("; ");
 }
 
-/**
- * Where the browser reaches the object store. None when S3_PUBLIC_PATH proxies it through this origin
- * (app/storage/[...path]); otherwise S3_ENDPOINT's origin, with the bucket as a subdomain unless path-style.
- */
+/** None when S3_PUBLIC_PATH proxies storage through this origin; otherwise S3_ENDPOINT's origin. */
 export function storageOriginFor(
   source: Record<string, string | undefined>
 ): string | null {

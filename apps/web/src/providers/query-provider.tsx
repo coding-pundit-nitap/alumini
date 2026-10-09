@@ -10,10 +10,7 @@ interface QueryProviderProps {
 }
 
 export function QueryProvider({ children }: QueryProviderProps) {
-  // NOTE: Avoid useState when initializing the query client if you don't
-  //       have a suspense boundary between this and the code that may
-  //       suspend because React will throw away the client on the initial
-  //       render if it suspends and there is no boundary
+  // No useState here: without a suspense boundary, React discards state from a suspended first render.
   const queryClient = getQueryClient();
 
   return (

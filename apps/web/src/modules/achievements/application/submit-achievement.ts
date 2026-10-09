@@ -8,7 +8,6 @@ import type { Authorize } from "./authz";
 import type { AchievementsStore } from "./achievements-store";
 import { parse } from "./validation";
 
-/** Every submission starts life as SUBMITTED, awaiting review. */
 export function createSubmitAchievement(deps: {
   store: AchievementsStore;
   authorize: Authorize;

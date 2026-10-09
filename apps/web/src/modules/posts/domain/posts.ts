@@ -1,9 +1,6 @@
 import { z } from "zod";
 
-/**
- * The posts rules, pure. A refusal of `NOT_FOUND` means "not yours to
- * know about": a deleted post and a blocked pair read the same, so a block is never revealed either direction.
- */
+/** Pure rules. `NOT_FOUND` means "not yours to know about", so a block is never revealed. */
 export const REACTION_TYPES = [
   "LIKE",
   "CELEBRATE",

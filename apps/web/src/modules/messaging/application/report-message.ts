@@ -1,4 +1,3 @@
-// apps/web/src/modules/messaging/application/report-message.ts
 import { PERMISSIONS } from "@nitap/database/permissions";
 
 import { NotFoundError } from "@/lib/errors";
@@ -11,8 +10,8 @@ import type { MessagingObserver, MessagingStore } from "./messaging-store";
 import { parse } from "./validation";
 
 /**
- * (D6). Only a member who can see the conversation may report one of its messages; anyone else,
- * and an unknown id, get NOT_FOUND. Filing is idempotent per (reporter, message). Reviewing is Phases 10/12.
+ * Only members who can see the conversation may report; anyone else gets NOT_FOUND. Idempotent per
+ * reporter and message.
  */
 export function createReportMessage(deps: {
   store: MessagingStore;

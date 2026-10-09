@@ -50,7 +50,6 @@ export default async function DirectoryPage({
     }
   }
 
-  // Later pages keep every filter; only the cursor changes.
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (key === "cursor") continue;

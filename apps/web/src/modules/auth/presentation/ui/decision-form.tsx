@@ -40,11 +40,7 @@ const CONFIRM_COPY: Record<
   },
 };
 
-/**
- * Approve or reject one request. Rejecting needs a note (mirroring the server rule); the reviewer is
- * never a form field: the server takes them from the session. Each decision is confirmed before it is
- * sent.
- */
+/** Rejecting requires a note. The reviewer comes from the session, never the form. */
 export function DecisionForm({
   requestId,
   action,

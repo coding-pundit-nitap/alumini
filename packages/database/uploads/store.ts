@@ -27,11 +27,7 @@ export type NewUpload = {
   size: number;
 };
 
-/**
- * Shared between the web module's adapter (presign/complete/set-photo) and the worker's scan and sweep
- * processors, the same relationship `@nitap/database/outbox` has to both apps. Every method takes the
- * caller's transaction, so atomicity with an outbox write or an audit row is the caller's decision.
- */
+/** Every method takes the caller's transaction; atomicity with outbox or audit writes is the caller's call. */
 export type UploadStore = {
   create(tx: UploadTransaction, input: NewUpload): Promise<UploadRow>;
   find(tx: UploadTransaction, id: string): Promise<UploadRow | null>;

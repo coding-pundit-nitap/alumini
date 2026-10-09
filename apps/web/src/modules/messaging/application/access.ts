@@ -2,10 +2,7 @@ import { NotFoundError } from "@/lib/errors";
 
 import type { ConversationRow, MessagingTx } from "./messaging-store";
 
-/**
- * Locks the conversation and proves the caller may act inside it. Not a member, or a 1:1 whose other side has
- * blocked the caller, both read as NOT_FOUND: existence is not revealed.
- */
+/** Locks the conversation and checks membership. Non-members and blocked callers get NOT_FOUND. */
 export async function requireParticipant(
   tx: MessagingTx,
   conversationId: string,

@@ -8,11 +8,7 @@ import type {
 } from "@/modules/connections/application/connection-store";
 import type { ConnectionRow } from "@/modules/connections/domain/connection";
 
-/**
- * In-memory ConnectionStore for unit tests. A transaction that throws restores the previous state, so
- * "the row and its event commit together" is testable without a database. `beforeInsert` lets a test play
- * the competing request that wins the unique pair first.
- */
+/** A throwing transaction restores the previous state. `beforeInsert` simulates a competing request. */
 export function createFakeConnectionStore(
   seed: ConnectionRow[] = [],
   options: {

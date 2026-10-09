@@ -32,9 +32,7 @@ async function student(browser: Browser): Promise<Page> {
   return page;
 }
 
-/** `<input type="datetime-local">` wants the machine's own local wall time, matching the browser's
- * default time zone (`EventForm` reads `Intl.DateTimeFormat().resolvedOptions().timeZone` on mount,
- * same machine). */
+/** `datetime-local` takes the machine's local wall time, which matches the browser's zone here. */
 function localDateTime(msFromNow: number): string {
   const d = new Date(Date.now() + msFromNow);
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -85,7 +83,6 @@ test.describe("events", () => {
       deadlineInMs: 1 * DAY,
     });
 
-    // Browse: the new event is visible on /events (Upcoming, the default tab) and its own page.
     await organizer.goto("/events");
     await expect(organizer.getByRole("link", { name: title })).toBeVisible();
     await organizer.goto(`/events/${eventId}`);
@@ -94,7 +91,6 @@ test.describe("events", () => {
     const memberA = await student(browser);
     const memberB = await student(browser);
 
-    // A registers and takes the only seat.
     await memberA.goto(`/events/${eventId}`);
     await memberA.getByRole("button", { name: "Register" }).click();
     await expect(
@@ -103,14 +99,12 @@ test.describe("events", () => {
     await expect(memberA.getByText("0 of 1 spots left")).toBeVisible();
     await expect(memberA.getByText("Full", { exact: true })).toBeVisible();
 
-    // B sees it full and cannot register.
     await memberB.goto(`/events/${eventId}`);
     await expect(memberB.getByText("Full", { exact: true })).toBeVisible();
     const registerB = memberB.getByRole("button", { name: "Register" });
     await expect(registerB).toBeDisabled();
     await expect(memberB.getByText("This event is full.")).toBeVisible();
 
-    // A cancels, freeing the seat for B.
     await memberA.getByRole("button", { name: "Cancel registration" }).click();
     await memberA
       .getByRole("alertdialog")
@@ -151,7 +145,6 @@ test.describe("events", () => {
       member.getByRole("button", { name: "Cancel registration" })
     ).toBeVisible();
 
-    // The organizer cancels the whole event behind the AlertDialog.
     await organizer.goto(`/events/${eventId}`);
     await organizer.getByRole("button", { name: "Cancel event" }).click();
     await organizer
@@ -169,7 +162,6 @@ test.describe("events", () => {
       organizer.getByRole("button", { name: "Cancel event" })
     ).toBeDisabled();
 
-    // The registrant sees it cancelled and can no longer act on their registration.
     await member.goto(`/events/${eventId}`);
     await expect(member.getByText("Cancelled", { exact: true })).toBeVisible();
     await expect(
@@ -183,9 +175,7 @@ test.describe("events", () => {
   }) => {
     test.setTimeout(60_000);
 
-    // Seeded by a standalone Node script, not imported here: the generated Prisma client uses
-    // `import.meta`, which Playwright's CJS test transform cannot load (Next.js and plain Node, both
-    // ESM, handle it fine — see support/seed-past-event.ts).
+    // Seeded by a standalone script: the Prisma client uses `import.meta`, which Playwright's transform can't load.
     const { eventId, registrantName } = JSON.parse(
       execFileSync(
         "node",

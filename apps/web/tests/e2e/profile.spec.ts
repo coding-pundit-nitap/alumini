@@ -38,7 +38,6 @@ test("J-04 a member edits their profile and controls who sees it", async ({
   const owner = await member(browser);
   const viewer = await member(browser);
 
-  // Edit own profile.
   await owner.goto("/profile");
   await owner.getByLabel("Headline").fill("Robotics engineer");
   await owner.getByLabel("About you").fill("I build robots.");
@@ -59,7 +58,6 @@ test("J-04 a member edits their profile and controls who sees it", async ({
   await viewer.goto(memberUrl!);
   await expect(viewer.getByText("Page not found")).toBeVisible();
 
-  // The owner still sees their own profile.
   await owner.goto(memberUrl!);
   // Scoped to main: the account menu shows the owner's headline too.
   await expect(

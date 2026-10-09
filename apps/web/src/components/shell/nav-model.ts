@@ -7,10 +7,8 @@ import {
 } from "@/modules/admin";
 
 /**
- * Role-aware navigation model.
- * A pure function: it only reads `can()` and `accountState`, never a role name
- * (`tests/architecture/no-role-names.test.ts`). Layouts stay out of the authorization business —
- * this only decides what to *show*; every page keeps its own `getActor()` redirect.
+ * Decides what the nav shows from permissions and account state, never role names.
+ * Pages still authorize on their own.
  */
 
 export type NavIconName =

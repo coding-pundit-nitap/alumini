@@ -13,12 +13,8 @@ import { apiBudget } from "./api-budget-instance";
 import { routeLabel } from "./route-label";
 
 /**
- * Wraps a Route Handler with the request context and the one error translation:
- * establishes the request id, maps a thrown error to the API error envelope, logs it once at the
- * boundary at the level of its class and echoes `X-Request-Id` on every response.
- *
- * Route files stay adapters: parse → call use case → map. They throw `AppError`s and never build
- * error responses themselves.
+ * Wraps a Route Handler: sets the request id, maps thrown errors to the API error envelope, logs once
+ * and echoes `X-Request-Id`. Route files throw `AppError`s and never build error responses.
  */
 export function routeHandler<Args extends unknown[]>(
   handler: (request: Request, ...args: Args) => Promise<Response> | Response

@@ -95,10 +95,7 @@ const fromLocked = (r: LockedCampaignRow): Campaign =>
     createdAt: r.created_at,
   });
 
-/**
- * Writes. Every method runs on the transaction client, so a row, its audit entry and
- * its outbox event commit or roll back together. Lock order: campaign row, then donation row.
- */
+/** Rows, audit entries and outbox events share the transaction. Lock order: campaign, then donation. */
 export function createPrismaDonationStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   audit: AuditWriter;

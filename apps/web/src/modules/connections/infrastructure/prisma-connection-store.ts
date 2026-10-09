@@ -22,10 +22,8 @@ const toRow = (row: {
 }): ConnectionRow => ({ ...row });
 
 /**
- * The connection table inside one transaction. Uniqueness of the pair is the database's job (`uq_connection_pair`
- * plus the canonical-order CHECK), never a read-then-write in application code: `insert` is an
- * `INSERT … ON CONFLICT DO NOTHING`, and every state change is an `UPDATE … WHERE id AND state = <expected>`.
- * The outbox event is written on the same transaction client, so it commits or rolls back with the row.
+ * Pair uniqueness is enforced by the database (`uq_connection_pair`), never read-then-write. State
+ * changes are guarded updates, and outbox events share the transaction.
  */
 export function createPrismaConnectionStore(deps: {
   runner: Pick<TransactionRunner, "run">;

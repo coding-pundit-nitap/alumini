@@ -1,12 +1,6 @@
-# Single-host production stack (one web, one worker, Postgres, two Redis, object
-# storage, clamd). Only `web` is published, and only on 127.0.0.1: the host's Nginx terminates TLS in front of
-# it (deploy/nginx/alumini.conf). Everything else stays on the compose network.
-#
-# Runs from deploy/ in a clone of the repository, next to its `.env` (from deploy/.env.example), which Compose
-# reads both for the ${...} below and as each app container's environment. Releases go through
-# deploy/deploy.sh, which writes the *_IMAGE references (by digest when pulled); the procedure is in
-# deploy/README.md. Staging is another clone of the same files: its .env sets COMPOSE_PROJECT_NAME, which takes
-# precedence over the name below, and WEB_PORT when it shares a host with production.
+# Single-host production stack. Only `web` is published, on 127.0.0.1, behind the host's Nginx
+# (deploy/nginx/alumini.conf). Runs from deploy/ next to its `.env`; releases go through
+# deploy/deploy.sh (see deploy/README.md). Staging is another clone whose .env sets COMPOSE_PROJECT_NAME.
 name: alumini-prod
 
 # pgBackRest takes its whole configuration from these, in the postgres container (for archive-push,

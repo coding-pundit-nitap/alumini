@@ -157,11 +157,6 @@ export function GrantsTable(props: {
   );
 }
 
-/**
- * The user's roles and grants together. A remove/revoke action is passed only when the viewer may
- * use it; a blocked one is disabled with its reason. Kept as a thin wrapper over
- * {@link RolesTable} and {@link GrantsTable} for callers that want both without separate panels.
- */
 export function AccessList(props: {
   user: UserDetail;
   options: AccessOptions;

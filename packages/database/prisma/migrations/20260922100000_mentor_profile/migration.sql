@@ -25,7 +25,7 @@ CREATE INDEX "ix_mentor_profile_accepting" ON "mentor_profile"("accepting");
 -- AddForeignKey
 ALTER TABLE "mentor_profile" ADD CONSTRAINT "mentor_profile_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Backstops for the application's validation. Written with plain comparisons: none of these
+-- Backstops for the application's validation (spec Data). Written with plain comparisons: none of these
 -- columns is nullable, so no CHECK here can pass on NULL.
 ALTER TABLE "mentor_profile"
   ADD CONSTRAINT "ck_mentor_max" CHECK ("max_mentees" BETWEEN 1 AND 20),

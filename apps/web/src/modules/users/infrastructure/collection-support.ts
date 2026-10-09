@@ -2,11 +2,7 @@ import { Prisma, type PrismaClient } from "@nitap/database";
 
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
 
-/**
- * Locks the caller's profile row so two concurrent adds to the same collection serialise: the second
- * transaction waits here, then sees the first's insert when it counts. Every collection's `add` opens
- * with this. It relies on `profile` already existing for a signed-in user.
- */
+/** Serializes concurrent adds to the same member's collections. */
 export function lockProfileRow(
   tx: Prisma.TransactionClient,
   userId: string

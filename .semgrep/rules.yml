@@ -1,5 +1,4 @@
-# Project SAST rules ("reviewed rules for dangerouslySetInnerHTML, string-built SQL, missing
-# server-only"). ERROR blocks the merge; a reviewed exception carries
+# Project SAST rules. ERROR blocks the merge; a reviewed exception carries
 # `// nosemgrep: <rule-id> — <reason>` on the line.
 rules:
   - id: nitap-unsafe-raw-query

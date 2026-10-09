@@ -18,7 +18,6 @@ import {
   type RefusalObserver,
 } from "@/modules/events";
 
-/** Wires the events module to PostgreSQL and the shared Redis rate limiter. */
 const store = createPrismaEventStore({ runner: transactionRunner, outbox });
 const queries = createPrismaEventQueries(prisma);
 

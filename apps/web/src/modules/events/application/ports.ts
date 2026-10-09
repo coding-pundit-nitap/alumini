@@ -10,10 +10,9 @@ import type {
   RegistrationState,
 } from "../domain/event";
 
-/** The auth module's `authorize`, injected by the composition root. Copied from mentorship's authz.ts. */
+/** The auth module's `authorize`, injected by the composition root. */
 export type Authorize = (actor: Actor | null, permission: Permission) => Actor;
 
-/** Same shape as mentorship's `request-mentorship.ts`. */
 export type RateLimiter = {
   consume(
     key: string,
@@ -42,10 +41,8 @@ export type EventOutboxEvent = {
 }[keyof typeof eventJobs];
 
 /**
- * Everything a write does happens through one of these, inside ONE database transaction, so a row
- * and its outbox event commit or roll back together. `claimSeat`, `releaseSeat` and
- * `cancelEvent` are single guarded UPDATE statements: nothing here decides admission,
- * seat release or cancellation — each just reports whether its guard matched.
+ * All writes go through one transaction. `claimSeat`, `releaseSeat` and `cancelEvent` are single
+ * guarded updates that report whether their guard matched.
  */
 export type EventTx = {
   insertEvent(input: NewEvent): Promise<{ id: string }>;

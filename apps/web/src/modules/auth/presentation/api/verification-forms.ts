@@ -11,11 +11,7 @@ import {
   evidenceSchema,
 } from "./verification-schemas";
 
-/**
- * Reads ONLY the named fields of a Server Action's form, validates them against a strict schema, and
- * throws a ValidationError with per-field messages. A forged `userId` or status, and the fields React
- * adds to every form, never reach a use case.
- */
+/** Reads only the named fields and validates them strictly, so forged fields never reach a use case. */
 function parseForm<S extends z.ZodType>(
   schema: S,
   fields: readonly string[],

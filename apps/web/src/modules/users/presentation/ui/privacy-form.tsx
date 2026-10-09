@@ -54,11 +54,7 @@ const toOverrides = (
     ])
   ) as Overrides;
 
-/**
- * Profile level plus a per-section override. An override can only be equal to or
- * stricter than the level: looser options are disabled, and changing the level resets any now-looser
- * override to "Same as your profile" for every section, independently. The server enforces the same rule.
- */
+/** Overrides can only be as strict or stricter than the level. The server enforces the same rule. */
 export function PrivacyForm({
   action,
   defaults,

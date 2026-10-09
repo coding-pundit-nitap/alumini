@@ -1,9 +1,6 @@
 import type { Instrumentation } from "next";
 
-/**
- * Runs once when the server starts. Missing production configuration or a malformed
- * institutional-email policy stops startup (fail closed).
- */
+/** Missing production config or a malformed email policy stops startup. */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
@@ -33,11 +30,7 @@ export async function register() {
   drainOnSigterm();
 }
 
-/**
- * Runs for every server error Next.js catches (renders, Server Actions, unwrapped Route Handlers).
- * Node runtime only: the logger uses AsyncLocalStorage. Logged and sent to the error tracker (13B);
- * tracing is not used.
- */
+/** Node runtime only: the logger uses AsyncLocalStorage. */
 export const onRequestError: Instrumentation.onRequestError = async (
   error,
   request,

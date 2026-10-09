@@ -13,9 +13,8 @@ import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { refuse } from "./refusal";
 
 /**
- * And the unblock half of cancel your own request, remove an accepted
- * connection, or lift your own block. The row is deleted, so a later request starts clean. The delete is
- * guarded by the state the decision was made on.
+ * Cancel your own request, remove a connection, or lift your own block. The delete is guarded by the
+ * state it was decided on.
  */
 export function createRemoveConnection(deps: {
   store: ConnectionStore;

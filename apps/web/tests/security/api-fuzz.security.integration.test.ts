@@ -1,8 +1,5 @@
-// Input handling at the API boundary. Property-based: every
-// JSON route gets arbitrary bodies, every list route arbitrary query strings and an injection corpus, every
-// dynamic segment arbitrary text. The contract is the boundary's, not the business rules': an answer from
-// the error catalogue, never a 5xx, never a hang. Runs as a VERIFIED SUPER_ADMIN so input travels as deep
-// into the use cases as it can.
+// Property-based input fuzzing at the API boundary. Every answer must come from the error catalogue,
+// never a 5xx or a hang. Runs as a super admin to reach as deep as possible.
 import path from "node:path";
 import fc from "fast-check";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";

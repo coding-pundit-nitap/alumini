@@ -1,5 +1,4 @@
 // Route-level, real PostgreSQL, real authorize; only the session (getActor) is doubled.
-// Same construction as tests/security/admin-audit-log.security.integration.test.ts.
 import {
   afterAll,
   beforeAll,
@@ -356,10 +355,7 @@ describe("admin users routes (security)", () => {
       );
       expect(suspendedRes.status).toBe(404);
 
-      // The acting "second super admin" holds system.configure through a direct grant, not the SUPER_ADMIN
-      // role itself, so lockSuperAdmins (which counts VERIFIED holders of the role row) never counts the
-      // actor — letting us drive the count to exactly one without the actor ever targeting itself
-      // (which would hit the no-self-service guard and answer 404, not 409).
+      // The actor holds system.configure by direct grant, so the super-admin count never includes it.
       const acting = await db.prisma.user.create({
         data: {
           name: "second-super",
@@ -407,9 +403,7 @@ describe("admin users routes (security)", () => {
       );
       expect(firstRevoke.status).toBe(200);
 
-      // Earlier cases in this file (e.g. the escalation-guard PATCH case) create their own VERIFIED
-      // SUPER_ADMIN users that share this database; strip every other holder directly so adminY is
-      // deterministically the only one left, regardless of test order.
+      // Other tests create super admins in this database; remove them so adminY is the only one.
       await db.prisma.userRole.deleteMany({
         where: {
           role: { name: "SUPER_ADMIN" },

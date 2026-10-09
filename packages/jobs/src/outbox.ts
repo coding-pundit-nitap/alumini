@@ -20,16 +20,12 @@ export type OutboxQuarantinedRow = {
   failureReason: string;
 };
 
-/**
- * The persistence port for the outbox. `packages/database/outbox` implements it with Prisma; `packages/queue`
- * consumes it without knowing about Prisma. Every method is safe to run from several relays at once.
- */
+/** Implemented with Prisma in `packages/database/outbox`. Safe to run from several relays at once. */
 export interface OutboxStore {
   /**
-   * In ONE transaction: claim up to `limit` unpublished rows of the given types (`FOR UPDATE SKIP LOCKED`,
-   * oldest first), let `publish` act on them, then mark the returned ids published and quarantine the
-   * returned failures. If `publish` throws, nothing is committed. Returns how many rows were claimed.
-   * Rows of a type not in `knownTypes` are never claimed (a newer worker will).
+   * In one transaction: claims up to `limit` rows (`FOR UPDATE SKIP LOCKED`), publishes them, then marks
+   * them published or quarantined. Nothing commits if `publish` throws. Unknown types are left for a
+   * newer worker.
    */
   publishBatch(
     limit: number,
@@ -58,9 +54,8 @@ export interface OutboxStore {
   countSettleable(before: Date, type?: string): Promise<number>;
 
   /**
-   * After a database restore: marks unpublished, unquarantined rows created before `before` (the restore
-   * target) as published without publishing them, because their effects may already have happened after that
-   * point. Returns how many.
+   * After a restore: marks unpublished rows created before `before` as published, since their effects
+   * may already have happened.
    */
   settle(before: Date, type?: string): Promise<number>;
 }

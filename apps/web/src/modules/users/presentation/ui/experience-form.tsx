@@ -17,11 +17,7 @@ export type ExperienceDefaults = Omit<ExperienceInput, "isCurrent"> & {
   isCurrent: boolean;
 };
 
-/**
- * One experience entry, add or edit (an `id` switches the button label and includes the hidden field).
- * The end date is disabled and cleared while "current role" is checked, matching the domain rule
- * (`isCurrent` ⇔ no end date) so the form can never submit a combination the server would reject.
- */
+/** The end date is disabled while "current role" is checked, matching the server rule. */
 export function ExperienceForm({
   action,
   id,
@@ -41,9 +37,7 @@ export function ExperienceForm({
   >((_previous, formData) => action(formData), null);
   const errors = fieldErrors(result);
   useReturnToListOnSavedEdit("experience", id, result);
-  // A successful add resets the form's uncontrolled fields; reset the two controlled ones with them, or the
-  // next entry would silently inherit "I currently work here" (and its disabled end date). Adjusted during
-  // render rather than in an effect, per the React-documented pattern.
+  // Reset the controlled fields after a successful add, during render rather than in an effect.
   const [seen, setSeen] = useState(result);
   if (result !== seen) {
     setSeen(result);

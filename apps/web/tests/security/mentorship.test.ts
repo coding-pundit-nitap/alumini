@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-/** Mentorship use cases against the REAL authorizer: 401, 403, account states and IDOR (phase rule "Security"). */
+/** Mentorship use cases against the real authorizer: 401, 403, account states and IDOR. */
 import {
   AuthenticationError,
   AuthorizationError,

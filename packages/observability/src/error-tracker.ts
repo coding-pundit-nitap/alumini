@@ -12,11 +12,7 @@ import type { ErrorEvent, NodeOptions } from "@sentry/node";
 import { redact } from "./redact.ts";
 import { getRequestContext } from "./request-context.ts";
 
-/**
- * Server-side error tracker. A Sentry-protocol SDK, so the same DSN works with
- * hosted Sentry and self-hosted GlitchTip. Off without a DSN: `captureError` is then a no-op. The SDK keeps
- * its client on `globalThis`, so every Next.js bundle reports through the one initialised here.
- */
+/** Sentry-protocol SDK, so it works with Sentry or GlitchTip. A no-op without a DSN. */
 export type ErrorTrackerOptions = {
   dsn?: string;
   environment: string;
@@ -89,10 +85,7 @@ export async function closeErrorTracker(): Promise<void> {
   await close(0);
 }
 
-/**
- * `beforeSend`: the log redaction rule applied to everything that can carry request data. Messages
- * and stack traces pass through; code must not put personal data in error messages.
- */
+/** Applies log redaction to request data. Keep personal data out of error messages. */
 export function scrubEvent(event: ErrorEvent): ErrorEvent {
   const scrubbed: ErrorEvent = { ...event };
   if (event.request) {

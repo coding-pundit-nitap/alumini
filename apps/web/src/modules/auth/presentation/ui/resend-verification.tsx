@@ -9,10 +9,7 @@ import { authErrorMessage } from "./auth-errors";
 import { VERIFY_EMAIL_CALLBACK } from "./callbacks";
 import { FormField, FormMessage } from "./form-field";
 
-/**
- * Sends a fresh confirmation link. The confirmation text is the same whether or not the address has an
- * account that needs confirming; only a rate limit is reported differently.
- */
+/** The confirmation text is the same whether or not the address has an account; only a rate limit differs. */
 export function ResendVerification({ email: knownEmail }: { email?: string }) {
   const [typed, setTyped] = useState("");
   const [fieldError, setFieldError] = useState<string | undefined>();

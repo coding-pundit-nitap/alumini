@@ -22,10 +22,6 @@ const retry = {
   jitter: 0.2,
 };
 
-/**
- * Facts a connection changed, written to the outbox in the same transaction as the change.
- * The worker turns them into notifications for the other party.
- */
 export const connectionRequested = defineJob({
   name: "connection.requested",
   version: 1,

@@ -42,23 +42,17 @@ const SELF_SERVICE_GUARDED: ReadonlySet<Permission> = new Set([
   PERMISSIONS.USER_REACTIVATE,
 ]);
 
-/**.2, extended to suspend/reactivate: nobody changes their own access or state. */
+/** Nobody changes their own access or account state. */
 const noSelfService: Guardrail = ({ permission, actor, resource }) =>
   SELF_SERVICE_GUARDED.has(permission) &&
   resource.subjectUserId === actor.userId
     ? "SELF_SERVICE"
     : undefined;
 
-// Ordered. Escalation and last-Super-Admin need data about the target, so they live in the
-// admin use cases, not here.
+// Escalation and last-super-admin checks need target data, so they live in the admin use cases.
 const GUARDRAILS: readonly Guardrail[] = [separationOfDuties, noSelfService];
 
-/**
- * What an account may do BECAUSE of its state, without any grant. Everything else is denied
- * before grants are considered. Only self-service permissions belong here: submitting one's own
- * verification request, and `profile.update` (a PENDING or REJECTED account edits its own basic profile;
- * institutional fields stay out of reach of that use case).
- */
+/** Self-service permissions an account has because of its state, without any grant. */
 const STATE_ALLOWANCES: Readonly<
   Record<Exclude<AccountState, "VERIFIED">, readonly Permission[]>
 > = {
@@ -77,26 +71,20 @@ const STATE_ALLOWANCES: Readonly<
 const isLive = (grant: Grant, now: Date) =>
   grant.expiresAt === null || grant.expiresAt > now;
 
-/**
- * The authorization rules, in order; the first failure denies. Pure: no I/O.
- * Record-level conditions are NOT here; the use case that owns the record checks them
- * after `authorize()` passes.
- */
+/** Authorization rules in order; the first failure denies. Record-level checks belong to the use case. */
 export function decide({
   actor,
   permission,
   resource = {},
   now,
 }: DecideInput): Decision {
-  // 1. Account-state gate. Explicit, not inferred from empty grants. A non-VERIFIED account
-  //    may use only what its state allows; grants are never consulted for it.
+  // Non-VERIFIED accounts get only what their state allows; grants are never consulted.
   if (actor.accountState !== "VERIFIED") {
     return STATE_ALLOWANCES[actor.accountState].includes(permission)
       ? { allow: true }
       : { allow: false, reason: "ACCOUNT_STATE" };
   }
 
-  // 2. Grant match: GLOBAL, else CHAPTER for the resource's chapter.
   const candidates = actor.grants.filter(
     (grant) => grant.permission === permission && isLive(grant, now)
   );
@@ -112,7 +100,6 @@ export function decide({
     };
   }
 
-  // 3. Guardrails.
   for (const guardrail of GUARDRAILS) {
     const reason = guardrail({ actor, permission, resource });
     if (reason) return { allow: false, reason };

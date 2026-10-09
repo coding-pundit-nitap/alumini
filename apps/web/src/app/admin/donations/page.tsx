@@ -24,10 +24,7 @@ export const metadata: Metadata = { title: "Donations" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/**
- * Holders of campaign.manage alone see the open pledges to confirm; donation.view_all sees
- * every pledge with a status filter. 404 for anyone holding neither.
- */
+/** campaign.manage sees open pledges to confirm; donation.view_all sees every pledge. 404 otherwise. */
 export default async function AdminDonationsPage({
   searchParams,
 }: {

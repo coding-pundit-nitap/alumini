@@ -20,11 +20,7 @@ type State = {
   events: { type: string; payload: unknown }[];
 };
 
-/**
- * In-memory VerificationStore for unit tests. Unlike the member store of 2C it DOES simulate rollback:
- * a transaction that throws restores the previous state, so atomicity of a decision is testable
- * without a database. `failOn` makes one named operation throw.
- */
+/** A throwing transaction restores the previous state. `failOn` makes one operation throw. */
 export function createFakeVerificationStore(
   seed: { accounts: AccountRecord[]; requests?: VerificationRequestRecord[] },
   options: { failOn?: keyof VerificationTx } = {}

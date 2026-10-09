@@ -29,9 +29,8 @@ export type PresignUploadResult = {
 } & PresignedUpload;
 
 /**
- * The first step of the photo lifecycle: validates the declared type/size, checks the open-
- * upload quota, creates a PENDING_UPLOAD row under `uploads/pending/`, then asks the store for a
- * presigned POST so the browser can send the bytes directly (they never touch this process).
+ * Validates type, size and quota, creates the PENDING_UPLOAD row and returns a presigned POST so the
+ * bytes go straight to the store.
  */
 export function createPresignUpload(deps: {
   store: UploadStore;

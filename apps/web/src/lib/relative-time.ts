@@ -18,6 +18,6 @@ export function relativeTime(date: Date, now: Date = new Date()): string {
     year: sameYear ? undefined : "numeric",
     timeZone: "UTC",
   }).format(date);
-  // ponytail: ICU's en-GB "short" month abbreviates September as "Sept"; we want "Sep".
+  // ICU's en-GB short month for September is "Sept"; we want "Sep".
   return formatted.replace("Sept", "Sep");
 }

@@ -110,10 +110,8 @@ function layout(messages: ThreadMessage[], viewerId: string) {
 }
 
 /**
- * One conversation, WhatsApp-style: day separators, sender clusters, an "Unread messages" divider where the
- * viewer left off, older pages loaded as you scroll up (keeping your place), and a pill for new messages that
- * arrive while you are reading history. The server renders the first page; an SSE hint (instant), a 30 s poll
- * and tab focus keep it fresh through the authorized API — the stream carries only ids.
+ * The server renders the first page; older pages load on scroll-up. An SSE hint, a 30 s poll and tab
+ * focus keep it fresh through the API; the stream carries only ids.
  */
 export function Thread(props: {
   conversationId: string;
@@ -262,9 +260,8 @@ export function Thread(props: {
     };
   }, [conversationId, refresh]);
 
-  // The scroller is `flex-col-reverse`, so the browser itself opens it at the latest message — even in the
-  // server-rendered HTML, before any script runs — and scrollTop counts up from the bottom (0 there, negative
-  // above). Older pages then prepend without moving the view, natively. Only the unread divider needs a nudge.
+  // The scroller is `flex-col-reverse`, so it opens at the latest message before any script runs and
+  // older pages prepend without moving the view. Only the unread divider needs a nudge.
   useLayoutEffect(() => {
     if (!firstUnreadId) return;
     scroller.current
@@ -296,7 +293,6 @@ export function Thread(props: {
     if (el) lastHeight.current = el.scrollHeight;
   }, [messages, outgoing, viewerId]);
 
-  // Scrolling near the top pages in older history.
   useEffect(() => {
     const target = topSentinel.current;
     if (!target || olderFailed || typeof IntersectionObserver === "undefined")

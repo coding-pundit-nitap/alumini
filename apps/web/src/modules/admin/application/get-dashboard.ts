@@ -10,10 +10,7 @@ export type DashboardTile =
   | { key: TileKey; status: "ok"; value: TileCount }
   | { key: TileKey; status: "unavailable" };
 
-/**
- * Counts only the tiles the actor may act on, and each tile fails on its own:
- * one slow or broken table renders "Unavailable" instead of taking the dashboard down.
- */
+/** Each tile fails on its own, showing "Unavailable" instead of taking the dashboard down. */
 export function createGetDashboard(deps: {
   store: AdminStore;
   can: (actor: Actor, permission: Permission) => boolean;

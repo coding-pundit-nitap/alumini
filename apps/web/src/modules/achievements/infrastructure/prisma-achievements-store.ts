@@ -14,8 +14,7 @@ import type {
   AchievementsTx,
 } from "../application/achievements-store";
 
-/** achievement + the Post row it publishes, in one transaction; the Post write is direct Prisma
- * access to the `post` table (no import of modules/posts — schema, not module API, is the shared contract). */
+/** Achievement rows plus the post each one publishes, in one transaction. */
 export function createPrismaAchievementsStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;

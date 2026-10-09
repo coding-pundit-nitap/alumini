@@ -176,8 +176,7 @@ describe("prisma notification store", () => {
         take: 10,
       })
     ).toEqual([]);
-    // Controller ruling: scope the back-date to the PENDING row only, or it also back-dates the FAILED
-    // rows above and corrupts the keyset cursor assertion (`after: failed[0]`) that follows.
+    // Back-date only the PENDING row; back-dating the FAILED rows would break the cursor assertion below.
     await db.prisma
       .$executeRaw`UPDATE notification_delivery SET updated_at = now() - interval '2 hours' WHERE status = 'PENDING'`;
     expect(

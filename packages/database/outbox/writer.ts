@@ -15,11 +15,7 @@ export class InvalidOutboxEventError extends Error {
 export type OutboxTransaction = Pick<Prisma.TransactionClient, "outboxEvent">;
 
 export type OutboxWriter = {
-  /**
-   * Writes the event in the CALLER's transaction: if that transaction rolls back, the event never
-   * existed. Validates the payload first, so a malformed event fails inside the use case and rolls the
-   * business change back too.
-   */
+  /** Writes in the caller's transaction. A malformed payload throws, rolling back the business change. */
   add(tx: OutboxTransaction, event: OutboxEvent): Promise<{ id: string }>;
 };
 

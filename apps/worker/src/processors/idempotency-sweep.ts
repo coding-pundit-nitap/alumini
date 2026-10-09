@@ -3,11 +3,7 @@ import type { JobProcessor } from "@nitap/queue";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * Deletes `Idempotency-Key` rows past their 24 h retention in bounded batches, until a short one ends the
- * run, so a large backlog cannot hold the job open past its timeout. Web already treats an expired row as
- * absent, so this only reclaims space.
- */
+/** Bounded batches until a short one, so a backlog can't outlast the job timeout. */
 export function createIdempotencySweepProcessor(deps: {
   sweep: (before: Date, limit: number) => Promise<number>;
   olderThanMs?: number;

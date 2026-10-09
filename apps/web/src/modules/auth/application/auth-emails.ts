@@ -9,8 +9,7 @@ export type EmailOutbox = {
 };
 
 /**
- * The three messages the identity flows send. They replace fire-and-forget sending: a provider outage
- * no longer fails registration, the row waits in the outbox and the worker retries. Never log the
+ * Emails go through the outbox so a provider outage doesn't fail registration. Never log the
  * recipient or the link.
  */
 export function createAuthEmailSender(deps: { outbox: EmailOutbox }) {

@@ -21,9 +21,7 @@ const withoutDomain = (domains: Set<string>, domain: string) => {
   return next;
 };
 
-/** The `/settings/notifications` client shell: owns the optimistic toggle + PATCH around the
- * server-rendered preference rows. `PreferencesForm` stays a dumb presentational component. A failed PATCH
- * (non-2xx or a network error) reverts the toggle and surfaces a short message. */
+/** Owns the optimistic toggle; a failed PATCH reverts it. */
 export function PreferencesPanel({
   initialPreferences,
 }: {
@@ -40,9 +38,7 @@ export function PreferencesPanel({
   const onChange = async (domain: string, enabled: boolean) => {
     if (pendingDomains.has(domain)) return; // guarded by the disabled switch; defensive only
     setError(null);
-    // Every domain always has a row by the time it reaches here (the API defaults a missing one to
-    // enabled), and the disabled switch above rules out a second concurrent write to the same
-    // domain, so this lookup can't miss.
+    // Every domain has a row by now, and in-flight domains are disabled, so this can't miss.
     const previousEmail = preferences.find(
       (pref) => pref.domain === domain
     )!.email;

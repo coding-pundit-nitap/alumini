@@ -13,10 +13,7 @@ const messageSentPayload = z
   .strict();
 export type MessageSentPayload = z.infer<typeof messageSentPayload>;
 
-/**
- * A message was committed. The worker turns it into a Redis pub/sub hint for each recipient; delivery never
- * blocks the send. A hint published twice only makes the client refetch once more.
- */
+/** A duplicate hint only makes the client refetch once more. */
 export const messageSent = defineJob({
   name: "message.sent",
   version: 1,

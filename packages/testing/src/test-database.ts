@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Client } from "pg";
 import { inject } from "vitest";
 
-// Declared here, not in global-setup.ts: this is where `inject` is actually called, and a program that
-// only pulls in this file (e.g. another package's tsc run over workspace source) still sees the
-// augmentation. Duplicating it in global-setup.ts would conflict.
+// Declared where `inject` is called so programs importing only this file still see it.
 declare module "vitest" {
   export interface ProvidedContext {
     templateDatabaseUrl: string;
@@ -26,12 +24,7 @@ export function testDatabaseName(): string {
   return `test_${randomUUID().replace(/-/g, "")}`;
 }
 
-/**
- * Clones the migrated template database into a fresh, isolated database for one
- * test (or one test file). PostgreSQL forbids `CREATE DATABASE … TEMPLATE` while any other
- * session holds a connection to the template, but the template itself is never connected to
- * after `global-setup.ts` migrates it, so this is safe to call concurrently across test files.
- */
+/** Clones the migrated template. Safe concurrently, since nothing connects to the template after setup. */
 export async function createTestDatabase(
   options: {
     /** A name chosen in advance, for code that reads the database URL at import time (see `testDatabaseName`). */

@@ -27,9 +27,8 @@ export type FakeMentorshipStoreOptions = {
 };
 
 /**
- * In-memory MentorshipStore for unit tests. A transaction that throws restores the previous state, so
- * "the row and its event commit together" is testable without a database. `beforeInsert` lets a test play
- * the competing request that wins the unique pair first; `beforeUpdate` lets it play a competing transition.
+ * A throwing transaction restores the previous state. `beforeInsert` and `beforeUpdate` simulate
+ * competing requests.
  */
 export function createFakeMentorshipStore(
   seed: MentorshipRow[] = [],

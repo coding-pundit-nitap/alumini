@@ -185,10 +185,7 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
     const sue = await mkUser("Sue", 4_000, "SUSPENDED");
     const stan = await mkUser("Stan", 5_000);
     await giveRole(stan.id, "STAFF");
-    // Three rows sharing created_at, latest in the ordering. With take=2 the first two (by id desc)
-    // land on page 1 and the third is the sole entry on page 2, so the second page's cursor query
-    // MUST use the `createdAt = after.createdAt AND id < after.id` branch (not just `createdAt <`)
-    // to find it — a tie split cleanly inside one page (e.g. both on page 1) would never exercise it.
+    // Three rows share created_at, split across pages, so the cursor's `id <` tiebreak is exercised.
     const zed1 = await mkUser("Zed1", 6_000);
     const zed2 = await mkUser("Zed2", 6_000);
     const zed3 = await mkUser("Zed3", 6_000);
@@ -221,9 +218,7 @@ describe("PrismaAdminStore against real PostgreSQL", () => {
     const byRole = await list({ role: "STAFF" });
     expect(byRole.map((u) => u.id)).toEqual([stan.id]);
 
-    // Keyset paging over all 9 rows: take=2 at a time, no gaps or repeats, including a created_at
-    // tie split across a page boundary (zed1/zed2/zed3, see above).
-    // actorId/otherId are created in beforeEach and also show up in an unfiltered listing.
+    // Pages through all rows two at a time with no gaps or repeats, including the created_at tie.
     const allIds = [
       ann.id,
       anna.id,

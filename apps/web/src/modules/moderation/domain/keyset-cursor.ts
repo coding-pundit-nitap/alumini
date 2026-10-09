@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** A keyset position over (created_at DESC, id DESC). A copy of admin's codec: moderation may not import admin (module DAG). */
+/** A keyset position over (created_at DESC, id DESC). Copied from admin, which moderation may not import. */
 export type KeysetCursor = { createdAt: Date; id: string };
 
 const toBase64Url = (text: string) =>

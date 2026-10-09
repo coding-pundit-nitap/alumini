@@ -6,10 +6,7 @@ import type {
   UploadTx,
 } from "@/modules/uploads/application/upload-store";
 
-/**
- * In-memory UploadStore for unit tests. Simulates rollback: a transaction that throws restores the
- * previous state, so atomicity (row + outbox event) is testable without a database.
- */
+/** A throwing transaction restores the previous state. */
 export function createFakeUploadStore(seed: UploadRecord[] = []) {
   let state = {
     uploads: new Map(seed.map((u) => [u.id, { ...u }])),

@@ -7,10 +7,8 @@ import type { Authorize } from "./authz";
 import type { UploadStore } from "./upload-store";
 
 /**
- * Attaches an upload as the caller's profile photo. This is where ownership, purpose and
- * READY status are checked; the actual write is delegated to the `users` module's narrow `setPhoto`
- * path (`updateProfilePhoto`, injected), which knows nothing about uploads — the module DAG (`uploads`
- * depends on `users`, never the reverse) stays one-way.
+ * Checks ownership, purpose and READY status, then writes through the users module's `setPhoto`
+ * (uploads depends on users, never the reverse).
  */
 export function createSetProfilePhoto(deps: {
   store: UploadStore;

@@ -122,7 +122,7 @@ describe("email.send processor", () => {
         "notification_delivered_total",
         { channel: "EMAIL", category: "ENGAGEMENT" }
       );
-      // Jobs enqueued before 13A carry no category.
+      // Older jobs carry no category.
       expect(metrics.increment).toHaveBeenNthCalledWith(
         2,
         "notification_delivered_total",

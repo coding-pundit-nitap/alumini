@@ -34,12 +34,7 @@ export const COMMENT_FORM_ID = "add-comment";
 const MAX_BODY = 2000;
 const COUNTER_THRESHOLD = 1800;
 
-/**
- * A post's comments, newest first, under an add-comment form; own comments carry a delete button. The server
- * renders the first page (`comments`, refreshed after every add/delete); older pages stream in as you scroll
- * (`GET /api/v1/posts/:id/comments?cursor=`), with "Load more comments" as the fallback. `viewer` puts the
- * member's avatar beside the form.
- */
+/** Newest first; older pages load on scroll, with "Load more comments" as a fallback. */
 export function CommentThread({
   postId,
   comments: firstPage,

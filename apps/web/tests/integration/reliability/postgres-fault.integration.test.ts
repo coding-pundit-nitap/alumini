@@ -1,8 +1,4 @@
-// PostgreSQL down and slow, at system level.
-//
-// The production database client (@/infrastructure/database/client: its pool cap, acquire timeout and
-// query timeouts) talks to a per-file test database THROUGH a fault proxy; DATABASE_URL is pointed at the
-// proxy before anything imports the client. Route Handlers, the readiness probe and the use cases are real.
+// PostgreSQL down and slow. The production client reaches the test database through a fault proxy.
 // Only the session lookup is stubbed.
 import {
   afterAll,

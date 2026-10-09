@@ -1,11 +1,7 @@
 import { Prisma } from "@nitap/database";
 import { PERMISSIONS } from "@nitap/database/permissions";
 
-/**
- * "Active mentor" minus availability: a verified account that holds `mentorship.respond` through a
- * role. Roles are never named here: the permission is what defines a mentor. `accepting` and open
- * slots are checked by the callers, which read them anyway.
- */
+/** A verified account holding `mentorship.respond` through a role. Callers check `accepting` and slots. */
 export function activeMentorSql(userAlias: string) {
   const u = Prisma.raw(userAlias);
   return Prisma.sql`(${u}.account_state = 'VERIFIED' AND EXISTS (

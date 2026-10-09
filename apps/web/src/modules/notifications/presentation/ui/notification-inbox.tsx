@@ -16,12 +16,7 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
   return body?.error?.message ?? fallback;
 }
 
-/**
- * The `/notifications` client shell: owns mark-read and load-more state around the server-rendered first
- * page. `NotificationList` stays a dumb presentational component; this is where the fetches live. Both
- * mutations (and mark all read) are optimistic and roll back to the pre-request state on a non-2xx response or a network error,
- * surfacing a short message (mirrors messaging's `Thread`).
- */
+/** Owns mark-read and load-more state. Mutations are optimistic and roll back on failure. */
 export function NotificationInbox({
   initialItems,
   initialNextCursor,

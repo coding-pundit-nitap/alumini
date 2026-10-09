@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import { clampLimit } from "./list-feed";
 import type { CommentRow, PostsStore } from "./posts-store";
 
-/** Mirrors list-feed at comment granularity, scoped to one non-deleted post. */
+/** Comments on one non-deleted post, keyset-paged. */
 export function createListComments(deps: {
   store: PostsStore;
   authorize: Authorize;

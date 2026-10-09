@@ -22,14 +22,7 @@ export type PostAuthor = {
   /** Set by composition after the read; absent/null = no tick. */
   tick?: Tick | null;
 };
-/**
- * The enriched read model `listFeed`/`findFeedPost` return: a post plus its author, per-type
- * reaction counts (every `ReactionType` present, 0 when none), the live (non-deleted) comment
- * count, the viewer's own reaction, and the id of an OPEN/UNDER_REVIEW report against it (or null).
- * Backs the feed's Resolve/Dismiss affordance (`canModerate` actors only render it); not moderation-
- * module state duplication — modules/posts reads the `report` table directly, the same
- * cross-module-read-by-schema pattern `blockedBetween`/`uploadsReady` already use.
- */
+/** A post with its author, reaction counts, live comment count, the viewer's reaction and any open report. */
 export type FeedPost = PostRow & {
   author: PostAuthor;
   reactionCounts: Record<ReactionType, number>;

@@ -9,10 +9,8 @@ import type { ProfileAudit } from "./profile-audit";
 import type { ProfileStore } from "./profile-store";
 
 /**
- * What one viewer may see of one profile. The profile is loaded, the viewer is classified, and the pure
- * `projectProfile` decides; a null projection is a 404, so a profile's existence is not leaked.
- * A privileged read (`profile.read_any`) is audited BEFORE anything is returned: an
- * unaudited privileged read must not happen.
+ * Returns 404 when nothing is visible, so existence isn't leaked. Privileged reads are audited before
+ * anything is returned.
  */
 export function createGetProfileForViewer(deps: {
   store: ProfileStore;

@@ -51,7 +51,6 @@ export const GET = routeHandler(async (request, ctx: Params) => {
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const eventId = id.safeParse((await ctx.params).id);
-  // A malformed id and an unknown one are the same answer.
   if (!eventId.success) throw new NotFoundError();
 
   const rawBody = await readBodyText(request);

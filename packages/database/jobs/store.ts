@@ -3,13 +3,7 @@ import type { PrismaClient } from "../generated/prisma/client.ts";
 
 export type JobExpireCandidate = { id: string; postedBy: string };
 
-/**
- * Shared between `@nitap/database` consumers and the worker's `job.expire` processor, the same
- * relationship `uploads/store.ts` has to the upload sweep. `expireOne` is a guarded UPDATE plus the
- * `job.expired` outbox event, in ONE transaction: a crash between the row flip and its
- * event cannot happen, and a row that already left PUBLISHED (closed, edited back, or already expired) is
- * a harmless no-op — the same idempotency shape as `uploadSweep`.
- */
+/** `expireOne` flips the row and writes `job.expired` in one transaction; a row no longer PUBLISHED is a no-op. */
 export type JobExpireStore = {
   /** PUBLISHED rows whose deadline is before `before` (a UTC-midnight cutoff), oldest deadline first. */
   listExpirable(before: Date, limit: number): Promise<JobExpireCandidate[]>;

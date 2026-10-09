@@ -34,14 +34,9 @@ export type IdempotencyPort = {
 };
 
 /**
- * `Idempotency-Key` handling, independent of HTTP. Per user and key: the first request
- * claims the key and runs; a repeat with the same request replays the stored response; a repeat with a
- * different request is IDEMPOTENCY_KEY_REUSED; a repeat while the first still runs is REQUEST_IN_PROGRESS.
- *
- * Only a 2xx response is stored. A failure releases the claim, so a retry recomputes (a 4xx is cheap to
- * repeat and may stop being true). This sits IN ADDITION to database constraints: a crash between the
- * business commit and `complete` lets a retry after the stale window run again, and the natural conflict
- * (`CONNECTION_EXISTS`) is what answers it.
+ * `Idempotency-Key` handling per user and key: a repeat of the same request replays the stored
+ * response, a different request is IDEMPOTENCY_KEY_REUSED, and an in-flight one is REQUEST_IN_PROGRESS.
+ * Only 2xx responses are stored. Database constraints remain the real guarantee.
  */
 export function createIdempotency(deps: {
   port: IdempotencyPort;

@@ -1,12 +1,6 @@
-// Duplicate and concurrent requests against the whole web tier.
-//
-// The races already pass at the store and use-case level with a 60 s pool wait. Here they
-// run through the real Route Handlers, idempotency layer, transaction runner and the PRODUCTION database
-// client (pool max 10, 2 s acquire), so a refusal can also be SERVICE_UNAVAILABLE under pool pressure. The
-// invariant is the same: never over capacity, counters equal rows, one effect per operation, and never a 500.
-//
-// Each concurrent request carries its own X-Request-Id; the getActor stub reads the request context the
-// route handler establishes and returns that request's actor, so every racer is a distinct, real actor.
+// Duplicate and concurrent requests through the real handlers, idempotency layer and production
+// database client. Invariants: never over capacity, counters equal rows, one effect per operation,
+// never a 500. Each racer is a distinct actor keyed by its X-Request-Id.
 import { randomUUID } from "node:crypto";
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";

@@ -6,8 +6,6 @@ import { getActor } from "@/modules/auth";
 
 import { invalid, uuidParam } from "../../../_lib/request";
 
-// Next 16: `params` on a dynamic route handler is a Promise (apps/web/node_modules/next/dist/docs/
-// 01-app/03-api-reference/03-file-conventions/route.md), not a plain object — must be awaited.
 type Params = { params: Promise<{ id: string }> };
 
 const listQuery = z.object({

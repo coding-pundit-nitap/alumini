@@ -1,6 +1,4 @@
-# Local scrape config for docker/docker-compose.observability.yml. Production placement waits for
-# hosting; there, web and worker need `authorization: { credentials_file: ... }` with HEALTH_CHECK_TOKEN,
-# because /metrics answers 404 in production without it.
+# Local scrape config for docker/docker-compose.observability.yml. Production uses production.yml.
 global:
   scrape_interval: 15s
   evaluation_interval: 15s

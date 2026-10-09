@@ -3,11 +3,7 @@ import { redirect } from "next/navigation";
 import { safeNextPath } from "@/lib/route-access";
 import { getActor } from "@/modules/auth";
 
-/**
- * Where a person lands after signing in. The client only navigates here; the server reads the account
- * state (self-healing included) and picks the destination. VERIFIED goes to the page they wanted;
- * PENDING and REJECTED go to onboarding; every other state sees its status page.
- */
+/** The server reads the account state and picks the destination after sign-in. */
 export default async function PostLoginPage({
   searchParams,
 }: {

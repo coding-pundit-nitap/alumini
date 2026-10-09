@@ -37,10 +37,8 @@ function parseUploadId(uploadId: string): string {
 }
 
 /**
- * The photo upload flow is driven by client JavaScript, not an HTML `<form>`: the browser
- * picks a file and these actions are called directly with plain values (the use cases still authorize
- * and validate everything server-side). The bytes themselves go straight from the browser to the object
- * store via the presigned URL these actions return — never through this process.
+ * Called from client code with plain values. File bytes go straight to object storage through the
+ * presigned URL, never through this process.
  */
 export async function presignPhotoUploadAction(input: {
   mime: string;

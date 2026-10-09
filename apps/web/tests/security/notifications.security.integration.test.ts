@@ -1,5 +1,4 @@
 // Route-level, real PostgreSQL, real authorize; only the session (getActor) and Redis are doubled.
-// Same construction as tests/integration/api/posts.integration.test.ts.
 import {
   afterAll,
   beforeAll,

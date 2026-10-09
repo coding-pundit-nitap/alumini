@@ -15,10 +15,7 @@ import { createPrismaEventStore } from "@/modules/events/infrastructure/prisma-e
 
 import { createNaiveEventStore } from "./naive-event-store";
 
-/**
- * Under real concurrency: the guarded UPDATEs never oversell, never lose an increment and
- * never let a deadlock escape, while a read-then-write store (the negative control) does oversell.
- */
+/** The guarded updates never oversell or lose an increment; the naive store does. */
 const ITER = Number(process.env.EVENT_RACE_ITERATIONS ?? 3);
 const RACE_TIMEOUT = 180_000;
 
@@ -215,9 +212,7 @@ describe("event registration under concurrency (real PostgreSQL)", () => {
         });
         const newcomers = await seedUsers(20);
 
-        // A newcomer refused as EVENT_FULL retries until an attempt that started after every
-        // cancellation had committed; only then is "full" final, so exactly 10 newcomers win
-        // however the race interleaves.
+        // Retry EVENT_FULL until all cancellations have committed, so exactly 10 newcomers win.
         let cancelsSettled = false;
         const cancellations = Promise.allSettled(
           registrants
@@ -272,10 +267,7 @@ describe("event registration under concurrency (real PostgreSQL)", () => {
           )
         );
 
-        // tally rethrows any non-AppError (a 40P01 escaping the runner, a CHECK violation).
-        // INVALID_STATE_TRANSITION is a legitimate refusal here: a cancel's releaseSeat can miss
-        // against the pre-commit count of a concurrent register, and its follow-up read then sees
-        // that register's committed REGISTERED row.
+        // tally rethrows any non-AppError. INVALID_STATE_TRANSITION is legitimate when a cancel races a register.
         const counts = tally(results);
         const allowed = new Set([
           "ok",

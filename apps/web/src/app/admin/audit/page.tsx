@@ -48,13 +48,11 @@ export default async function AuditLogPage({
     page = await listAuditLog({ actor: await getActor(), query: values });
   } catch (error) {
     if (error instanceof AppError && error.status === 404) notFound();
-    // A stale or tampered cursor: start again from the newest entry, keeping the filters.
     if (error instanceof AppError && error.code === "INVALID_CURSOR") {
       const filters = new URLSearchParams(values);
       filters.delete("cursor");
       redirect(`/admin/audit?${filters}`);
     }
-    // Keep what the admin typed and say what is wrong, rather than silently resetting the filters.
     if (error instanceof AppError && error.code === "VALIDATION_FAILED")
       invalid = invalidFields(error);
     else throw error;

@@ -21,14 +21,8 @@ import {
 } from "@/modules/users";
 
 /**
- * 12 thin Server Actions, one add/update/remove per detail collection. Every one takes the
- * caller from the session, reads only its own named fields (the item schema, or just `id`), and lets the
- * use case authorize and enforce the cap/uniqueness/ownership. No action reads a user id from the form.
- *
- * `refresh()` re-renders the current route's Server Components after a successful mutation, so the list
- * on /profile/details reflects the change without a full navigation (this Next.js version does not
- * re-render automatically; server-actions.md: "an action that does none of [updateTag/revalidatePath/
- * refresh] carries only its return value, and the current route is not re-rendered").
+ * Add/update/remove actions for each profile detail collection. The caller comes from the session
+ * and the use case authorizes. `refresh()` re-renders the route after a successful mutation.
  */
 
 export async function addExperienceAction(

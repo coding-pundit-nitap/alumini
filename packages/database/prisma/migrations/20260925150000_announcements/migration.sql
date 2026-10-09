@@ -1,4 +1,4 @@
--- institutional announcements are posts (domain model "Announcements").
+-- Phase 12E: institutional announcements are posts (domain model "Announcements").
 ALTER TYPE "PostType" ADD VALUE IF NOT EXISTS 'ANNOUNCEMENT';
 ALTER TYPE "NotificationDomain" ADD VALUE IF NOT EXISTS 'ANNOUNCEMENT';
 

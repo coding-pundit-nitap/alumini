@@ -35,17 +35,11 @@ export type JobAuditEntry = {
 
 export type NewJob = JobContent & { postedBy: string; status: JobStatus };
 
-/**
- * Everything a write does happens through one of these, inside ONE database transaction, so a row and its
- * outbox event commit or roll back together, mirroring `modules/mentorship`'s `MentorshipTx`.
- */
+/** All writes go through one transaction, so a row and its outbox event commit together. */
 export type JobTx = {
   findById(id: string): Promise<JobRow | null>;
   insert(input: NewJob): Promise<JobRow>;
-  /**
-   * Guarded: only a row still in `from` moves, and the patch may also carry new content fields (edit) or
-   * only the review/status fields (approve/reject/close). Null when the row had already changed.
-   */
+  /** Only moves a row still in `from`; null when it had already changed. */
   update(
     id: string,
     from: JobStatus,

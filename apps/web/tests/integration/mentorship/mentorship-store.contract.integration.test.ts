@@ -22,11 +22,8 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Builds the same contract harness the fake store satisfies, but backed by real PostgreSQL. The contract
- * suite's ids ("mentor-1", "mentee-1", …) are not valid uuids, so every id-shaped argument is resolved
- * through an alias table (real random uuid per test id, generated on first use) before it reaches the real
- * store. Seed calls are synchronous per the harness type, so they are queued and flushed before every
- * `store.transaction` call — the suite never awaits them directly.
+ * The contract harness backed by real PostgreSQL. Contract ids are mapped to real uuids, and seeds
+ * are queued and flushed before each transaction.
  */
 function buildHarness(db: TestDatabase): MentorshipStoreHarness {
   const alias = new Map<string, string>();

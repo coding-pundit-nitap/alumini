@@ -40,12 +40,8 @@ const loadMentorProfile = cache((actor: Actor) =>
 );
 
 /**
- * ponytail: each count reads ≤ 50 rows and shows "50+" at the cap; add count queries if members
- * routinely exceed it.
- *
- * A real failure in one of the four reads must not read as "0 requests" with no signal — it's
- * excluded from its tile and `failed` tells `Attention` to render an inline error alongside whatever
- * tiles did load.
+ * Each count reads at most 50 rows and shows "50+" at the cap. A failed read is left out of its
+ * tile and reported through `failed` rather than shown as zero.
  */
 const loadCounts = cache(async (actor: Actor) => {
   const [
@@ -113,7 +109,6 @@ export async function Greeting({ actor }: { actor: Actor }) {
   );
 }
 
-/** Completeness. */
 export async function Completeness({ actor }: { actor: Actor }) {
   const result = await loadProfile(actor);
   if (result.status === "error") return <BlockError what="your profile" />;
@@ -135,11 +130,7 @@ export function Widgets({ actor }: { actor: Actor }) {
   ));
 }
 
-/**
- * The same blocks below xl, above the feed: a swipeable snap row on phones (scroll-padding keeps each card off
- * the screen edge), a 2- then 3-column grid from sm up. Each card shows at most two list rows so the feed
- * stays near the top.
- */
+/** Below xl: a swipeable row on phones, a 2- then 3-column grid from sm up. */
 export function WidgetStrip({ actor }: { actor: Actor }) {
   return (
     <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 scrollbar-none items-stretch gap-3 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&_li:nth-child(n+3)]:hidden">
@@ -181,11 +172,7 @@ export async function Events({ actor }: { actor: Actor }) {
   return <EventList events={result.value.data} />;
 }
 
-/**
- * Mentors see their mentees; members who may request mentorship see suggested mentors; others see
- * nothing (the feed is the page itself). A denied branch falls through to the next one, never to an
- * error.
- */
+/** Mentors see their mentees; members who can request mentorship see suggested mentors. */
 export async function RoleBlock({ actor }: { actor: Actor }) {
   const mentor = await loadMentorProfile(actor);
   if (mentor.status === "ok" && mentor.value) {

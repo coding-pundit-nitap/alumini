@@ -28,10 +28,8 @@ const asText = (value: Value): string | null =>
   value === null ? null : typeof value === "string" ? value : String(value);
 
 /**
- * Writes every table in one transaction (all or nothing), in the generator's order, which is foreign-key
- * order. Each chunk is one `INSERT … SELECT FROM unnest(text[], …)`: one round trip per 5 000 rows, every
- * value sent as text and cast to the column's type in SQL. Then moves the message sequence past the
- * explicit `seq` values and refreshes planner statistics, so the first load test sees production-like plans.
+ * One transaction, in foreign-key order, 5,000 rows per `INSERT … unnest(…)`. Then advances the
+ * message sequence and runs ANALYZE.
  */
 export async function writePerfData(
   client: Queryable,
