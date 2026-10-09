@@ -38,7 +38,6 @@
     "docker:observability": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml up -d",
     "docker:observability:down": "docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.observability.yml down",
     "ops:check": "node packages/scripts/check-ops.ts",
-    "launch:check": "node packages/scripts/launch-check.ts",
     "perf:seed": "pnpm --filter @nitap/web perf:seed",
     "perf:run": "node --env-file-if-exists=.env packages/scripts/perf/run.ts"
   },

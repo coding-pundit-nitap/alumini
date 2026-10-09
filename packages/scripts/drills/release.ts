@@ -149,6 +149,8 @@ function writeEnv(env: Env) {
       `APP_URL=${origin}`,
       `BETTER_AUTH_SECRET=${randomBytes(32).toString("hex")}`,
       `HEALTH_CHECK_TOKEN=${randomBytes(16).toString("hex")}`,
+      // The drill's origin is a local path, so monitoring.sh cannot derive runbook links from it.
+      "RUNBOOK_BASE=https://runbooks.invalid",
       "SMTP_URL=smtp://mailpit:1025",
       "EMAIL_FROM=drill@example.org",
       `SMOKE_EMAIL=${smoke.email}`,

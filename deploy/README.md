@@ -171,7 +171,7 @@ member from the admin screens, put both in `.env`, and check: `deploy/deploy.sh 
 
 ### 8. Backups
 
-Design and reasoning: [ADR-011](docs/ADR-011-backup-and-recovery.md). PostgreSQL archives
+Design and reasoning: [decisions](../docs/decisions.md#backups-pgbackrest-to-an-off-host-bucket). PostgreSQL archives
 every WAL segment with pgBackRest, at most 5 minutes apart, to an S3-compatible bucket off this server, and
 takes base backups on a schedule. Everything is encrypted with `BACKUP_CIPHER_PASS` before it leaves the
 host. All jobs run through `deploy/backup.sh`; `deploy/backup.sh` without arguments lists them.
@@ -252,7 +252,7 @@ Grafana, node_exporter (disk, memory, CPU and the backup timestamps from step 8)
 and a blackbox exporter that probes `https://YOUR.DOMAIN/health/ready` the way users reach it (TLS, Nginx,
 certificate expiry). Nothing is published except on `127.0.0.1`.
 
-**Outside this host, before launch**:
+**Outside this host**:
 
 - **A dead-man's switch:** a service that pages when a heartbeat it expects every minute stops for 3 minutes
   (Healthchecks.io, Better Stack, Cronitor, PagerDuty's, and so on). Its webhook URL is `ALERT_DEADMANS_SWITCH_URL`.
@@ -466,21 +466,3 @@ docker compose exec postgres psql -U alumini alumini
 - **Database roles:** web and worker connect as `alumini_app`, which can read and write rows but not change
   the schema, and can only add to the audit log. Migrations, the seed, backups and
   `psql` for an investigation use the owner, `alumini`.
-
-## Before launch
-
-- [ ] `INSTITUTIONAL_EMAIL_POLICY` lists the institute's confirmed domains
-- [ ] Real SMTP sends: register a test account and receive the verification email
-- [ ] Upload a profile photo; it appears after the scan (ClamAV healthy)
-- [ ] Backup bucket off-host, versioned, key without version-delete; `BACKUP_CIPHER_PASS` escrowed with two people
-- [ ] `./backup.sh init` done, cron installed, `./backup.sh info` shows backups and WAL reaching the present
-- [ ] `./backup.sh restore-test` passes on the server, recorded in [restore-tests](../packages/scripts/drills/reports/restore-tests.md)
-- [ ] External uptime check on `/health/ready`, paging from outside the host
-- [ ] Monitoring up (step 9): every Prometheus target up, a test ticket and a test page received, the
-      dead-man's switch receiving heartbeats; then `./monitoring.sh stop prometheus` pages within 5 minutes,
-      and `./monitoring.sh start prometheus`
-- [ ] The domain set to auto-renew at the registrar, with its expiry emails going to a shared mailbox
-- [ ] Staging set up and a release promoted from it (`releases.log` on production shows `source=promote`)
-- [ ] A rollback rehearsed on staging and once on production: release, `rollback <previous>`, release again
-- [ ] `pnpm launch:check --strict` passes on a full checkout: every row of
-      [launch-readiness](../packages/scripts/launch/launch-readiness.md) proven, its owner checklist ticked

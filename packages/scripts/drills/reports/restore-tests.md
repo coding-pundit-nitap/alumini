@@ -1,6 +1,6 @@
 # Restore tests
 
-Appended by `packages/scripts/drills/restore.ts --record`; read by `packages/scripts/launch-check.ts`. Never edit a past entry.
+Appended by `packages/scripts/drills/restore.ts --record`. Never edit a past entry.
 
 ## 2026-10-08 16:31 UTC — drill (packages/scripts/drills/restore.mjs) — PASS
 

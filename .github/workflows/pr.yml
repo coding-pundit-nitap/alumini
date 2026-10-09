@@ -70,11 +70,12 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      # Organisation-owned repositories need a GITLEAKS_LICENSE secret for this action.
-      - uses: gitleaks/gitleaks-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+      # The gitleaks CLI, not gitleaks-action: the action needs a paid license on organisation repositories.
+      # Same pinned image as the pre-commit hook; .gitleaksignore holds the reviewed exceptions.
+      - name: gitleaks (full history)
+        run: >-
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo:ro" -w /repo
+          ghcr.io/gitleaks/gitleaks:v8.30.0 git --redact --no-banner /repo
 
   # Alert rules fire on injected conditions, Alertmanager config is valid, every alert links a runbook.
   # Needs only Node and Docker; it reproduces `pnpm ops:check`.

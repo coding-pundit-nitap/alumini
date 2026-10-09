@@ -88,7 +88,7 @@ Two web containers (`web-blue`, `web-green`) behind Nginx; only one is live.
     deploy — architecture §8.4)
  6. Shift traffic: switch the Nginx upstream and `nginx -s reload` (graceful; in-flight requests finish)
  7. Drain the old colour: `POST /health/drain` (bearer `HEALTH_CHECK_TOKEN`) → readiness 503 and message
-    streams end; wait ≥ 2 probe intervals, SIGTERM, allow the 30 s grace, stop (drill: failure-scenarios)
+    streams end; wait ≥ 2 probe intervals, SIGTERM, allow the 30 s grace, stop (drill: `packages/scripts/drills/web-shutdown.ts`)
     (keep it stopped-but-present for fast rollback for the bake period)
  8. Worker: start new worker(s); old worker receives SIGTERM, finishes its current job, exits; unfinished
     jobs return to the queue (visibility timeout). Job payloads are versioned (§8.6)

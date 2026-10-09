@@ -1,6 +1,6 @@
 # Alert drills
 
-Appended by `packages/scripts/drills/alerts.ts --record`; read by `packages/scripts/launch-check.ts`. Never edit a past entry.
+Appended by `packages/scripts/drills/alerts.ts --record`. Never edit a past entry.
 
 ## 2026-10-08 21:56 UTC — drill (packages/scripts/drills/alerts.ts) — PASS
 

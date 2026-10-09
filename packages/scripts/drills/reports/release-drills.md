@@ -1,6 +1,6 @@
 # Release drills
 
-Appended by `packages/scripts/drills/release.ts --record`; read by `packages/scripts/launch-check.ts`. Never edit a past entry.
+Appended by `packages/scripts/drills/release.ts --record`. Never edit a past entry.
 
 ## 2026-10-08 18:21 UTC — drill (packages/scripts/drills/release.ts) — PASS
 
