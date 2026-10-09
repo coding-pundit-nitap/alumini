@@ -4,7 +4,8 @@
 #
 #   deploy/deploy.sh build                     git pull, build the four images on this host, release them
 #   deploy/deploy.sh pull                      staging: git pull, pull CI's images for that commit, pin them by
-#                                              digest, release, smoke test
+#                                              digest, release, smoke test. Production too, only with
+#                                              RELEASE_SOURCE=ci (one server, no staging)
 #   deploy/deploy.sh promote <sha> <approver>  production: release exactly the digests that passed staging's
 #                                              smoke test for <sha>
 #   deploy/deploy.sh rollback <sha>            start web and worker on an earlier release (no git, no migrations)
@@ -155,8 +156,9 @@ case "${1:-}" in
     release "$sha" build yes "$(whoami)" "alumini-web:$sha" "alumini-worker:$sha" "alumini-migrate:$sha" "alumini-postgres:$sha"
     ;;
   pull)
-    [ "$ENVIRONMENT" = staging ] ||
-      die "production releases what staging tested: deploy/deploy.sh promote <sha> <approver> (README Releasing)"
+    # Production releases what staging tested, unless it has no staging and opts in to CI's images directly.
+    [ "$ENVIRONMENT" = staging ] || [ "$(env_get RELEASE_SOURCE)" = ci ] ||
+      die "production releases what staging tested: deploy/deploy.sh promote <sha> <approver> (README Releasing). A single server without staging sets RELEASE_SOURCE=ci in deploy/.env"
     registry=$(env_get IMAGE_REGISTRY)
     [ -n "$registry" ] || die "set IMAGE_REGISTRY in deploy/.env (e.g. ghcr.io/owner)"
     sha=$(git_update)

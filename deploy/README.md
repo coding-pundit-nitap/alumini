@@ -304,22 +304,24 @@ A second, smaller server (2 vCPU, 4 GB) set up with steps 1–9, with these diff
 
 ## One server behind Nginx Proxy Manager
 
-The whole stack on one server, with TLS ending at an Nginx Proxy Manager (NPM) on another machine. No staging
-server, so every release is built on the server (`deploy.sh build`).
+The whole stack on one server, with TLS ending at an Nginx Proxy Manager (NPM) on another machine. There is no
+staging server, so the server releases CI's images directly: `RELEASE_SOURCE=ci` lets `deploy.sh pull` run on
+production. Those images passed every check on `main` (tests, coverage, E2E against a production build, the
+image scan) before CI published them; what this setup gives up is only the staging smoke test before production.
 
 **The server.** Sized from the load tests ([perf 2026-10-01](../docs/operations/perf/2026-10-01.md) §4):
 
-|      | Minimum          | Recommended          |
-| ---- | ---------------- | -------------------- |
-| CPU  | 2 vCPU           | **4 vCPU**           |
-| RAM  | 4 GB + 4 GB swap | **8 GB** + 4 GB swap |
-| Disk | 40 GB            | **60–80 GB SSD**     |
-| OS   | Ubuntu 24.04     | Ubuntu 24.04         |
+|      | Minimum          | Recommended   |
+| ---- | ---------------- | ------------- |
+| CPU  | 2 vCPU           | **4 vCPU**    |
+| RAM  | 4 GB + 2 GB swap | **8 GB**      |
+| Disk | 40 GB            | **60 GB SSD** |
+| OS   | Ubuntu 24.04     | Ubuntu 24.04  |
 
-8 GB is for the build: `next build` needs ~4 GB free while the running stack holds ~3 GB (ClamAV ~1 GB, web
-~1.5 GB, Postgres, two Redis, MinIO, worker). The disk goes on images (~1 GB per release, a few kept for
-rollback), the build cache and ClamAV's signatures; uploads and the database stay small (photos are re-encoded to
-512 px WebP, ~50 KB each).
+Nothing is built on the server, so it needs only what the running stack holds, ~3 GB (ClamAV ~1 GB, web ~1.5 GB,
+Postgres, two Redis, MinIO, worker): 4 GB is tight, 8 GB leaves room for monitoring (step 9) and a building
+fallback (below). The disk goes on images (~1 GB per release, a few kept for rollback) and ClamAV's signatures;
+uploads and the database stay small (photos are re-encoded to 512 px WebP, ~50 KB each).
 
 **One instance of each service:** one web, one worker, one Postgres, one of each Redis, MinIO, ClamAV. One web
 instance sustains ~25–35 mixed requests/s on a cloud vCPU (the measured ~50/s per core, less the 1 GB heap cap's
@@ -344,9 +346,9 @@ second service and load balancing in NPM; add one only when monitoring shows web
 - **Step 4:** add `WEB_BIND=0.0.0.0` and `WEB_PORT=80`. `NEXT_PUBLIC_APP_URL`, `BETTER_AUTH_URL` and `APP_URL`
   stay `https://YOUR.DOMAIN`: users reach the app over https, and cookies and origin checks follow that. If NPM
   runs on this same host, it holds port 80: use `WEB_PORT=3000` and forward NPM to `<host IP>:3000`.
-  `IMAGE_REGISTRY` and `STAGING_RELEASES` stay unset.
-- **Step 5:** skip it.
-- **Step 6:** `deploy/deploy.sh build` (`pull` and `promote` need a staging server).
+  Also `RELEASE_SOURCE=ci` and `IMAGE_REGISTRY=ghcr.io/owner` (lowercase); `STAGING_RELEASES` stays unset.
+- **Step 5:** as written: a token with only `read:packages`, or make the four `alumini-*` packages public.
+- **Step 6:** `deploy/deploy.sh pull`.
 
 **In NPM**, add a Proxy Host for the domain: scheme `http`, forward to `<server IP>` port `80`, Websockets
 off. On the SSL tab: a Let's Encrypt certificate, Force SSL, HTTP/2 and HSTS. On the Advanced tab, what
@@ -365,11 +367,14 @@ proxy_read_timeout 1h;
 location ~ ^/(metrics|health/drain)$ { deny all; }
 ```
 
-**Updating.** Merge to `main` and let CI go green; then on the server:
+**Updating.** Merge to `main` and wait for the **Publish images** job to go green; then on the server:
 
 ```bash
-/opt/alumini/deploy/deploy.sh build    # git pull, build, migrate, restart, smoke test (5–10 min)
+/opt/alumini/deploy/deploy.sh pull     # git pull, pull and pin CI's images, migrate, restart, smoke test
 ```
+
+If `main` moved on since the last green run, `pull` stops with "no web image for <sha> yet": wait for CI and run
+it again.
 
 The site is down for a few seconds while web restarts, so release outside busy hours. If the release is bad:
 
@@ -378,8 +383,9 @@ The site is down for a few seconds while web restarts, so release outside busy h
 /opt/alumini/deploy/deploy.sh rollback <old-sha>   # earlier images, no git or database change
 ```
 
-Build-mode images exist only on this server: keep the last few releases' images for rollback (see
-[Operating](#operating)), and do not run `docker system prune -a`.
+Rollback re-pulls a pruned image from the registry by its digest. Without the registry (GitHub down, the token
+expired), `deploy/deploy.sh build` builds the same commit on the server instead; it needs ~4 GB of free RAM, so
+an 8 GB server.
 
 ## Releasing
 
