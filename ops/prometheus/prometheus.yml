@@ -2,6 +2,10 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  # --enable-feature=expand-external-labels: RUNBOOK_BASE comes from the repo's .env. Alert runbook_url
+  # annotations are built from runbook_base.
+  external_labels:
+    runbook_base: ${RUNBOOK_BASE}
 
 rule_files:
   - /etc/prometheus/rules/*.yml

@@ -9,6 +9,9 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=7d
       - --web.enable-lifecycle
+      - --enable-feature=expand-external-labels
+    environment:
+      RUNBOOK_BASE: ${RUNBOOK_BASE:-}
     volumes:
       - ../ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ../ops/prometheus/rules:/etc/prometheus/rules:ro

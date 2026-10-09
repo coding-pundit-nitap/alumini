@@ -9,4 +9,4 @@ groups:
         annotations:
           summary: "An upload has waited more than 30 minutes for its malware scan"
           description: "The oldest PENDING_SCAN upload has waited {{ $value | humanizeDuration }}. Files stay unusable until scanned."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-14.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-14.md"

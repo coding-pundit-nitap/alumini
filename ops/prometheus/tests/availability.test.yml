@@ -5,6 +5,7 @@ evaluation_interval: 1m
 
 tests:
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'up{job="web",instance="web:3000"}'
         values: "0x10"
@@ -27,7 +28,7 @@ tests:
             exp_annotations:
               summary: "Web process web:3000 is not answering scrapes"
               description: "Prometheus cannot scrape /metrics on web:3000: the process is down, wedged or unreachable."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md
+              runbook_url: https://runbooks.test/R-1.md
       # Redis being down degrades, it does not fail readiness: only the postgres series fires.
       - eval_time: 3m
         alertname: ReadinessFailing
@@ -43,7 +44,7 @@ tests:
             exp_annotations:
               summary: "Web readiness fails: PostgreSQL unreachable from web:3000"
               description: "The last /health/ready check on web:3000 could not reach PostgreSQL, so the instance reports not ready."
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md"
+              runbook_url: https://runbooks.test/R-1.md
       - eval_time: 3m
         alertname: WorkerDown
         exp_alerts: []
@@ -60,7 +61,7 @@ tests:
             exp_annotations:
               summary: "Worker worker:3001 is not answering scrapes"
               description: No jobs or outbox relaying happen while the worker is down; requests keep succeeding and the outbox grows.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md"
+              runbook_url: https://runbooks.test/R-3.md
       - eval_time: 1m
         alertname: Watchdog
         exp_alerts:
@@ -68,4 +69,4 @@ tests:
             exp_annotations:
               summary: Monitoring heartbeat (always firing)
               description: "Routed to the dead-man's switch. If this stops arriving, Prometheus or Alertmanager is down."
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md"
+              runbook_url: https://runbooks.test/R-1.md

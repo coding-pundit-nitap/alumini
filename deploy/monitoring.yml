@@ -22,6 +22,7 @@ services:
       - --enable-feature=expand-external-labels
     environment:
       DEPLOY_ENV: ${DEPLOY_ENV:-production}
+      RUNBOOK_BASE: ${RUNBOOK_BASE}
     volumes:
       - ../ops/prometheus/production.yml:/etc/prometheus/prometheus.yml:ro
       - ../ops/prometheus/rules:/etc/prometheus/rules:ro

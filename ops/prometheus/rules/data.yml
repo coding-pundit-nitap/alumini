@@ -9,7 +9,7 @@ groups:
         annotations:
           summary: "{{ $labels.job }} requests are waiting for a database connection"
           description: "{{ $value }} callers have been queued on the {{ $labels.job }} pool for 5 minutes."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-5.md"
 
       - alert: PostgresDown
         expr: pg_up{job="postgres"} == 0
@@ -18,7 +18,7 @@ groups:
         annotations:
           summary: "PostgreSQL is unreachable from its exporter"
           description: "postgres_exporter cannot connect to PostgreSQL."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-5.md"
 
       - alert: PostgresConnectionsHigh
         expr: |
@@ -29,7 +29,7 @@ groups:
         annotations:
           summary: "PostgreSQL connections above 85 % of max_connections"
           description: "{{ $value | humanizePercentage }} of max_connections are in use."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-5.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-5.md"
 
       - alert: CacheRedisDown
         expr: redis_up{job="redis-cache"} == 0
@@ -38,7 +38,7 @@ groups:
         annotations:
           summary: "Cache Redis is unreachable"
           description: "Rate limiting falls back and real-time hints stop; nothing durable is lost."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-6.md"
 
       - alert: QueueRedisDown
         expr: redis_up{job="redis-queue"} == 0
@@ -47,7 +47,7 @@ groups:
         annotations:
           summary: "Queue Redis is unreachable"
           description: "No job can be queued or run; the outbox keeps the events, so nothing is lost while it is down."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-6.md"
 
       - alert: QueueRedisMemoryHigh
         expr: |
@@ -58,4 +58,4 @@ groups:
         annotations:
           summary: "Queue Redis above 80 % of maxmemory"
           description: "The queue Redis is noeviction: at 100 % every enqueue fails. Used {{ $value | humanizePercentage }}."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-6.md"

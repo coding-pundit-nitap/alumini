@@ -5,6 +5,7 @@ evaluation_interval: 1m
 tests:
   # 10 % of 100 req/min fail: fires after 5 minutes.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'http_requests_total{job="web",method="GET",route="/api/v1/posts",status="500",status_class="5xx"}'
         values: "0+10x20"
@@ -21,10 +22,11 @@ tests:
             exp_annotations:
               summary: "More than 2 % of API requests fail with 5xx"
               description: "10% of API requests returned 5xx over the last 5 minutes."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-2.md
+              runbook_url: https://runbooks.test/R-2.md
 
   # 1 % fails: below the threshold.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'http_requests_total{job="web",method="GET",route="/api/v1/posts",status="500",status_class="5xx"}'
         values: "0+1x20"
@@ -37,6 +39,7 @@ tests:
 
   # Half of the requests fail, but only 10 requests per 5 minutes: the low-traffic guard holds it back.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'http_requests_total{job="web",method="GET",route="/api/v1/posts",status="500",status_class="5xx"}'
         values: "0+1x20"
@@ -49,6 +52,7 @@ tests:
 
   # Every request takes 0.5–1 s at 20 req/min: ticket after 10 minutes, page after 30.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'http_request_duration_seconds_bucket{job="web",method="GET",route="/api/v1/posts",status_class="2xx",le="0.5"}'
         values: "0x40"
@@ -66,7 +70,7 @@ tests:
             exp_annotations:
               summary: API p95 latency above 500 ms
               description: p95 over the last 5 minutes is 975ms.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-2.md"
+              runbook_url: https://runbooks.test/R-2.md
       - eval_time: 15m
         alertname: HighLatencyP95Sustained
         exp_alerts: []
@@ -77,10 +81,11 @@ tests:
             exp_annotations:
               summary: API p95 latency above 500 ms for 30 minutes
               description: p95 over the last 5 minutes is 975ms; the ticket-level alert has not cleared.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-2.md"
+              runbook_url: https://runbooks.test/R-2.md
 
   # Fast requests never fire.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'http_request_duration_seconds_bucket{job="web",method="GET",route="/api/v1/posts",status_class="2xx",le="0.1"}'
         values: "0+20x40"

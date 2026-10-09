@@ -30,7 +30,8 @@ Outside production `/metrics` is open; in production it needs `Authorization: Be
 
 1. Edit the rule, keeping the labels and annotations above.
 2. Add or update its cases in `prometheus/tests/`: one where it fires (with the exact rendered annotations) and one where it must not.
-3. Link a runbook in `runbooks/`; write one if the alert needs a new response.
+3. Link a runbook in `runbooks/` as `runbook_url: "{{ $externalLabels.runbook_base }}/R-<n>.md"`; write one if the
+   alert needs a new response. Prometheus sets `runbook_base` from `RUNBOOK_BASE`, so forks link their own runbooks.
 4. `pnpm ops:check` (needs Docker).
 
 Metrics the app labels `job` (`jobs_processed_total`, `jobs_dead_total`, `job_duration_seconds`) are scraped as

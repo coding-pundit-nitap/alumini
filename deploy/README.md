@@ -107,6 +107,9 @@ Fill in:
 - `INSTITUTIONAL_EMAIL_POLICY`: the domains the institute has confirmed.
 - `DEPLOY_ENV=production` (or `staging` on the staging server, see [Staging](#staging)).
 - `IMAGE_REGISTRY=ghcr.io/owner`, lowercase. Not needed in build mode.
+- `RUNBOOK_BASE` (optional): where alert `runbook_url`s point, e.g.
+  `https://github.com/owner/alumini/blob/main/ops/runbooks`. Unset, `monitoring.sh` derives it from the
+  clone's GitHub `origin`.
 - `STAGING_RELEASES` (production): where `promote` reads staging's `releases.log`, e.g.
   `deploy@staging.example.org:/opt/alumini/deploy/releases.log`. Give this server's user an ssh key that
   staging accepts, read-only if you can (a `command="cat …"` restriction in staging's `authorized_keys`).

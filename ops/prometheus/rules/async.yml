@@ -9,7 +9,7 @@ groups:
         annotations:
           summary: "Oldest unpublished outbox event is older than 5 minutes"
           description: "The oldest outbox row has waited {{ $value | humanizeDuration }}; the relay is not publishing."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-3.md"
 
       - alert: OutboxEventsQuarantined
         expr: increase(outbox_relay_quarantined_total{job="worker"}[15m]) > 0
@@ -17,7 +17,7 @@ groups:
         annotations:
           summary: "The relay quarantined outbox events"
           description: "{{ $value | humanize }} outbox events were quarantined in the last 15 minutes and will not be published until released."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-3.md"
 
       - alert: QueueBacklogGrowing
         expr: |
@@ -28,7 +28,7 @@ groups:
         annotations:
           summary: "Queue {{ $labels.queue }} backlog keeps growing"
           description: "{{ $value }} jobs are waiting on {{ $labels.queue }} and the count has been rising for 30 minutes."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-3.md"
 
       - alert: CriticalJobDead
         expr: sum by (exported_job) (increase(jobs_dead_total{job="worker",exported_job=~"donation\\..*|verification\\..*"}[5m])) > 0
@@ -36,7 +36,7 @@ groups:
         annotations:
           summary: "A {{ $labels.exported_job }} job is dead"
           description: "Donation and verification jobs carry money or access decisions; a dead one needs a deliberate replay."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-4.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-4.md"
 
       - alert: DeadJobsGrowing
         expr: sum(increase(jobs_dead_total{job="worker"}[1h])) > 10
@@ -45,7 +45,7 @@ groups:
         annotations:
           summary: "More than 10 jobs died in the last hour"
           description: "{{ $value | humanize }} jobs exhausted their retries in the last hour."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-4.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-4.md"
 
       - alert: EmailSendFailing
         expr: |
@@ -59,7 +59,7 @@ groups:
         annotations:
           summary: "More than 20 % of email sends fail"
           description: "{{ $value | humanizePercentage }} of email.send attempts failed or were retried over 15 minutes."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-11.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-11.md"
 
       - alert: FailedEmailDeliveries
         expr: sum(increase(notification_delivery_failed_total{job="worker",channel="EMAIL"}[30m])) > 0
@@ -67,4 +67,4 @@ groups:
         annotations:
           summary: "Notification emails failed permanently"
           description: "{{ $value | humanize }} notification emails were marked FAILED in the last 30 minutes. Replay them once the cause is fixed."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-15.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-15.md"

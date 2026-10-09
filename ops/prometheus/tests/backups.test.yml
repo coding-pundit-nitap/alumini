@@ -5,6 +5,7 @@ evaluation_interval: 1m
 tests:
   # archive_command fails once a minute: pages after 10 minutes.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'pg_stat_archiver_failed_count{job="postgres",instance="pg"}'
         values: "0+1x30"
@@ -24,7 +25,7 @@ tests:
             exp_annotations:
               summary: "PostgreSQL cannot archive WAL to the backup repository"
               description: "archive_command failed 15 times in 15 minutes. Point-in-time recovery stops at the last archived segment, and pg_wal grows until the disk fills."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+              runbook_url: https://runbooks.test/R-8.md
       # 31 minutes since the last segment: inside the hourly check's window.
       - eval_time: 30m
         alertname: WalArchiveStale
@@ -32,6 +33,7 @@ tests:
 
   # Nothing archived for 80 minutes.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'pg_stat_archiver_last_archive_age{job="postgres",instance="pg"}'
         values: "4800x10"
@@ -46,13 +48,14 @@ tests:
             exp_annotations:
               summary: "No WAL segment archived for over 75 minutes"
               description: "The last segment reached the repository 1h 20m 0s ago; the 15-minute RPO no longer holds."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+              runbook_url: https://runbooks.test/R-8.md
       - eval_time: 10m
         alertname: WalArchiveFailing
         exp_alerts: []
 
   # Base backups last succeeded at t=0; uploads, dumps and full backups keep succeeding until verify is late.
   - interval: 1h
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'alumini_backup_last_success_timestamp_seconds{job="node",instance="h",kind="full"}'
         values: "0x240"
@@ -77,7 +80,7 @@ tests:
             exp_annotations:
               summary: "No successful base backup in 26 hours"
               description: "The last full or differential backup finished 1d 3h 0m 0s ago. WAL still covers recovery, but a restore replays more of it."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+              runbook_url: https://runbooks.test/R-8.md
       - eval_time: 7d
         alertname: BackupJobOverdue
         exp_alerts: []
@@ -95,7 +98,7 @@ tests:
             exp_annotations:
               summary: "Backup job full has not succeeded on schedule"
               description: "The last successful full run was 9d 0h 0m 0s ago."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+              runbook_url: https://runbooks.test/R-8.md
           - exp_labels:
               {
                 severity: ticket,
@@ -107,7 +110,7 @@ tests:
             exp_annotations:
               summary: "Backup job verify has not succeeded on schedule"
               description: "The last successful verify run was 9d 0h 0m 0s ago."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+              runbook_url: https://runbooks.test/R-8.md
       - eval_time: 9d
         alertname: RestoreTestOverdue
         exp_alerts: []
@@ -117,6 +120,7 @@ tests:
 
   # The restore test last passed at t=0.
   - interval: 1d
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'alumini_backup_last_success_timestamp_seconds{job="node",instance="h",kind="restore_test"}'
         values: "0x40"
@@ -138,10 +142,11 @@ tests:
             exp_annotations:
               summary: "No successful restore test in 35 days"
               description: "The monthly restore test last passed 36d 0h 0m 0s ago."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+              runbook_url: https://runbooks.test/R-8.md
 
   # No backup metrics at all.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'pg_stat_archiver_failed_count{job="postgres",instance="pg"}'
         values: "0x90"
@@ -156,4 +161,4 @@ tests:
             exp_annotations:
               summary: "No backup metrics reach Prometheus"
               description: "alumini_backup_last_success_timestamp_seconds is absent, so the backup alerts cannot fire."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
+              runbook_url: https://runbooks.test/R-8.md

@@ -20,7 +20,7 @@ const PROMETHEUS = "prom/prometheus:v3.5.0";
 const ALERTMANAGER = "prom/alertmanager:v0.28.1";
 const BLACKBOX = "prom/blackbox-exporter:v0.27.0";
 const RUNBOOK_URL =
-  /runbook_url: https:\/\/github\.com\/krotrn\/alumini\/blob\/main\/ops\/runbooks\/(R-\d+)\.md/;
+  /runbook_url: "\{\{ \$externalLabels\.runbook_base \}\}\/(R-\d+)\.md"/;
 
 const problems: string[] = [];
 const scratch = mkdtempSync(path.join(tmpdir(), "ops-check-"));

@@ -4,6 +4,7 @@ evaluation_interval: 1m
 
 tests:
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'outbox_oldest_unpublished_age_seconds{job="worker",instance="w"}'
         values: "400x10"
@@ -28,7 +29,7 @@ tests:
             exp_annotations:
               summary: "Oldest unpublished outbox event is older than 5 minutes"
               description: "The oldest outbox row has waited 6m 40s; the relay is not publishing."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md
+              runbook_url: https://runbooks.test/R-3.md
       - eval_time: 3m
         alertname: OutboxEventsQuarantined
         exp_alerts:
@@ -37,7 +38,7 @@ tests:
             exp_annotations:
               summary: The relay quarantined outbox events
               description: 1 outbox events were quarantined in the last 15 minutes and will not be published until released.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md"
+              runbook_url: https://runbooks.test/R-3.md
       - eval_time: 3m
         alertname: CriticalJobDead
         exp_alerts:
@@ -50,7 +51,7 @@ tests:
             exp_annotations:
               summary: A donation.confirmed job is dead
               description: Donation and verification jobs carry money or access decisions; a dead one needs a deliberate replay.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-4.md"
+              runbook_url: https://runbooks.test/R-4.md
       - eval_time: 3m
         alertname: FailedEmailDeliveries
         exp_alerts:
@@ -58,10 +59,11 @@ tests:
             exp_annotations:
               summary: "Notification emails failed permanently"
               description: "1 notification emails were marked FAILED in the last 30 minutes. Replay them once the cause is fixed."
-              runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-15.md
+              runbook_url: https://runbooks.test/R-15.md
 
   # A young outbox and a steady (not growing) queue stay quiet.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'outbox_oldest_unpublished_age_seconds{job="worker",instance="w"}'
         values: "100x10"
@@ -77,6 +79,7 @@ tests:
 
   # Waiting jobs above 50 and rising for 30 minutes.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'queue_jobs{job="worker",instance="w",queue="email",state="waiting"}'
         values: "60+2x60"
@@ -99,10 +102,11 @@ tests:
             exp_annotations:
               summary: Queue email backlog keeps growing
               description: 160 jobs are waiting on email and the count has been rising for 30 minutes.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md"
+              runbook_url: https://runbooks.test/R-3.md
 
   # One dead job a minute: more than 10 an hour.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'jobs_dead_total{job="worker",instance="w",queue="default",exported_job="message.sent"}'
         values: "0+1x60"
@@ -117,10 +121,11 @@ tests:
             exp_annotations:
               summary: More than 10 jobs died in the last hour
               description: 30 jobs exhausted their retries in the last hour.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-4.md"
+              runbook_url: https://runbooks.test/R-4.md
 
   # Half of the email attempts are retried, at 10 attempts a minute.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'jobs_processed_total{job="worker",instance="w",queue="email",exported_job="email.send",outcome="retry"}'
         values: "0+5x60"
@@ -134,10 +139,11 @@ tests:
             exp_annotations:
               summary: "More than 20 % of email sends fail"
               description: "50% of email.send attempts failed or were retried over 15 minutes."
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-11.md"
+              runbook_url: https://runbooks.test/R-11.md
 
   # Same failure ratio at 2 attempts per 15 minutes: below the minimum volume.
   - interval: 15m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'jobs_processed_total{job="worker",instance="w",queue="email",exported_job="email.send",outcome="retry"}'
         values: "0+1x8"

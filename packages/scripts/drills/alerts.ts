@@ -163,6 +163,7 @@ function writeFiles() {
     path.join(work, "app.env"),
     [
       "DEPLOY_ENV=drill",
+      "RUNBOOK_BASE=https://runbooks.invalid",
       "APP_URL=http://web.invalid",
       "HEALTH_CHECK_TOKEN=drill",
       "POSTGRES_PASSWORD=unused",
@@ -202,7 +203,10 @@ function writeFiles() {
         global: {
           scrape_interval: "15s",
           evaluation_interval: "15s",
-          external_labels: { environment: "${DEPLOY_ENV}" },
+          external_labels: {
+            environment: "${DEPLOY_ENV}",
+            runbook_base: "${RUNBOOK_BASE}",
+          },
         },
         rule_files: ["/etc/prometheus/rules/*.yml"],
         alerting: {
@@ -324,8 +328,9 @@ try {
     alerts.length > 0 &&
       alerts.every(
         (a) =>
-          /\/ops\/runbooks\/R-\d+\.md$/.test(a.annotations.runbook_url ?? "") &&
-          a.labels.environment === "drill"
+          /^https:\/\/runbooks\.invalid\/R-\d+\.md$/.test(
+            a.annotations.runbook_url ?? ""
+          ) && a.labels.environment === "drill"
       ),
     `${alerts.length} alerts`
   );

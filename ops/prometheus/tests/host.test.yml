@@ -6,6 +6,7 @@ tests:
   # / at 85 % → ticket only; /data at 95 % → page (the ticket is inhibited in Alertmanager, not here).
   # tmpfs is ignored however full it is.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'node_filesystem_size_bytes{job="node",instance="node-exporter:9100",mountpoint="/",fstype="ext4"}'
         values: "100x20"
@@ -42,7 +43,7 @@ tests:
             exp_annotations:
               summary: Filesystem / is more than 80 % full
               description: 85% of / is used. Old release images and container logs are the usual cause.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md"
+              runbook_url: https://runbooks.test/R-7.md
           - exp_labels:
               {
                 severity: ticket,
@@ -55,7 +56,7 @@ tests:
             exp_annotations:
               summary: Filesystem /data is more than 80 % full
               description: 95% of /data is used. Old release images and container logs are the usual cause.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md"
+              runbook_url: https://runbooks.test/R-7.md
       - eval_time: 6m
         alertname: HostDiskFull
         exp_alerts:
@@ -71,7 +72,7 @@ tests:
             exp_annotations:
               summary: Filesystem /data is more than 90 % full
               description: 95% of /data is used. PostgreSQL stops accepting writes when the disk fills.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md"
+              runbook_url: https://runbooks.test/R-7.md
       - eval_time: 6m
         alertname: HostInodesLow
         exp_alerts:
@@ -79,10 +80,11 @@ tests:
             exp_annotations:
               summary: Filesystem / has used more than 90 % of its inodes
               description: 95% of the inodes on / are used; writes fail when they run out, whatever the free space.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md"
+              runbook_url: https://runbooks.test/R-7.md
 
   # pg_wal: 3 GiB and growing fires; 3 GiB and flat (a large but stable max_wal_size) does not.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'pg_wal_size_bytes{job="postgres",instance="postgres-exporter:9187"}'
         values: "3221225472+10000000x60"
@@ -102,9 +104,10 @@ tests:
             exp_annotations:
               summary: pg_wal is above 2 GiB and still growing
               description: "pg_wal holds 3.373GiB. Check WAL archiving first: segments stay until they are archived."
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md"
+              runbook_url: https://runbooks.test/R-7.md
 
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'up{job="node",instance="node-exporter:9100"}'
         values: "0x10"
@@ -124,7 +127,7 @@ tests:
             exp_annotations:
               summary: node_exporter is not answering scrapes
               description: Disk, inode and backup-timestamp alerts cannot fire while node_exporter is down.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md"
+              runbook_url: https://runbooks.test/R-7.md
       - eval_time: 9m
         alertname: ProbeExporterDown
         exp_alerts: []
@@ -141,10 +144,11 @@ tests:
             exp_annotations:
               summary: The blackbox exporter is not answering
               description: Neither the public probe nor the certificate expiry alerts can fire while it is down.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-12.md"
+              runbook_url: https://runbooks.test/R-12.md
 
   # Probe fails for 3 minutes; certificate expires 10 days after the test's start (ticket, not page).
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'probe_success{job="probe",instance="https://alumni.example.org/health/ready"}'
         values: "1 0 0 0 1 1"
@@ -164,7 +168,7 @@ tests:
             exp_annotations:
               summary: "https://alumni.example.org/health/ready does not answer 200"
               description: "The probe through DNS, TLS and Nginx fails while nothing inside explains it: check Nginx, the certificate and the firewall."
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md"
+              runbook_url: https://runbooks.test/R-1.md
       - eval_time: 5m
         alertname: SiteProbeFailing
         exp_alerts: []
@@ -181,12 +185,13 @@ tests:
             exp_annotations:
               summary: "The certificate for https://alumni.example.org/health/ready expires in under 21 days"
               description: "It expires in 10d 0h 0m 0s. certbot renews at 30 days, so renewal is failing."
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-12.md"
+              runbook_url: https://runbooks.test/R-12.md
       - eval_time: 0m
         alertname: TlsCertExpiring
         exp_alerts: []
 
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'probe_ssl_earliest_cert_expiry{job="probe",instance="https://alumni.example.org/health/ready"}'
         values: "432000x10"
@@ -204,4 +209,4 @@ tests:
             exp_annotations:
               summary: "The certificate for https://alumni.example.org/health/ready expires in under 7 days"
               description: "It expires in 5d 0h 0m 0s. Browsers refuse the site when it does."
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-12.md"
+              runbook_url: https://runbooks.test/R-12.md

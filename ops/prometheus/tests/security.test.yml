@@ -5,6 +5,7 @@ evaluation_interval: 1m
 tests:
   # 10 failed sign-ins a minute (8 wrong passwords, 2 rate limited) and plenty of successes: over 50 in 10 minutes.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'auth_sign_in_total{job="web",instance="web:3000",outcome="invalid_credentials"}'
         values: "0+8x40"
@@ -23,10 +24,11 @@ tests:
             exp_annotations:
               summary: Spike in failed and rate-limited sign-ins
               description: 100 sign-ins failed or were rate limited in 10 minutes. Credential stuffing or a broken login.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md"
+              runbook_url: https://runbooks.test/R-9.md
 
   # Forbidden (unverified) sign-ins and invalid requests are not a spike, however many.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'auth_sign_in_total{job="web",instance="web:3000",outcome="forbidden"}'
         values: "0+20x40"
@@ -39,6 +41,7 @@ tests:
 
   # 5 denials a minute on an admin-tier permission; the same rate on a member permission is ignored.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'authz_decisions_total{job="web",instance="web:3000",permission="role.assign",outcome="denied"}'
         values: "0+5x30"
@@ -55,7 +58,7 @@ tests:
             exp_annotations:
               summary: Spike in denied admin-tier permission checks
               description: 50 admin-tier permission checks were denied in 10 minutes. Review who is probing.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md"
+              runbook_url: https://runbooks.test/R-9.md
       - eval_time: 3m
         alertname: AuthzDenialAuditFailing
         exp_alerts:
@@ -64,9 +67,10 @@ tests:
             exp_annotations:
               summary: Denied admin actions are not being audited
               description: 1 audit writes for denied permission checks failed in 10 minutes.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md"
+              runbook_url: https://runbooks.test/R-9.md
 
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'authz_decisions_total{job="web",instance="web:3000",permission="post.create",outcome="denied"}'
         values: "0+5x30"

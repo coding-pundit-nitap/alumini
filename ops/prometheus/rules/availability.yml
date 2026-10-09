@@ -9,7 +9,7 @@ groups:
         annotations:
           summary: "Web process {{ $labels.instance }} is not answering scrapes"
           description: "Prometheus cannot scrape /metrics on {{ $labels.instance }}: the process is down, wedged or unreachable."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-1.md"
 
       - alert: ReadinessFailing
         expr: dependency_up{job="web",dependency="postgres"} == 0
@@ -18,7 +18,7 @@ groups:
         annotations:
           summary: "Web readiness fails: PostgreSQL unreachable from {{ $labels.instance }}"
           description: "The last /health/ready check on {{ $labels.instance }} could not reach PostgreSQL, so the instance reports not ready."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-1.md"
 
       - alert: WorkerDown
         expr: up{job="worker"} == 0
@@ -27,7 +27,7 @@ groups:
         annotations:
           summary: "Worker {{ $labels.instance }} is not answering scrapes"
           description: "No jobs or outbox relaying happen while the worker is down; requests keep succeeding and the outbox grows."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-3.md"
 
       # Always firing. Alertmanager forwards it every minute to an external dead-man's switch that pages when it
       # STOPS arriving, which is how a dead monitoring stack gets noticed.
@@ -37,4 +37,4 @@ groups:
         annotations:
           summary: "Monitoring heartbeat (always firing)"
           description: "Routed to the dead-man's switch. If this stops arriving, Prometheus or Alertmanager is down."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-1.md"

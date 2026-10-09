@@ -10,7 +10,7 @@ groups:
         annotations:
           summary: "Spike in failed and rate-limited sign-ins"
           description: "{{ $value | humanize }} sign-ins failed or were rate limited in 10 minutes. Credential stuffing or a broken login."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-9.md"
 
       - alert: AdminPermissionDenialSpike
         expr: |
@@ -20,7 +20,7 @@ groups:
         annotations:
           summary: "Spike in denied admin-tier permission checks"
           description: "{{ $value | humanize }} admin-tier permission checks were denied in 10 minutes. Review who is probing."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-9.md"
 
       - alert: AuthzDenialAuditFailing
         expr: increase(authz_denied_audit_failed_total{job="web"}[10m]) > 0
@@ -28,4 +28,4 @@ groups:
         annotations:
           summary: "Denied admin actions are not being audited"
           description: "{{ $value | humanize }} audit writes for denied permission checks failed in 10 minutes."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-9.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-9.md"

@@ -12,7 +12,7 @@ groups:
         annotations:
           summary: "Filesystem {{ $labels.mountpoint }} is more than 80 % full"
           description: "{{ $value | humanizePercentage }} of {{ $labels.mountpoint }} is used. Old release images and container logs are the usual cause."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-7.md"
 
       - alert: HostDiskFull
         expr: |
@@ -23,7 +23,7 @@ groups:
         annotations:
           summary: "Filesystem {{ $labels.mountpoint }} is more than 90 % full"
           description: "{{ $value | humanizePercentage }} of {{ $labels.mountpoint }} is used. PostgreSQL stops accepting writes when the disk fills."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-7.md"
 
       - alert: HostInodesLow
         expr: |
@@ -34,7 +34,7 @@ groups:
         annotations:
           summary: "Filesystem {{ $labels.mountpoint }} has used more than 90 % of its inodes"
           description: "{{ $value | humanizePercentage }} of the inodes on {{ $labels.mountpoint }} are used; writes fail when they run out, whatever the free space."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-7.md"
 
       # pg_wal normally stays near max_wal_size (1 GB). It grows when archiving fails or a replication slot holds it.
       - alert: PgWalGrowing
@@ -46,7 +46,7 @@ groups:
         annotations:
           summary: "pg_wal is above 2 GiB and still growing"
           description: "pg_wal holds {{ $value | humanize1024 }}B. Check WAL archiving first: segments stay until they are archived."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-7.md"
 
       - alert: NodeExporterDown
         expr: up{job="node"} == 0
@@ -55,7 +55,7 @@ groups:
         annotations:
           summary: "node_exporter is not answering scrapes"
           description: "Disk, inode and backup-timestamp alerts cannot fire while node_exporter is down."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-7.md"
 
       - alert: SiteProbeFailing
         expr: probe_success{job="probe"} == 0
@@ -64,7 +64,7 @@ groups:
         annotations:
           summary: "{{ $labels.instance }} does not answer 200"
           description: "The probe through DNS, TLS and Nginx fails while nothing inside explains it: check Nginx, the certificate and the firewall."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-1.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-1.md"
 
       - alert: TlsCertExpiringSoon
         expr: probe_ssl_earliest_cert_expiry{job="probe"} - time() < 21 * 86400
@@ -72,7 +72,7 @@ groups:
         annotations:
           summary: "The certificate for {{ $labels.instance }} expires in under 21 days"
           description: "It expires in {{ $value | humanizeDuration }}. certbot renews at 30 days, so renewal is failing."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-12.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-12.md"
 
       - alert: TlsCertExpiring
         expr: probe_ssl_earliest_cert_expiry{job="probe"} - time() < 7 * 86400
@@ -80,7 +80,7 @@ groups:
         annotations:
           summary: "The certificate for {{ $labels.instance }} expires in under 7 days"
           description: "It expires in {{ $value | humanizeDuration }}. Browsers refuse the site when it does."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-12.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-12.md"
 
       - alert: ProbeExporterDown
         expr: up{job="probe"} == 0
@@ -89,4 +89,4 @@ groups:
         annotations:
           summary: "The blackbox exporter is not answering"
           description: "Neither the public probe nor the certificate expiry alerts can fire while it is down."
-          runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-12.md
+          runbook_url: "{{ $externalLabels.runbook_base }}/R-12.md"

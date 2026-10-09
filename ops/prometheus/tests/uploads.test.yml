@@ -5,6 +5,7 @@ evaluation_interval: 1m
 tests:
   # The oldest upload starts at 20 minutes and keeps ageing: over 30 minutes from minute 11, firing 30 minutes later.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'upload_scan_oldest_pending_age_seconds{job="worker",instance="worker:3001"}'
         values: "1200+60x60"
@@ -25,10 +26,11 @@ tests:
             exp_annotations:
               summary: An upload has waited more than 30 minutes for its malware scan
               description: The oldest PENDING_SCAN upload has waited 1h 2m 0s. Files stay unusable until scanned.
-              runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-14.md"
+              runbook_url: https://runbooks.test/R-14.md
 
   # A backlog that drains in under 30 minutes never fires.
   - interval: 1m
+    external_labels: { runbook_base: https://runbooks.test }
     input_series:
       - series: 'upload_scan_oldest_pending_age_seconds{job="worker",instance="worker:3001"}'
         values: "0 600 1200 0 0 0"

@@ -5,9 +5,11 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
-  # --enable-feature=expand-external-labels: DEPLOY_ENV is set on the container from deploy/.env.
+  # --enable-feature=expand-external-labels: DEPLOY_ENV and RUNBOOK_BASE are set on the container by
+  # deploy/monitoring.sh. Alert runbook_url annotations are built from runbook_base.
   external_labels:
     environment: ${DEPLOY_ENV}
+    runbook_base: ${RUNBOOK_BASE}
 
 rule_files:
   - /etc/prometheus/rules/*.yml
