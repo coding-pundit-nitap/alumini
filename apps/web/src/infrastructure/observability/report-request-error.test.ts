@@ -13,7 +13,7 @@ const context = {
   renderType: "dynamic",
 } as const;
 
-describe("reportRequestError (TDS §16.4 rule 6)", () => {
+describe("reportRequestError", () => {
   it("logs the failure once at error level with digest, route and request id", async () => {
     let seenRequestId: string | undefined;
     const error = vi.spyOn(logger, "error").mockImplementation(() => {
@@ -58,7 +58,7 @@ describe("reportRequestError (TDS §16.4 rule 6)", () => {
     expect(error).toHaveBeenCalledTimes(1);
   });
 
-  describe("error tracker (spec 13B B-6)", () => {
+  describe("error tracker", () => {
     let tracker: ReturnType<typeof startRecordingErrorTracker> | undefined;
     afterEach(() => tracker?.stop());
 

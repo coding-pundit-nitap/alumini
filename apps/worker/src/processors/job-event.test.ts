@@ -44,7 +44,7 @@ describe("job event processor", () => {
     );
   });
 
-  it("job.submitted is now in-app + email (spec catalogue, updated 12E); job.closed by someone else is in-app only", async () => {
+  it("job.submitted is now in-app + email; job.closed by someone else is in-app only", async () => {
     const deliver = vi.fn(async (input: unknown) => void input);
     const findEmail = vi.fn(async () => "x@nitap.ac.in");
     await createJobEventProcessor("submitted", {

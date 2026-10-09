@@ -13,9 +13,9 @@ import { redact } from "./redact.ts";
 import { getRequestContext } from "./request-context.ts";
 
 /**
- * Server-side error tracker (spec 13B, ADR-028 OD-4). A Sentry-protocol SDK, so the same DSN works with
+ * Server-side error tracker. A Sentry-protocol SDK, so the same DSN works with
  * hosted Sentry and self-hosted GlitchTip. Off without a DSN: `captureError` is then a no-op. The SDK keeps
- * its client on `globalThis`, so every Next.js bundle reports through the one initialised here (OD-7).
+ * its client on `globalThis`, so every Next.js bundle reports through the one initialised here.
  */
 export type ErrorTrackerOptions = {
   dsn?: string;
@@ -39,7 +39,7 @@ export function initErrorTracker(options: ErrorTrackerOptions): boolean {
     dsn: options.dsn,
     environment: options.environment,
     release: options.release,
-    // B-3: explicit capture only, cause chains kept, no tracing; the SDK collects no request data itself.
+    // Explicit capture only, cause chains kept, no tracing; the SDK collects no request data itself.
     integrations: [linkedErrorsIntegration(), dedupeIntegration()],
     dataCollection: {
       userInfo: false,
@@ -90,8 +90,8 @@ export async function closeErrorTracker(): Promise<void> {
 }
 
 /**
- * `beforeSend` (B-4): the log redaction rule applied to everything that can carry request data. Messages
- * and stack traces pass through; code must not put personal data in error messages (TDS §12.4).
+ * `beforeSend`: the log redaction rule applied to everything that can carry request data. Messages
+ * and stack traces pass through; code must not put personal data in error messages.
  */
 export function scrubEvent(event: ErrorEvent): ErrorEvent {
   const scrubbed: ErrorEvent = { ...event };

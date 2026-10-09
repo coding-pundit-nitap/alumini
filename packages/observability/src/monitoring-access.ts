@@ -1,9 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 
 /**
- * Gates health details and `/metrics` (spec 13A OD-2). The `checks` detail and the metrics exposition
- * are returned only to the private network or a request carrying the monitoring token (reliability
- * §4.1). Private-network detection belongs to Nginx and lands with the production proxy config; until
+ * Gates health details and `/metrics`. The `checks` detail and the metrics exposition
+ * are returned only to the private network or a request carrying the monitoring token.
+ * Private-network detection belongs to Nginx and lands with the production proxy config; until
  * then the token, or a non-production environment, is the gate.
  */
 export function canSeeHealthDetails(

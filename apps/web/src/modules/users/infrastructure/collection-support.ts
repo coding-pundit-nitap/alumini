@@ -5,7 +5,7 @@ import type { TransactionRunner } from "@/infrastructure/database/transaction-ru
 /**
  * Locks the caller's profile row so two concurrent adds to the same collection serialise: the second
  * transaction waits here, then sees the first's insert when it counts. Every collection's `add` opens
- * with this (spec 3B E-5). It relies on `profile` already existing for a signed-in user.
+ * with this. It relies on `profile` already existing for a signed-in user.
  */
 export function lockProfileRow(
   tx: Prisma.TransactionClient,

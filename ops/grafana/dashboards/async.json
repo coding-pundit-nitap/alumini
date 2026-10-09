@@ -1,7 +1,7 @@
 {
   "uid": "alumini-async",
   "title": "Async (outbox, queues, jobs, notifications)",
-  "description": "Outbox lag, queue depth, job outcomes and notification delivery (reliability \u00a75.3 dashboard 4). App label `job` is `exported_job` here.",
+  "description": "Outbox lag, queue depth, job outcomes and notification delivery. App label `job` is `exported_job` here.",
   "tags": ["alumini", "phase-13"],
   "schemaVersion": 39,
   "version": 1,
@@ -338,7 +338,7 @@
         "overrides": []
       },
       "options": {},
-      "description": "Any value here means notification emails are FAILED and need a replay (runbook R-15)."
+      "description": "Any value here means notification emails are FAILED and need a replay."
     },
     {
       "type": "timeseries",

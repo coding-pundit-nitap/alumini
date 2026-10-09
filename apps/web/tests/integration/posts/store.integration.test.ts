@@ -394,7 +394,7 @@ describe("posts store against real PostgreSQL", () => {
   });
 });
 
-describe("announcement columns (Phase 12E)", () => {
+describe("announcement columns", () => {
   let db: TestDatabase;
 
   beforeEach(async () => {

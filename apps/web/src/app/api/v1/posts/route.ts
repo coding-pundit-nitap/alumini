@@ -11,7 +11,7 @@ const listQuery = z.object({
   cursor: z.string().max(200).optional(),
 });
 
-/** GET /api/v1/posts — the feed, newest first, keyset-paged (FR-FEED-002/004). */
+/** GET /api/v1/posts — the feed, newest first, keyset-paged. */
 export const GET = routeHandler(async (request) => {
   const parsed = listQuery.safeParse(
     Object.fromEntries(new URL(request.url).searchParams)

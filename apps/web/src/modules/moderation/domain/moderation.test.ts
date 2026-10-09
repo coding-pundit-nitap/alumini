@@ -40,7 +40,7 @@ describe("reportContentInput", () => {
   });
 });
 
-describe("decideClaim (OPEN -> UNDER_REVIEW, courtesy step, C-8)", () => {
+describe("decideClaim (OPEN -> UNDER_REVIEW, courtesy step)", () => {
   it("any moderator may claim an OPEN report that isn't theirs to report/own", () => {
     expect(decideClaim("OPEN", MOD, REPORTER, AUTHOR)).toEqual({ ok: true });
   });
@@ -64,7 +64,7 @@ describe("decideClaim (OPEN -> UNDER_REVIEW, courtesy step, C-8)", () => {
   });
 });
 
-describe("decideResolve (OPEN|UNDER_REVIEW -> RESOLVED|DISMISSED, C-8)", () => {
+describe("decideResolve (OPEN|UNDER_REVIEW -> RESOLVED|DISMISSED)", () => {
   it("claim-first is not enforced: OPEN resolves/dismisses directly", () => {
     expect(decideResolve("OPEN", MOD, REPORTER, AUTHOR, "resolve")).toEqual({
       ok: true,
@@ -103,7 +103,7 @@ describe("decideResolve (OPEN|UNDER_REVIEW -> RESOLVED|DISMISSED, C-8)", () => {
   });
 });
 
-describe("resolve/dismiss reasons (spec C-1, C12-3)", () => {
+describe("resolve/dismiss reasons", () => {
   it("accepts only a resolve code for resolve and a dismiss code for dismiss", () => {
     expect(resolveInput.safeParse({ reason: "HARASSMENT" }).success).toBe(true);
     expect(resolveInput.safeParse({ reason: "NO_VIOLATION" }).success).toBe(
@@ -123,7 +123,7 @@ describe("resolve/dismiss reasons (spec C-1, C12-3)", () => {
   });
 });
 
-describe("reportListQuerySchema (spec C12-5)", () => {
+describe("reportListQuerySchema", () => {
   it("defaults to open reports, 50 per page", () => {
     expect(reportListQuerySchema.parse({})).toEqual({
       status: "open",

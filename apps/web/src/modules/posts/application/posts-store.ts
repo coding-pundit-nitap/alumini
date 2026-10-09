@@ -19,7 +19,7 @@ export type PostAuthor = {
   fullName: string;
   headline: string | null;
   hasPhoto: boolean;
-  /** UI-15: set by composition after the read; absent/null = no tick. */
+  /** Set by composition after the read; absent/null = no tick. */
   tick?: Tick | null;
 };
 /**
@@ -59,7 +59,7 @@ export type PostsTx = {
     postType: "TEXT" | "ACHIEVEMENT" | "ANNOUNCEMENT";
   }): Promise<PostRow>;
   findPost(id: string, opts?: { forUpdate?: boolean }): Promise<PostRow | null>;
-  /** Null when missing or soft-deleted (deleted posts never resolve, C-9). */
+  /** Null when missing or soft-deleted (deleted posts never resolve). */
   findFeedPost(id: string, viewerId: string): Promise<FeedPost | null>;
   /** Serves only a READY upload that a live post's `imageUrls` references; see get-post-image-key.ts. */
   findPostImage(uploadId: string): Promise<{ objectKey: string } | null>;
@@ -99,7 +99,7 @@ export type PostsTx = {
       | "announcement.published";
     payload: unknown;
   }): Promise<void>;
-  /** Phase 12E: announcement writes leave an audit row in the same transaction (spec E-4). Ids only. */
+  /** Announcement writes leave an audit row in the same transaction. Ids only. */
   audit(entry: {
     action: "announcement.published" | "announcement.removed";
     actorId: string;

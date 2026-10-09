@@ -16,7 +16,7 @@ type Deps = {
 };
 
 /**
- * Phase 12E (spec E-6): every verified member except the author gets an in-app row and, preference
+ * Every verified member except the author gets an in-app row and, preference
  * permitting, an email. ponytail: one job walks all members; a timed-out run retries from the first batch
  * and deliver() dedupes on (type, job id, recipient). Split into per-batch child jobs if a full walk
  * regularly exceeds FANOUT_TIMEOUT_MS.

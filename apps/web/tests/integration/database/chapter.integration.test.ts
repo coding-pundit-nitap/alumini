@@ -4,7 +4,7 @@ import { expectConstraintViolation } from "../../support/constraint-test";
 import type { TestDatabase } from "../../support/test-database";
 import { createTestDatabase } from "../../support/test-database";
 
-describe("chapter (minimal, Phase 1 — domain-model.md 'Chapter (minimal, Phase 1)')", () => {
+describe("chapter (minimal)", () => {
   let db: TestDatabase;
 
   beforeEach(async () => {

@@ -15,7 +15,7 @@ const text = z.string().trim().min(1).max(100);
 const year = z.coerce.number().int().min(2010).max(2100);
 
 /**
- * The provider-neutral directory query (API spec §5.1). Nothing SQL- or engine-shaped: a Postgres adapter
+ * The provider-neutral directory query. Nothing SQL- or engine-shaped: a Postgres adapter
  * and a later OpenSearch one both take this. Empty strings count as absent, so a plain HTML form with
  * blank fields validates.
  */

@@ -53,7 +53,7 @@ export const markRead = createMarkRead({
   store,
   authorize,
   observe,
-  // N-7: reading the conversation ends the recipient's email debounce window.
+  // Reading the conversation ends the recipient's email debounce window.
   onRead: async (userId, conversationId) => {
     try {
       await (await getRedis()).del(debounceKeyFor(userId, conversationId));

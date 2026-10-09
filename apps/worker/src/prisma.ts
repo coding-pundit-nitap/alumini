@@ -4,8 +4,8 @@ import { Pool } from "pg";
 import { PrismaClient } from "@nitap/database";
 
 /**
- * Pool and timeouts are the worker starting points from TDS §18.1; the relay holds one connection per poll.
- * The pool is returned too so `/metrics` can report its usage (spec 13A A-10).
+ * Pool and timeouts are the worker starting points; the relay holds one connection per poll.
+ * The pool is returned too so `/metrics` can report its usage.
  */
 export function createPrismaClient(connectionString: string): {
   prisma: PrismaClient;
@@ -17,7 +17,7 @@ export function createPrismaClient(connectionString: string): {
     connectionTimeoutMillis: 2_000,
     idleTimeoutMillis: 30_000,
     statement_timeout: 30_000,
-    // A stalled server never reaches statement_timeout; this bounds the wait on the client (spec 14 F-5).
+    // A stalled server never reaches statement_timeout; this bounds the wait on the client.
     query_timeout: 35_000,
   });
   return { prisma: new PrismaClient({ adapter: new PrismaPg(pool) }), pool };

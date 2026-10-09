@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
-// The file suffix is the classifier (strategy §5.5):
+// The file suffix is the classifier:
 //   *.test.ts             unit (node)
 //   *.test.tsx, *.dom.test.ts, src/hooks/**  dom (happy-dom)
 //   *.integration.test.ts integration (node, real Postgres/Redis)
@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     tsconfigPaths: true,
-    // `import "server-only"` guards client bundles at `next build`; under Vitest it is a no-op (spec 16 16E).
+    // `import "server-only"` guards client bundles at `next build`; under Vitest it is a no-op.
     alias: {
       "server-only": new URL(
         "./tests/support/server-only-stub.ts",
@@ -21,7 +21,7 @@ export default defineConfig({
   test: {
     globals: true,
     restoreMocks: true,
-    // Integration and contract projects are empty until Phase 1; an empty project must not fail the run.
+    // Integration and contract projects are empty until; an empty project must not fail the run.
     passWithNoTests: true,
     // `pnpm test:coverage` runs every project (start Postgres and Redis first, as for test:integration), so
     // code proven only against real Postgres counts too.

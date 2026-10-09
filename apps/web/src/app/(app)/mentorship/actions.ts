@@ -31,7 +31,7 @@ function parseId(field: string, value: string): string {
   return value;
 }
 
-/** Mentorship Server Actions (FR-MENTOR). Each use case authorizes and validates again; the page re-renders after. */
+/** Mentorship Server Actions. Each use case authorizes and validates again; the page re-renders after. */
 export async function saveMentorProfileAction(
   input: unknown
 ): Promise<ActionResult<{ saved: true }>> {

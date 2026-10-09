@@ -14,7 +14,7 @@ export const escalationError = (reason: EscalationReason) =>
     message: ESCALATION_MESSAGES[reason],
   });
 
-/** E3 (spec B12-3, B12-8): runs after authorize, before the transaction. */
+/** E3: runs after authorize, before the transaction. */
 export async function guardTarget(
   loadGrants: LoadGrants,
   actor: Actor,

@@ -105,7 +105,7 @@ describe("outbox → relay → queue → worker → SMTP (real PostgreSQL, Redis
     db.prisma.$transaction((tx) => writer.add(tx, emailEvent(to)));
   const admin = () => createQueueAdmin({ url: ns.url, prefix: ns.prefix });
 
-  it("carries the writer's request id into the worker's job log lines (spec 13B B-9)", async () => {
+  it("carries the writer's request id into the worker's job log lines", async () => {
     const lines: Record<string, unknown>[] = [];
     const logger = createLogger({
       level: "debug",

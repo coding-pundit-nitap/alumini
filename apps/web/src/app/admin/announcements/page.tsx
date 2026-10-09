@@ -24,7 +24,7 @@ export const metadata: Metadata = { title: "Announcements" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/** Phase 12E (spec E-9). 404 without announcement.publish (RBAC §8 rule 6). */
+/** 404 without announcement.publish. */
 export default async function AdminAnnouncementsPage({
   searchParams,
 }: {

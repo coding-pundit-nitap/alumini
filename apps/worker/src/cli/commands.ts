@@ -10,7 +10,7 @@ export type CliDeps = {
   out: (line: string) => void;
   err: (line: string) => void;
   now: () => Date;
-  /** Outbox retention (ADR-007: 7 days); replay refuses a window older than this. */
+  /** Outbox retention; replay refuses a window older than this. */
   retentionDays: number;
 };
 
@@ -25,7 +25,7 @@ const USAGE = `Usage: pnpm worker:cli <command>
   outbox:settle --before <ISO> [--type <t>] [--execute]
                                                      after a restore: mark rows created before the restore
                                                      target published without publishing them (dry run
-                                                     unless --execute; reliability §7.3 step 7)`;
+                                                     unless --execute;)`;
 
 const isQueueName = (value: string): value is QueueName =>
   Object.hasOwn(QUEUES, value);

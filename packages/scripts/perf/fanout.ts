@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Notification fan-out throughput (TASK.md Phase 15 "Notifications"; Phase 15 overview). `event.cancelled` notifies
+// Notification fan-out throughput. `event.cancelled` notifies
 // every registrant one at a time (~8–10 round trips each) inside one job bounded by FANOUT_TIMEOUT_MS (120 s). This
 // measures how many recipients a single job reaches per second, so "batch or chunk?" is answered by a number.
 //
@@ -56,7 +56,7 @@ const worker = spawn("pnpm", ["--filter", "@nitap/worker", "start"], {
     QUEUE_REDIS_URL: redisDb1(process.env.QUEUE_REDIS_URL),
     WORKER_HEALTH_PORT: "3199",
     LOG_LEVEL: "warn",
-    // Required in production (spec 16 SD-8); fan-out never scans, so the address is never dialled.
+    // Required in production; fan-out never scans, so the address is never dialled.
     CLAMAV_URL: process.env.CLAMAV_URL ?? "tcp://127.0.0.1:3310",
   },
   stdio: ["ignore", "inherit", "inherit"],
@@ -162,7 +162,7 @@ stopWorker();
 await db.end();
 
 const stamp = new Date().toISOString().slice(0, 10);
-const dir = path.join(root, "docs/operations/perf/data", stamp);
+const dir = path.join(root, "packages/scripts/perf/results/data", stamp);
 mkdirSync(dir, { recursive: true });
 const file = path.join(dir, `fanout${args.label ? `-${args.label}` : ""}.json`);
 writeFileSync(

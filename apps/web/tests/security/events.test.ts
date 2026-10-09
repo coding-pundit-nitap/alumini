@@ -6,7 +6,7 @@ import {
 } from "@nitap/database/role-permissions";
 
 /** Organizer tools (cancelEvent, markAttendance, listRegistrants) against the REAL authorizer:
- * 401, 403 (a stranger, organizer/manager only per E-8), and the E-4 before-start state rule. */
+ * 401, 403 (a stranger, organizer/manager only), and the before-start state rule. */
 import { AuthenticationError, AuthorizationError } from "@/lib/errors";
 import { createAuthorization } from "@/modules/auth/application/authorize";
 import type { Actor } from "@/modules/auth";

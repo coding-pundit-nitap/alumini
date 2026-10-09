@@ -14,7 +14,7 @@ export type JobsPage<T> = {
   page: { limit: number; nextCursor: string | null; hasMore: boolean };
 };
 
-/** FR-JOB. The caller's own postings, any status (spec J-8: a poster always sees their own). */
+/** The caller's own postings, any status. */
 export function createListMyJobs(deps: {
   queries: JobQueries;
   authorize: Authorize;

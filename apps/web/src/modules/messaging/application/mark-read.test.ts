@@ -25,7 +25,7 @@ const setup = (onRead?: (u: string, c: string) => Promise<void>) => {
   };
 };
 
-describe("markRead debounce flush (N-7)", () => {
+describe("markRead debounce flush", () => {
   it("notifies onRead after the marker moves", async () => {
     const onRead = vi.fn(async () => {});
     const { tx, run } = setup(onRead);

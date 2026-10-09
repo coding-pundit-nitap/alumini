@@ -53,9 +53,9 @@ const MARKABLE = new Set<Registrant["state"]>([
 ]);
 
 /**
- * Organizer/manager tools on the event detail page (E-3, E-4). A "Cancel event" button behind an
+ * Organizer/manager tools on the event detail page. A "Cancel event" button behind an
  * `AlertDialog`, and a registrants `Table` with a per-row attendance `Select`, enabled once the
- * event has started (E-4: marking is refused before `starts_at`). Confirmed and non-optimistic,
+ * event has started. Confirmed and non-optimistic,
  * mirroring `RegistrationButton`: the server stays authoritative.
  */
 export function OrganizerPanel({

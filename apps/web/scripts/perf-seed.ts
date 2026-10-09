@@ -18,7 +18,7 @@ import {
 import { runSeed } from "@nitap/database/seed";
 
 /**
- * The performance seed (strategy §15.4; Phase 15 overview PD-3…PD-5). Creates and migrates the `_perf`
+ * The performance seed. Creates and migrates the `_perf`
  * database if needed, refuses one that already has members (pass --reset to drop and recreate it), writes the
  * base seed and the generated rows, then writes `perf/.data/fixture.json` for the k6 scenarios: load-user
  * cookies signed with BETTER_AUTH_SECRET exactly as Better Auth signs them, so the server accepts them.

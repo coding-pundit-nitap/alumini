@@ -1,4 +1,4 @@
-# promtool test rules (TASK.md Phase 13: alert rules fire on injected conditions, tested not assumed).
+# promtool test rules (alert rules fire on injected conditions, tested not assumed).
 rule_files:
   - ../rules/availability.yml
 evaluation_interval: 1m

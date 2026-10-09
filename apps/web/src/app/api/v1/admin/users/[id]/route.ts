@@ -16,7 +16,7 @@ const userId = async (ctx: Params) => {
 };
 const json = (request: Request) => readJson(request);
 
-/** GET /api/v1/admin/users/:id — spec B12-11. */
+/** GET /api/v1/admin/users/:id. */
 export const GET = routeHandler(async (_request, ctx: Params) => {
   const view = await getUser({
     actor: await getActor(),
@@ -25,7 +25,7 @@ export const GET = routeHandler(async (_request, ctx: Params) => {
   return Response.json({ data: view });
 });
 
-/** PATCH /api/v1/admin/users/:id — `{ accountState, reason? }` (spec B12-1, C-7). */
+/** PATCH /api/v1/admin/users/:id — `{ accountState, reason? }`. */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const result = await changeAccountState({

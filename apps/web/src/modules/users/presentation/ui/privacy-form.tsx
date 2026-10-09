@@ -32,7 +32,7 @@ const LEVEL_HINT: Record<Visibility, string> = {
   PRIVATE: "Hidden from everyone else, including the directory.",
 };
 
-/** Section labels and the field's question, in the fixed display order (spec 3B E-3). */
+/** Section labels and the field's question, in the fixed display order. */
 const SECTION_COPY: Record<OverrideSection, { label: string; hint?: string }> =
   {
     contact: { label: "Who can see your contact details", hint: "Your links" },
@@ -55,7 +55,7 @@ const toOverrides = (
   ) as Overrides;
 
 /**
- * Profile level plus a per-section override (spec 3A P-2, 3B E-3). An override can only be equal to or
+ * Profile level plus a per-section override. An override can only be equal to or
  * stricter than the level: looser options are disabled, and changing the level resets any now-looser
  * override to "Same as your profile" for every section, independently. The server enforces the same rule.
  */

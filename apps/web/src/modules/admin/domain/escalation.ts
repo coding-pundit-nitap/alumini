@@ -20,7 +20,7 @@ export type GrantRequest = {
   chapterId: string | null;
 };
 
-/** Shown in the UI next to a disabled option and returned as the 403 message (spec B12-3). */
+/** Shown in the UI next to a disabled option and returned as the 403 message. */
 export const ESCALATION_MESSAGES = {
   ADMIN_ROLE:
     "Only a Super Admin (system.configure) can assign or remove an admin role.",
@@ -54,7 +54,7 @@ const ACCESS_ADMIN_PERMISSIONS: ReadonlySet<string> = new Set([
   PERMISSIONS.SYSTEM_CONFIGURE,
 ]);
 
-/** E1 (RBAC §6.1): a role that can itself assign roles needs system.configure to assign or remove. */
+/** E1: a role that can itself assign roles needs system.configure to assign or remove. */
 export function checkRoleChange(
   actor: readonly HeldGrant[],
   rolePermissions: readonly Permission[],
@@ -66,7 +66,7 @@ export function checkRoleChange(
     : undefined;
 }
 
-/** E2 (RBAC §6.1, §8.1): grant only what you hold, in a scope you hold; a non-role-manager only in a chapter. */
+/** E2: grant only what you hold, in a scope you hold; a non-role-manager only in a chapter. */
 export function checkGrantChange(
   actor: readonly HeldGrant[],
   request: GrantRequest,
@@ -112,7 +112,7 @@ export type AccessOptions = {
   }[];
 };
 
-/** What the detail page may offer, computed by the same rules the server enforces (spec B12-3, B12-14). */
+/** What the detail page may offer, computed by the same rules the server enforces. */
 export function accessOptions(args: {
   actor: readonly HeldGrant[];
   target: readonly HeldGrant[];

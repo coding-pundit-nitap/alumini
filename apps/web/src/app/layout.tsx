@@ -40,7 +40,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // The proxy's per-request CSP nonce (spec 16 SD-1). Reading headers also keeps every page dynamic, which
+  // The proxy's per-request CSP nonce. Reading headers also keeps every page dynamic, which
   // a nonce needs: a prerendered page would carry no nonce and its scripts would be blocked.
   const nonce = (await headers()).get(NONCE_HEADER) ?? undefined;
   return (

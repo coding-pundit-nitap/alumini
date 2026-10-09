@@ -93,7 +93,7 @@ test("an admin sees a pending job on the dashboard, approves it, and an auditor 
   await moderator.page
     .getByRole("link", { name: /jobs awaiting review/i })
     .click();
-  // The dashboard tile links straight to /admin/jobs (12C C12-9); /jobs/moderation is kept only
+  // The dashboard tile links straight to /admin/jobs; /jobs/moderation is kept only
   // as a redirect target for old notification links (see admin-moderation.spec.ts).
   await expect(moderator.page).toHaveURL(/\/admin\/jobs$/);
   const pendingRow = moderator.page

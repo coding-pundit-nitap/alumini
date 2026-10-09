@@ -12,7 +12,7 @@ import { NOTIFICATION_DOMAINS } from "@/modules/notifications";
 
 import { invalid, readJson } from "../../_lib/request";
 
-// Only ENGAGEMENT domains are toggleable; transactional mail has no domain and cannot be disabled (N-10).
+// Only ENGAGEMENT domains are toggleable; transactional mail has no domain and cannot be disabled.
 const patchBody = z
   .object({ domain: z.enum(NOTIFICATION_DOMAINS), enabled: z.boolean() })
   .strict();

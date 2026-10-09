@@ -91,7 +91,7 @@ wait_ready() {
   done
 }
 
-# Ready, sign in with the smoke account, one authenticated read: the restore drill's check (spec 17 DR-12),
+# Ready, sign in with the smoke account, one authenticated read: the restore drill's check,
 # through the public URL so TLS and Nginx are in the path. Prints pass, fail or skipped (no smoke account).
 smoke() {
   local url origin email password headers code cookie
@@ -205,7 +205,7 @@ case "${1:-}" in
       docker image inspect "$ref" > /dev/null 2>&1 || docker pull "$ref" ||
         die "$ref is gone from this host; rebuild it from git or release forward instead"
     done
-    # Expand-only migrations (reliability §9.3) keep the older release working on the newer schema.
+    # Expand-only migrations keep the older release working on the newer schema.
     release "$sha" rollback no "$(whoami)" "${refs[@]}"
     ;;
   smoke)

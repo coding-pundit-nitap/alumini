@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "../../../../../tests/support/test-utils";
 import { ReportDecisionDialog } from "./report-decision-dialog";
 
-describe("ReportDecisionDialog (spec C12-3)", () => {
+describe("ReportDecisionDialog", () => {
   it("requires a reason, then sends the report id and the code", async () => {
     const action = vi.fn(async () => ({ ok: true as const, data: {} }));
     render(

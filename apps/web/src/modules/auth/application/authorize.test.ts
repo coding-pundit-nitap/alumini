@@ -81,7 +81,7 @@ describe("authorize", () => {
     ]);
   });
 
-  it("answers 404 when denied on a concealed resource (RBAC §8.6)", () => {
+  it("answers 404 when denied on a concealed resource", () => {
     const { authorize } = setup();
     const error = thrown(() =>
       authorize(verified(), PERMISSIONS.PROFILE_READ_ANY, { concealed: true })

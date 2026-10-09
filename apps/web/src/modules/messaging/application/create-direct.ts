@@ -10,7 +10,7 @@ import { CREATE_RATE, type RateLimiter } from "./rate-limit";
 import { refuse } from "./refusal";
 
 /**
- * FR-MSG-001 (decision M-5: any verified member not blocked). A pair has ONE conversation: two members
+ * A pair has ONE conversation: two members
  * starting one at the same instant end with the same id, because the unique pair key makes the loser's insert
  * a no-op and it re-reads the winner's row.
  */

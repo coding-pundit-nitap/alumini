@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { defineJob } from "./define-job.ts";
 
-/** Ids only: a consumer looks the rows up, so the event never carries a name or an address (reliability §6.4). */
+/** Ids only: a consumer looks the rows up, so the event never carries a name or an address. */
 const connectionEventPayload = z
   .object({
     v: z.literal(1),
@@ -23,8 +23,8 @@ const retry = {
 };
 
 /**
- * Facts a connection changed, written to the outbox in the same transaction as the change (FR-NET, NFR-REL-002).
- * The worker turns them into notifications for the other party (Phase 11).
+ * Facts a connection changed, written to the outbox in the same transaction as the change.
+ * The worker turns them into notifications for the other party.
  */
 export const connectionRequested = defineJob({
   name: "connection.requested",

@@ -13,7 +13,7 @@ const dateFormat = new Intl.DateTimeFormat("en-IN", {
   timeZone: "Asia/Kolkata",
 });
 
-/** `/admin/donations`: open pledges carry their decision buttons when the viewer may decide (spec H-3). */
+/** `/admin/donations`: open pledges carry their decision buttons when the viewer may decide. */
 export function DonationsTable(props: {
   rows: readonly DonationWithDonor[];
   canDecide: boolean;

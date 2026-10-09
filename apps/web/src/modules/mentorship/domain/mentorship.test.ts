@@ -43,7 +43,7 @@ const row = (state: MentorshipState): MentorshipRow => ({
     : null,
 });
 
-// The oracle, written from TASK.md's diagram — deliberately not derived from the implementation's table.
+// The oracle, written diagram — deliberately not derived from the implementation's table.
 const VALID: Record<
   MentorshipState,
   Partial<Record<MentorshipAction, ("mentor" | "mentee")[]>>

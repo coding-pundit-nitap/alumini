@@ -15,7 +15,7 @@ import type { Authorize, LoadGrants } from "./authorize-port";
 import { toValidationError } from "./validation";
 
 /**
- * Suspend, deactivate or reactivate (spec B12-1). The requested state picks the permission, so the raw
+ * Suspend, deactivate or reactivate. The requested state picks the permission, so the raw
  * field is read before validation; anything that is not "VERIFIED" needs user.suspend.
  */
 export function createChangeAccountState(deps: {
@@ -83,7 +83,7 @@ export function createChangeAccountState(deps: {
             ? { previousState }
             : { reason: reason ?? null, previousState, sessionsRevoked },
       });
-      // Deactivation notifies nobody (spec D12-6).
+      // Deactivation notifies nobody.
       if (to !== "DEACTIVATED")
         await tx.enqueue({
           type: to === "SUSPENDED" ? "user.suspended" : "user.reactivated",

@@ -18,7 +18,7 @@ export type DevAdmin = {
 /**
  * Roles, role→permission bundles, departments and degrees. Safe in every environment.
  * Idempotent: every write is an upsert on a natural key, so running it twice changes no rows
- * (TASK.md Phase 1 "(+) the seed is idempotent").
+ *.
  */
 export async function runSeed(prisma: PrismaClient): Promise<void> {
   for (const name of ROLE_NAMES) {
@@ -74,7 +74,7 @@ export async function runSeed(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  // SRS §45 placeholders (12G G-2): insert missing categories only, never overwrite an admin's edit.
+  // Placeholders: insert missing categories only, never overwrite an admin's edit.
   for (const [category, { defaultDays }] of Object.entries(
     RETENTION_CATALOGUE
   )) {

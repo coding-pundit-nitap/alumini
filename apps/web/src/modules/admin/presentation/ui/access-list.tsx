@@ -20,7 +20,7 @@ const date = (d: Date) =>
   d.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
 
 /** The user's roles. A remove action is passed only when the viewer may use it; a blocked one is
- * disabled with its reason (spec B12-3, B12-5). */
+ * disabled with its reason. */
 export function RolesTable(props: {
   user: UserDetail;
   options: AccessOptions;
@@ -159,7 +159,7 @@ export function GrantsTable(props: {
 
 /**
  * The user's roles and grants together. A remove/revoke action is passed only when the viewer may
- * use it; a blocked one is disabled with its reason (spec B12-3, B12-5). Kept as a thin wrapper over
+ * use it; a blocked one is disabled with its reason. Kept as a thin wrapper over
  * {@link RolesTable} and {@link GrantsTable} for callers that want both without separate panels.
  */
 export function AccessList(props: {

@@ -25,7 +25,7 @@ type Deps = {
   now?: () => Date;
 };
 
-/** `/donate`: campaigns a member can give to now, plus closed ones for their record (spec H-10). */
+/** `/donate`: campaigns a member can give to now, plus closed ones for their record. */
 export function createListOpenCampaigns(deps: Deps) {
   const now = deps.now ?? (() => new Date());
   return async function listOpenCampaigns(args: {
@@ -58,7 +58,7 @@ export function createGetCampaign(deps: Deps) {
   };
 }
 
-/** FR-DON-002, spec H-5/H-7: a PLEDGED row and `donation.pledged`, in one transaction. */
+/** A PLEDGED row and `donation.pledged`, in one transaction. */
 export function createPledgeDonation(deps: Deps) {
   const now = deps.now ?? (() => new Date());
   return async function pledgeDonation(args: {

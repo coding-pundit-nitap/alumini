@@ -37,10 +37,10 @@ const EVENT_TYPE_TO_DOMAIN: Record<string, NotificationDomain> = {
   "announcement.published": "ANNOUNCEMENT",
 };
 
-/** Single source of truth for "which preferences-UI toggle governs this event type" (N-14). Every
- * processor in Part C and the preferences form (Task 19) both call this — never hardcode the mapping
+/** Single source of truth for "which preferences-UI toggle governs this event type". Every
+ * processor in Part C and the preferences form both call this — never hardcode the mapping
  * a second time. TRANSACTIONAL types (verification.decided, user.*) have no domain: deliver() never asks
- * for their preference (spec D12-4). */
+ * for their preference. */
 export function domainFor(type: string): NotificationDomain {
   const domain = EVENT_TYPE_TO_DOMAIN[type];
   if (!domain)

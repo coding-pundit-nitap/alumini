@@ -7,7 +7,7 @@ import type { FeedPost, PostsStore } from "./posts-store";
 
 export const PIN_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
-/** Phase 12E (spec E-8): the newest live announcement from the last 7 days, for the top of the feed. */
+/** The newest live announcement from the last 7 days, for the top of the feed. */
 export function createGetPinnedAnnouncement(deps: {
   store: PostsStore;
   authorize: Authorize;

@@ -7,7 +7,7 @@ import type { Authorize } from "./authz";
 import type { ProfileStore } from "./profile-store";
 
 /**
- * Attaches (or removes, with `null`) the caller's own profile photo (spec 3C). The upload's ownership,
+ * Attaches (or removes, with `null`) the caller's own profile photo. The upload's ownership,
  * purpose and READY status are the `uploads` module's responsibility (`setProfilePhoto`, which calls
  * this); this use case only ever writes the caller's own `photoUploadId`.
  */

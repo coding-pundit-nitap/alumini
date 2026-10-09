@@ -293,7 +293,7 @@ describe("conversation routes", () => {
     }
   );
 
-  it("refuses a report whose target type is not MESSAGE (only messages are reportable in Phase 9)", async () => {
+  it("refuses a report whose target type is not MESSAGE", async () => {
     expect(
       (
         await report(

@@ -9,7 +9,7 @@ import {
 import type { MetricLabels, Metrics } from "./metrics.ts";
 
 /**
- * Prometheus adapter for the `Metrics` port (spec 13A, ADR-028). Pull model: the process serves
+ * Prometheus adapter for the `Metrics` port. Pull model: the process serves
  * `render()` on `/metrics`. Metrics are created on first use with that call's label keys; a later call
  * with other keys, or the same name as another type, is dropped and counted — never thrown into a call site.
  */
@@ -156,7 +156,7 @@ export function createPrometheusMetrics(options: {
   return metrics;
 }
 
-/** Point-in-time `pg.Pool` usage (R-5); called by each process just before rendering. */
+/** Point-in-time `pg.Pool` usage; called by each process just before rendering. */
 export function recordPoolStats(
   metrics: Metrics,
   pool: { totalCount: number; idleCount: number; waitingCount: number }

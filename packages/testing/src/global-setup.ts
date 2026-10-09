@@ -6,15 +6,15 @@ import type { TestProject } from "vitest/node";
 /**
  * Global setup for the `integration` and `contract` projects.
  *
- * These projects run against a real PostgreSQL and Redis (strategy §6.2). Fail fast with an
+ * These projects run against a real PostgreSQL and Redis. Fail fast with an
  * actionable message instead of letting every test time out on a refused connection.
  *
  * PostgreSQL: migrates ONE template database (`<db>_template`) here, once, then every test file
- * clones it with `CREATE DATABASE … TEMPLATE` (strategy §6.3) via `test-database.ts`. The
+ * clones it with `CREATE DATABASE … TEMPLATE` via `test-database.ts`. The
  * template's connection string is published to test files with `provide`/`inject`.
  */
 
-// Safety rail (strategy §6.3): this setup creates and force-drops databases, so it only ever runs
+// Safety rail: this setup creates and force-drops databases, so it only ever runs
 // against a local PostgreSQL. `postgres` is the compose service name.
 const ALLOWED_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "postgres"]);
 
@@ -90,8 +90,8 @@ export async function provideTemplateDatabase(
     await admin.end();
   }
 
-  // Apply every migration to the template. Runs from packages/database/ so prisma.config.ts's relative
-  // .env load and schema path resolve; DATABASE_URL is overridden for this one call.
+  // Apply every migration to the template. Runs from packages/database/ so prisma.config.ts's relative.
+  // Env load and schema path resolve; DATABASE_URL is overridden for this one call.
   execFileSync(
     "pnpm",
     ["--filter", "@nitap/database", "exec", "prisma", "migrate", "deploy"],

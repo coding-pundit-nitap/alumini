@@ -19,7 +19,7 @@ export function createPrismaProfileStore(prisma: PrismaClient): ProfileStore {
         include: {
           department: { select: { name: true } },
           degree: { select: { name: true } },
-          // Fixed display order (spec 3B E-7): current roles first, newest first; ongoing study first.
+          // Fixed display order: current roles first, newest first; ongoing study first.
           experience: {
             orderBy: [
               { isCurrent: "desc" },

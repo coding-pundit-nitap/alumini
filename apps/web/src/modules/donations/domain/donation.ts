@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** Phase 12H (XD-6/XD-7, spec H-1). Money is integer paise everywhere below the UI. */
+/** Money is integer paise everywhere below the UI. */
 export type CampaignStatus = "DRAFT" | "ACTIVE" | "CLOSED";
 export type DonationStatus =
   "PLEDGED" | "CONFIRMED" | "NOT_RECEIVED" | "CANCELLED";
@@ -32,7 +32,7 @@ export type Campaign = {
   createdAt: Date;
 };
 export type CampaignProgress = {
-  /** CONFIRMED only (spec H-9). */
+  /** CONFIRMED only. */
   raisedPaise: number;
   /** Open pledges, shown separately. */
   pledgedPaise: number;
@@ -61,7 +61,7 @@ const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
 export const istToday = (now: Date) =>
   new Date(now.getTime() + IST_OFFSET_MS).toISOString().slice(0, 10);
 
-/** Spec H-6: pledges only while ACTIVE and today (IST) is within the campaign's dates. */
+/** Pledges only while ACTIVE and today (IST) is within the campaign's dates. */
 export const acceptsPledges = (
   c: Pick<Campaign, "status" | "startsOn" | "endsOn">,
   now: Date
@@ -70,7 +70,7 @@ export const acceptsPledges = (
   return c.status === "ACTIVE" && c.startsOn <= today && today <= c.endsOn;
 };
 
-/** Spec H-6: DRAFT → ACTIVE → CLOSED. */
+/** DRAFT → ACTIVE → CLOSED. */
 export const CAMPAIGN_TRANSITIONS: Record<CampaignStatus, CampaignStatus[]> = {
   DRAFT: ["ACTIVE"],
   ACTIVE: ["CLOSED"],
@@ -114,7 +114,7 @@ const amount = (min: number, max: number) =>
         .max(max, `At most ${formatPaise(max)}.`)
     );
 
-/** UTR / cheque number: letters, digits, `/` and `-`, upper-cased so a match ignores case (spec H-1). */
+/** UTR / cheque number: letters, digits, `/` and `-`, upper-cased so a match ignores case. */
 export const paymentReference = z
   .string()
   .trim()

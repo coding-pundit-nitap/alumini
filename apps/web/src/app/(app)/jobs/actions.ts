@@ -25,7 +25,7 @@ function parseId(field: string, value: string): string {
   return value;
 }
 
-/** Jobs Server Actions (FR-JOB). Each use case authorizes and validates again; the page re-renders after. */
+/** Jobs Server Actions. Each use case authorizes and validates again; the page re-renders after. */
 export async function createJobAction(
   input: unknown
 ): Promise<ActionResult<{ jobId: string; status: string }>> {

@@ -9,7 +9,7 @@ import {
 import { ConfirmButton, type AccessAction } from "./confirm-button";
 import { SELECT_CLASS } from "./labels";
 
-/** Assign one role; options the actor may not assign are disabled with the reason (spec B12-3). */
+/** Assign one role; options the actor may not assign are disabled with the reason. */
 export function AssignRoleDialog(props: {
   userId: string;
   current: string[];

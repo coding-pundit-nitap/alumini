@@ -1,5 +1,5 @@
 /**
- * Role ticks (UI-15): the seal on a member's photo. The colour says what kind of account it is (Twitter-style);
+ * Role ticks: the seal on a member's photo. The colour says what kind of account it is (Twitter-style);
  * the label names the role. Pure, so the server picks the tick and every client just draws it.
  */
 import { ROLE_TICKS } from "@nitap/database/role-ticks";

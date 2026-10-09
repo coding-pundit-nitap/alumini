@@ -269,7 +269,7 @@ describe("admin users routes (security)", () => {
   });
 
   describe("POST /api/v1/admin/users/:id/roles", () => {
-    it("assigning INSTITUTE_ADMIN as INSTITUTE_ADMIN: 403 ACCESS_ESCALATION_FORBIDDEN (E1, TASK.md L513)", async () => {
+    it("assigning INSTITUTE_ADMIN as INSTITUTE_ADMIN: 403 ACCESS_ESCALATION_FORBIDDEN", async () => {
       const admin = await withRole("insta5", "INSTITUTE_ADMIN");
       const target = await withRole("target5", "ALUMNI");
       as(admin);
@@ -339,7 +339,7 @@ describe("admin users routes (security)", () => {
         "SUSPENDED"
       );
 
-      // The suspended admin holds no grants (RBAC §7): 404, not 403.
+      // The suspended admin holds no grants: 404, not 403.
       as(superB);
       const suspendedRes = await deleteRole(
         jsonRequest(

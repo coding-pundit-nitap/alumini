@@ -13,7 +13,7 @@ import type { AchievementsStore } from "./achievements-store";
 import { refuse } from "./refusal";
 
 /**
- * FR-ACH-003, spec C-12. Approve publishes: `tx.publishAsPost` and `tx.patchAchievement` run inside the
+ * Approve publishes: `tx.publishAsPost` and `tx.patchAchievement` run inside the
  * SAME transaction as the store's `.transaction()` call, so a mid-transaction failure leaves neither the
  * achievement's status changed nor any post created (no orphaned PUBLISHED without a post, and vice versa).
  */

@@ -53,7 +53,7 @@ function Field(props: {
   );
 }
 
-/** FR-DON-001: create (DRAFT) or edit a campaign, including the offline payment instructions (XD-6). */
+/** Create (DRAFT) or edit a campaign, including the offline payment instructions. */
 export function CampaignDialog(props: {
   campaign?: Campaign;
   action: SaveCampaignAction;

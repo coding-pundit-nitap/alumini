@@ -6,7 +6,7 @@ export type JobExpireCandidate = { id: string; postedBy: string };
 /**
  * Shared between `@nitap/database` consumers and the worker's `job.expire` processor, the same
  * relationship `uploads/store.ts` has to the upload sweep. `expireOne` is a guarded UPDATE plus the
- * `job.expired` outbox event, in ONE transaction (spec J-6, J-13): a crash between the row flip and its
+ * `job.expired` outbox event, in ONE transaction: a crash between the row flip and its
  * event cannot happen, and a row that already left PUBLISHED (closed, edited back, or already expired) is
  * a harmless no-op — the same idempotency shape as `uploadSweep`.
  */

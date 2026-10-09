@@ -11,7 +11,7 @@ const call = (headers: HeadersInit = {}, url = "http://localhost/alumni") =>
 
 const callAnonymous = (url: string) => proxy(new NextRequest(url));
 
-describe("proxy (reliability §6.2)", () => {
+describe("proxy", () => {
   it("generates a request id, forwards it to the app and echoes it to the client", () => {
     const response = call();
     const id = response.headers.get("x-request-id");
@@ -45,7 +45,7 @@ describe("proxy (reliability §6.2)", () => {
   });
 });
 
-describe("proxy optimistic auth redirect (ADR-005 §2, TDS §7.5)", () => {
+describe("proxy optimistic auth redirect", () => {
   it("redirects an anonymous request for a gated page to /login with a same-origin next", () => {
     const response = callAnonymous("http://localhost/alumni?q=a");
     expect(response.status).toBe(307);
@@ -87,7 +87,7 @@ describe("proxy optimistic auth redirect (ADR-005 §2, TDS §7.5)", () => {
   });
 });
 
-describe("proxy security headers (strategy §10.1, spec 16 SD-1)", () => {
+describe("proxy security headers", () => {
   const nonceOf = (csp: string | null) =>
     /'nonce-([^']+)'/.exec(csp ?? "")?.[1];
 

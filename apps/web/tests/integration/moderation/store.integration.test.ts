@@ -67,7 +67,7 @@ describe("moderation store against real PostgreSQL", () => {
     });
   }
 
-  it("findReport returns a report of every target type (spec C12-1)", async () => {
+  it("findReport returns a report of every target type", async () => {
     const s = store();
     for (const targetType of ["POST", "COMMENT", "MESSAGE", "USER"] as const) {
       const row = await db.prisma.report.create({

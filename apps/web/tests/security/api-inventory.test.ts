@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { API_INVENTORY, routesOnDisk } from "./api-inventory";
 
-// Spec 16 SD-6: the inventory and the code cannot drift apart.
+// The inventory and the code cannot drift apart.
 
 const appRoot = path.resolve(import.meta.dirname, "../../src/app");
 

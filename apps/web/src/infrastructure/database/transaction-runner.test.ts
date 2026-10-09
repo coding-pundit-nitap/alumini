@@ -34,7 +34,7 @@ function fakePrisma(commitFailures: unknown[]) {
 
 const fast = { baseBackoffMs: 0 };
 
-describe("TransactionRunner (TDS §17.5)", () => {
+describe("TransactionRunner", () => {
   it("returns the callback's result on success", async () => {
     const { prisma, $transaction } = fakePrisma([]);
     const runner = createTransactionRunner(prisma, fast);

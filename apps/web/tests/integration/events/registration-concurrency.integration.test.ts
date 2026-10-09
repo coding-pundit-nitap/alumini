@@ -16,7 +16,7 @@ import { createPrismaEventStore } from "@/modules/events/infrastructure/prisma-e
 import { createNaiveEventStore } from "./naive-event-store";
 
 /**
- * E-5/E-6 under real concurrency: the guarded UPDATEs never oversell, never lose an increment and
+ * Under real concurrency: the guarded UPDATEs never oversell, never lose an increment and
  * never let a deadlock escape, while a read-then-write store (the negative control) does oversell.
  */
 const ITER = Number(process.env.EVENT_RACE_ITERATIONS ?? 3);

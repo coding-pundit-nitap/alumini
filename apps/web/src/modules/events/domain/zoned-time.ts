@@ -1,6 +1,6 @@
 /**
  * Wall-clock-in-a-zone → UTC instant conversion, stdlib `Intl` only (Temporal is not available on
- * Node 24; spec E-9 already picked `Intl.DateTimeFormat` for zone validation). Ambiguous wall time
+ * Node 24). Ambiguous wall time
  * (DST fall-back) resolves to the earlier instant. Nonexistent wall time (DST spring-forward gap)
  * shifts forward by the gap. Algorithm: the standard two-pass offset fix (as used by Luxon for
  * Intl-backed zones) — guess an offset, refine it, and detect a gap when refining doesn't converge.

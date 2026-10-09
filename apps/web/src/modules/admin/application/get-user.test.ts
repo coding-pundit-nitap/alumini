@@ -35,7 +35,7 @@ const deps = (user: UserDetail | null) => ({
   superAdminRole: "SUPER_ADMIN",
 });
 
-describe("getUser (spec B12-11)", () => {
+describe("getUser", () => {
   it("authorizes with the subject, concealed", async () => {
     const d = deps(detail);
     await createGetUser(d)({ actor, userId: T });

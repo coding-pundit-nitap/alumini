@@ -12,11 +12,11 @@ export type PresignUploadInput = {
 export type HeadResult = { size: number; contentType: string | null };
 
 /**
- * The one interface a module ever imports for storage. Application code never sees AWS SDK types
- * (strategy §2.3 rule 2); only the S3 adapter (infrastructure-only, TDS §13) does.
+ * The one interface a module ever imports for storage. Application code never sees AWS SDK types;
+ * only the S3 adapter (infrastructure-only) does.
  */
 export interface StoragePort {
-  /** A presigned POST: the browser sends the file straight to the store (system-architecture.md §5.4). */
+  /** A presigned POST: the browser sends the file straight to the store. */
   presignUpload(input: PresignUploadInput): Promise<PresignedUpload>;
   /** Confirms an object exists and reports its real size/type, without downloading it. */
   head(key: string): Promise<HeadResult>;

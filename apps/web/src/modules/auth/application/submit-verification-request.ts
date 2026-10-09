@@ -18,7 +18,7 @@ import type { InstituteRecords } from "./institute-records";
 import type { RateLimiter, RateRule } from "./rate-limiter";
 import type { VerificationStore } from "./verification-store";
 
-/** Proposals for the institute to confirm (spec 2D, O-2). */
+/** Proposals for the institute to confirm. */
 export const SUBMISSIONS_PER_ACCOUNT: RateRule = {
   windowSeconds: 86_400,
   max: 3,
@@ -47,7 +47,7 @@ function errorFor(block: SubmissionBlock): Error {
 }
 
 /**
- * An account without a recognised institutional email submits evidence (FR-AUTH-003). The applicant is
+ * An account without a recognised institutional email submits evidence. The applicant is
  * always the caller: there is no user id in the input, so a forged one cannot be honoured.
  *
  * Order: authorize → eligibility (cheap, so a blocked account spends no rate limit) → rate limits →

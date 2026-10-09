@@ -1,7 +1,7 @@
 import type { ListCursor } from "../domain/cursor";
 import type { EventStatus, RegistrationState } from "../domain/event";
 
-/** API §8 shape. `spotsRemaining` and `canManage` are computed by the use cases, never stored. */
+/** API shape. `spotsRemaining` and `canManage` are computed by the use cases, never stored. */
 export type EventSummary = {
   id: string;
   title: string;
@@ -34,7 +34,7 @@ export type EventListFilter = {
   after?: ListCursor;
 };
 
-/** One row of `listRegistrants` (spec "names from the existing user summary join"). */
+/** One row of `listRegistrants`. */
 export type Registrant = {
   registrationId: string;
   userId: string;
@@ -51,7 +51,7 @@ export type RegistrantFilter = {
 export type EventQueries = {
   list(viewerId: string, filter: EventListFilter): Promise<EventSummaryRow[]>;
   get(viewerId: string, eventId: string): Promise<EventDetailRow | null>;
-  /** Keyset by `(registered_at, id)` ascending (spec E-application "listRegistrants"). */
+  /** Keyset by `(registered_at, id)` ascending. */
   listRegistrants(
     eventId: string,
     filter: RegistrantFilter

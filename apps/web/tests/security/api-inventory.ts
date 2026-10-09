@@ -4,7 +4,7 @@ import path from "node:path";
 import { PERMISSIONS, type Permission } from "@nitap/database/permissions";
 
 /**
- * Every Route Handler × method, classified (spec 16 SD-6). The file system is the source of truth for what
+ * Every Route Handler × method, classified. The file system is the source of truth for what
  * exists; this table is the source of truth for who may call it. `api-inventory.test.ts` fails when they
  * differ, so a new endpoint cannot ship unclassified, and `api-matrix.security.integration.test.ts`
  * generates the role × account-state × action matrix from it.
@@ -32,7 +32,7 @@ export type Access =
   | { kind: "session"; anyOf: readonly Permission[] };
 
 /**
- * A schema-valid request, for routes that validate input before the use case authorizes (SD-10): without
+ * A schema-valid request, for routes that validate input before the use case authorizes: without
  * it the matrix would see a 400 and never reach authorize(). Ids are placeholders for unknown rows.
  */
 export type Sample = { body?: unknown; query?: string };

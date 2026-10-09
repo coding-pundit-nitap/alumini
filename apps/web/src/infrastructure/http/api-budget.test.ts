@@ -4,7 +4,7 @@ import { RateLimitedError } from "@/lib/errors";
 
 import { API_BUDGET, createApiBudget } from "./api-budget";
 
-// Spec 16 SD-7: one API-wide allowance per signed-in user, charged once per Route Handler request.
+// One API-wide allowance per signed-in user, charged once per Route Handler request.
 
 function harness(allowed = true) {
   const consume = vi.fn(async () => ({

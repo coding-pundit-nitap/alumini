@@ -16,7 +16,7 @@ const userId = async (ctx: Params) => {
 };
 const json = (request: Request) => readJson(request);
 
-/** POST /api/v1/admin/users/:id/roles — assign a role (spec B12-9). */
+/** POST /api/v1/admin/users/:id/roles — assign a role. */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const result = await assignRole({

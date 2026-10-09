@@ -14,7 +14,7 @@ test.describe("Health endpoints", () => {
   test("/health/ready checks PostgreSQL and reports Redis without failing on it", async ({
     request,
   }) => {
-    // A production build shows `checks` only to the monitoring token (reliability §4.1).
+    // A production build shows `checks` only to the monitoring token.
     const token = process.env.HEALTH_CHECK_TOKEN;
     const response = await request.get("/health/ready", {
       headers: token ? { authorization: `Bearer ${token}` } : {},

@@ -37,7 +37,7 @@ function storeReturning(rows: ReportView[]) {
 }
 const authorize = vi.fn((a: Actor | null) => a!);
 
-describe("listReports (spec C12-5)", () => {
+describe("listReports", () => {
   it("authorizes concealed before parsing, and passes the open statuses by default", async () => {
     const { store, listReports } = storeReturning([]);
     await createListReports({ store, authorize })({ actor, query: {} });
@@ -82,7 +82,7 @@ describe("listReports (spec C12-5)", () => {
   });
 });
 
-describe("getReport (spec C12-7)", () => {
+describe("getReport", () => {
   it("flags self-review for the reporter and for the target's owner", async () => {
     for (const over of [
       { reporter: { id: ME, name: "Me" } },

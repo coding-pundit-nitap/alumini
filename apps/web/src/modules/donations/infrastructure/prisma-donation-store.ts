@@ -55,7 +55,7 @@ const campaignData = (input: CampaignInput) => ({
   endsOn: toDate(input.endsOn),
 });
 
-/** FR-DON-004: the per-campaign unique reference is the guard, not a "seen before" read. */
+/** The per-campaign unique reference is the guard, not a "seen before" read. */
 const isReferenceTaken = (error: unknown) =>
   error instanceof Prisma.PrismaClientKnownRequestError &&
   error.code === "P2002";
@@ -96,7 +96,7 @@ const fromLocked = (r: LockedCampaignRow): Campaign =>
   });
 
 /**
- * Phase 12H writes (spec H-2). Every method runs on the transaction client, so a row, its audit entry and
+ * Writes. Every method runs on the transaction client, so a row, its audit entry and
  * its outbox event commit or roll back together. Lock order: campaign row, then donation row.
  */
 export function createPrismaDonationStore(deps: {
@@ -201,7 +201,7 @@ type ProgressRow = {
   donors: number;
 };
 
-/** Reads for the member and admin pages. Progress counts CONFIRMED only; open pledges separately (H-9). */
+/** Reads for the member and admin pages. Progress counts CONFIRMED only; open pledges separately. */
 export function createPrismaDonationQueries(db: PrismaClient): DonationQueries {
   const progressOf = async (ids: string[]) => {
     if (ids.length === 0) return new Map<string, ProgressRow>();

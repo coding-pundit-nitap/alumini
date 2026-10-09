@@ -1,5 +1,5 @@
 /**
- * Request-id validation (reliability §6.2). No Node imports: `proxy.ts` uses this too.
+ * Request-id validation. No Node imports: `proxy.ts` uses this too.
  * A client-supplied id is accepted only if it cannot inject text into logs or traces.
  */
 export const REQUEST_ID_HEADER = "x-request-id";

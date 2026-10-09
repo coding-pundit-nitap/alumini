@@ -9,7 +9,7 @@ import { createTransactionRunner } from "@/infrastructure/database/transaction-r
 import { ConflictError } from "@/lib/errors";
 import { createPrismaAccessStore } from "@/modules/admin/server";
 
-describe("PrismaAccessStore (spec B12-5, B12-6, B12-7)", () => {
+describe("PrismaAccessStore", () => {
   let db: TestDatabase;
   let store: ReturnType<typeof createPrismaAccessStore>;
   let grantor: string;

@@ -24,7 +24,7 @@ type Deps = {
   now?: () => Date;
 };
 
-/** FR-DON-001, spec H-6. Every campaign, newest first, for `campaign.manage` holders. */
+/** Every campaign, newest first, for `campaign.manage` holders. */
 export function createListCampaignsForAdmin(deps: Deps) {
   return async function listCampaignsForAdmin(args: {
     actor: Actor | null;
@@ -84,7 +84,7 @@ export function createEditCampaign(deps: Deps) {
   };
 }
 
-/** DRAFT → ACTIVE (not after its end date) → CLOSED. Closing leaves open pledges confirmable (spec H-6). */
+/** DRAFT → ACTIVE (not after its end date) → CLOSED. Closing leaves open pledges confirmable. */
 export function createChangeCampaignStatus(deps: Deps) {
   const now = deps.now ?? (() => new Date());
   return async function changeCampaignStatus(args: {

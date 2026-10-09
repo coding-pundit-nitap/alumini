@@ -7,7 +7,7 @@ import {
 } from "@/modules/admin";
 
 /**
- * Role-aware navigation model (spec U-2, "Information architecture and role-aware navigation").
+ * Role-aware navigation model.
  * A pure function: it only reads `can()` and `accountState`, never a role name
  * (`tests/architecture/no-role-names.test.ts`). Layouts stay out of the authorization business —
  * this only decides what to *show*; every page keeps its own `getActor()` redirect.

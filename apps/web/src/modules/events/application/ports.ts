@@ -43,20 +43,20 @@ export type EventOutboxEvent = {
 
 /**
  * Everything a write does happens through one of these, inside ONE database transaction, so a row
- * and its outbox event commit or roll back together (NFR-REL-002). `claimSeat`, `releaseSeat` and
- * `cancelEvent` are single guarded UPDATE statements (E-5, E-6): nothing here decides admission,
+ * and its outbox event commit or roll back together. `claimSeat`, `releaseSeat` and
+ * `cancelEvent` are single guarded UPDATE statements: nothing here decides admission,
  * seat release or cancellation — each just reports whether its guard matched.
  */
 export type EventTx = {
   insertEvent(input: NewEvent): Promise<{ id: string }>;
-  /** Guarded increment (E-5 statement 1): scheduled, before the deadline, under capacity. */
+  /** Guarded increment (statement 1): scheduled, before the deadline, under capacity. */
   claimSeat(eventId: string): Promise<boolean>;
-  /** E-5 statement 2: inserts a new registration, or reuses a CANCELLED row. Null for an existing REGISTERED row. */
+  /** Statement 2: inserts a new registration, or reuses a CANCELLED row. Null for an existing REGISTERED row. */
   upsertRegistration(
     eventId: string,
     userId: string
   ): Promise<{ id: string } | null>;
-  /** Guarded decrement (E-6 statement 1): scheduled, before the start. */
+  /** Guarded decrement (statement 1): scheduled, before the start. */
   releaseSeat(eventId: string): Promise<boolean>;
   cancelRegistration(
     eventId: string,
@@ -90,5 +90,5 @@ export type EventOutcome =
   | "attendance_marked";
 export type EventObserver = (outcome: EventOutcome, eventId: string) => void;
 
-/** A refusal that never reached a commit (spec E-5..E-7). Called after the transaction. */
+/** A refusal that never reached a commit. Called after the transaction. */
 export type RefusalObserver = (code: RefusalCode) => void;

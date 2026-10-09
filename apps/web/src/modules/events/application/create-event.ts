@@ -12,10 +12,10 @@ import type {
 } from "./ports";
 import { parse } from "./parse";
 
-/** `events.create`: 10 a day per organizer (spec E-14). */
+/** `events.create`: 10 a day per organizer. */
 export const CREATE_RATE = { max: 10, window: 86400 } as const;
 
-/** FR-EVENT-001. The row and its `event.created` event commit together; `observe` runs only after that commit. */
+/** The row and its `event.created` event commit together; `observe` runs only after that commit. */
 export function createCreateEvent(deps: {
   store: EventStore;
   authorize: Authorize;

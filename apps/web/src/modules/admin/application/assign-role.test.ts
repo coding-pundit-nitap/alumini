@@ -59,7 +59,7 @@ function setup(
   return { ...fake, authorize, loadGrants, assign };
 }
 
-describe("assignRole (spec B12-3, B12-9)", () => {
+describe("assignRole", () => {
   it("assigns STUDENT: authorizes role.assign with the subject, audits previousRoles", async () => {
     const s = setup({ roles: ["ALUMNI"] });
     await expect(

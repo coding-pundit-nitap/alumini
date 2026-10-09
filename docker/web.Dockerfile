@@ -1,9 +1,9 @@
-# Web app image (spec 16 16E). Build from the repository root:
+# Web app image. Build from the repository root:
 #   docker build -f docker/web.Dockerfile --build-arg GIT_SHA=$(git rev-parse HEAD) -t alumini-web .
 # Runtime configuration comes from the environment at `docker run`; nothing secret is baked in.
 # `--target migrate` builds a one-shot image that runs `prisma migrate deploy` and then the reference seed
 # (roles, RBAC bundles, departments: insert-only upserts, so a release adds what is new and changes nothing an
-# admin edited; spec 18 F-10), and `admin:bootstrap`; the runtime image carries no Prisma CLI.
+# admin edited), and `admin:bootstrap`; the runtime image carries no Prisma CLI.
 ARG NODE_IMAGE=node:24.21.0-alpine3.24
 ARG ALPINE_IMAGE=alpine:3.24
 
@@ -29,7 +29,7 @@ RUN pnpm rebuild && pnpm --filter @nitap/database db:generate
 
 FROM deps AS build
 ENV NEXT_OUTPUT=standalone NEXT_TELEMETRY_DISABLED=1
-# The deployment id (version-skew protection, reliability §8.2) and the version on every log line.
+# The deployment id (version-skew protection) and the version on every log line.
 ARG GIT_SHA=dev
 # `next build` imports route modules to collect page data; their clients need these variables to exist but
 # never connect. Placeholders only, scoped to this RUN in the build stage: none reaches the runtime image.
@@ -40,7 +40,7 @@ RUN --mount=type=cache,id=next-cache,target=/repo/apps/web/.next/cache \
     S3_ACCESS_KEY_ID=build S3_SECRET_ACCESS_KEY=build-placeholder S3_FORCE_PATH_STYLE=true \
     NEXT_DEPLOYMENT_ID=${GIT_SHA} pnpm --filter @nitap/web build
 
-# Migrations and first-admin bootstrap, run once per release against the target database (reliability §8.3):
+# Migrations and first-admin bootstrap, run once per release against the target database:
 # the Prisma CLI and the migrations, plus the three packages scripts/bootstrap-admin.ts imports. Cut down here
 # and copied into a clean stage, since deleting in a later layer frees nothing.
 FROM deps AS migrate-deps

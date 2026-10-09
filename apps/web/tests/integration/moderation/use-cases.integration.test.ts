@@ -150,7 +150,7 @@ describe("moderation use cases against real PostgreSQL", () => {
     });
   });
 
-  describe("MESSAGE and USER reports (spec C12-1, C12-2)", () => {
+  describe("MESSAGE and USER reports", () => {
     async function reportedMessage(senderId: string, reporterId: string) {
       const [lo, hi] = [senderId, reporterId].sort();
       const conversation = await db.prisma.conversation.create({
@@ -561,7 +561,7 @@ describe("moderation use cases against real PostgreSQL", () => {
     });
   });
 
-  describe("audit (FR-MOD-004)", () => {
+  describe("audit", () => {
     const auditRows = () =>
       db.prisma.auditLog.findMany({
         orderBy: [{ createdAt: "asc" }, { action: "asc" }],

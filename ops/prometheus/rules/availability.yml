@@ -1,4 +1,4 @@
-# Availability (reliability §5.6, spec 13C). Labels: severity page|ticket|none, service. Every rule links a runbook.
+# Availability. Labels: severity page|ticket|none, service. Every rule links a runbook.
 groups:
   - name: availability
     rules:
@@ -30,7 +30,7 @@ groups:
           runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-3.md
 
       # Always firing. Alertmanager forwards it every minute to an external dead-man's switch that pages when it
-      # STOPS arriving, which is how a dead monitoring stack gets noticed (reliability §5.1).
+      # STOPS arriving, which is how a dead monitoring stack gets noticed.
       - alert: Watchdog
         expr: vector(1)
         labels: { severity: none, service: monitoring }

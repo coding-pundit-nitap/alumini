@@ -34,20 +34,13 @@ import { createUnreact } from "@/modules/posts/application/unreact";
 import { createPrismaPostsStore } from "@/modules/posts/infrastructure/prisma-posts-store";
 
 /**
- * RBAC matrix coverage and IDOR cases for posts, achievements and moderation (Phase 10 §8 guardrails).
+ * RBAC matrix coverage and IDOR cases for posts, achievements and moderation, against real PostgreSQL, the
+ * real seed and the real `authorize`/`resolveActor`, with no doubles. Same shape as
+ * `tests/integration/auth/role-matrix.integration.test.ts`.
  *
- * The precedent this task named, `tests/security/messaging.security.test.ts`, does not exist in this
- * repo (checked: no file under that name anywhere in git history or the working tree). The closest real
- * analogues — real PostgreSQL, real seed, real `authorize`/`resolveActor`, no doubles — are
- * `tests/integration/auth/role-matrix.integration.test.ts` (actor resolution off seeded
- * PermissionGrant/RolePermission rows) and `tests/integration/mentorship/mentorship-lifecycle.integration.test.ts`
- * (real Prisma stores wired to real use cases against a per-test database). This file follows that shape.
- *
- * Every permission grant below comes from `packages/database/prisma/seed-data/role-permissions.ts`, not from the
- * task brief's paraphrase of it (which the seed data disagrees with in two places: `achievement.submit` is
- * ALUMNI and FACULTY only, not the general member baseline, and `achievement.review` sits on
- * ALUMNI_COORDINATOR/INSTITUTE_ADMIN/SUPER_ADMIN — MODERATOR does not hold it. `report.review` and
- * `post.moderate` do match: MODERATOR/INSTITUTE_ADMIN/SUPER_ADMIN.)
+ * Grants come from `packages/database/prisma/seed-data/role-permissions.ts`. Note that `achievement.submit` is
+ * ALUMNI and FACULTY only, and `achievement.review` is held by ALUMNI_COORDINATOR, INSTITUTE_ADMIN and
+ * SUPER_ADMIN, not MODERATOR.
  */
 describe("community security", () => {
   let db: TestDatabase;

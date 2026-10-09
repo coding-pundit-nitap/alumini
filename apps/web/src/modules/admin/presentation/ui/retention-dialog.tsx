@@ -8,7 +8,7 @@ import type { RetentionSettingView } from "../../domain/retention";
 import { ConfirmButton, type AccessAction } from "./confirm-button";
 import { RETENTION_LABEL } from "./labels";
 
-/** 12G G-3: edit one category's period and sign-off; bounds are shown and re-checked on the server. */
+/** Edit one category's period and sign-off; bounds are shown and re-checked on the server. */
 export function RetentionDialog(props: {
   setting: RetentionSettingView;
   action: AccessAction;

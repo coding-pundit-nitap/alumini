@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Campaign" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Phase 12H: the campaign, how to pay (XD-6) and the pledge form while it is open. */
+/** The campaign, how to pay and the pledge form while it is open. */
 export default async function CampaignPage({
   params,
 }: {

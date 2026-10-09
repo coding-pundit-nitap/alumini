@@ -39,7 +39,7 @@ export const metadata: Metadata = { title: "Event" };
 
 const uuid = z.uuid();
 
-/** Event detail, with the register / cancel registration button (slice 8b). */
+/** Event detail, with the register / cancel registration button. */
 export default async function EventPage({
   params,
 }: {

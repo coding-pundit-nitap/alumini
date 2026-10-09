@@ -8,7 +8,7 @@ export const dropEmpty = (input: unknown) =>
     ? Object.fromEntries(Object.entries(input).filter(([, v]) => v !== ""))
     : input;
 
-/** Filters for the audit read (spec A12-7). Shared by the API route and the page. */
+/** Filters for the audit read. Shared by the API route and the page. */
 export const auditQuerySchema = z.preprocess(
   dropEmpty,
   z

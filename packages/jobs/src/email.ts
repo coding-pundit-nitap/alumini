@@ -6,8 +6,8 @@ const httpUrl = z.url({ protocol: /^https?$/ });
 const common = { v: z.literal(1), to: z.email() };
 
 /**
- * The parameters carry a link that contains a token (a secret). Never log `to` or `params`
- * (reliability §6.4); the templates that use them live in @nitap/email.
+ * The parameters carry a link that contains a token (a secret). Never log `to` or `params`.
+ * The templates that use them live in @nitap/email.
  */
 export const emailSendPayload = z.discriminatedUnion("template", [
   z
@@ -59,9 +59,9 @@ export const emailSendPayload = z.discriminatedUnion("template", [
     .object({
       ...common,
       template: z.literal("notification"),
-      /** Ids-only link back to the NotificationDelivery row this send updates (N-12). */
+      /** Ids-only link back to the NotificationDelivery row this send updates. */
       notificationId: z.uuid().optional(),
-      // For notification_delivered_total only (spec 13A A-11); absent on jobs enqueued before 13A.
+      // For notification_delivered_total only; absent on jobs enqueued before 13A.
       category: z.enum(["TRANSACTIONAL", "ENGAGEMENT"]).optional(),
       params: z
         .object({
@@ -77,8 +77,8 @@ export const emailSendPayload = z.discriminatedUnion("template", [
 export type EmailSendPayload = z.infer<typeof emailSendPayload>;
 
 /**
- * 13 attempts with exponential backoff from 30 s capped at 60 min is about six hours of retrying
- * (SRS NFR-REL-003, ADR-007): long enough to ride out a provider outage.
+ * 13 attempts with exponential backoff from 30 s capped at 60 min is about six hours of retrying:
+ * long enough to ride out a provider outage.
  */
 export const emailSend = defineJob({
   name: "email.send",

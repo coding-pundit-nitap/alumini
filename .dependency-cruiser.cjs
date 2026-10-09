@@ -1,5 +1,5 @@
 /**
- * Architecture rules that lint cannot see well (strategy §2.4 item 3): cycles, the module DAG,
+ * Architecture rules that lint cannot see well: cycles, the module DAG,
  * deep cross-module imports, and workspace direction. Layer import bans live in
  * packages/eslint-config/boundaries.mjs.
  *
@@ -7,7 +7,7 @@
  * (`pnpm arch:workspace`, for packages/). Patterns accept both path prefixes.
  */
 
-// Module DAG (TDS §5.3): each module may import only the public API of the modules listed here.
+// Module DAG: each module may import only the public API of the modules listed here.
 // Anything not listed is forbidden. Extend this in the same PR that adds a module or an edge.
 const MODULE_DEPENDENCIES = {
   auth: [],
@@ -24,7 +24,7 @@ const MODULE_DEPENDENCIES = {
 const moduleDagRules = Object.entries(MODULE_DEPENDENCIES).map(
   ([name, allowed]) => ({
     name: `module-dag-${name}`,
-    comment: `modules/${name} may depend only on: ${allowed.join(", ") || "no other module"} (TDS §5.3).`,
+    comment: `modules/${name} may depend only on: ${allowed.join(", ") || "no other module"}.`,
     severity: "error",
     from: { path: `^(?:apps/web/)?src/modules/${name}/` },
     to: {
@@ -45,7 +45,7 @@ module.exports = {
   forbidden: [
     {
       name: "no-circular",
-      comment: "No cycles at file or module level (strategy §2.3 rule 5).",
+      comment: "No cycles at file or module level.",
       severity: "error",
       from: {},
       to: { circular: true },
@@ -54,7 +54,7 @@ module.exports = {
       name: "no-deep-cross-module-import",
       comment:
         "Other modules are reached only through their index.ts, or their server.ts / client.ts for exports a " +
-        "barrel can't carry to that side (strategy §2.3 rule 3; see modules/moderation/server.ts).",
+        "barrel can't carry to that side (see modules/moderation/server.ts).",
       severity: "error",
       from: { path: "^(?:apps/web/)?src/modules/([^/]+)/" },
       to: {
@@ -83,20 +83,20 @@ module.exports = {
     {
       name: "workspace-packages-never-import-apps",
       comment:
-        "packages/* never depend on apps/* (ADR-017). packages/scripts is tooling run by hand or in CI, never imported, so its drills may drive an app's code directly.",
+        "packages/* never depend on apps/*. packages/scripts is tooling run by hand or in CI, never imported, so its drills may drive an app's code directly.",
       severity: "error",
       from: { path: "^packages/", pathNot: "^packages/scripts/" },
       to: { path: "^apps/" },
     },
     ...moduleDagRules,
 
-    // Phase 2B (spec §3.1, ADR-018). Each rule is proven to fail by a temporary violating file (plan Task 12
+    // Each rule is proven to fail by a temporary violating file.
     // step 5). The web/worker boundary is also enforced by checkNoQueueImports (apps/web) and
     // checkNoWebImports (apps/worker), which run without dependency-cruiser.
     {
       name: "queue-stays-generic",
       comment:
-        "@nitap/queue knows nothing about email or the database; contracts live in @nitap/jobs (spec 2B §3.1).",
+        "@nitap/queue knows nothing about email or the database; contracts live in @nitap/jobs.",
       severity: "error",
       from: { path: "^packages/queue/src/", pathNot: "\\.test\\.ts$" },
       to: { path: "(^|/)packages/(email|database)/" },
@@ -135,7 +135,7 @@ module.exports = {
           {
             name: "web-never-touches-the-queue",
             comment:
-              "The web app only writes outbox events; the queue and email adapters belong to the worker. One exception: the notifications composition builds the admin QueueAdmin for the audited replay endpoint (N-13).",
+              "The web app only writes outbox events; the queue and email adapters belong to the worker. One exception: the notifications composition builds the admin QueueAdmin for the audited replay endpoint.",
             severity: "error",
             from: {
               path: "^(?:apps/web/)?src/",
@@ -147,14 +147,14 @@ module.exports = {
     {
       name: "web-and-worker-never-import-each-other",
       comment:
-        "Two deployables, one repository: they share packages, not code (ADR-018).",
+        "Two deployables, one repository: they share packages, not code.",
       severity: "error",
       from: { path: "^(?:apps/web/)?(src|tests)/" },
       to: { path: "^((\\.\\./)+|apps/)worker/" },
     },
     {
       name: "worker-never-imports-web",
-      comment: "The worker must not depend on the Next.js app (ADR-018).",
+      comment: "The worker must not depend on the Next.js app.",
       severity: "error",
       from: { path: "^(?:apps/worker/)?(src|tests)/" },
       to: { path: "^((\\.\\./)+|apps/)web/" },

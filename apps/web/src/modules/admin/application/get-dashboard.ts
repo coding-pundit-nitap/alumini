@@ -11,7 +11,7 @@ export type DashboardTile =
   | { key: TileKey; status: "unavailable" };
 
 /**
- * FR-ADMIN-001, spec A12-5/A12-6. Counts only the tiles the actor may act on, and each tile fails on its own:
+ * Counts only the tiles the actor may act on, and each tile fails on its own:
  * one slow or broken table renders "Unavailable" instead of taking the dashboard down.
  */
 export function createGetDashboard(deps: {
@@ -27,7 +27,7 @@ export function createGetDashboard(deps: {
     const { actor } = args;
     if (!actor) throw new AuthenticationError();
     const can = (permission: Permission) => deps.can(actor, permission);
-    // Not 403: the admin area's existence is not advertised (RBAC §8 rule 6).
+    // Not 403: the admin area's existence is not advertised.
     if (!hasAdminAccess(can)) throw new NotFoundError();
 
     const keys = dashboardTiles(can);

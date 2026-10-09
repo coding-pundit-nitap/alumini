@@ -3,14 +3,14 @@ import { Prisma, type PrismaClient } from "@nitap/database";
 import type { AnalyticsStore } from "../application/admin-store";
 import type { AnalyticsWindow, Bucket, WeekPoint } from "../domain/analytics";
 
-// Weeks are bucketed on the IST calendar (spec F-4); the domain names a week by its Monday, as here.
+// Weeks are bucketed on the IST calendar; the domain names a week by its Monday, as here.
 const WEEK = Prisma.sql`to_char(date_trunc('week', created_at AT TIME ZONE 'Asia/Kolkata'), 'YYYY-MM-DD')`;
 
 const inWindow = (column: string, w: AnalyticsWindow) =>
   Prisma.sql`${Prisma.raw(column)} >= ${w.from}::timestamptz AND ${Prisma.raw(column)} < ${w.to}::timestamptz`;
 
 /**
- * Spec 12F F-4/F-5: cross-module, read-only aggregates (overview AD-2). Only counts leave this file — no
+ * Cross-module, read-only aggregates. Only counts leave this file — no
  * row identifies a person. Table and column names passed to Prisma.raw are constants, never input.
  */
 export function createPrismaAnalyticsStore(db: PrismaClient): AnalyticsStore {
@@ -23,7 +23,7 @@ export function createPrismaAnalyticsStore(db: PrismaClient): AnalyticsStore {
 
   return {
     async membersSection(w) {
-      // ponytail: seq scan on user.created_at; add ix_user_created_at if sign-ups show in slow logs (F-8).
+      // ponytail: seq scan on user.created_at; add ix_user_created_at if sign-ups show in slow logs.
       const [states, signups, byRole, byGraduationYear, [decided]] =
         await Promise.all([
           db.user.groupBy({ by: ["accountState"], _count: { _all: true } }),
@@ -126,7 +126,7 @@ export function createPrismaAnalyticsStore(db: PrismaClient): AnalyticsStore {
     },
 
     async donationsSection(w) {
-      // Confirmed money only (12H H-9); a pledge counts in the week it was confirmed.
+      // Confirmed money only; a pledge counts in the week it was confirmed.
       const [receivedRupees, [totals], donorsByCampaign] = await Promise.all([
         db.$queryRaw<WeekPoint[]>`
           SELECT to_char(date_trunc('week', decided_at AT TIME ZONE 'Asia/Kolkata'), 'YYYY-MM-DD') AS week,

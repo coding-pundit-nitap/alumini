@@ -15,7 +15,7 @@ afterEach(() => {
   ];
 });
 
-describe("routeHandler HTTP metrics (spec 13A A-8)", () => {
+describe("routeHandler HTTP metrics", () => {
   it("counts each request and observes its duration by route and status class", async () => {
     const metrics = createPrometheusMetrics({ service: "web", version: "t" });
     setMetrics(metrics);

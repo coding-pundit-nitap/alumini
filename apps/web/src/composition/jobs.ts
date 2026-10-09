@@ -29,7 +29,7 @@ const store = createPrismaJobStore({
   audit,
 });
 
-/** One log line and one counter per committed outcome; publish_direct is distinct from published (spec J-15). */
+/** One log line and one counter per committed outcome; publish_direct is distinct from published. */
 const observe: JobObserver = (outcome, jobId) => {
   logger.info(`job.${outcome}`, { metadata: { jobId } });
   getMetrics().increment("job_total", { outcome });

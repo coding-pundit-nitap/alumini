@@ -10,8 +10,8 @@ import type { PostsStore } from "./posts-store";
 import { parse } from "./validation";
 
 /**
- * Phase 12E (spec E-2, E-4, E-5). The only path that writes an ANNOUNCEMENT post. GLOBAL
- * `announcement.publish` only: a chapter-scoped grant does not match a resource-less check (XD-1).
+ * The only path that writes an ANNOUNCEMENT post. GLOBAL
+ * `announcement.publish` only: a chapter-scoped grant does not match a resource-less check.
  * Post, audit row and outbox event commit together; no `post.created` is emitted.
  */
 export function createPublishAnnouncement(deps: {

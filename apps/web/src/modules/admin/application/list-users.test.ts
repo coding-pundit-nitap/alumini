@@ -25,7 +25,7 @@ const storeWith = (rows: UserRow[]) =>
     listUsers: ReturnType<typeof vi.fn>;
   };
 
-describe("listUsers (spec B12-10)", () => {
+describe("listUsers", () => {
   it("authorizes user.read_admin, concealed", async () => {
     const authorize = vi.fn(() => actor);
     await createListUsers({ store: storeWith([]), authorize })({

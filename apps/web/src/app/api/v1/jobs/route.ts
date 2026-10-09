@@ -9,7 +9,7 @@ import { getActor } from "@/modules/auth";
 import { EMPLOYMENT_TYPES, WORK_MODES } from "@/modules/jobs";
 import { parseJson, readBodyText } from "../_lib/request";
 
-/** POST /api/v1/jobs — create/submit a job (FR-JOB-001). Honours `Idempotency-Key` (spec J-16). */
+/** POST /api/v1/jobs — create/submit a job. Honours `Idempotency-Key`. */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const rawBody = await readBodyText(request);
@@ -42,7 +42,7 @@ const listQuery = z.object({
   cursor: z.string().max(300).optional(),
 });
 
-/** GET /api/v1/jobs — the public listing (spec J-9/J-12), or `?mine=true` for the caller's own (any status). */
+/** GET /api/v1/jobs — the public listing, or `?mine=true` for the caller's own (any status). */
 export const GET = routeHandler(async (request) => {
   const params = new URL(request.url).searchParams;
   const parsed = listQuery.safeParse(Object.fromEntries(params));

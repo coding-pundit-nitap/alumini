@@ -229,7 +229,7 @@ describe("decideClose", () => {
   it.each(["REJECTED", "EXPIRED", "CLOSED"] as const)(
     "refuses closing from terminal-ish %s",
     (status) => {
-      // REJECTED is non-terminal (J-3) but is not a close-eligible state either (only PENDING_REVIEW/PUBLISHED are).
+      // REJECTED is non-terminal but is not a close-eligible state either (only PENDING_REVIEW/PUBLISHED are).
       expect(decideClose(row(status), true)).toMatchObject({
         ok: false,
         code: "INVALID_STATE_TRANSITION",
@@ -239,7 +239,7 @@ describe("decideClose", () => {
 });
 
 describe("state sets", () => {
-  it("REJECTED is not terminal (spec J-3)", () => {
+  it("REJECTED is not terminal", () => {
     expect(TERMINAL_STATES).not.toContain("REJECTED");
   });
   it("EXPIRED and CLOSED are the only terminal states", () => {

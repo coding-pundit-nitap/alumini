@@ -13,7 +13,7 @@ export const GET = routeHandler(async () => {
   );
 });
 
-/** PUT /api/v1/mentors/me — opt in or edit; `accepting: false` pauses (spec M-10). */
+/** PUT /api/v1/mentors/me — opt in or edit; `accepting: false` pauses. */
 export const PUT = routeHandler(async (request) => {
   assertSameOrigin(request);
   const body = await readJson(request);

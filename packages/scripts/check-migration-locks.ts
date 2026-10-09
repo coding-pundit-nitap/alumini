@@ -7,8 +7,8 @@ import { parseArgs } from "node:util";
 import pg from "pg";
 
 /**
- * Fails when a new migration blocks writes to a populated table for longer than --max-hold-ms (spec 18 PRD-6;
- * reliability §9.3). The release applies migrations while the previous release still serves, so a lock that
+ * Fails when a new migration blocks writes to a populated table for longer than --max-hold-ms (
+ *). The release applies migrations while the previous release still serves, so a lock that
  * blocks writes is user-visible downtime; on an empty CI database every migration looks instant.
  *
  * New migrations are those added since the merge base with --base. The database is built at that merge base
@@ -239,7 +239,7 @@ try {
   lines.push(
     "",
     failed
-      ? `**FAIL**: a migration blocks writes for longer than ${maxHold} ms. Split it (expand → migrate → contract, reliability §9.3), use CONCURRENTLY, or add constraints NOT VALID and validate separately.`
+      ? `**FAIL**: a migration blocks writes for longer than ${maxHold} ms. Split it (expand → migrate → contract), use CONCURRENTLY, or add constraints NOT VALID and validate separately.`
       : "PASS",
     ""
   );

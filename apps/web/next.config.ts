@@ -24,10 +24,10 @@ const nextConfig: NextConfig = {
     "@nitap/jobs",
     "@nitap/search",
   ],
-  // Loaded with Node's require, not bundled: the error tracker's SDK patches Node internals (spec 13B B-1).
+  // Loaded with Node's require, not bundled: the error tracker's SDK patches Node internals.
   serverExternalPackages: ["@sentry/node"],
   poweredByHeader: false,
-  // deploymentId (version-skew protection, reliability §8.2) comes from NEXT_DEPLOYMENT_ID, which
+  // deploymentId (version-skew protection) comes from NEXT_DEPLOYMENT_ID, which
   // docker/web.Dockerfile sets to the git SHA at build. Unset in development.
   // The container image (docker/web.Dockerfile) sets NEXT_OUTPUT=standalone: a self-contained server with only
   // the files it traces. Traced from the repository root so the workspace packages come along.
@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
         outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
       }
     : {}),
-  // Every response, static assets included (spec 16 SD-3). The CSP is per request, so it is set in the proxy.
+  // Every response, static assets included. The CSP is per request, so it is set in the proxy.
   async headers() {
     return [
       {

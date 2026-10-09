@@ -1,6 +1,6 @@
-# Production scrape config, run by deploy/monitoring.yml on the application host (spec 18C). Prometheus sits on
+# Production scrape config, run by deploy/monitoring.yml on the application host. Prometheus sits on
 # the application's compose network, so web and worker are scraped directly, not through Nginx. Both answer
-# /metrics in production only with HEALTH_CHECK_TOKEN (ADR-028 OD-2), which monitoring.yml mounts from
+# /metrics in production only with HEALTH_CHECK_TOKEN, which monitoring.yml mounts from
 # deploy/.env as health_check_token. The probe target comes from the same .env (probe-targets.json).
 global:
   scrape_interval: 15s
@@ -40,7 +40,7 @@ scrape_configs:
   - job_name: node
     static_configs:
       - targets: ["node-exporter:9100"]
-  # The public URL through DNS, TLS and Nginx (the internal half of R-1) and the certificate's expiry (R-12).
+  # The public URL through DNS, TLS and Nginx (the internal half) and the certificate's expiry.
   - job_name: probe
     metrics_path: /probe
     params:

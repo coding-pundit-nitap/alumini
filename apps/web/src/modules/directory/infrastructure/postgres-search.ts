@@ -49,7 +49,7 @@ function relevanceScore(query: DirectoryQuery): Prisma.Sql {
 }
 
 /**
- * Stage A of TDS §14: the directory query straight against PostgreSQL, so there is no index to lag or
+ * Stage A of the directory query straight against PostgreSQL, so there is no index to lag or
  * rebuild. Visibility is applied here, in the WHERE clause and per section — a hidden section can neither
  * be shown nor be used to match, or a search on "Acme" would reveal a hidden employer. This file is the
  * only place that reads profile tables for the directory.
@@ -66,7 +66,7 @@ export function createPostgresSearch(prisma: PrismaClient): SearchPort {
         Prisma.sql`u.account_state = 'VERIFIED'`,
         visibleAt(Prisma.sql`p.visibility`, "p"),
       ];
-      // A block hides both members from each other, in either direction (RBAC §6.1).
+      // A block hides both members from each other, in either direction.
       where.push(Prisma.sql`NOT ${pairWith("p", "BLOCKED")}`);
 
       if (query.q) {

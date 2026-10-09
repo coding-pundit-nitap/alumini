@@ -26,7 +26,7 @@ function localNow() {
 const withReason = (label: string, reason: Reason) =>
   reason ? `${label} — ${message(reason)}` : label;
 
-/** Issue one permission grant, globally or in a chapter, optionally expiring (spec B12-3, B12-14). */
+/** Issue one permission grant, globally or in a chapter, optionally expiring. */
 export function GrantPermissionDialog(props: {
   userId: string;
   options: AccessOptions;

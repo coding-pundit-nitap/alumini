@@ -16,7 +16,7 @@ export function uuidParam(value: string): string {
 }
 
 /**
- * The largest JSON body any route accepts (spec 16 SD-4). The largest legitimate body, a job or event
+ * The largest JSON body any route accepts. The largest legitimate body, a job or event
  * description, is a few KiB; this leaves room without letting a client make the server buffer megabytes.
  */
 export const MAX_JSON_BODY_BYTES = 64 * 1024;

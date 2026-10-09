@@ -7,7 +7,7 @@ const DOMAIN = process.env.E2E_INSTITUTIONAL_DOMAIN ?? "nitap.ac.in";
 const BASE_URL =
   process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000";
 
-test.describe("Landing (§5.1.1)", () => {
+test.describe("Landing", () => {
   test("a visitor sees the pitch and can join", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
@@ -52,7 +52,7 @@ test.describe("Landing (§5.1.1)", () => {
   });
 });
 
-test.describe("Dashboard (§5.3.1)", () => {
+test.describe("Dashboard", () => {
   test("an anonymous visit redirects to login with next", async ({ page }) => {
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/login\?next=%2Fdashboard$/);

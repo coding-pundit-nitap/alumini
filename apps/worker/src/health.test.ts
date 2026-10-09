@@ -72,7 +72,7 @@ describe("worker health server", () => {
   });
 });
 
-describe("worker /metrics (spec 13A A-7)", () => {
+describe("worker /metrics", () => {
   const render = async () => ({
     contentType: "text/plain; version=0.0.4",
     body: "up 1\n",

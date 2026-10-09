@@ -1,7 +1,7 @@
 import type { AccountState } from "../../domain/actor";
 
 /**
- * What a person who cannot use the network yet (or any more) is told (UI/UX spec §5.2.2, RBAC §7).
+ * What a person who cannot use the network yet (or any more) is told.
  * Honest and specific, no promised turnaround, and no reason for a suspension or rejection.
  * `VERIFIED` has no status page.
  */

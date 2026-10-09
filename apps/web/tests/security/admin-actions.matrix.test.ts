@@ -1,4 +1,4 @@
-// TASK.md Phase 12, spec A12-10: every administrative action × every role × {allowed, denied, unauthenticated}.
+// Every administrative action × every role × {allowed, denied, unauthenticated}.
 // Composed with role-matrix.integration.test.ts (role → permission against the seeded database), this proves
 // action × role. Each use case runs with the real authorize() and a tripwire store: reaching the store means
 // authorization let the call through.
@@ -448,7 +448,7 @@ const ADMIN_ACTIONS: ReadonlyArray<{
   })(),
 ];
 
-/** Admin-tier permissions with no action yet. The list may only shrink (spec A12-10). */
+/** Admin-tier permissions with no action yet. The list may only shrink. */
 const NOT_YET_BUILT: readonly Permission[] = [];
 
 const matrix = readRoleMatrixFromDoc();
@@ -468,7 +468,7 @@ const outcomeOf = (promise: Promise<unknown>) =>
     (error: unknown) => error
   );
 
-describe("admin action × role matrix (RBAC §4)", () => {
+describe("admin action × role matrix", () => {
   for (const action of ADMIN_ACTIONS) {
     describe(`${action.name} (${action.permission})`, () => {
       it.each(ROLE_NAMES)("%s", async (role) => {

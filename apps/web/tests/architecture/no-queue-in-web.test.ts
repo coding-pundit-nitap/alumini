@@ -26,7 +26,7 @@ afterEach(() => {
     fs.rmSync(dir, { recursive: true, force: true });
 });
 
-describe("the web app only produces events (spec 2B §3.1)", () => {
+describe("the web app only produces events", () => {
   it("apps/web/src imports no queue or SMTP library", () => {
     expect(checkNoQueueImports(path.join(webRoot, "src"))).toEqual([]);
   });
@@ -36,7 +36,7 @@ describe("the web app only produces events (spec 2B §3.1)", () => {
       fs.readFileSync(path.join(webRoot, "package.json"), "utf8")
     );
     const declared = { ...pkg.dependencies, ...pkg.devDependencies };
-    // @nitap/queue is allowed for the admin replay endpoint only (N-13; see checkNoQueueImports).
+    // @nitap/queue is allowed for the admin replay endpoint only.
     for (const name of ["bullmq", "nodemailer", "@nitap/email"]) {
       expect(declared, name).not.toHaveProperty(name);
     }
@@ -69,7 +69,7 @@ describe("the queue-import checker can fail", () => {
   });
 });
 
-describe("the web app never depends on the worker (ADR-018)", () => {
+describe("the web app never depends on the worker", () => {
   it("apps/web/src imports nothing from apps/worker", () => {
     expect(checkNoWorkerImports(webRoot)).toEqual([]);
   });

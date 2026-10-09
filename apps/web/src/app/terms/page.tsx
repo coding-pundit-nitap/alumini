@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "The rules for using the NIT Arunachal Pradesh Alumni Network: who may join, how to behave, and what happens to what you post.",
 };
 
-/** UI/UX §3.2 supporting page. Draft copy until the institute approves it (config/legal.ts, OW-7). */
+/** UI/UX supporting page. Draft copy until the institute approves it (config/legal.ts). */
 export default async function TermsPage() {
   const signedIn = (await getActor()) !== null;
   return (

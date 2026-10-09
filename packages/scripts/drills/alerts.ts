@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-// Alert drill (Phase 18C; reliability §5.1, §11 "test page received end-to-end incl. dead-man's switch"; spec 18
-// PRD-8). Runs Prometheus and Alertmanager from deploy/monitoring.yml with the production flags, rules
+// Alert drill ("test page received end-to-end incl. dead-man's switch"). Runs Prometheus and Alertmanager from deploy/monitoring.yml with the production flags, rules
 // (ops/prometheus/rules), routing (ops/alertmanager/alertmanager.yml) and receiver mechanism (compose configs
 // from monitoring.env). Two things are swapped: the scrape targets are a stand-in exporter served by this
 // script, and the receiver URLs point at a webhook sink it also serves.
@@ -10,11 +9,11 @@
 //   redis_up{job="redis-queue"} 0 + outbox age 600 s  QueueRedisDown paged; OutboxStuck suppressed (inhibition)
 //   redis_up{job="redis-cache"} 0                     CacheRedisDown at the ticket receiver (routing)
 //   nothing                                           Watchdog at the dead-man's switch about every minute
-//   docker compose stop prometheus                    heartbeats stop within 2 minutes (spec 18C C-7)
+//   docker compose stop prometheus                    heartbeats stop within 2 minutes
 //
 //   node packages/scripts/drills/alerts.ts [--record] [--summary f] [--keep]
 //
-// --record appends the result to docs/operations/alert-drills.md, --summary <file> to another file (CI's step
+// --record appends the result to packages/scripts/drills/reports/alert-drills.md, --summary <file> to another file (CI's step
 // summary). Exit code 1 if any check fails. About 7 minutes, most of it waiting for the rules' `for:`.
 import { execFileSync } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
@@ -393,7 +392,7 @@ try {
     value: outlived > 0 ? secs(outlived) : "none",
   });
   check(
-    "heartbeats stop within 2 minutes of Prometheus stopping (C-7)",
+    "heartbeats stop within 2 minutes of Prometheus stopping",
     Date.now() - lastBeat() > 150_000 && outlived <= 120_000,
     outlived > 0
       ? `last one ${secs(outlived)} after the stop`
@@ -432,6 +431,9 @@ const report = [
   "",
 ].join("\n");
 if (args.record)
-  appendFileSync(path.join(root, "docs/operations/alert-drills.md"), report);
+  appendFileSync(
+    path.join(root, "packages/scripts/drills/reports/alert-drills.md"),
+    report
+  );
 if (args.summary) appendFileSync(args.summary, report);
 process.exit(failed.length === 0 ? 0 : 1);

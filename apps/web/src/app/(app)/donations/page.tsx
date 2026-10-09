@@ -11,7 +11,7 @@ import { cancelPledgeAction, setReferenceAction } from "../donate/actions";
 
 export const metadata: Metadata = { title: "My donations" };
 
-/** Phase 12H: the member's pledges and where each stands. */
+/** The member's pledges and where each stands. */
 export default async function MyDonationsPage({
   searchParams,
 }: {

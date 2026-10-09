@@ -9,7 +9,7 @@ import type { MessagingObserver, MessagingStore } from "./messaging-store";
 import { parse } from "./validation";
 
 /**
- * FR-MSG-002. Moves the caller's read marker to `upToSeq` (clamped to the last message, never backwards) and
+ * Moves the caller's read marker to `upToSeq` (clamped to the last message, never backwards) and
  * recounts their unread messages. Marking up to what the client actually displayed, not "everything", means a
  * message that arrives meanwhile stays unread.
  */

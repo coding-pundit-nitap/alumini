@@ -1,5 +1,5 @@
-// Authentication (strategy §13.2): POST /api/auth/sign-in/email. scrypt hashing is CPU-heavy by design
-// ("intentionally long", SRS §47), so this measures sign-ins per second per instance and their CPU cost, with
+// Authentication: POST /api/auth/sign-in/email. scrypt hashing is CPU-heavy by design
+// ("intentionally long"), so this measures sign-ins per second per instance and their CPU cost, with
 // its own latency budget rather than the 500 ms p95.
 //
 // Not measured here: the session read. The app never calls /api/auth/get-session over HTTP (getActor() calls
@@ -26,7 +26,7 @@ export const options: Options = {
   scenarios: { signIn: arrival({ rate: 10 }) },
   thresholds: perEndpoint([SIGN_IN], {
     [`http_req_failed{name:${SIGN_IN}}`]: ["rate<0.001"],
-    // Recorded, not an SRS budget: hashing is meant to be slow.
+    // Recorded, not a performance budget: hashing is meant to be slow.
     [`http_req_duration{name:${SIGN_IN}}`]: ["p(95)<2000"],
   }),
   summaryTrendStats,

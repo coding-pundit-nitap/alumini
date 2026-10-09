@@ -1,10 +1,10 @@
 /**
- * Error taxonomy (TDS §16.1) and the API error envelope (API spec §1.4, catalogue §3.1).
+ * Error taxonomy and the API error envelope.
  * Pure: no framework, no I/O. Adapters turn these into responses with `toApiError`;
  * the boundary logs once (infrastructure/http/error-response.ts).
  */
 
-/** Safe, human-readable message and HTTP status for every code (API spec §3.1). Clients branch on `code`. */
+/** Safe, human-readable message and HTTP status for every code. Clients branch on `code`. */
 export const ERROR_CATALOG: Record<
   string,
   { status: number; message: string }
@@ -291,7 +291,7 @@ export type ErrorKind =
   | "transaction_conflict"
   | "unexpected";
 
-/** One entry per failing field (API spec §1.5). */
+/** One entry per failing field. */
 export type ValidationDetail = {
   field: string;
   code: string;
@@ -362,7 +362,7 @@ export class AuthenticationError extends AppError {
 
 export class AuthorizationError extends AppError {
   readonly kind = "authorization";
-  /** `hideExistence` answers 404 so a caller cannot learn that a resource exists (API spec §3.1 `NOT_FOUND`). */
+  /** `hideExistence` answers 404 so a caller cannot learn that a resource exists. */
   constructor(options: ErrorOptions & { hideExistence?: boolean } = {}) {
     super(
       options.hideExistence ? 404 : 403,
@@ -410,7 +410,7 @@ export class DependencyUnavailableError extends AppError {
 }
 
 /**
- * A serialization failure or deadlock that survived TransactionRunner's bounded retry (TDS §17.5).
+ * A serialization failure or deadlock that survived TransactionRunner's bounded retry.
  * Deliberately not a DependencyUnavailableError: this is contention between concurrent requests,
  * not an unreachable dependency, and the two page differently.
  */
@@ -457,7 +457,7 @@ export function toApiError(
   ) {
     headers["Retry-After"] = String(appError.retryAfterSeconds);
   } else if (appError.code === "REQUEST_IN_PROGRESS") {
-    // API spec §1.6: the first request with this Idempotency-Key is still running.
+    // the first request with this Idempotency-Key is still running.
     headers["Retry-After"] = "1";
   }
 
@@ -475,7 +475,7 @@ export function toApiError(
   };
 }
 
-/** Client mistakes are info/warn so the error rate that pages stays meaningful (TDS §16.1). */
+/** Client mistakes are info/warn so the error rate that pages stays meaningful. */
 export function logLevelFor(error: unknown): "info" | "warn" | "error" {
   if (!(error instanceof AppError)) return "error";
   switch (error.kind) {

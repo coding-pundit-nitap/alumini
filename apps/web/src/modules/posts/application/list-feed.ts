@@ -12,9 +12,9 @@ export const clampLimit = (limit: number | undefined) =>
   Math.min(Math.max(1, limit ?? DEFAULT_LIMIT), MAX_LIMIT);
 
 /**
- * FR-FEED-002/004. Every verified member sees every non-deleted post — there is no separate read
+ * Every verified member sees every non-deleted post — there is no separate read
  * permission, so this reuses `POST_INTERACT`'s member baseline. Keyset-paged over
- * `(createdAt DESC, id DESC)` (C-6): fetches `limit + 1` rows and trims to detect `nextCursor`.
+ * `(createdAt DESC, id DESC)`: fetches `limit + 1` rows and trims to detect `nextCursor`.
  */
 export function createListFeed(deps: {
   store: PostsStore;

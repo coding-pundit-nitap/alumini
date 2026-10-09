@@ -14,14 +14,14 @@ import { invalid, readJson, uuidParam } from "../../_lib/request";
 
 type Params = { params: Promise<{ id: string }> };
 
-// The reason's allowed values are checked by the use case (spec C12-3); here only the shape.
+// The reason's allowed values are checked by the use case; here only the shape.
 const body = z.discriminatedUnion("status", [
   z.object({ status: z.literal("UNDER_REVIEW") }).strict(),
   z.object({ status: z.literal("RESOLVED"), reason: z.string() }).strict(),
   z.object({ status: z.literal("DISMISSED"), reason: z.string() }).strict(),
 ]);
 
-/** PATCH /api/v1/reports/:id — claim, resolve or dismiss (spec C12-8). */
+/** PATCH /api/v1/reports/:id — claim, resolve or dismiss. */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const reportId = uuidParam((await ctx.params).id); // 404 on a malformed id, before auth or the body

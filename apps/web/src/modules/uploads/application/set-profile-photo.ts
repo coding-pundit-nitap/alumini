@@ -7,7 +7,7 @@ import type { Authorize } from "./authz";
 import type { UploadStore } from "./upload-store";
 
 /**
- * Attaches an upload as the caller's profile photo (spec 3C). This is where ownership, purpose and
+ * Attaches an upload as the caller's profile photo. This is where ownership, purpose and
  * READY status are checked; the actual write is delegated to the `users` module's narrow `setPhoto`
  * path (`updateProfilePhoto`, injected), which knows nothing about uploads — the module DAG (`uploads`
  * depends on `users`, never the reverse) stays one-way.

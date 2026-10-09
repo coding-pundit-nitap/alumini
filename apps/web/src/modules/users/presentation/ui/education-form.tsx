@@ -13,7 +13,7 @@ import {
   type ItemActionResult,
 } from "./detail-form-support";
 
-/** One additional-education entry (spec 3B E-1). The institutional record is not edited here. */
+/** One additional-education entry. The institutional record is not edited here. */
 export function EducationForm({
   action,
   id,

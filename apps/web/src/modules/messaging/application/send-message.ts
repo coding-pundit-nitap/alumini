@@ -16,7 +16,7 @@ import { refuse } from "./refusal";
 import { parse } from "./validation";
 
 /**
- * FR-MSG-001/002/005. The message, every recipient's unread counter and the `message.sent` event commit
+ * The message, every recipient's unread counter and the `message.sent` event commit
  * together; nothing about delivery runs in the request. The conversation row lock serialises sends, so `seq`
  * is commit-ordered within a conversation and a retried `clientMessageId` finds its first result.
  *

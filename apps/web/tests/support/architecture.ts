@@ -2,13 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 /**
- * Filesystem architecture rules (strategy §2.4 item 6 and §2.5). Returns human-readable violations
+ * Filesystem architecture rules. Returns human-readable violations
  * relative to `srcRoot`; an empty list means the layout is sound.
  * Import direction is enforced by ESLint (packages/eslint-config/boundaries.mjs) and cycles/DAG by
  * dependency-cruiser; this covers what neither can see.
  */
 
-// Folders named for a kind of file grow without limit (§2.5).
+// Folders named for a kind of file grow without limit.
 const FORBIDDEN_FOLDERS = new Set([
   "utils",
   "helpers",
@@ -20,14 +20,14 @@ const FORBIDDEN_FOLDERS = new Set([
 ]);
 
 // Reviewed exceptions. Add here only with a reason:
-//  - modules/*/application/services: the one sanctioned use, when two use cases share orchestration (§2.2)
-//  - components/common: the app shell (header, footer) named in TDS §4.1
+//  - modules/*/application/services: the one sanctioned use, when two use cases share orchestration
+//  - components/common: the app shell (header, footer) named
 const ALLOWED_FOLDERS = [
   /^modules\/[^/]+\/application\/services$/,
   /^components\/common$/,
 ];
 
-// `@nitap/database/permissions` (the permission registry) and `/role-ticks` (role display labels, UI-15) are
+// `@nitap/database/permissions` (the permission registry) and `/role-ticks` (role display labels) are
 // pure data and may be imported anywhere.
 const PRISMA_IMPORT =
   /from\s+["'](@nitap\/database(?!\/(?:permissions|role-ticks)["'])(\/[^"']*)?|@prisma\/[^"']+)["']/;
@@ -93,13 +93,11 @@ export function checkStructure(srcRoot: string): string[] {
       FORBIDDEN_FOLDERS.has(name) &&
       !ALLOWED_FOLDERS.some((allowed) => allowed.test(relative))
     ) {
-      violations.push(
-        `forbidden folder name "${name}": ${relative} (strategy §2.5)`
-      );
+      violations.push(`forbidden folder name "${name}": ${relative}`);
     }
     if (fs.readdirSync(dir).length === 0) {
       violations.push(
-        `empty directory ${relative} (no folders for appearance, strategy §2.2)`
+        `empty directory ${relative} (no folders for appearance)`
       );
     }
   }
@@ -108,7 +106,7 @@ export function checkStructure(srcRoot: string): string[] {
 }
 
 /**
- * RBAC §11: handlers, pages and use cases declare permissions, never role names. A role name inside a
+ * Handlers, pages and use cases declare permissions, never role names. A role name inside a
  * quoted string in application source is a role check in disguise. Test files are ignored; the seed
  * and the RBAC tests legitimately name roles and live outside `src/`.
  */
@@ -123,7 +121,7 @@ export function checkNoRoleNames(
     const match = pattern.exec(fs.readFileSync(file, "utf8"));
     if (match) {
       violations.push(
-        `${rel(srcRoot, file)} names the role "${match[1]}"; check a permission with authorize() instead (rbac-permission-matrix.md §11)`
+        `${rel(srcRoot, file)} names the role "${match[1]}"; check a permission with authorize() instead`
       );
     }
   }
@@ -136,18 +134,18 @@ const QUEUE_IMPORT =
 const QUEUE_ADMIN_COMPOSITION = "composition/notifications.ts";
 
 /**
- * The web app only produces outbox events; the queue, the relay and every provider live in the worker
- * (spec 2B §3.1). Test files are ignored. The cache Redis client (`ioredis`) is unrelated and allowed.
+ * The web app only produces outbox events; the queue, the relay and every provider live in the worker.
+ * Test files are ignored. The cache Redis client (`ioredis`) is unrelated and allowed.
  *
  * This is a hand-written substitute for the dependency-cruiser rule of the same name below: with the
  * workspace on TypeScript 7, dependency-cruiser@18.3.1 (which requires TypeScript <7) parses 0 files
- * and enforces nothing (TASK.md, 2026-09-21). This checker is the one that actually runs.
+ * and enforces nothing. This checker is the one that actually runs.
  */
 export function checkNoQueueImports(srcRoot: string): string[] {
   const violations: string[] = [];
   for (const file of walk(srcRoot).files) {
     if (!SOURCE_FILE.test(file) || TEST_FILE.test(file)) continue;
-    // The one exception: the admin replay endpoint (N-13) builds a QueueAdmin here; nothing else may.
+    // The one exception: the admin replay endpoint builds a QueueAdmin here; nothing else may.
     if (rel(srcRoot, file) === QUEUE_ADMIN_COMPOSITION) continue;
     const match = QUEUE_IMPORT.exec(fs.readFileSync(file, "utf8"));
     if (match) {
@@ -162,7 +160,7 @@ export function checkNoQueueImports(srcRoot: string): string[] {
 const WORKER_IMPORT = /from\s+["'](?:\.\.\/)+(?:apps\/)?worker\//;
 
 /**
- * The web app must not depend on the worker either (ADR-018): they share packages, not code. Test
+ * The web app must not depend on the worker either: they share packages, not code. Test
  * files are ignored. A hand-written substitute for dependency-cruiser's
  * `web-and-worker-never-import-each-other` rule, currently inert (see checkNoQueueImports above).
  */
@@ -185,7 +183,7 @@ const UNBOUNDED_BODY_READ =
 
 /**
  * Route Handlers read bodies only through `readJson` / `readBodyText` (app/api/v1/_lib/request.ts), which
- * check the media type and cap the size (spec 16 SD-4). A direct `request.json()` buffers whatever the
+ * check the media type and cap the size. A direct `request.json()` buffers whatever the
  * client sends. Test files are ignored.
  */
 export function checkBoundedBodyReads(srcRoot: string): string[] {
@@ -204,7 +202,7 @@ export function checkBoundedBodyReads(srcRoot: string): string[] {
 }
 
 /**
- * A form handled by a client `onSubmit` must say `method="post"` (spec 16 S-12, found by the ZAP baseline):
+ * A form handled by a client `onSubmit` must say `method="post"`:
  * submitted before hydration — a slow network, Enter pressed early — a form with no method is a GET, and the
  * password, roll number or message ends up in the URL, browser history, access logs and Referer.
  * Forms with `action={serverAction}` are POSTed by React even before hydration and are not checked.

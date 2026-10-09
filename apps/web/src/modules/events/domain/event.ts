@@ -1,6 +1,6 @@
 /**
- * The events domain rules, pure (spec E-3, E-4). Nothing here touches a database or a clock beyond
- * the `now` each function is handed. Admission (E-5) and seat release (E-6) are NOT decided here: each
+ * The events domain rules, pure. Nothing here touches a database or a clock beyond
+ * the `now` each function is handed. Admission and seat release are NOT decided here: each
  * is a single guarded SQL statement, so nothing here decides who gets a seat — it only classifies a miss.
  */
 export const EVENT_STATUSES = ["SCHEDULED", "CANCELLED"] as const;
@@ -41,7 +41,7 @@ const canManage = (event: EventFacts, actor: EventActor) =>
   actor.userId === event.organizerId || actor.canManageAny;
 
 /**
- * Classifies why the guarded registration UPDATE (E-5 statement 1) missed. Only chooses the error
+ * Classifies why the guarded registration UPDATE (statement 1) missed. Only chooses the error
  * code; it never decides who gets a seat. Precedence: not found, then cancelled, then the caller's
  * own state, then the deadline, then capacity (a fallback that also covers a race that resolved
  * before this read).
@@ -60,7 +60,7 @@ export function classifyRegistrationRefusal(
   return refuse("EVENT_FULL");
 }
 
-/** May this actor cancel this event (E-3)? The organizer or an `event.manage` holder, while scheduled. */
+/** May this actor cancel this event? The organizer or an `event.manage` holder, while scheduled. */
 export function decideCancelEvent(
   event: EventFacts | null,
   actor: EventActor
@@ -72,7 +72,7 @@ export function decideCancelEvent(
 }
 
 /**
- * Classifies why the guarded seat-release UPDATE (E-6 statement 1) missed: the event row read first,
+ * Classifies why the guarded seat-release UPDATE (statement 1) missed: the event row read first,
  * then the caller's own registration.
  */
 export function decideCancelRegistration(
@@ -87,7 +87,7 @@ export function decideCancelRegistration(
   return refuse("INVALID_STATE_TRANSITION");
 }
 
-/** May this actor mark attendance on this registration (E-4)? Organizer or `event.manage`, after start. */
+/** May this actor mark attendance on this registration? Organizer or `event.manage`, after start. */
 export function decideAttendance(
   event: EventFacts | null,
   current: RegistrationState | null,

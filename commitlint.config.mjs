@@ -1,4 +1,4 @@
-/** Conventional Commits with module/area scopes (strategy §17.2). */
+/** Conventional Commits with module/area scopes. */
 export default {
   extends: ["@commitlint/config-conventional"],
   rules: {

@@ -2,7 +2,7 @@ import type { OutboxStore } from "@nitap/jobs";
 import type { JobProcessor } from "@nitap/queue";
 
 export type OutboxPruneOptions = {
-  /** ADR-007: published rows are a delivery buffer, kept 7 days. */
+  /** Published rows are a delivery buffer, kept 7 days. */
   retentionDays?: number;
   batchSize?: number;
   now?: () => Date;

@@ -1,13 +1,13 @@
-# Release and alert drills (reliability §5.1, §8.3–§8.5, §11; specs 18B, 18C), monthly, by hand, and on any change
+# Release and alert drills, monthly, by hand, and on any change
 # to the files they exercise, so a change is rehearsed before a server runs it. Each result table is its run's
 # summary.
 #   drill   packages/scripts/drills/release.ts: the production release tooling (deploy/compose.yml, deploy.sh) in
 #           staging and production clones of a local origin with a local registry, through pull → promote →
-#           rollback → promote with an expand migration, measuring each release's interruption (PRD-2); then
+#           rollback → promote with an expand migration, measuring each release's interruption; then
 #           deploy/monitoring.sh against production, every target up.
 #   alerts  packages/scripts/drills/alerts.ts: Prometheus and Alertmanager from deploy/monitoring.yml with the
 #           production rules and routing deliver a page, a ticket and the dead-man's-switch heartbeat to a sink,
-#           group and inhibit as configured, and the heartbeat stops when Prometheus does (PRD-8).
+#           group and inhibit as configured, and the heartbeat stops when Prometheus does.
 name: Release and alert drills
 
 on:

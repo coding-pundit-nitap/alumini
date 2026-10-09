@@ -3,7 +3,7 @@ import { z } from "zod";
 import { isValidTimeZone } from "./zoned-time";
 
 /**
- * The `POST /events` request shape (spec E-9), pure zod: no `@/lib/errors`, so a client-side
+ * The `POST /events` request shape, pure zod: no `@/lib/errors`, so a client-side
  * react-hook-form form can import this directly. `superRefine` carries the checks that need a
  * clock (future dates, deadline ordering) or the stdlib zone check; issues land on the offending
  * field path so the UI can show them per field.

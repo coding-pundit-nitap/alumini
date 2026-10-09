@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Web graceful-shutdown drill (Phase 14 RD-8; reliability §8.3 step 7; strategy §11.4 "SIGTERM with requests
-// in flight"). Runs against a production build:
+// Web graceful-shutdown drill (SIGTERM with requests
+// in flight). Runs against a production build:
 //
 //   pnpm --filter @nitap/web build
 //   pnpm docker:up && set -a && . ./.env && set +a
@@ -8,7 +8,7 @@
 //
 // It starts `next start`, signs in as the dev coordinator (DEV_COORDINATOR_EMAIL/PASSWORD) to hold a real
 // message stream open, then drains and stops the instance the way a deploy does, and prints a pass/fail table
-// for docs/operations/failure-scenarios.md. Exit code 1 if any check fails.
+// for packages/scripts/drills/reports/failure-scenarios.md. Exit code 1 if any check fails.
 import { spawn } from "node:child_process";
 import http from "node:http";
 import path from "node:path";

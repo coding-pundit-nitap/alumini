@@ -1,4 +1,4 @@
-# Pull-request pipeline (docs/architecture/development-and-testing-strategy.md §18.1).
+# Pull-request pipeline.
 # Every gate starts at once, so a run takes as long as its slowest job rather than the sum of a chain; images
 # are published only after all of them pass. Turbo's task cache, Next's build cache, Playwright's browsers and
 # the image layers persist between runs.
@@ -10,7 +10,7 @@ on:
   push:
     branches: [main]
 
-# Superseded runs on a branch are cancelled; main runs are never cancelled (§18.4 rule 3).
+# Superseded runs on a branch are cancelled; main runs are never cancelled (rule 3).
 concurrency:
   group: pr-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -79,8 +79,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
-  # Alert rules fire on injected conditions, Alertmanager config is valid, every alert links a runbook
-  # (spec 13C C-8). Needs only Node and Docker; it reproduces `pnpm ops:check`.
+  # Alert rules fire on injected conditions, Alertmanager config is valid, every alert links a runbook.
+  # Needs only Node and Docker; it reproduces `pnpm ops:check`.
   observability:
     name: Monitoring as code (promtool, amtool, runbooks)
     runs-on: ubuntu-24.04
@@ -100,7 +100,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      # Blocks only a change that touches dependencies (§18.2): an advisory published overnight is not the fault
+      # Blocks only a change that touches dependencies: an advisory published overnight is not the fault
       # of an unrelated pull request. New advisories against an unchanged lockfile fail the nightly run instead.
       - name: Did dependencies change?
         id: deps
@@ -129,7 +129,7 @@ jobs:
       - if: steps.deps.outputs.changed == 'true'
         run: pnpm audit --audit-level high
 
-  # SAST (strategy §10.2, spec 16 16E): the project rules' own tests, then registry packs plus project rules.
+  # SAST: the project rules' own tests, then registry packs plus project rules.
   # ERROR findings block; a reviewed exception is a `nosemgrep: <rule-id> — <reason>` comment on the line.
   sast:
     name: SAST (Semgrep)
@@ -145,7 +145,7 @@ jobs:
           --config p/typescript --config p/react --config p/nodejs --config p/secrets
           --config .semgrep/rules.yml --exclude .semgrep --severity ERROR --error
 
-  # Container images (strategy §18.2 "Build (web + worker images), image scan"; spec 16 16E). Dockerfile lint
+  # Container images (web + worker images, image scan). Dockerfile lint
   # and CRITICAL vulnerabilities block; HIGH ones are listed in the log for triage.
   images:
     name: Image ${{ matrix.image }} (hadolint, build, Trivy)
@@ -167,7 +167,7 @@ jobs:
             file: docker/web.Dockerfile
             target: migrate
             scan: false
-          # PostgreSQL + pgBackRest (ADR-011). Published with the app images (spec 18 F-3).
+          # PostgreSQL + pgBackRest. Published with the app images.
           - image: postgres
             file: docker/postgres.Dockerfile
             target: ""
@@ -292,7 +292,7 @@ jobs:
             "until mc alias set local $S3_ENDPOINT $S3_ACCESS_KEY_ID $S3_SECRET_ACCESS_KEY; do sleep 1; done && mc mb --ignore-existing local/$S3_BUCKET"
       - run: pnpm db:deploy
       # The migrations must build exactly what schema.prisma declares, or the next `migrate dev` undoes the
-      # difference (strategy §8 drift check). Once per run, on the leg that already has Postgres.
+      # difference. Once per run, on the leg that already has Postgres.
       - if: matrix.suite == 'packages'
         run: pnpm db:drift
       - run: ${{ matrix.run }}
@@ -327,7 +327,7 @@ jobs:
       # Fails when statements, lines or functions fall below 95 % or branches below 90 % (vitest.config.mts).
       - run: pnpm --filter @nitap/web exec vitest --merge-reports --coverage
 
-  # A new migration is measured on volume (spec 18 PRD-6, reliability §9.3): the database is built at the merge
+  # A new migration is measured on volume: the database is built at the merge
   # base with the perf seed, then this branch's migrations apply while pg_locks is sampled. A write-blocking lock
   # over 1 s on an existing table fails. Runs only when migrations are added.
   migration-locks:
@@ -401,7 +401,7 @@ jobs:
           key: next-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: next-${{ hashFiles('pnpm-lock.yaml') }}-
       - run: pnpm build
-      # No server variable name or credential in what browsers download (strategy §10.1, spec 16 16E).
+      # No server variable name or credential in what browsers download.
       - run: node packages/scripts/security/scan-client-bundle.ts
 
   e2e:
@@ -494,7 +494,7 @@ jobs:
           path: apps/web/playwright-report
           retention-days: 7
 
-  # Release images (reliability §8.2: one image per process per commit, promoted unchanged). Only a main commit
+  # Release images. Only a main commit
   # that passed every gate is published, so `deploy/deploy.sh pull` never finds an image for a red commit.
   # Tagged with the full SHA; `main` points at the newest. ghcr.io needs a lowercase owner.
   publish:
@@ -532,7 +532,7 @@ jobs:
           - image: migrate
             file: docker/web.Dockerfile
             target: migrate
-          # Released by digest like the others (spec 18 F-3), rather than built on the server.
+          # Released by digest like the others, rather than built on the server.
           - image: postgres
             file: docker/postgres.Dockerfile
             target: ""
@@ -559,7 +559,7 @@ jobs:
             ${{ steps.prefix.outputs.value }}${{ matrix.image }}:${{ github.sha }}
             ${{ steps.prefix.outputs.value }}${{ matrix.image }}:main
           cache-from: type=gha,scope=${{ matrix.image }}
-      # Staging pins these digests when it pulls the tag, and production promotes exactly them (spec 18 PRD-3).
+      # Staging pins these digests when it pulls the tag, and production promotes exactly them.
       - name: Record digest
         run: >-
           echo "${{ matrix.image }}: ${{ steps.prefix.outputs.value }}${{ matrix.image }}@${{ steps.push.outputs.digest }}"

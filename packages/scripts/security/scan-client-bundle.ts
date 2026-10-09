@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Build-output scan (strategy §10.1 "Secrets and data exposure", spec 16 16E): after `next build`, nothing
+// Build-output scan: after `next build`, nothing
 // the browser downloads may carry a server environment variable's NAME or a secret's VALUE.
 //
 //   pnpm build && node packages/scripts/security/scan-client-bundle.ts

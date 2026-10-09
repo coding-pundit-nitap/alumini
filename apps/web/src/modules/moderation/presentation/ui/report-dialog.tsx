@@ -25,7 +25,7 @@ type ReportContentAction = (input: {
   reason: string;
 }) => Promise<ActionResult<{ reportId: string; created: boolean }>>;
 
-/** Files a content report (FR-MOD-001): reason 1-1000 chars, matches `reportContentInput`. */
+/** Files a content report: reason 1-1000 chars, matches `reportContentInput`. */
 export function ReportDialog({
   targetType,
   targetId,

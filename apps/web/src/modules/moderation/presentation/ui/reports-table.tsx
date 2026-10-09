@@ -60,7 +60,7 @@ function Preview({ row }: { row: ReportView }) {
 
 // Module code may not import @/components/admin/*, so this empty state is inline markup that
 // matches AdminEmpty's shape rather than the shared component itself.
-/** FR-MOD-002: the reports queue. Message text never appears here (spec C12-5). */
+/** The reports queue. Message text never appears here. */
 export function ReportsTable({ rows }: { rows: ReportView[] }) {
   if (rows.length === 0)
     return (

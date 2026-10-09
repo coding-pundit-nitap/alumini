@@ -1,4 +1,4 @@
-# Reviewed exceptions to the image scan in .github/workflows/pr.yml (strategy §18.2). Each entry names the
+# Reviewed exceptions to the image scan in .github/workflows/pr.yml. Each entry names the
 # file it applies to and why the finding does not apply; review them whenever the base images change.
 vulnerabilities:
   # gosu in the official postgres image (docker/postgres.Dockerfile) is built with an older Go. It only calls

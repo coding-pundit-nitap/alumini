@@ -56,7 +56,7 @@ type UploadResult =
   { ok: true; uploadId: string } | { ok: false; message: string };
 
 /**
- * Runs one file through the presign → upload → complete → poll flow (Phase 3C upload contract).
+ * Runs one file through the presign → upload → complete → poll flow.
  * Module-level so it carries no component state — the composer only tracks the result by slot key.
  */
 async function uploadImage(
@@ -112,9 +112,9 @@ type Slot = {
 };
 
 /**
- * The compose form (FR-FEED-001): collapsed to a single prompt row until clicked or focused
+ * The compose form: collapsed to a single prompt row until clicked or focused
  * (the shell's Create action jumps focus here), then an autosizing textarea, up to 4 images
- * wired to the Phase 3C upload flow, and an optional https link.
+ * wired to the upload flow, and an optional https link.
  */
 export function PostComposer({
   onSubmit,

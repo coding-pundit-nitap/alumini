@@ -267,7 +267,7 @@ describe("Thread", () => {
   });
 });
 
-describe("hidden messages (spec C12-4)", () => {
+describe("hidden messages", () => {
   it("renders a tombstone without a Report button", () => {
     render(
       <Thread
@@ -318,7 +318,7 @@ describe("hidden messages (spec C12-4)", () => {
   });
 });
 
-describe("Thread layout and sending (UI-4)", () => {
+describe("Thread layout and sending", () => {
   const day = (d: number, h: number) => new Date(2026, 8, d, h).toISOString();
 
   it("groups messages into days and draws the unread divider after the last read message", () => {

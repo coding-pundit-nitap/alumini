@@ -6,7 +6,7 @@ import type { Actor } from "@/modules/auth";
 import type { EventDetail, EventQueries } from "./event-queries";
 import type { Authorize } from "./ports";
 
-/** FR-EVENT-002. `canManage` is the organizer or an `event.manage` holder (spec E-8). */
+/** `canManage` is the organizer or an `event.manage` holder. */
 export function createGetEvent(deps: {
   queries: EventQueries;
   authorize: Authorize;

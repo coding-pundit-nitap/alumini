@@ -35,7 +35,7 @@ export type NewUpload = {
 export type UploadStore = {
   create(tx: UploadTransaction, input: NewUpload): Promise<UploadRow>;
   find(tx: UploadTransaction, id: string): Promise<UploadRow | null>;
-  /** PENDING_UPLOAD or PENDING_SCAN rows: the caller's open-upload quota (spec 3C). */
+  /** PENDING_UPLOAD or PENDING_SCAN rows: the caller's open-upload quota. */
   countOpen(tx: UploadTransaction, ownerId: string): Promise<number>;
   /** Guarded: only a PENDING_UPLOAD row moves. False if the row was not in that state (or missing). */
   markPendingScan(tx: UploadTransaction, id: string): Promise<boolean>;
@@ -50,14 +50,14 @@ export type UploadStore = {
     id: string,
     reason: string
   ): Promise<void>;
-  /** PENDING_UPLOAD rows older than `before`, oldest first, for the sweep (spec 3C F-3). */
+  /** PENDING_UPLOAD rows older than `before`, oldest first, for the sweep. */
   listExpiredPending(
     tx: UploadTransaction,
     before: Date,
     limit: number
   ): Promise<UploadRow[]>;
   remove(tx: UploadTransaction, id: string): Promise<void>;
-  /** How many rows wait for the scanner, and since when the oldest has (R-14). */
+  /** How many rows wait for the scanner, and since when the oldest has. */
   scanBacklog(
     tx: UploadTransaction
   ): Promise<{ pending: number; oldestSince: Date | null }>;

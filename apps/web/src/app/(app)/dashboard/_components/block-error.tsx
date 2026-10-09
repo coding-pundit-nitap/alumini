@@ -6,7 +6,7 @@ import {
   AlertTitle,
 } from "@nitap/ui/components/alert";
 
-/** §4.1 recoverable error, in place of one block only (H-6). */
+/** Recoverable error, in place of one block only. */
 export function BlockError({ what }: { what: string }) {
   return (
     <Alert variant="destructive">

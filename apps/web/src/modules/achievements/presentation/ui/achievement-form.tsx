@@ -19,7 +19,7 @@ type SubmitAction = (input: {
   category: Category;
 }) => Promise<ActionResult<{ achievementId: string }>>;
 
-/** The submission form (FR-ACH-001), matching `achievementInput`'s bounds. */
+/** The submission form, matching `achievementInput`'s bounds. */
 export function AchievementForm({ onSubmit }: { onSubmit: SubmitAction }) {
   const titleId = useId();
   const descriptionId = useId();

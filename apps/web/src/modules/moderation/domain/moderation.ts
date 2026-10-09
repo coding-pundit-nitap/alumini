@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 /**
- * The report review/resolution rules, pure (FR-MOD-001…004, spec C-8). Extends Phase 9's filing-only shape:
+ * The report review/resolution rules, pure. Extends's filing-only shape:
  * `claimReport` is optional UI sugar (not enforced before resolve/dismiss); `report.review` may never act on
- * the actor's own filing or their own content (RBAC matrix §8 guardrail 3).
+ * the actor's own filing or their own content.
  */
 export type ReportState = "OPEN" | "UNDER_REVIEW" | "RESOLVED" | "DISMISSED";
 
@@ -14,7 +14,7 @@ export const REPORT_TARGET_TYPES = [
   "USER",
 ] as const;
 export type ReportTargetType = (typeof REPORT_TARGET_TYPES)[number];
-/** What `fileContentReport` accepts. Messages are filed by `messaging`; nothing files USER reports yet (spec C-4). */
+/** What `fileContentReport` accepts. Messages are filed by `messaging`; nothing files USER reports yet. */
 export type ModerationTarget = Extract<ReportTargetType, "POST" | "COMMENT">;
 
 export const reportContentInput = z
@@ -68,7 +68,7 @@ export function decideResolve(
   return { ok: true, to: outcome === "resolve" ? "RESOLVED" : "DISMISSED" };
 }
 
-/** Codes, never free text: they go into audit metadata (spec C-1). */
+/** Codes, never free text: they go into audit metadata. */
 export const RESOLVE_REASONS = [
   "SPAM",
   "HARASSMENT",
@@ -100,7 +100,7 @@ const dropEmpty = (input: unknown) =>
 export const REPORT_STATUS_FILTERS = ["open", "RESOLVED", "DISMISSED"] as const;
 export type ReportStatusFilter = (typeof REPORT_STATUS_FILTERS)[number];
 
-/** Filters for the reports queue (spec C12-5). Shared by `GET /api/v1/reports` and `/admin/reports`. */
+/** Filters for the reports queue. Shared by `GET /api/v1/reports` and `/admin/reports`. */
 export const reportListQuerySchema = z.preprocess(
   dropEmpty,
   z

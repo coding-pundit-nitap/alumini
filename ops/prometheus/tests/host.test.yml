@@ -101,7 +101,7 @@ tests:
               }
             exp_annotations:
               summary: pg_wal is above 2 GiB and still growing
-              description: "pg_wal holds 3.373GiB. Check WAL archiving first (R-8): segments stay until they are archived."
+              description: "pg_wal holds 3.373GiB. Check WAL archiving first: segments stay until they are archived."
               runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md"
 
   - interval: 1m

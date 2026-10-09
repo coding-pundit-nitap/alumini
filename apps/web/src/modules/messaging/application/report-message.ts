@@ -11,7 +11,7 @@ import type { MessagingObserver, MessagingStore } from "./messaging-store";
 import { parse } from "./validation";
 
 /**
- * FR-MSG-004 (D6). Only a member who can see the conversation may report one of its messages; anyone else,
+ * (D6). Only a member who can see the conversation may report one of its messages; anyone else,
  * and an unknown id, get NOT_FOUND. Filing is idempotent per (reporter, message). Reviewing is Phases 10/12.
  */
 export function createReportMessage(deps: {

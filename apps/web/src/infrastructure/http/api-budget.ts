@@ -3,7 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { RateLimitedError } from "@/lib/errors";
 
 /**
- * The API-wide allowance per signed-in user (SRS §36 "Global API → Authenticated user", spec 16 SD-7).
+ * The API-wide allowance per signed-in user.
  * A fixed window that allows bursts: far above what any page fans out to, low enough that a script
  * cannot hammer the API. The stricter per-feature limits (search, messaging, connections…) still apply.
  */

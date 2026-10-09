@@ -9,9 +9,9 @@ import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { refuse } from "./refusal";
 
 /**
- * FR-NET-002. Recipient only. The transition is a guarded update, so an accept racing a cancel (or a block)
+ * Recipient only. The transition is a guarded update, so an accept racing a cancel (or a block)
  * has exactly one winner; the loser gets INVALID_STATE_TRANSITION. Accepting writes `connection.accepted`
- * in the same transaction; rejecting is silent (API spec §6.2).
+ * in the same transaction; rejecting is silent.
  */
 export function createRespondToConnection(deps: {
   store: ConnectionStore;

@@ -61,7 +61,7 @@ tests:
               }
             exp_annotations:
               summary: Cache Redis is unreachable
-              description: Rate limiting falls back and real-time hints stop; nothing durable is lost (ADR-006).
+              description: Rate limiting falls back and real-time hints stop; nothing durable is lost.
               runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md"
       - eval_time: 3m
         alertname: QueueRedisDown

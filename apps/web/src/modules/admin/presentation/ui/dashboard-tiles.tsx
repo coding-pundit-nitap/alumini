@@ -146,7 +146,7 @@ function TileBody({ tile }: { tile: DashboardTile }) {
   );
 }
 
-/** FR-ADMIN-001: one card per tile the actor may act on (spec A12-5). */
+/** One card per tile the actor may act on. */
 export function DashboardTiles({ tiles }: { tiles: DashboardTile[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

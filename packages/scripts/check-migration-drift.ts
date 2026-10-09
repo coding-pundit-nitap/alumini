@@ -4,7 +4,7 @@ import path from "node:path";
 import pg from "pg";
 
 /**
- * Fails when the migration history and schema.prisma describe different databases (strategy §8, drift
+ * Fails when the migration history and schema.prisma describe different databases (drift
  * check). Hand-written SQL in a migration that the schema does not declare (an index, a default) is drift:
  * the next `prisma migrate dev` would generate a migration that undoes it. Replays every migration into a
  * shadow database and diffs the result against the schema; the diff must be empty.

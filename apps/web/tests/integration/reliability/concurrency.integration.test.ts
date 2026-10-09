@@ -1,7 +1,6 @@
-// Duplicate and concurrent requests against the whole web tier (TASK.md Phase 14; strategy §11.2 "Duplicate
-// request", §12.3; spec 14C, RD-9).
+// Duplicate and concurrent requests against the whole web tier.
 //
-// The Phase 5, 7 and 8 races already pass at the store and use-case level with a 60 s pool wait. Here they
+// The races already pass at the store and use-case level with a 60 s pool wait. Here they
 // run through the real Route Handlers, idempotency layer, transaction runner and the PRODUCTION database
 // client (pool max 10, 2 s acquire), so a refusal can also be SERVICE_UNAVAILABLE under pool pressure. The
 // invariant is the same: never over capacity, counters equal rows, one effect per operation, and never a 500.
@@ -197,7 +196,7 @@ describe("duplicate and concurrent requests through the routes (production pool)
     });
   });
 
-  describe("concurrent requests (Phase 5, 7, 8 races, end to end)", () => {
+  describe("concurrent requests", () => {
     it.each(Array.from({ length: ITERATIONS }, (_, i) => i + 1))(
       "event capacity 10, 30 members at once: never over capacity, count = rows, refusals are EVENT_FULL or 503 (run %i)",
       async () => {
@@ -207,7 +206,7 @@ describe("duplicate and concurrent requests through the routes (production pool)
           data: {
             organizerId: organizer.userId,
             title: "Race",
-            description: "Phase 14 system race",
+            description: "system race",
             startsAt: new Date(Date.now() + 7 * day),
             registrationDeadline: new Date(Date.now() + 6 * day),
             timezone: "UTC",

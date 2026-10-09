@@ -2,7 +2,7 @@ import { PERMISSIONS, type Permission } from "@nitap/database/permissions";
 
 import type { Can } from "./access";
 
-/** Spec F-1: the three windows the page offers; anything else falls back to 30 days. */
+/** The three windows the page offers; anything else falls back to 30 days. */
 export const ANALYTICS_RANGES = ["30d", "90d", "365d"] as const;
 export type AnalyticsRange = (typeof ANALYTICS_RANGES)[number];
 export const RANGE_DAYS: Record<AnalyticsRange, number> = {
@@ -31,7 +31,7 @@ export const analyticsWindow = (
 export type SectionKey =
   "members" | "jobs" | "events" | "community" | "donations";
 
-/** Spec F-2 / XD-2: a section needs `analytics.view` and the permission that owns its data. */
+/** / a section needs `analytics.view` and the permission that owns its data. */
 export const SECTION_PERMISSIONS: Record<SectionKey, Permission> = {
   members: PERMISSIONS.ALUMNI_VERIFY,
   jobs: PERMISSIONS.JOB_APPROVE,
@@ -47,7 +47,7 @@ export const analyticsSections = (can: Can): SectionKey[] =>
       )
     : [];
 
-/** Spec F-6: breakdown buckets of 1–4 are suppressed so no bucket identifies a person. */
+/** Breakdown buckets of 1–4 are suppressed so no bucket identifies a person. */
 export const SUPPRESS_BELOW = 5;
 export type Count = number | { masked: true };
 export const mask = (n: number): Count =>
@@ -70,7 +70,7 @@ export function istWeekOf(at: Date): string {
   return monday.toISOString().slice(0, 10);
 }
 
-/** Spec F-4: one point per IST week touching `[from, to]`, oldest first; weeks with no rows are 0. */
+/** One point per IST week touching `[from, to]`, oldest first; weeks with no rows are 0. */
 export function fillWeeks(
   rows: readonly WeekPoint[],
   window: AnalyticsWindow
@@ -86,7 +86,7 @@ export function fillWeeks(
   return out;
 }
 
-// --- Raw rows from the store (spec §3: the use case applies fillWeeks and mask) ---
+// --- Raw rows from the store ---
 
 export type MembersRaw = {
   byState: Record<string, number>;
@@ -118,7 +118,7 @@ export type CommunityRaw = {
   reportsByStatus: Bucket[];
 };
 
-/** 12H H-10: confirmed money only. Weekly values are whole rupees; the per-campaign bucket counts donors. */
+/** Confirmed money only. Weekly values are whole rupees; the per-campaign bucket counts donors. */
 export type DonationsRaw = {
   receivedRupees: WeekPoint[];
   raisedPaise: number;

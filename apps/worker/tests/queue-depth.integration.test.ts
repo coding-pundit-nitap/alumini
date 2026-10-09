@@ -15,7 +15,7 @@ afterEach(async () => {
   ];
 });
 
-describe("queue depth moves with the queue (TASK.md Phase 13 test 3)", () => {
+describe("queue depth moves with the queue", () => {
   it("rises while no processor consumes the email queue", async () => {
     const ns = await createRedisNamespace();
     const port = createBullQueuePort({

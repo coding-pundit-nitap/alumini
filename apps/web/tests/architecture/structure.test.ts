@@ -25,7 +25,7 @@ afterEach(() => {
     fs.rmSync(dir, { recursive: true, force: true });
 });
 
-describe("repository structure (strategy §2.4 item 6, §2.5)", () => {
+describe("repository structure", () => {
   it("apps/web/src satisfies every architecture rule", () => {
     expect(checkStructure(srcRoot)).toEqual([]);
   });
@@ -80,7 +80,7 @@ describe("the checker can fail", () => {
     expect(found.join("\n")).not.toContain("components/common");
   });
 
-  it("rejects empty directories (no folders for appearance, §2.2)", () => {
+  it("rejects empty directories (no folders for appearance)", () => {
     const root = fixture({ "modules/jobs/index.ts": "export {};" }, [
       "modules/jobs/domain",
     ]);

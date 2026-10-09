@@ -1,7 +1,7 @@
 {
   "uid": "alumini-infrastructure",
   "title": "Infrastructure (host, certificates, backups)",
-  "description": "Host disk, memory and CPU from node_exporter, pg_wal, the public probe and certificate expiry, backup job freshness (reliability \u00a75.3 dashboard 7; spec 18C). Production stack only (deploy/monitoring.yml).",
+  "description": "Host disk, memory and CPU from node_exporter, pg_wal, the public probe and certificate expiry, backup job freshness. Production stack only (deploy/monitoring.yml).",
   "tags": ["alumini", "phase-18"],
   "schemaVersion": 39,
   "version": 1,

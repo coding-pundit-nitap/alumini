@@ -1,6 +1,6 @@
 import { formatPaise, type CampaignProgress } from "../../domain/donation";
 
-/** Spec H-9: raised counts confirmed money only; open pledges are shown beside it, never added in. */
+/** Raised counts confirmed money only; open pledges are shown beside it, never added in. */
 export function CampaignProgressBar({
   progress,
   goalPaise,

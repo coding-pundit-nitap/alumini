@@ -1,8 +1,8 @@
 // apps/web/src/modules/jobs/domain/job.ts
 /**
- * The job posting/review rules, pure (FR-JOB-001…005, spec J-2…J-9). No DRAFT: create is submit (J-2).
- * REJECTED is not terminal: an edit always resubmits it (J-3, J-4). Self-review is refused here, not only
- * by RBAC (J-5): a job.approve holder can never approve or reject their own posting.
+ * The job posting/review rules, pure. No DRAFT: create is submit.
+ * REJECTED is not terminal: an edit always resubmits it. Self-review is refused here, not only
+ * by RBAC: a job.approve holder can never approve or reject their own posting.
  */
 export const JOB_STATES = [
   "PENDING_REVIEW",
@@ -63,7 +63,7 @@ export type JobContent = Pick<
   | "deadline"
 >;
 
-/** The material fields (spec J-4): changing any of these on a PUBLISHED job forces re-review. */
+/** The material fields: changing any of these on a PUBLISHED job forces re-review. */
 export const MATERIAL_FIELDS = [
   "title",
   "company",
@@ -94,7 +94,7 @@ const refuse = (code: Refusal["code"]): { ok: false } & Refusal => ({
 
 const CLOSE_ELIGIBLE: readonly JobStatus[] = ["PENDING_REVIEW", "PUBLISHED"];
 
-/** FR-JOB-001, spec J-2. Create and submit are one action; the outcome depends only on the actor's own permission. */
+/** Create and submit are one action; the outcome depends only on the actor's own permission. */
 export function decideCreate(actorHasApprove: boolean): {
   ok: true;
   status: JobStatus;
@@ -117,7 +117,7 @@ export function decideCreate(actorHasApprove: boolean): {
 }
 
 /**
- * FR-JOB-002, spec J-4. `materialChanged` and `isOwnerOrManager` are resolved by the caller (the store
+ * `materialChanged` and `isOwnerOrManager` are resolved by the caller (the store
  * already has the row; permission is a boolean the application layer already knows), so this stays pure.
  */
 export function decideEdit(
@@ -166,7 +166,7 @@ export function decideEdit(
   };
 }
 
-/** FR-JOB-003, spec J-5/J-6. The DB's guarded UPDATE (WHERE status = 'PENDING_REVIEW') is the race backstop. */
+/** The DB's guarded UPDATE (WHERE status = 'PENDING_REVIEW') is the race backstop. */
 export function decideApprove(
   row: JobRow,
   actorId: string,
@@ -208,7 +208,7 @@ export function decideReject(
   };
 }
 
-/** FR-JOB (withdrawal), spec J-7. Poster or job.manage only; never sets EXPIRED (worker-only, J-7). */
+/** (withdrawal). Poster or job.manage only; never sets EXPIRED (worker-only). */
 export function decideClose(
   row: JobRow,
   isOwnerOrManager: boolean

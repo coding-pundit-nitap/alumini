@@ -12,7 +12,7 @@ CREATE TABLE "outbox_event" (
     CONSTRAINT "outbox_event_pkey" PRIMARY KEY ("id")
 );
 
--- Persistent invariants live in the database (Phase 1 architectural rule). Prisma's schema language
+-- Persistent invariants live in the database (architectural rule). Prisma's schema language
 -- cannot express CHECK constraints or partial indexes, so they are hand-written here.
 ALTER TABLE "outbox_event"
   ADD CONSTRAINT ck_outbox_type CHECK (char_length("type") BETWEEN 1 AND 100);

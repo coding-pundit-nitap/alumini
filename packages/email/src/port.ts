@@ -11,7 +11,7 @@ export type EmailSendOptions = {
 
 export interface EmailPort {
   send(message: EmailMessage, options?: EmailSendOptions): Promise<void>;
-  /** True when the address (as `hashEmail`) bounced or complained and must not be mailed (spec N-10). */
+  /** True when the address (as `hashEmail`) bounced or complained and must not be mailed. */
   isSuppressed(emailHash: string): Promise<boolean>;
 }
 

@@ -1,4 +1,4 @@
-# Nightly security pipeline (strategy §18.3; spec 16 16E). Nothing here blocks a merge (the blocking gates are in
+# Nightly security pipeline. Nothing here blocks a merge (the blocking gates are in
 # pr.yml); a failed job is the alert. Run by hand with "Run workflow".
 name: Nightly security
 
@@ -37,7 +37,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Low and moderate findings are tickets, not blockers (§10.2); the log is the report.
+      # Low and moderate findings are tickets, not blockers; the log is the report.
       - run: pnpm audit || true
       # High and critical advisories published since the last dependency change: pr.yml audits only pull requests
       # that change dependencies, so this is where a new one turns red. Fix it, or accept it with a reason in

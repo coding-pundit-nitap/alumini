@@ -10,9 +10,9 @@ export type ApplyResult =
 
 /**
  * After an email is confirmed: a recognised institutional address with `autoVerify` becomes VERIFIED
- * with its mapped role, in one transaction (FR-AUTH-002). Anything else stays PENDING. Acts only on a
+ * with its mapped role, in one transaction. Anything else stays PENDING. Acts only on a
  * PENDING account, so it can never revive a REJECTED, SUSPENDED or DEACTIVATED one, and a second call
- * is a no-op. Non-institutional evidence is never approved here (FR-AUTH-003a).
+ * is a no-op. Non-institutional evidence is never approved here.
  */
 export function createApplyEmailVerification(deps: {
   store: MemberStore;
@@ -36,7 +36,7 @@ export function createApplyEmailVerification(deps: {
 
       if (!(await tx.markVerified(userId))) return { outcome: "unchanged" };
       // Policy grants are recorded as granted by the user themselves, the convention the bootstrap
-      // seed uses; nobody holds role.assign over their own account (spec 2C, D-8).
+      // seed uses; nobody holds role.assign over their own account.
       await tx.assignRole(userId, emailClass.role, userId);
       return { outcome: "verified", role: emailClass.role };
     });

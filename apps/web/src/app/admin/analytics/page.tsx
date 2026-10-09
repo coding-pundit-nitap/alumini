@@ -23,7 +23,7 @@ export const metadata: Metadata = { title: "Analytics" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/** Phase 12F. 404 without analytics.view (RBAC §8 rule 6); sections follow the co-held permissions (F-2). */
+/** 404 without analytics.view; sections follow the co-held permissions. */
 export default async function AdminAnalyticsPage({
   searchParams,
 }: {

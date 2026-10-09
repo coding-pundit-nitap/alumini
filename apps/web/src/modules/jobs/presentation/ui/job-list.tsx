@@ -83,7 +83,7 @@ const revive = (job: PublishedJobCard): PublishedJobCard => ({
 });
 
 /**
- * FR-JOB. PUBLISHED, unexpired postings anyone with job.read may browse (spec J-8/J-9/J-12). The server renders
+ * PUBLISHED, unexpired postings anyone with job.read may browse. The server renders
  * the first page; later pages load from `GET /api/v1/jobs` (same `query`, plus the cursor) as you scroll or press
  * "Load more", which is a plain link to `nextHref` without JS.
  */

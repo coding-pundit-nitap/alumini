@@ -11,8 +11,8 @@ export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 50;
 
 /**
- * FR-EVENT (spec "Application: listRegistrants"). The organizer or an `event.manage` holder only
- * (E-8: "returns FORBIDDEN", not concealed as NOT_FOUND — any `event.read` holder can already see
+ * The organizer or an `event.manage` holder only
+ * ("returns FORBIDDEN", not concealed as NOT_FOUND — any `event.read` holder can already see
  * the event). Keyset by `(registered_at, id)`, same shape as `listEvents`.
  */
 export function createListRegistrants(deps: {

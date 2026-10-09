@@ -36,7 +36,7 @@ CREATE INDEX "ix_job_moderation_queue" ON "job"("status", "created_at");
 ALTER TABLE "job" ADD CONSTRAINT "job_posted_by_fkey" FOREIGN KEY ("posted_by") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "job" ADD CONSTRAINT "job_reviewed_by_fkey" FOREIGN KEY ("reviewed_by") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- Integrity that Prisma cannot express (spec J-11, domain-model.md §3 ck_job_reject_note precedent).
+-- Integrity that Prisma cannot express (ck_job_reject_note precedent).
 ALTER TABLE "job"
   ADD CONSTRAINT "ck_job_reject_note"      CHECK ("status" <> 'REJECTED' OR "review_note" IS NOT NULL),
   ADD CONSTRAINT "ck_job_application_url"  CHECK (starts_with("application_url", 'https://')),

@@ -171,7 +171,7 @@ describe("executeJob", () => {
     });
   });
 
-  it("reports a dead job to the error tracker with its queue, job and request id, but not a retried attempt (spec 13B B-6)", async () => {
+  it("reports a dead job to the error tracker with its queue, job and request id, but not a retried attempt", async () => {
     const boom = new Error("still unavailable");
     const { deps, job, captureError } = setup(async () => {
       throw boom;

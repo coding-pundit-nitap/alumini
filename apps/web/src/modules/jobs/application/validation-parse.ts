@@ -2,7 +2,7 @@ import type { ZodType } from "zod";
 
 import { ValidationError } from "@/lib/errors";
 
-/** Parses untrusted input; a failure is a ValidationError carrying one detail per field (API spec §1.5). */
+/** Parses untrusted input; a failure is a ValidationError carrying one detail per field. */
 export function parse<T>(schema: ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
   if (result.success) return result.data;

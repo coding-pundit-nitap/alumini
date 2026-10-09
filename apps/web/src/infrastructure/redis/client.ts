@@ -6,7 +6,7 @@ import { env } from "@/config/env";
 import { logger } from "@/infrastructure/observability";
 
 // This is the CACHE / rate-limit Redis: keys here may be evicted (allkeys-lru), so nothing in it may
-// be unrecoverable. The job queue needs a separate Redis with noeviction (docs/adr/ADR-007).
+// be unrecoverable. The job queue needs a separate Redis with noeviction.
 const globalForRedis = globalThis as unknown as {
   redis?: Redis;
   redisConnecting?: Promise<void>;

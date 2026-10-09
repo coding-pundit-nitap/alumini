@@ -12,7 +12,7 @@ import { changeCampaignStatusAction, saveCampaignAction } from "./actions";
 
 export const metadata: Metadata = { title: "Campaigns" };
 
-/** Phase 12H (FR-DON-001). 404 without campaign.manage (RBAC §8 rule 6). */
+/** 404 without campaign.manage. */
 export default async function AdminCampaignsPage() {
   const actor = await getActor();
   if (!actor || !can(actor, PERMISSIONS.CAMPAIGN_MANAGE)) notFound();

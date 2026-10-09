@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Block } from "./lists";
 
-/** H-7: hides once the profile is complete. */
+/** Hides once the profile is complete. */
 export function CompletenessCard({
   percent,
   missing,

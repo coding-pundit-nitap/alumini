@@ -16,7 +16,7 @@ const userId = async (ctx: Params) => {
 };
 const json = (request: Request) => readJson(request);
 
-/** POST /api/v1/admin/users/:id/permission-grants — grant a permission (spec B12-3, B12-4). */
+/** POST /api/v1/admin/users/:id/permission-grants — grant a permission. */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const grant = await grantPermission({

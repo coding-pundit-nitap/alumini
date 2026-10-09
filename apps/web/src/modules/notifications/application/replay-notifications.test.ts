@@ -20,7 +20,7 @@ function setup(audit: () => Promise<void>) {
   return { replay, retry, onAuditFailed };
 }
 
-describe("replayNotifications audit failure (spec 13B B-8)", () => {
+describe("replayNotifications audit failure", () => {
   it("reports an audit write that fails after the retry, and still answers with the count", async () => {
     const failure = new Error("audit insert failed");
     const { replay, retry, onAuditFailed } = setup(async () => {

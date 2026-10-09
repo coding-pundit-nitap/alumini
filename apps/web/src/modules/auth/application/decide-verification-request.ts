@@ -20,14 +20,14 @@ export type DecideResult =
   { outcome: "decided" } | { outcome: "already_decided" };
 
 /**
- * A human reviewer approves or rejects a verification request (FR-AUTH-003a). There is no other path
+ * A human reviewer approves or rejects a verification request. There is no other path
  * to APPROVED. Everything a decision changes happens in ONE transaction, so it commits or rolls back
  * as a whole: request, account state, role, institutional profile fields, audit row, the email and
  * the in-app notice event.
  *
  * Authorization is the grant check first; the self-review rule is then explicit so the client gets
  * SELF_REVIEW_FORBIDDEN (the DECIDE guardrail and a database CHECK back it). The role is injected:
- * application code names permissions, never roles (RBAC §11).
+ * application code names permissions, never roles.
  */
 export function createDecideVerificationRequest(deps: {
   store: VerificationStore;
@@ -74,7 +74,7 @@ export function createDecideVerificationRequest(deps: {
         REVIEWABLE_ACCOUNT_STATES,
         target
       );
-      // A suspended or deactivated account is not for this queue to change (Phase 12 tooling). Throwing
+      // A suspended or deactivated account is not for this queue to change. Throwing
       // rolls the decision back, so the request stays queued.
       if (!moved) throw new ConflictError("ACCOUNT_NOT_REVIEWABLE");
 
@@ -85,7 +85,7 @@ export function createDecideVerificationRequest(deps: {
           graduationYear: request.graduationYear,
         };
         const from = await tx.applyInstitutionalFields(request.userId, to);
-        // RBAC §12: institutional changes are audited with old and new values (FR-PROFILE-004).
+        // Institutional changes are audited with old and new values.
         await tx.recordAudit({
           actorId: reviewer.userId,
           action: "profile.institutional_changed",

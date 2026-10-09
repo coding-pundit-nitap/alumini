@@ -9,7 +9,7 @@ import type { ModerationStore } from "./moderation-store";
 import { refuse } from "./refusal";
 
 /**
- * FR-MOD-002. Claim only flips status OPEN -> UNDER_REVIEW; it never sets `resolvedById` (that column is
+ * Claim only flips status OPEN -> UNDER_REVIEW; it never sets `resolvedById` (that column is
  * reserved for the terminal outcome written by resolve/dismiss). Claiming your own report or your own
  * content is refused SELF_REVIEW_FORBIDDEN.
  */

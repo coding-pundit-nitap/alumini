@@ -35,7 +35,7 @@ export default async function MemberPage({
   const { userId } = await params;
   if (!UUID.test(userId)) notFound();
 
-  // No redirect for guests: a PUBLIC profile is visible to them, everything else is a 404 (RBAC §6 rule 6).
+  // No redirect for guests: a PUBLIC profile is visible to them, everything else is a 404.
   const actor = await getActor();
 
   let view;

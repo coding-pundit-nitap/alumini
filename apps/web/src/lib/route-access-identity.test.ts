@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { isPublicPath, safeNextPath } from "./route-access";
 
-describe("identity routes (spec 2C §3.4)", () => {
+describe("identity routes", () => {
   it.each([
     "/login",
     "/register",

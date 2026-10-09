@@ -24,7 +24,7 @@ const materialChanged = (row: JobContent, next: JobContent): boolean =>
   });
 
 /**
- * FR-JOB-002, spec J-4. The poster's own-resource right, or `job.manage`, is resolved once the row is
+ * The poster's own-resource right, or `job.manage`, is resolved once the row is
  * loaded (the actor doesn't know the poster's id up front) and handed to the pure `decideEdit` as a flag.
  */
 export function createEditJob(deps: {

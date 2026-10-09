@@ -12,7 +12,7 @@ import { updateRetentionAction } from "./actions";
 
 export const metadata: Metadata = { title: "Settings" };
 
-/** Phase 12G. 404 without system.configure (RBAC §8 rule 6). */
+/** 404 without system.configure. */
 export default async function AdminSettingsPage() {
   const actor = await getActor();
   if (!actor || !can(actor, PERMISSIONS.SYSTEM_CONFIGURE)) notFound();
@@ -22,7 +22,7 @@ export default async function AdminSettingsPage() {
     <div className="flex max-w-4xl flex-col gap-6">
       <AdminPageHeader
         title="Settings"
-        description="How long each kind of record is kept (SRS §45). Every change is audited."
+        description="How long each kind of record is kept. Every change is audited."
       />
       <AdminPanel
         title="Data retention"

@@ -10,7 +10,7 @@ export type EventActivityDeps = {
   deliver: DeliverNotification;
   /** Re-reads the current email; null skips email (account may be deactivated). */
   findEmail: (userId: string) => Promise<string | null>;
-  /** Non-CANCELLED registrants right now (REGISTERED/ATTENDED/NO_SHOW; N-3: current state, not at emit time). */
+  /** Non-CANCELLED registrants right now (REGISTERED/ATTENDED/NO_SHOW: current state, not at emit time). */
   findActiveRegistrants: (eventId: string) => Promise<string[]>;
   /** Symmetric, checked at delivery time. */
   blocked: (a: string, b: string) => Promise<boolean>;
@@ -18,7 +18,7 @@ export type EventActivityDeps = {
 
 /**
  * Handles event.*. cancelled (fan-out) and registered (confirmation) notify with email; registration-cancelled
- * by someone else notifies in-app + email (overview XD-9, 12E). Ids only in logs.
+ * by someone else notifies in-app + email. Ids only in logs.
  */
 export function createEventActivityProcessor(
   action: string,
@@ -59,7 +59,7 @@ export function createEventActivityProcessor(
       "userId" in payload &&
       payload.actorId !== payload.userId
     ) {
-      // In-app + email (overview XD-9). No producer sets another actor yet; self-cancellation needs no notice.
+      // In-app + email. No producer sets another actor yet; self-cancellation needs no notice.
       if (await deps.blocked(payload.actorId, payload.userId)) return;
       await send(payload.userId, "event.registration-cancelled");
     }

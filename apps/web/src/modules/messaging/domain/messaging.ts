@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 /**
- * The messaging rules, pure (FR-MSG-001…005). A refusal of `NOT_FOUND` means "not yours to know about", so
- * a blocked member learns nothing (same stance as connections, ADR-024).
+ * The messaging rules, pure. A refusal of `NOT_FOUND` means "not yours to know about", so
+ * a blocked member learns nothing (same stance as connections).
  */
 export const MAX_GROUP_SIZE = 20;
 export const MAX_BODY = 4000;
-/** How many messages either side of a reported one a moderator sees (RBAC §6.1: bounded, never open-ended). */
+/** How many messages either side of a reported one a moderator sees. */
 export const CONTEXT_EACH_SIDE = 5;
 
 export const messageInput = z
@@ -81,7 +81,7 @@ export function decideAddCapacity(currentCount: number): Decision {
     : { ok: false, code: "GROUP_FULL" };
 }
 
-/** A message as a member reads it. A hidden message keeps its place and loses its text (spec C12-4). */
+/** A message as a member reads it. A hidden message keeps its place and loses its text. */
 export type ListedMessage = {
   id: string;
   seq: string;

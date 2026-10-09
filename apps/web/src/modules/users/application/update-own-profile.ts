@@ -8,9 +8,9 @@ import type { Authorize } from "./authz";
 import type { ProfileStore } from "./profile-store";
 
 /**
- * A member edits their own name, headline, bio and location (FR-PROFILE-001). There is no user id in the
+ * A member edits their own name, headline, bio and location. There is no user id in the
  * arguments: the target is always the caller, so editing someone else's profile cannot be expressed. The
- * input type has no institutional fields (FR-PROFILE-004), and the store port has no way to write them.
+ * input type has no institutional fields, and the store port has no way to write them.
  */
 export function createUpdateOwnProfile(deps: {
   store: ProfileStore;

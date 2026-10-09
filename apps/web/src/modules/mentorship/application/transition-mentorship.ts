@@ -29,9 +29,9 @@ const OUTCOME: Record<MentorshipAction, MentorshipOutcome> = {
 };
 
 /**
- * FR-MENTOR-005/006. One use case for every move of the state machine: the domain table decides, the guarded
+ * One use case for every move of the state machine: the domain table decides, the guarded
  * update makes the decision stick. An accept racing a cancel has exactly one winner; accept also takes a row
- * lock on the mentor's profile so concurrent accepts cannot exceed `max_mentees` (spec M-5).
+ * lock on the mentor's profile so concurrent accepts cannot exceed `max_mentees`.
  */
 export function createTransitionMentorship(deps: {
   store: MentorshipStore;

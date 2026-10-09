@@ -39,7 +39,7 @@ export function RegisterForm() {
     setPending(false);
 
     // An address that already has an account gets the same screen as a new one; its owner is told by
-    // email instead (enumeration protection, UI/UX spec §5.1.3).
+    // email instead (enumeration protection).
     if (error && error.code !== "USER_ALREADY_EXISTS") {
       setFormError(authErrorMessage(error));
       return;

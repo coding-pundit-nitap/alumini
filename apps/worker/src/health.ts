@@ -13,7 +13,7 @@ export type Readiness = {
 
 export type HealthServer = { port: number; close(): Promise<void> };
 
-/** `/metrics` on the health port (spec 13A A-7); 404 when absent or refused, never advertised. */
+/** `/metrics` on the health port; 404 when absent or refused, never advertised. */
 export type MetricsEndpoint = {
   authorize(request: {
     headers: Record<string, string | string[] | undefined>;
@@ -21,7 +21,7 @@ export type MetricsEndpoint = {
   render(): Promise<{ contentType: string; body: string }>;
 };
 
-/** Internal health port (TDS §12.2). Not exposed publicly; probes call it directly. */
+/** Internal health port. Not exposed publicly; probes call it directly. */
 export async function startHealthServer(options: {
   port: number;
   ready: () => Promise<Readiness>;

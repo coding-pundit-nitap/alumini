@@ -9,7 +9,7 @@ export type EmailClass =
   | { kind: "INSTITUTIONAL"; role: string; autoVerify: boolean };
 
 /**
- * Classifies an address against the institutional-email policy (FR-AUTH-002). Pure. The domain is the
+ * Classifies an address against the institutional-email policy. Pure. The domain is the
  * part after the LAST `@`, lowercased, and is looked up exactly: never a suffix or subdomain match, so
  * `nitap.ac.in.evil.com`, `evilnitap.ac.in` and `"a@nitap.ac.in"@evil.com` are all external.
  */

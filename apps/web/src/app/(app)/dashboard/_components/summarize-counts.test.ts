@@ -7,7 +7,7 @@ const ok = (value: number): Loaded<number> => ({ status: "ok", value });
 const absent: Loaded<number> = { status: "absent" };
 const error: Loaded<number> = { status: "error" };
 
-describe("summarizeCounts (H-6, spec Errors and states)", () => {
+describe("summarizeCounts", () => {
   it("passes ok values through", () => {
     expect(
       summarizeCounts({

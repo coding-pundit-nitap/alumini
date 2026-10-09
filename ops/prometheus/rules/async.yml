@@ -1,4 +1,4 @@
-# Outbox, queues and jobs (13A A-9, A-11). App metrics labelled `job` arrive as `exported_job` (spec 13C C-2).
+# Outbox, queues and jobs. App metrics labelled `job` arrive as `exported_job`.
 groups:
   - name: async
     rules:

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { defineJob, FANOUT_TIMEOUT_MS } from "./define-job.ts";
 
-/** Ids only (spec N-3): copy never names the donor or the amount. */
+/** Ids only: copy never names the donor or the amount. */
 const donationPayload = z
   .object({
     v: z.literal(1),
@@ -23,7 +23,7 @@ const options = {
     "deliver() keys the notification by (type, job id, recipient), so a rerun finds the existing rows and enqueues no second email. Running twice has the same effect as once.",
 } as const;
 
-/** Phase 12H (spec H-7): a member pledged; every campaign manager is told. */
+/** A member pledged; every campaign manager is told. */
 export const donationPledged = defineJob({
   ...options,
   name: "donation.pledged",
@@ -34,13 +34,13 @@ export const donationConfirmed = defineJob({
   ...options,
   name: "donation.confirmed",
 });
-/** A manager marked the pledge not received, or it expired (spec H-8); the donor is told. */
+/** A manager marked the pledge not received, or it expired; the donor is told. */
 export const donationNotReceived = defineJob({
   ...options,
   name: "donation.not-received",
 });
 
-/** Daily: open pledges with no reference after 30 days become NOT_RECEIVED (spec H-8). Scheduled only. */
+/** Daily: open pledges with no reference after 30 days become NOT_RECEIVED. Scheduled only. */
 export const donationExpirePledges = defineJob({
   name: "donation.expire-pledges",
   version: 1,

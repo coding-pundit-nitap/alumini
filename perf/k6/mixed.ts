@@ -1,4 +1,4 @@
-// Mixed load (strategy §13.3 "Load"/"Stress"). TDS §25.2's user model: 1 000 concurrent active members, one
+// Mixed load.'s user model: 1 000 concurrent active members, one
 // request each every ~10 s → ~100 requests/s, in the proportions below (page renders and the bell's poll
 // dominate). RATE sets the arrival rate; STRESS=1 keeps raising it until the run is stopped or a budget breaks,
 // to find the breaking point and the first bottleneck.

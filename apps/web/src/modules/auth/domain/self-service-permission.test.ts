@@ -105,7 +105,7 @@ describe("the state allowance never widens into grantable permissions", () => {
   });
 });
 
-describe("profile.update (allowed by state for accounts that cannot hold grants yet, RBAC §7)", () => {
+describe("profile.update (allowed by state for accounts that cannot hold grants yet)", () => {
   it.each(["PENDING", "REJECTED"] as const)(
     "is allowed to a %s account",
     (state) => {

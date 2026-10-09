@@ -65,7 +65,7 @@ function deriveState(event: EventDetail, now: Date): ButtonState {
   return { mode: "register", disabledReason: null };
 }
 
-/** Register / cancel-registration button for the event detail page (FR-EVENT-005, FR-EVENT-006). */
+/** Register / cancel-registration button for the event detail page. */
 export function RegistrationButton({
   event,
   registerAction,

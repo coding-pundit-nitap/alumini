@@ -145,7 +145,7 @@ describe("job create/edit against real PostgreSQL", () => {
     expect(events).toHaveLength(1); // job.published was the first event, not job.submitted — direct publish skipped it
   });
 
-  it("approve racing reject on the same PENDING_REVIEW job: exactly one wins (spec J-6)", async () => {
+  it("approve racing reject on the same PENDING_REVIEW job: exactly one wins", async () => {
     const { createJob, approveJob, rejectJob } = build();
     for (let round = 0; round < 10; round += 1) {
       const created = await createJob({
@@ -218,7 +218,7 @@ describe("job create/edit against real PostgreSQL", () => {
     }
   });
 
-  it("the poster cannot approve or reject their own job even holding job.approve (spec J-5)", async () => {
+  it("the poster cannot approve or reject their own job even holding job.approve", async () => {
     const { createJob, approveJob, rejectJob } = build();
     const created = await createJob({
       actor: actor(poster, [PERMISSIONS.JOB_CREATE, PERMISSIONS.JOB_APPROVE]),
@@ -253,7 +253,7 @@ describe("job create/edit against real PostgreSQL", () => {
     ).toEqual([{ action: "job.publish_direct", actorId: poster }]);
   });
 
-  it("a job due exactly today stays listed; a job due yesterday does not (spec J-9)", async () => {
+  it("a job due exactly today stays listed; a job due yesterday does not", async () => {
     const { createJob } = build();
     const listPublishedJobs = createListPublishedJobs({
       queries: createPrismaJobQueries(db.prisma),

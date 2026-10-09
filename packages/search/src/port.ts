@@ -3,7 +3,7 @@ import type { DirectoryQuery } from "./query.ts";
 /**
  * Who is searching. Everyone gets the same rule: PUBLIC and MEMBERS_ONLY profiles, plus CONNECTIONS_ONLY ones
  * for their connections, and never a blocked pair. There is deliberately no privileged reach: an admin who
- * needs a private profile opens it by id, which is audited (RBAC §12); a listing would not be.
+ * needs a private profile opens it by id, which is audited; a listing would not be.
  * The viewer's connections and blocks are NOT passed in (a member can have thousands): an adapter resolves
  * them from `userId`.
  */
@@ -26,7 +26,7 @@ export type PersonHit = {
 export type PeoplePage = { hits: PersonHit[]; nextCursor: string | null };
 
 /**
- * The seam FR-SEARCH-003 asks for. The Postgres adapter (Stage A, TDS §14) implements it today; an
+ * The seam asks for. The Postgres adapter (Stage A) implements it today; an
  * OpenSearch adapter may replace it, but must still apply visibility from Postgres before returning.
  * Throws `InvalidCursorError` for a bad `query.cursor`.
  */

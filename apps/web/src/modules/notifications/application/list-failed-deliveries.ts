@@ -22,8 +22,8 @@ const clip = (row: EmailDeliveryRow): EmailDeliveryRow => ({
 });
 
 /**
- * Spec C12-11: FAILED email deliveries (replayable, keyset-paged) and PENDING ones idle for over an hour
- * (read-only: the Phase 11 replay contract covers FAILED only). Concealed from non-holders.
+ * FAILED email deliveries (replayable, keyset-paged) and PENDING ones idle for over an hour
+ * (read-only: the replay contract covers FAILED only). Concealed from non-holders.
  */
 export function createListFailedDeliveries(deps: {
   store: Pick<NotificationStore, "listEmailDeliveries">;

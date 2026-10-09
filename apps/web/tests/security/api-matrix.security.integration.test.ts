@@ -1,5 +1,5 @@
-// The whole-API authorization matrix (strategy §10.1 "Authorization matrix", spec 16 16B), generated from
-// tests/security/api-inventory.ts and the RBAC §4 doc. Every session route × method runs through its real
+// The whole-API authorization matrix, generated from
+// tests/security/api-inventory.ts and the RBAC doc. Every session route × method runs through its real
 // handler on a test database with real authorize(); only getActor is doubled, and the authorization
 // observer is replaced by a recorder so a refusal can be traced to authorize(), not to a missing row.
 import path from "node:path";
@@ -145,7 +145,7 @@ async function call(
   return { status: response.status, events: [...mocks.events] };
 }
 
-describe("whole-API authorization matrix (strategy §10.1, spec 16 16B)", () => {
+describe("whole-API authorization matrix", () => {
   let db: TestDatabase;
   let grantor: string;
   const verified = new Map<string, Actor>();

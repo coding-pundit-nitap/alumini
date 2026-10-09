@@ -9,7 +9,7 @@ import {
   readJson,
 } from "./request";
 
-// Spec 16 SD-4: one bounded reader for every JSON body, so size and type are checked in one place.
+// One bounded reader for every JSON body, so size and type are checked in one place.
 
 const URL_ = "https://alumni.example.test/api/v1/x";
 const json = (body: BodyInit | null, headers: HeadersInit = {}) =>

@@ -1,6 +1,6 @@
 import { health, healthDetailsVisible } from "./index";
 
-/** Shared by `/health/ready` and `/health/startup`, which check the same things (reliability §4.1). */
+/** Shared by `/health/ready` and `/health/startup`, which check the same things. */
 export async function readinessResponse(request: Request): Promise<Response> {
   const result = await health.ready();
   const body = healthDetailsVisible(request)

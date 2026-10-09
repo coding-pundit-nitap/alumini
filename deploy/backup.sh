@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Backups and restores for the self-hosted stack (ADR-011, reliability §3 and §7.3). Run from anywhere inside the
+# Backups and restores for the self-hosted stack. Run from anywhere inside the
 # clone; deploy/README.md step 8 has the cron lines.
 #
 #   deploy/backup.sh init                       create the pgBackRest stanza and take the first full backup
@@ -7,7 +7,7 @@
 #   deploy/backup.sh check                      force a WAL switch and confirm it reached the repository (hourly)
 #   deploy/backup.sh verify                     check every file in the repository against its checksum (weekly)
 #   deploy/backup.sh info                       backups held and the WAL range they cover
-#   deploy/backup.sh mark [note]                record a recovery point before a risky change (§3.2)
+#   deploy/backup.sh mark [note]                record a recovery point before a risky change
 #   deploy/backup.sh dump                       encrypted pg_dump to the repository bucket (weekly)
 #   deploy/backup.sh uploads                    mirror the uploads bucket to the repository bucket (daily)
 #   deploy/backup.sh uploads-restore            mirror it back, after the object storage volume is lost
@@ -128,7 +128,7 @@ SQL
 )
 
 # A restore point can predate the running release, so pending migrations are applied first (that is the
-# reconcile step of §7.3); `migrate status` must then report the schema up to date with no failed migration.
+# reconcile step); `migrate status` must then report the schema up to date with no failed migration.
 integrity() {
   local service=${1:-postgres} url
   url="postgresql://alumini:$(env_get POSTGRES_PASSWORD)@$service:5432/alumini"
@@ -205,7 +205,7 @@ case "$cmd" in
     docker compose exec -T postgres sh -c 'set -o pipefail; pg_dump -U alumini -Fc alumini |
       openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -pass env:PGBACKREST_REPO1_CIPHER_PASS' |
       tools "mc pipe backup/\$BACKUP_S3_BUCKET/dumps/weekly/$name"
-    # The first dump of each month is also kept a year; weekly ones eight weeks (§3.2). With the bucket's
+    # The first dump of each month is also kept a year; weekly ones eight weeks. With the bucket's
     # versioning these removals are recoverable for 30 days; the backup key cannot purge versions.
     if [ "$(date -u +%d)" -le 7 ]; then
       tools "mc cp backup/\$BACKUP_S3_BUCKET/dumps/weekly/$name backup/\$BACKUP_S3_BUCKET/dumps/monthly/$name"
@@ -216,7 +216,7 @@ case "$cmd" in
     ;;
 
   uploads)
-    # --remove carries deletions over (erasure, SRS §45); the bucket's versioning keeps them 30 days.
+    # --remove carries deletions over (erasure); the bucket's versioning keeps them 30 days.
     tools 'mc mirror --overwrite --remove --quiet local/alumini-uploads "backup/$BACKUP_S3_BUCKET/uploads"'
     record uploads "$started"
     ;;
@@ -259,7 +259,7 @@ case "$cmd" in
     record restore "$started" "target=${target:-latest}"
     cat <<EOF
 Postgres is restored and accepting writes; web and worker are still stopped. Continue with the runbook
-(docs/operations/reliability-operations.md §7.3) from step 5:
+(deploy/docs/reliability-operations.md) from step 5:
   deploy/backup.sh integrity          # applies migrations newer than the restore point, then checks
   docker compose run --rm worker node apps/worker/src/cli.ts outbox:settle --before "<restore point>"   # dry run first
   docker compose up -d

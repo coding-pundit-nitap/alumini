@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { renderNotificationCopy } from "./copy.ts";
 
-/** Every catalogue type that writes a notification (spec N-2), in-app-only ones included. */
+/** Every catalogue type that writes a notification, in-app-only ones included. */
 const NOTIFYING_TYPES = [
   "connection.requested",
   "connection.accepted",
@@ -81,7 +81,7 @@ describe("renderNotificationCopy", () => {
     ).toBe("/events");
   });
 
-  it("verification.decided copy follows the decision, with a neutral fallback (spec D12-5)", () => {
+  it("verification.decided copy follows the decision, with a neutral fallback", () => {
     expect(
       renderNotificationCopy("verification.decided", { decision: "APPROVED" })
     ).toEqual({
@@ -101,7 +101,7 @@ describe("renderNotificationCopy", () => {
     );
   });
 
-  it("account and registration copy (spec catalogue)", () => {
+  it("account and registration copy", () => {
     expect(renderNotificationCopy("user.suspended", {})).toEqual({
       title: "Account suspended",
       body: "Your account has been suspended by an administrator.",

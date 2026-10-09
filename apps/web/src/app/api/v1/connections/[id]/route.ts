@@ -24,7 +24,7 @@ async function connectionId({ params }: Params): Promise<string> {
   return parsed.data;
 }
 
-/** PATCH /api/v1/connections/:id — accept or reject a request (API spec §6.2). */
+/** PATCH /api/v1/connections/:id — accept or reject a request. */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const body = await readJson(request);
@@ -48,7 +48,7 @@ export const PATCH = routeHandler(async (request, ctx: Params) => {
   return Response.json({ data: { id: connection, state } });
 });
 
-/** DELETE /api/v1/connections/:id — cancel, remove or unblock (API spec §6.4). */
+/** DELETE /api/v1/connections/:id — cancel, remove or unblock. */
 export const DELETE = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   await removeConnection({

@@ -8,7 +8,7 @@ import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import { parseJson, readBodyText } from "../_lib/request";
 
-/** POST /api/v1/events — create an event (FR-EVENT-001). Honours `Idempotency-Key` (spec E-14). The use case validates the body. */
+/** POST /api/v1/events — create an event. Honours `Idempotency-Key`. The use case validates the body. */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const rawBody = await readBodyText(request);
@@ -39,7 +39,7 @@ const listQuery = z.object({
   cursor: z.string().max(200).optional(),
 });
 
-/** GET /api/v1/events?scope=&includeCancelled=&limit=&cursor= (spec E-10). */
+/** GET /api/v1/events?scope=&includeCancelled=&limit=&cursor=. */
 export const GET = routeHandler(async (request) => {
   const params = new URL(request.url).searchParams;
   const parsed = listQuery.safeParse({

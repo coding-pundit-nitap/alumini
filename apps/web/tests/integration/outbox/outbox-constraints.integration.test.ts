@@ -8,7 +8,7 @@ import {
 } from "@nitap/testing";
 
 /**
- * Every outbox constraint, by its PostgreSQL name (Phase 1 pattern): violating it is rejected and the
+ * Every outbox constraint, by its PostgreSQL name: violating it is rejected and the
  * error names exactly that constraint; in a scratch database where it is dropped, the same write
  * succeeds, which proves the first assertion is not vacuous.
  */

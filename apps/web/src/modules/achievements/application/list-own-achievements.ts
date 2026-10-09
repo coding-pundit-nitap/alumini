@@ -15,7 +15,7 @@ const clampLimit = (limit: number | undefined) =>
   Math.min(Math.max(1, limit ?? DEFAULT_LIMIT), MAX_LIMIT);
 
 /**
- * FR-ACH own-content read. There is no separate read permission for achievements, so this reuses
+ * Own-content read. There is no separate read permission for achievements, so this reuses
  * `ACHIEVEMENT_SUBMIT` (own-content: a member reads only their own submissions). Keyset-paged over
  * `(createdAt DESC, id DESC)`, same shape as posts' feed.
  */

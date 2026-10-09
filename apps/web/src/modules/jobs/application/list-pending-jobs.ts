@@ -7,7 +7,7 @@ import type { Authorize } from "./authz";
 import type { JobQueries, ListedJob } from "./job-queries";
 import { DEFAULT_LIMIT, MAX_LIMIT, type JobsPage } from "./list-my-jobs";
 
-/** FR-JOB-003. The moderation queue: PENDING_REVIEW only, oldest first, job.approve required. */
+/** The moderation queue: PENDING_REVIEW only, oldest first, job.approve required. */
 export function createListPendingJobs(deps: {
   queries: JobQueries;
   authorize: Authorize;

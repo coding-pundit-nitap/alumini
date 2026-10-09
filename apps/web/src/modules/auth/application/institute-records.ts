@@ -8,7 +8,7 @@ export type InstituteEvidence = {
 };
 
 /**
- * Compares submitted evidence with institute records where they exist (FR-AUTH-003a). It flags, never
+ * Compares submitted evidence with institute records where they exist. It flags, never
  * decides: the result is shown to the reviewer and nothing is approved or rejected because of it.
  */
 export interface InstituteRecords {

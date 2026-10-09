@@ -107,7 +107,7 @@ import { createUploadScanProcessor } from "./processors/upload-scan.ts";
 import { createUploadSweepProcessor } from "./processors/upload-sweep.ts";
 import { passthroughScanner, type ScannerPort } from "./scanner.ts";
 
-/** Readiness answers within this per check (reliability §4.1: the web probe uses the same 1 s). */
+/** Readiness answers within this per check. */
 const READY_CHECK_TIMEOUT_MS = 1_000;
 
 export type WorkerConfig = {
@@ -120,7 +120,7 @@ export type WorkerConfig = {
   emailRatePerSecond: number;
   /** BullMQ key prefix; tests use a unique one. */
   queuePrefix?: string;
-  /** Upload malware scanner (spec 16 SD-8); the pass-through one when unset (never in production). */
+  /** Upload malware scanner; the pass-through one when unset (never in production). */
   scanner?: ScannerPort;
 };
 
@@ -157,7 +157,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
  * The only place that builds concrete adapters and hands them to the relay and the processors (strategy
- * §2.3 rule 5). The caller owns the Prisma client.
+ * rule 5). The caller owns the Prisma client.
  */
 export function composeWorker(
   deps: {
@@ -646,7 +646,7 @@ export function composeWorker(
     },
 
     async ready() {
-      // Each check is bounded: a stalled dependency must make the probe say "not ready", not hang it (spec 14 F-7).
+      // Each check is bounded: a stalled dependency must make the probe say "not ready", not hang it.
       const [database, queueRedis] = await Promise.all([
         withTimeout(
           prisma.$queryRaw`SELECT 1`,

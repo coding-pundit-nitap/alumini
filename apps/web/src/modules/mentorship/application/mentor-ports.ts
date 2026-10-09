@@ -12,7 +12,7 @@ export type MentorCard = {
   department: string | null;
   currentCompany: string | null;
   hasPhoto: boolean;
-  /** UI-15: set by composition after the read. */
+  /** Set by composition after the read. */
   tick?: Tick | null;
   expertise: string;
   topics: string[];
@@ -35,7 +35,7 @@ export type MentorFilter = {
 };
 
 export type MentorQueries = {
-  /** Active, visible mentors for this viewer (spec M-2, M-8), by name then id. */
+  /** Active, visible mentors for this viewer, by name then id. */
   list(viewerId: string, filter: MentorFilter): Promise<MentorCard[]>;
   findProfile(userId: string): Promise<MentorProfileRecord | null>;
 };

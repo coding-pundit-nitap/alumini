@@ -20,7 +20,7 @@ import {
 /**
  * Wires the connections module to PostgreSQL and the shared Redis rate limiter. `connectionLookup` is what
  * the users module asks ("is this pair blocked or connected?"); it is built here because a module may not
- * import another module (TDS §5.2).
+ * import another module.
  */
 const store = createPrismaConnectionStore({
   runner: transactionRunner,

@@ -54,7 +54,7 @@ const STATE_BADGE: Record<string, "success" | "brand" | "destructive"> = {
 const date = (d: Date) =>
   d.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
 
-/** FR-ADMIN-003: one user's state, roles, grants and history, with the actions the viewer may take. */
+/** One user's state, roles, grants and history, with the actions the viewer may take. */
 export default async function UserPage({
   params,
 }: {

@@ -1,7 +1,7 @@
 import { getMetrics } from "@nitap/observability";
 
 /**
- * Liveness and readiness (reliability §4.1).
+ * Liveness and readiness.
  *
  * - `live`: the process answers. Checks nothing external, so a dependency outage never restarts healthy pods.
  * - `ready`: PostgreSQL is the only required infrastructure. Redis is *reported* as degraded but never
@@ -9,7 +9,7 @@ import { getMetrics } from "@nitap/observability";
  * - Results are cached for ~2 s and concurrent probes share one check, so a probe storm cannot exhaust
  *   the connection pool (rule 2).
  * - `startDraining()` flips readiness to unavailable first on shutdown so no new traffic arrives (rule 4), and
- *   tells `onDrain` listeners (open message streams), which would otherwise hold the shutdown open (spec 14 F-4).
+ *   tells `onDrain` listeners (open message streams), which would otherwise hold the shutdown open.
  * Failure detail (error text, hosts) never leaves this module: callers only see ok/down/degraded.
  */
 export type ReadinessResult = {

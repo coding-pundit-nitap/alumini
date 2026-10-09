@@ -9,7 +9,7 @@ import {
 
 const ALL_PERMISSIONS = new Set(Object.values(PERMISSIONS));
 
-describe("permission registry and RBAC matrix (rbac-permission-matrix.md §3-4)", () => {
+describe("permission registry and RBAC matrix", () => {
   it("has a bundle for every seeded role", () => {
     for (const role of ROLE_NAMES) {
       expect(ROLE_PERMISSIONS[role]).toBeDefined();
@@ -57,7 +57,7 @@ describe("permission registry and RBAC matrix (rbac-permission-matrix.md §3-4)"
     }
   });
 
-  it("job.* bundle matches rbac-permission-matrix.md rows 75-78, 148-151 (spec J-14)", () => {
+  it("job.* bundle matches rbac-permission-matrix.md rows", () => {
     const has = (role: RoleName, permission: string) =>
       ROLE_PERMISSIONS[role].includes(permission as never);
 

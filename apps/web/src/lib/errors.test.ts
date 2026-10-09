@@ -16,7 +16,7 @@ import {
   toApiError,
 } from "./errors";
 
-describe("error taxonomy (TDS §16.1)", () => {
+describe("error taxonomy", () => {
   it.each([
     [new ValidationError(), 400, "VALIDATION_FAILED"],
     [new AuthenticationError(), 401, "UNAUTHENTICATED"],
@@ -61,7 +61,7 @@ describe("error taxonomy (TDS §16.1)", () => {
   });
 });
 
-describe("TransactionRetryExhaustedError (spec D-e)", () => {
+describe("TransactionRetryExhaustedError", () => {
   it("is distinct from DependencyUnavailableError, keeps its cause, and logs at warn", () => {
     const cause = new Error(
       "could not serialize access due to concurrent update"
@@ -74,7 +74,7 @@ describe("TransactionRetryExhaustedError (spec D-e)", () => {
   });
 });
 
-describe("error catalogue (API spec §3.1)", () => {
+describe("error catalogue", () => {
   it("has a safe message and status for every global code", () => {
     for (const [code, entry] of Object.entries(ERROR_CATALOG)) {
       expect(code).toMatch(/^[A-Z][A-Z0-9_]+$/);
@@ -103,7 +103,7 @@ describe("error catalogue (API spec §3.1)", () => {
 });
 
 describe("toApiError", () => {
-  it("builds the API spec §1.4 error envelope with the request id", () => {
+  it("builds the.4 error envelope with the request id", () => {
     const { status, body } = toApiError(
       new NotFoundError(),
       "6f1c2c3e-aaaa-bbbb-cccc-1234567890ab"
@@ -134,7 +134,7 @@ describe("toApiError", () => {
     ).toEqual({ "Retry-After": "5" });
   });
 
-  it("never leaks internals of unknown errors (TDS §16.4 rule 2)", () => {
+  it("never leaks internals of unknown errors", () => {
     const { status, body } = toApiError(
       new Error('relation "user" does not exist\n    at prisma.ts:12'),
       "req-12345678"
@@ -150,7 +150,7 @@ describe("toApiError", () => {
   });
 });
 
-describe("logLevelFor (TDS §16.1)", () => {
+describe("logLevelFor", () => {
   it.each([
     [new ValidationError(), "info"],
     [new AuthenticationError(), "info"],
@@ -185,7 +185,7 @@ describe("community error codes", () => {
   });
 });
 
-describe("event error codes (Phase 8)", () => {
+describe("event error codes", () => {
   it.each([
     ["EVENT_FULL", "This event is full."],
     ["ALREADY_REGISTERED", "You are already registered for this event."],

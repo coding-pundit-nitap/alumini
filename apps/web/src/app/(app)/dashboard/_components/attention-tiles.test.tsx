@@ -10,7 +10,7 @@ const zero = {
   unreadNotifications: 0,
 };
 
-describe("AttentionTiles (H-8)", () => {
+describe("AttentionTiles", () => {
   it("renders nothing when nothing needs attention", () => {
     const { container } = render(<AttentionTiles counts={zero} />);
     expect(container).toBeEmptyDOMElement();

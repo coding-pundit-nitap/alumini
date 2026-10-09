@@ -6,7 +6,7 @@ export type UnreadCounter = {
 };
 
 // Increment only a key that already exists: the web seeds it from Postgres (with the TTL). Creating it here
-// would store 1 while Postgres holds N unread, and the web's NX seed could not correct it for the TTL (spec N-9).
+// would store 1 while Postgres holds N unread, and the web's NX seed could not correct it for the TTL.
 const INCR_IF_EXISTS = `if redis.call('EXISTS', KEYS[1]) == 1 then return redis.call('INCR', KEYS[1]) end return nil`;
 
 export function createRedisUnreadCounter(

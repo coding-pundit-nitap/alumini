@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Job moderation queue" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/** FR-JOB-003 under the admin shell (spec C12-9). 404 without job.approve (AD-5). */
+/** Under the admin shell. 404 without job.approve. */
 export default async function AdminJobsPage({
   searchParams,
 }: {

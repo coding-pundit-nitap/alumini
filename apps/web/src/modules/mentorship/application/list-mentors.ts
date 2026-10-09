@@ -14,7 +14,7 @@ export type MentorPage = {
   page: { limit: number; nextCursor: string | null; hasMore: boolean };
 };
 
-/** FR-MENTOR-003. Visibility, blocks and "active mentor" are applied by the query (spec M-2, M-8). */
+/** Visibility, blocks and "active mentor" are applied by the query. */
 export function createListMentors(deps: {
   queries: MentorQueries;
   authorize: Authorize;

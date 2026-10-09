@@ -122,7 +122,7 @@ describe("connections module against real PostgreSQL", () => {
     ]);
   });
 
-  it("A→B and B→A at the same moment never create two relationships (strategy §12.3)", async () => {
+  it("A→B and B→A at the same moment never create two relationships", async () => {
     const { request } = build();
     for (let round = 0; round < 15; round += 1) {
       const [x, y] = [await member(`X${round}`), await member(`Y${round}`)];

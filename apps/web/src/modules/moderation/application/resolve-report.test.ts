@@ -59,7 +59,7 @@ const run = (targetType: ReportRow["targetType"]) => {
   }).then(() => calls);
 };
 
-describe("resolveReport per target type (spec C12-2)", () => {
+describe("resolveReport per target type", () => {
   it("POST: soft-deletes, audits post.removed, enqueues content.removed", async () => {
     expect(await run("POST")).toEqual([
       "patch:RESOLVED",
@@ -73,7 +73,7 @@ describe("resolveReport per target type (spec C12-2)", () => {
   it("COMMENT: soft-deletes, audits comment.removed", async () => {
     expect(await run("COMMENT")).toContain("audit:comment.removed");
   });
-  it("MESSAGE: hides, audits message.hidden, never content.removed (spec C-5)", async () => {
+  it("MESSAGE: hides, audits message.hidden, never content.removed", async () => {
     expect(await run("MESSAGE")).toEqual([
       "patch:RESOLVED",
       "audit:report.resolved",
@@ -91,7 +91,7 @@ describe("resolveReport per target type (spec C12-2)", () => {
   });
 });
 
-describe("resolveReport reason validation (spec C12-3)", () => {
+describe("resolveReport reason validation", () => {
   it("refuses a missing or wrong reason with VALIDATION_FAILED on `reason`, before touching the store", async () => {
     const { store, calls } = fakeStore("POST");
     const resolve = createResolveReport({ store, authorize: (a) => a! });

@@ -18,7 +18,7 @@ afterEach(() => {
   delete (globalThis as unknown as Record<symbol, unknown>)[SLOT];
 });
 
-describe("GET /metrics (spec 13A A-6)", () => {
+describe("GET /metrics", () => {
   it("answers 404 when the caller may not see monitoring detail", async () => {
     createPrometheusMetrics({ service: "web", version: "t" });
     visible.mockReturnValue(false);

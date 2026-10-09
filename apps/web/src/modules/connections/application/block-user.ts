@@ -13,7 +13,7 @@ import type {
 import { cannotConnectSelf, refuse } from "./refusal";
 
 /**
- * FR-NET-004. Blocking works with or without a prior request and replaces whatever state the pair was in
+ * Blocking works with or without a prior request and replaces whatever state the pair was in
  * (a pending request or an accepted connection ends). It is by member, not by connection, so it can be done
  * from a profile page. Lifting it is `removeConnection` on the blocked row.
  */

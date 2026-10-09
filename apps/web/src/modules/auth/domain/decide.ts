@@ -28,7 +28,7 @@ type Guardrail = (input: {
   resource: Resource;
 }) => DenyReason | undefined;
 
-/** RBAC §8.3: a reviewer cannot decide their own verification request. */
+/** A reviewer cannot decide their own verification request. */
 const separationOfDuties: Guardrail = ({ actor, permission, resource }) =>
   permission === PERMISSIONS.ALUMNI_VERIFY &&
   resource.subjectUserId === actor.userId
@@ -42,22 +42,22 @@ const SELF_SERVICE_GUARDED: ReadonlySet<Permission> = new Set([
   PERMISSIONS.USER_REACTIVATE,
 ]);
 
-/** RBAC §8.2, extended to suspend/reactivate (spec B12-2): nobody changes their own access or state. */
+/**.2, extended to suspend/reactivate: nobody changes their own access or state. */
 const noSelfService: Guardrail = ({ permission, actor, resource }) =>
   SELF_SERVICE_GUARDED.has(permission) &&
   resource.subjectUserId === actor.userId
     ? "SELF_SERVICE"
     : undefined;
 
-// Ordered. Escalation (§8.1) and last-Super-Admin (§8.4) need data about the target, so they live in the
-// admin use cases (spec B12-3, B12-5), not here.
+// Ordered. Escalation and last-Super-Admin need data about the target, so they live in the
+// admin use cases, not here.
 const GUARDRAILS: readonly Guardrail[] = [separationOfDuties, noSelfService];
 
 /**
- * What an account may do BECAUSE of its state, without any grant (RBAC §7). Everything else is denied
+ * What an account may do BECAUSE of its state, without any grant. Everything else is denied
  * before grants are considered. Only self-service permissions belong here: submitting one's own
  * verification request, and `profile.update` (a PENDING or REJECTED account edits its own basic profile;
- * institutional fields stay out of reach of that use case, FR-PROFILE-004).
+ * institutional fields stay out of reach of that use case).
  */
 const STATE_ALLOWANCES: Readonly<
   Record<Exclude<AccountState, "VERIFIED">, readonly Permission[]>
@@ -78,8 +78,8 @@ const isLive = (grant: Grant, now: Date) =>
   grant.expiresAt === null || grant.expiresAt > now;
 
 /**
- * The authorization rules, in order (TDS §7.4); the first failure denies. Pure: no I/O.
- * Record-level conditions (RBAC §6) are NOT here; the use case that owns the record checks them
+ * The authorization rules, in order; the first failure denies. Pure: no I/O.
+ * Record-level conditions are NOT here; the use case that owns the record checks them
  * after `authorize()` passes.
  */
 export function decide({
@@ -88,7 +88,7 @@ export function decide({
   resource = {},
   now,
 }: DecideInput): Decision {
-  // 1. Account-state gate (RBAC §7). Explicit, not inferred from empty grants. A non-VERIFIED account
+  // 1. Account-state gate. Explicit, not inferred from empty grants. A non-VERIFIED account
   //    may use only what its state allows; grants are never consulted for it.
   if (actor.accountState !== "VERIFIED") {
     return STATE_ALLOWANCES[actor.accountState].includes(permission)
@@ -96,7 +96,7 @@ export function decide({
       : { allow: false, reason: "ACCOUNT_STATE" };
   }
 
-  // 2. Grant match (RBAC §5): GLOBAL, else CHAPTER for the resource's chapter.
+  // 2. Grant match: GLOBAL, else CHAPTER for the resource's chapter.
   const candidates = actor.grants.filter(
     (grant) => grant.permission === permission && isLive(grant, now)
   );
@@ -112,7 +112,7 @@ export function decide({
     };
   }
 
-  // 3. Guardrails (RBAC §8).
+  // 3. Guardrails.
   for (const guardrail of GUARDRAILS) {
     const reason = guardrail({ actor, permission, resource });
     if (reason) return { allow: false, reason };

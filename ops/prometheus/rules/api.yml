@@ -1,4 +1,4 @@
-# HTTP RED for /api routes (13A A-8). Ratio rules need >= 50 requests in the window (reliability §5.4.4).
+# HTTP RED for /api routes. Ratio rules need >= 50 requests in the window.
 groups:
   - name: api
     rules:
@@ -25,7 +25,7 @@ groups:
         for: 10m
         labels: { severity: ticket, service: web }
         annotations:
-          summary: "API p95 latency above 500 ms (SRS §47)"
+          summary: "API p95 latency above 500 ms"
           description: "p95 over the last 5 minutes is {{ $value | humanizeDuration }}."
           runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-2.md
 

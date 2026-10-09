@@ -18,7 +18,7 @@ export type NewConnection = ConnectionPatch & {
 
 /**
  * Everything a write does happens through one of these, inside ONE database transaction, so a row and its
- * outbox event commit or roll back together (NFR-REL-002).
+ * outbox event commit or roll back together.
  */
 export type ConnectionTx = {
   findByPair(userAId: string, userBId: string): Promise<ConnectionRow | null>;
@@ -36,7 +36,7 @@ export type ConnectionTx = {
   /** Guarded like `update`. False when the row had already changed. */
   remove(id: string, from: ConnectionState): Promise<boolean>;
   enqueue(event: ConnectionEvent): Promise<void>;
-  /** Writes the audit row in the same transaction (SRS §22). Ids only. */
+  /** Writes the audit row in the same transaction. Ids only. */
   audit(entry: ConnectionAuditEntry): Promise<void>;
 };
 

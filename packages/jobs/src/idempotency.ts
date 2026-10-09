@@ -5,7 +5,7 @@ import { defineJob } from "./define-job.ts";
 export const idempotencySweepPayload = z.object({ v: z.literal(1) }).strict();
 export type IdempotencySweepPayload = z.infer<typeof idempotencySweepPayload>;
 
-/** Deletes `Idempotency-Key` rows older than their 24 h retention (API spec §1.6). */
+/** Deletes `Idempotency-Key` rows older than their 24 h retention. */
 export const idempotencySweep = defineJob({
   name: "idempotency.sweep",
   version: 1,

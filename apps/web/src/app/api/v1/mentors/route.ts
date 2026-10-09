@@ -17,7 +17,7 @@ const query = z.object({
     .optional(),
 });
 
-/** GET /api/v1/mentors — available mentors this member may see (FR-MENTOR-003). */
+/** GET /api/v1/mentors — available mentors this member may see. */
 export const GET = routeHandler(async (request) => {
   const parsed = query.safeParse(
     Object.fromEntries(new URL(request.url).searchParams)

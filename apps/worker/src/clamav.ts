@@ -3,7 +3,7 @@ import net from "node:net";
 import type { ScannerPort } from "./scanner.ts";
 
 /**
- * ClamAV over clamd's TCP INSTREAM protocol (spec 16 SD-8, NFR-SEC-007), no client library:
+ * ClamAV over clamd's TCP INSTREAM protocol, no client library:
  * `zINSTREAM\0`, then the bytes as chunks each prefixed with a 4-byte big-endian length, then a zero length;
  * clamd answers one NUL-terminated line: `stream: OK`, `stream: <signature> FOUND`, or `… ERROR`.
  *

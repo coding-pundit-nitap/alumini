@@ -8,7 +8,7 @@ const verificationDecidedPayload = z
     requestId: z.uuid(),
     /** The applicant, who is notified. */
     userId: z.uuid(),
-    /** A decided request never changes, so the consumer may trust it (spec D12-5). */
+    /** A decided request never changes, so the consumer may trust it. */
     decision: z.enum(["APPROVED", "REJECTED"]),
   })
   .strict();
@@ -36,7 +36,7 @@ const options = {
     "deliver() keys the notification by (type, job id, recipient), so a rerun finds the existing row and enqueues no second email. Running twice has the same effect as once.",
 } as const;
 
-/** Staff decisions about an account (Phase 12D), written to the outbox with the decision. */
+/** Staff decisions about an account, written to the outbox with the decision. */
 export const verificationDecided = defineJob({
   ...options,
   name: "verification.decided",

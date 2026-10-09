@@ -2,14 +2,14 @@ import { z } from "zod";
 
 import { EMPLOYMENT_TYPES, WORK_MODES } from "./job";
 
-/** https-only, belt-and-braces with the DB's ck_job_application_url (spec J-11). */
+/** https-only, belt-and-braces with the DB's ck_job_application_url. */
 const applicationUrl = z
   .string()
   .trim()
   .url()
   .regex(/^https:\/\//, "The application link must start with https://");
 
-/** Trim, lower-case, de-dupe, cap at 20 (mirrors mentorship's `topics`, spec M's precedent). */
+/** Trim, lower-case, de-dupe, cap at 20 (mirrors mentorship's `topics`). */
 const skills = z
   .array(z.string().trim().min(1).max(40))
   .max(20)

@@ -1,7 +1,7 @@
 # Self-hosted deployment
 
 How to run the alumni network on one Linux server: setup from scratch, releases, rollback, and backups. This
-is the single-host stage 0 topology from [reliability §8](../docs/operations/reliability-operations.md#8-deployment--rollback).
+is the single-host stage 0 topology from [reliability runbook, deployment](docs/reliability-operations.md#8-deployment--rollback).
 Staging is a second server set up the same way (see [Staging](#staging)).
 
 ```text
@@ -32,7 +32,7 @@ main green in CI ─▶ CI publishes web, worker, migrate, postgres :<sha>
    ─▶ production: deploy.sh promote <sha> <name>  the same digests, only if staging's smoke test passed
 ```
 
-Production never resolves a tag: it runs the exact bytes staging tested (spec 18 PRD-3, PRD-4). The smoke test
+Production never resolves a tag: it runs the exact bytes staging tested. The smoke test
 is `/health/ready`, a sign-in with the smoke account and an authenticated read, through the public URL.
 
 **Build mode** (`deploy.sh build`) builds the four images on the server instead. It needs nothing outside the
@@ -168,7 +168,7 @@ member from the admin screens, put both in `.env`, and check: `deploy/deploy.sh 
 
 ### 8. Backups
 
-Design and reasoning: [ADR-011](../docs/architecture/adr/ADR-011-backup-and-recovery.md). PostgreSQL archives
+Design and reasoning: [ADR-011](docs/ADR-011-backup-and-recovery.md). PostgreSQL archives
 every WAL segment with pgBackRest, at most 5 minutes apart, to an S3-compatible bucket off this server, and
 takes base backups on a schedule. Everything is encrypted with `BACKUP_CIPHER_PASS` before it leaves the
 host. All jobs run through `deploy/backup.sh`; `deploy/backup.sh` without arguments lists them.
@@ -221,7 +221,7 @@ sudo mkdir -p /var/lib/prometheus/node-exporter && sudo chown $USER /var/lib/pro
 records the exact time to restore to if the change goes wrong.
 
 **Restoring.** Follow the runbook in
-[reliability §7.3](../docs/operations/reliability-operations.md#73-postgresql-restore-runbook). In short:
+[restore runbook](docs/reliability-operations.md#73-postgresql-restore-runbook). In short:
 
 ```bash
 ./backup.sh restore                                   # host loss: latest state, onto an empty volume
@@ -249,7 +249,7 @@ Grafana, node_exporter (disk, memory, CPU and the backup timestamps from step 8)
 and a blackbox exporter that probes `https://YOUR.DOMAIN/health/ready` the way users reach it (TLS, Nginx,
 certificate expiry). Nothing is published except on `127.0.0.1`.
 
-**Outside this host, before launch** (reliability §5.1; a monitor on the host dies with it):
+**Outside this host, before launch**:
 
 - **A dead-man's switch:** a service that pages when a heartbeat it expects every minute stops for 3 minutes
   (Healthchecks.io, Better Stack, Cronitor, PagerDuty's, and so on). Its webhook URL is `ALERT_DEADMANS_SWITCH_URL`.
@@ -293,10 +293,10 @@ A second, smaller server (2 vCPU, 4 GB) set up with steps 1–9, with these diff
 
 - `DEPLOY_ENV=staging` and `COMPOSE_PROJECT_NAME=alumini-staging`. If it has to share the production host,
   also `WEB_PORT=3001` and a second Nginx site; it then shares that host's disk, memory and failures, which is
-  why a separate server is recommended (spec 18 PRD-1).
+  why a separate server is recommended.
 - Its own domain (e.g. `staging.alumni.example.org`), secrets, SMTP credentials (a sandbox inbox, so test
   mail reaches no one), and its own backup bucket or at least its own prefix. **No production secret is ever
-  copied here** (reliability §8.2).
+  copied here**.
 - Data is synthetic, never a copy of production: register test accounts, or load the performance seed.
 - `SMOKE_EMAIL` and `SMOKE_PASSWORD` are required: without a passing smoke test, nothing can be promoted.
 - Monitoring (step 9) is optional. If you run it, send its pages to the ticket receiver: staging pages wake no
@@ -309,7 +309,7 @@ staging server, so the server releases CI's images directly: `RELEASE_SOURCE=ci`
 production. Those images passed every check on `main` (tests, coverage, E2E against a production build, the
 image scan) before CI published them; what this setup gives up is only the staging smoke test before production.
 
-**The server.** Sized from the load tests ([perf 2026-10-01](../docs/operations/perf/2026-10-01.md) §4):
+**The server.** Sized from the load tests ([perf 2026-10-01](../packages/scripts/perf/results/2026-10-01.md)):
 
 |      | Minimum          | Recommended   |
 | ---- | ---------------- | ------------- |
@@ -408,13 +408,13 @@ Each release:
    on every table, as a one-shot container. **If this fails, nothing else changes**: the old
    release keeps serving, and `.env` points at it again.
 4. `docker compose up -d` replaces web and worker (and postgres, when its image changed). The site is down for
-   a few seconds. This is the documented stop-gap ([reliability §8.3](../docs/operations/reliability-operations.md#83-production-deploy-procedure-single-host-zero-downtime-by-bluegreen));
-   blue/green is not built (spec 18 PRD-2), so release outside busy hours.
+   a few seconds. This is the documented stop-gap ([deploy procedure](docs/reliability-operations.md#83-production-deploy-procedure-single-host-zero-downtime-by-bluegreen));
+   blue/green is not built, so release outside busy hours.
 5. Waits for `/health/ready`, runs the smoke test, and appends the release to `deploy/releases.log`: commit,
    environment, source, the four images, smoke result, who released it, and the release it replaced. A failed
    smoke test is logged, exits non-zero and prints the rollback command.
 
-Migrations must be expand-only ([reliability §9.3](../docs/operations/reliability-operations.md#93-expand--migrate--contract)):
+Migrations must be expand-only ([expand, migrate, contract](docs/reliability-operations.md#93-expand--migrate--contract)):
 the previous release has to keep working on the new schema, which is what makes rollback safe.
 
 ## Rollback
@@ -455,13 +455,13 @@ docker compose exec postgres psql -U alumini alumini
   it. Dump (`./backup.sh dump`, or `pg_dump -Fc` to a file), `docker compose down`, remove the
   `alumini-prod_postgres-data` volume, release, restore the dump, then `./backup.sh backup full`. Physical
   backups from the old version cannot be restored into the new one. A server that ran this stack before
-  PostgreSQL 18 (Phase 17) needs this once.
+  PostgreSQL 18 needs this once.
 - **Secrets rotation:** edit `.env`, then `docker compose up -d`. Changing `POSTGRES_PASSWORD` or
   `MINIO_ROOT_*` after the first start also needs the password changed inside the service, because the
   volumes keep the old one. For `APP_DB_PASSWORD`, run `docker compose run --rm migrate` before the `up`:
   the migrate job sets the runtime role's password.
 - **Database roles:** web and worker connect as `alumini_app`, which can read and write rows but not change
-  the schema, and can only add to the audit log (reliability §9.5). Migrations, the seed, backups and
+  the schema, and can only add to the audit log. Migrations, the seed, backups and
   `psql` for an investigation use the owner, `alumini`.
 
 ## Before launch
@@ -471,7 +471,7 @@ docker compose exec postgres psql -U alumini alumini
 - [ ] Upload a profile photo; it appears after the scan (ClamAV healthy)
 - [ ] Backup bucket off-host, versioned, key without version-delete; `BACKUP_CIPHER_PASS` escrowed with two people
 - [ ] `./backup.sh init` done, cron installed, `./backup.sh info` shows backups and WAL reaching the present
-- [ ] `./backup.sh restore-test` passes on the server, recorded in [restore-tests](../docs/operations/restore-tests.md)
+- [ ] `./backup.sh restore-test` passes on the server, recorded in [restore-tests](../packages/scripts/drills/reports/restore-tests.md)
 - [ ] External uptime check on `/health/ready`, paging from outside the host
 - [ ] Monitoring up (step 9): every Prometheus target up, a test ticket and a test page received, the
       dead-man's switch receiving heartbeats; then `./monitoring.sh stop prometheus` pages within 5 minutes,
@@ -480,4 +480,4 @@ docker compose exec postgres psql -U alumini alumini
 - [ ] Staging set up and a release promoted from it (`releases.log` on production shows `source=promote`)
 - [ ] A rollback rehearsed on staging and once on production: release, `rollback <previous>`, release again
 - [ ] `pnpm launch:check --strict` passes on a full checkout: every row of
-      [launch-readiness](../docs/operations/launch-readiness.md) proven, its owner checklist ticked
+      [launch-readiness](../packages/scripts/launch/launch-readiness.md) proven, its owner checklist ticked

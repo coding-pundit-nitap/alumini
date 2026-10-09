@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import type { JobQueries, PublishedJobCard } from "./job-queries";
 import { DEFAULT_LIMIT, MAX_LIMIT, type JobsPage } from "./list-my-jobs";
 
-/** FR-JOB. The public listing (spec J-8/J-9/J-12): PUBLISHED, deadline >= current_date, exact-match filters. */
+/** The public listing: PUBLISHED, deadline >= current_date, exact-match filters. */
 export function createListPublishedJobs(deps: {
   queries: JobQueries;
   authorize: Authorize;

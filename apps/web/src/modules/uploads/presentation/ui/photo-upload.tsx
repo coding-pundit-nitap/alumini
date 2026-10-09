@@ -41,7 +41,7 @@ const POLL_MAX_ATTEMPTS = 15;
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Own-profile photo (spec 3C). Not a `<form>`: the browser POSTs the file straight to the object store
+ * Own-profile photo. Not a `<form>`: the browser POSTs the file straight to the object store
  * via the presigned URL, bytes never touching this process, then the component polls while the worker
  * scans it. `router` is unused here on purpose — `setProfilePhotoAction` itself calls `refresh()`
  * server-side, which re-renders this page with the new `photoUrl`.

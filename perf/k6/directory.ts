@@ -1,4 +1,4 @@
-// Directory browse + filters (strategy §13.2): GET /api/v1/alumni without a search term. The heaviest read:
+// Directory browse + filters: GET /api/v1/alumni without a search term. The heaviest read:
 // filters, per-viewer visibility and block checks, keyset pagination.
 import http from "k6/http";
 import type { Options } from "k6/options";

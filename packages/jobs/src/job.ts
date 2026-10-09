@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { defineJob, FANOUT_TIMEOUT_MS } from "./define-job.ts";
 
-/** Ids only, per reliability §6.4: a consumer re-reads the row, never trusts a name or note in the event. */
+/** Ids only: a consumer re-reads the row, never trusts a name or note in the event. */
 const jobEventPayload = z
   .object({
     v: z.literal(1),
@@ -29,7 +29,7 @@ const retry = {
 const idempotency =
   "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.";
 
-/** Facts a job posting changed, written to the outbox with the change. Phase 11 notifies on them. */
+/** Facts a job posting changed, written to the outbox with the change. notifies on them. */
 export const jobEvents = {
   "job.submitted": defineJob({
     name: "job.submitted",

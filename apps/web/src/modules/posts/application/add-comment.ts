@@ -11,7 +11,7 @@ import { refuse } from "./refusal";
 import { parse } from "./validation";
 
 /**
- * FR-FEED-003. A blocked pair and a deleted post both refuse as NOT_FOUND (decideInteract, C-2/C-3):
+ * A blocked pair and a deleted post both refuse as NOT_FOUND (decideInteract):
  * a block is never revealed, in either direction.
  */
 export function createAddComment(deps: {

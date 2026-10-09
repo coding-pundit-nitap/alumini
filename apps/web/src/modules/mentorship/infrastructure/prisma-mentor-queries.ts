@@ -7,7 +7,7 @@ import { activeMentorSql } from "./active-mentor-sql";
 
 const like = (value: string) => `%${value.replace(/[\\%_]/g, "\\$&")}%`;
 
-/** Discovery reads (FR-MENTOR-003). One SQL query: a few hundred mentors, and every row is privacy-filtered here. */
+/** Discovery reads. One SQL query: a few hundred mentors, and every row is privacy-filtered here. */
 export function createPrismaMentorQueries(prisma: PrismaClient): MentorQueries {
   return {
     async findProfile(userId) {

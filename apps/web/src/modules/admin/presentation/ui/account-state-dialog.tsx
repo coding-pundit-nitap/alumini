@@ -6,7 +6,7 @@ import { SUSPENSION_REASONS, type TargetState } from "../../domain/lifecycle";
 import { ConfirmButton, type AccessAction } from "./confirm-button";
 import { REASON_LABEL, SELECT_CLASS, TRANSITION } from "./labels";
 
-/** Suspend / deactivate / reinstate, with a required reason code when leaving VERIFIED (spec B12-14, C-3). */
+/** Suspend / deactivate / reinstate, with a required reason code when leaving VERIFIED. */
 export function AccountStateDialog(props: {
   userId: string;
   userName: string;

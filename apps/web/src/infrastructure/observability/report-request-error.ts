@@ -20,7 +20,7 @@ type ErrorContext = {
 
 /**
  * Server-side reporting for errors Next.js catches itself: Server Component renders, Server Actions
- * and Route Handlers not wrapped in `routeHandler` (TDS §16.4 rule 6). Called from `instrumentation.ts`.
+ * and Route Handlers not wrapped in `routeHandler`. Called from `instrumentation.ts`.
  *
  * The `digest` is what the error UI shows the user; logging it next to `request_id` is what lets
  * support go from "the id on my screen" to the failing request. The same failure goes to the error tracker (13B).

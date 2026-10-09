@@ -15,7 +15,7 @@ import { createTestDatabase } from "../../support/test-database";
 const ALL_PERMISSIONS = Object.values(PERMISSIONS);
 const expected = readRoleMatrixFromDoc();
 
-describe("RBAC §4 matrix, end to end: doc → seed → database → GrantSource → decide (rbac §11)", () => {
+describe("matrix, end to end: doc → seed → database → GrantSource → decide", () => {
   let db: TestDatabase;
   const now = () => new Date();
   const { can } = createAuthorization({ observer: { record() {} }, now });

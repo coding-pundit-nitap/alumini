@@ -12,7 +12,7 @@ import type { AdminStore, UserRow } from "./admin-store";
 import type { Authorize } from "./authorize-port";
 import { toValidationError } from "./validation";
 
-/** FR-ADMIN-002, spec B12-10. Concealed from non-holders (404). */
+/** Concealed from non-holders (404). */
 export function createListUsers(deps: {
   store: AdminStore;
   authorize: Authorize;

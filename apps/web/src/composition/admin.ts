@@ -29,7 +29,7 @@ import {
 } from "@/modules/admin/server";
 import { authorize, can, loadGrants } from "@/modules/auth";
 
-/** Wires the admin module to PostgreSQL. A failed tile is logged and counted, never thrown (spec A12-6). */
+/** Wires the admin module to PostgreSQL. A failed tile is logged and counted, never thrown. */
 const store = createPrismaAdminStore(prisma);
 
 export const getDashboard = createGetDashboard({
@@ -42,7 +42,7 @@ export const getDashboard = createGetDashboard({
 });
 export const listAuditLog = createListAuditLog({ store, authorize });
 
-/** Spec 12F F-3: a failed section is logged and counted, and the rest of the page renders (SRS §44). */
+/** A failed section is logged and counted, and the rest of the page renders. */
 export const getAnalytics = createGetAnalytics({
   store: createPrismaAnalyticsStore(prisma),
   authorize,
@@ -58,7 +58,7 @@ export const getAnalytics = createGetAnalytics({
   },
 });
 
-// The role catalogue and the super-admin role name are data injected here (RBAC §11: use cases name
+// The role catalogue and the super-admin role name are data injected here (use cases name
 // permissions); role-matrix.integration.test.ts proves ROLE_PERMISSIONS matches the database.
 const accessStore = createPrismaAccessStore({
   runner: transactionRunner,
@@ -90,7 +90,7 @@ export const revokeRole = createRevokeRole(roleDeps);
 export const grantPermission = createGrantPermission(access);
 export const revokeGrant = createRevokeGrant(access);
 
-// 12G: the SRS §45 catalogue is data injected here, like the role catalogue.
+// The retention catalogue is data injected here, like the role catalogue.
 const settings = {
   store: createPrismaSettingsStore({
     db: prisma,

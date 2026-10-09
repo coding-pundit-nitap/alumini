@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * The posts rules, pure (FR-FEED-001…004, spec C-2…C-4, C-10). A refusal of `NOT_FOUND` means "not yours to
+ * The posts rules, pure. A refusal of `NOT_FOUND` means "not yours to
  * know about": a deleted post and a blocked pair read the same, so a block is never revealed either direction.
  */
 export const REACTION_TYPES = [
@@ -23,12 +23,12 @@ export const postInput = z
   })
   .strict();
 
-/** Phase 10 "edit own post": only the text changes; images and the link stay as posted. */
+/** "edit own post": only the text changes; images and the link stay as posted. */
 export const postEditInput = z
   .object({ content: postInput.shape.content })
   .strict();
 
-/** Phase 12E (spec E-1): an announcement is a post with a title; body and attachments follow the post rules. */
+/** An announcement is a post with a title; body and attachments follow the post rules. */
 export const announcementInput = postInput.extend({
   title: z.string().trim().min(1).max(120),
 });
@@ -52,7 +52,7 @@ export function decideInteract(
   return { ok: true };
 }
 
-/** May `actorId` delete this post/comment? Only its author (moderator removal is a separate path, C-9). */
+/** May `actorId` delete this post/comment? Only its author (moderator removal is a separate path). */
 export function decideOwn(authorId: string, actorId: string): Decision {
   return authorId === actorId ? { ok: true } : { ok: false, code: "NOT_OWNER" };
 }

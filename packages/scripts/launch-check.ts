@@ -4,18 +4,18 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 
 /**
- * Checks the launch report, docs/operations/launch-readiness.md (spec 18D). Every evidence reference on a row
+ * Checks the launch report, packages/scripts/launch/launch-readiness.md. Every evidence reference on a row
  * must resolve:
  *
  *   test:<path>[#<name>]   a test file that a suite CI runs collects; with a name, that test is in it, not skipped
- *   drill:<file>[#<check>] the newest entry of docs/operations/<file> passed within 35 days, and lists the check
+ *   drill:<file>[#<check>] the newest entry of packages/scripts/drills/reports/<file> passed within 35 days, and lists the check
  *   doc:<path>[#<text>]    a repository file exists and contains the text
  *   ci:<workflow>          the newest completed run of that workflow on main succeeded (needs gh; else open)
- *   owner:<OW-n>           an owner checklist row (§4 of the report); open until ticked
+ *   owner:<OW-n>           an owner checklist row (of the report); open until ticked
  *
- * Also: every SRS §50 box has a row, and the documentation audit (runbooks R-1 … R-15, the deploy README's
+ * Also: every acceptance box has a row, and the documentation audit (runbooks R-1 … R-15, the deploy README's
  * sections). Broken evidence exits 1. Open items are listed and exit 0, or 2 with --strict: the launch gate.
- * docs/ is not tracked, so this runs locally, not in CI (spec 18D D-1).
+ * Run locally: it reads the drill logs in packages/scripts/drills/reports and the acceptance criteria in packages/scripts/launch.
  *
  *   node packages/scripts/launch-check.ts [--strict] [--report path]
  */
@@ -25,13 +25,13 @@ const { values: args } = parseArgs({
     strict: { type: "boolean", default: false },
     report: {
       type: "string",
-      default: "docs/operations/launch-readiness.md",
+      default: "packages/scripts/launch/launch-readiness.md",
     },
   },
 });
 
 const DRILL_MAX_AGE_DAYS = 35;
-// R-13 is donation reconciliation: there is no payment provider to reconcile against (ops/README).
+// Is donation reconciliation: there is no payment provider to reconcile against (ops/README).
 const RUNBOOKS_NOT_SHIPPED = new Set(["R-13"]);
 const README_SECTIONS = [
   ...Array.from({ length: 9 }, (_, i) => `### ${i + 1}. `),
@@ -163,7 +163,7 @@ const ENTRY =
 
 function checkDrill(ref: string): Result {
   const [name, check] = splitRef(ref);
-  const file = path.join("docs/operations", name);
+  const file = path.join("packages/scripts/drills/reports", name);
   if (!exists(file)) return broken(`${file}: no such file`);
   const text = read(file);
   const entries = [...text.matchAll(ENTRY)].map((m) => ({
@@ -306,11 +306,7 @@ for (const line of report.split("\n")) {
 
 const audit: string[] = [];
 
-const srs = read("docs/requirements/p1.md");
-const acceptance = srs.slice(
-  srs.indexOf("# 50. Acceptance Criteria"),
-  srs.indexOf("# 51.")
-);
+const acceptance = read("packages/scripts/launch/acceptance-criteria.md");
 const labels = new Set(sections.flatMap((s) => s.rows.map((r) => r.label)));
 let box = "";
 for (const line of acceptance.split("\n")) {
@@ -318,7 +314,9 @@ for (const line of acceptance.split("\n")) {
   if (heading) box = heading[1] ?? "";
   const item = /^- \[[ x]\] (.*)/.exec(line);
   if (item && !labels.has(`${box}: ${item[1]}`))
-    audit.push(`SRS §50 "${box}: ${item[1]}" has no row in the report`);
+    audit.push(
+      `Acceptance criteria "${box}: ${item[1]}" has no row in the report`
+    );
 }
 
 for (let n = 1; n <= 15; n++) {
@@ -355,7 +353,7 @@ for (const section of sections) {
 console.log("\nDocumentation audit");
 if (audit.length === 0)
   console.log(
-    "  ✔ runbooks R-1 … R-15, deploy README sections, every SRS §50 box has a row"
+    "  ✔ runbooks R-1 … R-15, deploy README sections, every box has a row"
   );
 for (const problem of audit) console.log(`  ✘ ${problem}`);
 

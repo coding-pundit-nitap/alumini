@@ -14,7 +14,7 @@ import type {
 import { refuse } from "./refusal";
 import { parse } from "./validation";
 
-/** What resolving does to the reported thing (spec C12-2). Exhaustive: a new target type fails to compile. */
+/** What resolving does to the reported thing. Exhaustive: a new target type fails to compile. */
 async function applyResolution(
   tx: ModerationTx,
   report: ReportRow,
@@ -42,7 +42,7 @@ async function applyResolution(
       });
       return;
     case "MESSAGE":
-      // No content.removed: its copy says "post or comment" (spec C-5).
+      // No content.removed: its copy says "post or comment".
       if (await tx.hideMessage(report.targetId))
         await tx.audit({
           action: "message.hidden",
@@ -61,7 +61,7 @@ async function applyResolution(
 }
 
 /**
- * FR-MOD-003, spec C-8. `tx.patchReport` and the per-type side effect (`applyResolution`) run inside the
+ * `tx.patchReport` and the per-type side effect (`applyResolution`) run inside the
  * SAME transaction as the store's `.transaction()` call, so a mid-transaction failure leaves neither the
  * report's status changed nor the target touched. Resolving soft-deletes a post/comment, hides a message,
  * or (USER) changes nothing beyond the report itself. Resolving your own report or your own content is

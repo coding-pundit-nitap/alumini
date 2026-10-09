@@ -6,7 +6,7 @@ import type { DeliveryStore } from "./deliver.ts";
 
 /**
  * Worker-side twin of apps/web's prisma-notification-store (worker cannot import from web). Also
- * implements `EmailDeliveryUpdater` (N-12): `deliver.ts` records exactly one EMAIL row per notification,
+ * implements `EmailDeliveryUpdater`: `deliver.ts` records exactly one EMAIL row per notification,
  * so `updateMany` keyed by notificationId + channel is safe — a missing row (payload predates this
  * feature, or the row was never written) is a no-op, not a throw.
  */

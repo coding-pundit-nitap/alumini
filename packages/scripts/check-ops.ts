@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 /**
- * Checks the monitoring code under ops/ (spec 13C C-8, 18C), in the same pinned images the stacks run: the
+ * Checks the monitoring code under ops/, in the same pinned images the stacks run: the
  * local and production Prometheus configs and the rules parse, every alert rule's promtool unit tests pass,
  * Alertmanager's and the blackbox exporter's configs are valid, every alert links a runbook that exists, and
  * every dashboard is valid JSON on the provisioned datasource. Needs Docker; CI runs it in the `observability`

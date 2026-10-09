@@ -1,7 +1,7 @@
 import type { Instrumentation } from "next";
 
 /**
- * Runs once when the server starts. Missing production configuration (spec 16 S-11) or a malformed
+ * Runs once when the server starts. Missing production configuration or a malformed
  * institutional-email policy stops startup (fail closed).
  */
 export async function register() {
@@ -36,7 +36,7 @@ export async function register() {
 /**
  * Runs for every server error Next.js catches (renders, Server Actions, unwrapped Route Handlers).
  * Node runtime only: the logger uses AsyncLocalStorage. Logged and sent to the error tracker (13B);
- * tracing is not used (ADR-028).
+ * tracing is not used.
  */
 export const onRequestError: Instrumentation.onRequestError = async (
   error,

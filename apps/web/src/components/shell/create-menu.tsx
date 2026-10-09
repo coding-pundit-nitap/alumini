@@ -18,7 +18,7 @@ import type { CreateAction } from "./nav-model";
 
 const COMPOSE = "/dashboard#compose";
 
-/** Post lives on Home: when already there, jump focus to the composer (UI-2 adds `#compose`). */
+/** Post lives on Home: when already there, jump focus to the composer (adds `#compose`). */
 export function useCreateClick() {
   const pathname = usePathname();
   return (href: string) => {

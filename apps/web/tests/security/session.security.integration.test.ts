@@ -1,4 +1,4 @@
-// Session security and the Better Auth surface (strategy §10.1 "Session security", spec 16 16C), through
+// Session security and the Better Auth surface, through
 // Better Auth's real handler on a test database. Every /api/auth endpoint is reachable by any client, so
 // each one that could change identity, sessions or account state is tested here, not assumed.
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -255,7 +255,7 @@ describe("session security (real Better Auth, real PostgreSQL)", () => {
     });
   });
 
-  describe("only the Better Auth endpoints the app uses are open (SD-11)", () => {
+  describe("only the Better Auth endpoints the app uses are open", () => {
     it("every endpoint Better Auth registers is classified as enabled or disabled", () => {
       const { auth } = makeAuth();
       const registered = new Set(
@@ -393,7 +393,7 @@ describe("session security (real Better Auth, real PostgreSQL)", () => {
     );
   });
 
-  describe("passwords at rest (NFR-SEC-001)", () => {
+  describe("passwords at rest", () => {
     it("are stored as salted hashes, never as the password", async () => {
       const h = makeAuth();
       await member(h, "asha@example.test");

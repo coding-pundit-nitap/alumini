@@ -67,7 +67,7 @@ ALTER TABLE "verification_request" ADD CONSTRAINT "verification_request_reviewed
 -- AddForeignKey
 ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_actor_id_fkey" FOREIGN KEY ("actor_id") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- Persistent invariants live in the database (Phase 1 architectural rule). Prisma's schema language
+-- Persistent invariants live in the database (architectural rule). Prisma's schema language
 -- cannot express CHECK constraints, partial indexes or triggers, so they are hand-written here.
 
 -- verification_request ---------------------------------------------------------------------------
@@ -93,7 +93,7 @@ ALTER TABLE "verification_request"
   ADD CONSTRAINT ck_verification_pending_reviewer
   CHECK (("status" = 'PENDING') = ("reviewed_by" IS NULL AND "reviewed_at" IS NULL));
 
--- Separation of duties (RBAC §8.3) as a backstop to the application guardrail.
+-- Separation of duties as a backstop to the application guardrail.
 ALTER TABLE "verification_request"
   ADD CONSTRAINT ck_verification_reviewer_not_subject
   CHECK ("reviewed_by" IS NULL OR "reviewed_by" <> "user_id");
@@ -103,7 +103,7 @@ ALTER TABLE "verification_request"
   ADD CONSTRAINT ck_verification_reject_note
   CHECK ("status" <> 'REJECTED' OR "review_note" IS NOT NULL);
 
--- One open request per user (FR-AUTH-003a abuse prevention).
+-- One open request per user (abuse prevention).
 CREATE UNIQUE INDEX uq_verification_one_open
   ON "verification_request" ("user_id") WHERE "status" = 'PENDING';
 
@@ -114,8 +114,8 @@ ALTER TABLE "audit_log"
 ALTER TABLE "audit_log"
   ADD CONSTRAINT ck_audit_metadata_object CHECK (jsonb_typeof("metadata") = 'object');
 
--- Append-only, enforced by the database even against our own code (spec 2D, D-6). The separate
--- insert-only database role (TDS: migrator / runtime / audit writer) is added in Phase 14/16; until
+-- Append-only, enforced by the database even against our own code. The separate
+-- insert-only database role (migrator / runtime / audit writer) is planned; until
 -- then this trigger is the guard.
 CREATE FUNCTION audit_log_reject_mutation() RETURNS trigger
 LANGUAGE plpgsql AS $$

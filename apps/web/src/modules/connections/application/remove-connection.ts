@@ -13,7 +13,7 @@ import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { refuse } from "./refusal";
 
 /**
- * FR-NET-003 and the unblock half of FR-NET-004 (API spec §6.4): cancel your own request, remove an accepted
+ * And the unblock half of cancel your own request, remove an accepted
  * connection, or lift your own block. The row is deleted, so a later request starts clean. The delete is
  * guarded by the state the decision was made on.
  */

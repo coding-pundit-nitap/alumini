@@ -106,7 +106,7 @@ describe("event activity processor", () => {
     expect(d.deliver).not.toHaveBeenCalled();
   });
 
-  it("registration-cancelled by someone else notifies the registrant in-app + email (spec D12-7)", async () => {
+  it("registration-cancelled by someone else notifies the registrant in-app + email", async () => {
     const d = deps();
     await createEventActivityProcessor("registration-cancelled", d)(
       { ...registration, actorId: "organizer-1" },

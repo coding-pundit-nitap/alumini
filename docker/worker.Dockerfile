@@ -1,4 +1,4 @@
-# Worker image (spec 16 16E). Build from the repository root:
+# Worker image. Build from the repository root:
 #   docker build -f docker/worker.Dockerfile --build-arg GIT_SHA=$(git rev-parse HEAD) -t alumini-worker .
 # Node runs the TypeScript sources directly (type stripping), so there is no compile step.
 ARG NODE_IMAGE=node:24.21.0-alpine3.24
@@ -10,7 +10,7 @@ FROM node AS base
 RUN corepack enable
 WORKDIR /repo
 
-# The worker's slice of the workspace; verify-worker-prune.mjs checks the web app is not in it (ADR-018).
+# The worker's slice of the workspace; verify-worker-prune.mjs checks the web app is not in it.
 FROM base AS prune
 COPY . .
 RUN pnpm dlx turbo@2.11.3 prune @nitap/worker --docker --out-dir /out

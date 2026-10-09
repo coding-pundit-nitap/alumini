@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@nitap/ui/components/card";
 
-/** H-11: first-run cards for a member with nothing on their dashboard yet. */
+/** First-run cards for a member with nothing on their dashboard yet. */
 export function Guidance({ batch }: { batch: number | null }) {
   const cards = [
     {

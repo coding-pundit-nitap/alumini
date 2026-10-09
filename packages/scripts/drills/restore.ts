@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Restore drill (Phase 17; reliability §3.6 and §7.6; ADR-011). Runs the production stack's database and backup
+// Restore drill. Runs the production stack's database and backup
 // tooling (deploy/compose.yml, deploy/backup.sh) in a throwaway compose project, against a TLS MinIO standing
 // in for the off-host repository, and times two scenarios:
 //
@@ -15,7 +15,7 @@
 // migration ("migrations reconcile"). --users sizes an alumini_perf database in the same cluster (perf seed)
 // so timings reflect real volume; --soak is how long the heartbeat writes before the host is lost (longer than
 // archive_timeout, 300 s, so the measured RPO is the archive interval, not the drill's luck). --record appends
-// the results to docs/operations/restore-tests.md, --summary <file> to another file (CI's step summary). Exit
+// the results to packages/scripts/drills/reports/restore-tests.md, --summary <file> to another file (CI's step summary). Exit
 // code 1 if any check fails.
 import { execFileSync, spawn } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
@@ -399,77 +399,80 @@ try {
   run("docker", ["compose", "--profile", "drill", "run", "--rm", "repo-init"]);
 
   // One release behind: every migration except the newest.
-  await timed("seed (migrations N-1, base seed, accounts, perf volume)", () => {
-    const all = readdirSync(
-      path.join(root, "packages/database/prisma/migrations")
-    );
-    const migrations = all.filter((m) => /^\d/.test(m)).sort();
-    const n1 = path.join(work, "migrations-n1");
-    cpSync(path.join(root, "packages/database/prisma/migrations"), n1, {
-      recursive: true,
-    });
-    const last = migrations.at(-1);
-    if (!last) throw new Error("no migrations found");
-    rmSync(path.join(n1, last), { recursive: true });
-    writeFileSync(
-      path.join(work, "prisma.config.n1.ts"),
-      `export default ${JSON.stringify({
-        schema: path.join(root, "packages/database/prisma/schema.prisma"),
-        migrations: { path: n1 },
-        datasource: { url: hostUrl("alumini") },
-      })};\n`
-    );
-    const seedEnv = {
-      ...env,
-      DATABASE_URL: hostUrl("alumini"),
-      NODE_ENV: "development",
-    };
-    run(
-      "pnpm",
-      [
-        "--filter",
-        "@nitap/database",
-        "exec",
-        "prisma",
-        "migrate",
-        "deploy",
-        "--config",
+  await timed(
+    "seed (previous migrations, base seed, accounts, perf volume)",
+    () => {
+      const all = readdirSync(
+        path.join(root, "packages/database/prisma/migrations")
+      );
+      const migrations = all.filter((m) => /^\d/.test(m)).sort();
+      const n1 = path.join(work, "migrations-n1");
+      cpSync(path.join(root, "packages/database/prisma/migrations"), n1, {
+        recursive: true,
+      });
+      const last = migrations.at(-1);
+      if (!last) throw new Error("no migrations found");
+      rmSync(path.join(n1, last), { recursive: true });
+      writeFileSync(
         path.join(work, "prisma.config.n1.ts"),
-      ],
-      { cwd: root, env: seedEnv }
-    );
-    run("pnpm", ["--filter", "@nitap/database", "db:seed"], {
-      cwd: root,
-      env: seedEnv,
-    });
-    run("pnpm", ["--filter", "@nitap/web", "db:seed:admin"], {
-      cwd: root,
-      env: seedEnv,
-    });
-    if (Number(args.users) > 0) {
+        `export default ${JSON.stringify({
+          schema: path.join(root, "packages/database/prisma/schema.prisma"),
+          migrations: { path: n1 },
+          datasource: { url: hostUrl("alumini") },
+        })};\n`
+      );
+      const seedEnv = {
+        ...env,
+        DATABASE_URL: hostUrl("alumini"),
+        NODE_ENV: "development",
+      };
       run(
         "pnpm",
         [
-          "perf:seed",
-          "--",
-          "--users",
-          args.users,
-          "--out",
-          path.join(work, "fixture.json"),
+          "--filter",
+          "@nitap/database",
+          "exec",
+          "prisma",
+          "migrate",
+          "deploy",
+          "--config",
+          path.join(work, "prisma.config.n1.ts"),
         ],
-        {
-          cwd: root,
-          env: { ...seedEnv, PERF_DATABASE_URL: hostUrl("alumini_perf") },
-        }
+        { cwd: root, env: seedEnv }
+      );
+      run("pnpm", ["--filter", "@nitap/database", "db:seed"], {
+        cwd: root,
+        env: seedEnv,
+      });
+      run("pnpm", ["--filter", "@nitap/web", "db:seed:admin"], {
+        cwd: root,
+        env: seedEnv,
+      });
+      if (Number(args.users) > 0) {
+        run(
+          "pnpm",
+          [
+            "perf:seed",
+            "--",
+            "--users",
+            args.users,
+            "--out",
+            path.join(work, "fixture.json"),
+          ],
+          {
+            cwd: root,
+            env: { ...seedEnv, PERF_DATABASE_URL: hostUrl("alumini_perf") },
+          }
+        );
+      }
+      sql("CREATE DATABASE dr_probe");
+      sql(
+        "CREATE TABLE hb (id bigserial PRIMARY KEY, at timestamptz NOT NULL DEFAULT clock_timestamp()); " +
+          "CREATE TABLE ledger (id int PRIMARY KEY); INSERT INTO ledger SELECT generate_series(1, 100)",
+        { db: "dr_probe" }
       );
     }
-    sql("CREATE DATABASE dr_probe");
-    sql(
-      "CREATE TABLE hb (id bigserial PRIMARY KEY, at timestamptz NOT NULL DEFAULT clock_timestamp()); " +
-        "CREATE TABLE ledger (id int PRIMARY KEY); INSERT INTO ledger SELECT generate_series(1, 100)",
-      { db: "dr_probe" }
-    );
-  });
+  );
   const newest = readdirSync(
     path.join(root, "packages/database/prisma/migrations")
   )
@@ -626,7 +629,7 @@ try {
     console.log(`kept: ${work} (docker compose project ${project})`);
   else teardown();
 }
-// Failed runs are recorded too (docs/operations/restore-tests.md).
+// Failed runs are recorded too (packages/scripts/drills/reports/restore-tests.md).
 const failed = results.filter((r) => !r.pass);
 const report = [
   "",
@@ -651,6 +654,9 @@ const report = [
   "",
 ].join("\n");
 if (args.record)
-  appendFileSync(path.join(root, "docs/operations/restore-tests.md"), report);
+  appendFileSync(
+    path.join(root, "packages/scripts/drills/reports/restore-tests.md"),
+    report
+  );
 if (args.summary) appendFileSync(args.summary, report);
 process.exit(failed.length === 0 ? 0 : 1);

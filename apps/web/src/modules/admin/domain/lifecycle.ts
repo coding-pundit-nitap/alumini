@@ -2,7 +2,7 @@
 export type AccountStateValue =
   "PENDING" | "VERIFIED" | "REJECTED" | "SUSPENDED" | "DEACTIVATED";
 
-/** The states an admin can move an account to (spec B12-1). */
+/** The states an admin can move an account to. */
 export const TARGET_STATES = ["SUSPENDED", "DEACTIVATED", "VERIFIED"] as const;
 export type TargetState = (typeof TARGET_STATES)[number];
 
@@ -19,7 +19,7 @@ export const canTransition = (
   to: TargetState
 ): boolean => FROM[to].includes(from);
 
-/** A code, not free text: audit metadata holds identifiers only (spec C-3). */
+/** A code, not free text: audit metadata holds identifiers only. */
 export const SUSPENSION_REASONS = [
   "SPAM",
   "HARASSMENT",

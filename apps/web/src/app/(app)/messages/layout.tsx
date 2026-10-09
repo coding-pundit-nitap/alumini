@@ -7,7 +7,7 @@ import { getActor } from "@/modules/auth";
 import { ConversationList, MessengerPanes } from "@/modules/messaging";
 
 /**
- * The messenger: the inbox stays beside whatever conversation is open (UI-4). Signed-out visitors fall
+ * The messenger: the inbox stays beside whatever conversation is open. Signed-out visitors fall
  * through to the page, which redirects to login with the right `next`.
  */
 export default async function MessagesLayout({

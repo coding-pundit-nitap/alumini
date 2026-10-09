@@ -8,7 +8,7 @@ import type { TestDatabase } from "../../support/test-database";
 import { createTestDatabase } from "../../support/test-database";
 
 // Roles are cluster-wide: each test makes its own and drops it after its database.
-describe("runtime database role (reliability §9.5, spec 18D F-12)", () => {
+describe("runtime database role", () => {
   let db: TestDatabase;
   let role: string;
   let password: string;

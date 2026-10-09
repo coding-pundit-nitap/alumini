@@ -112,7 +112,7 @@ export type Person = {
   id: string;
   fullName: string;
   hasPhoto: boolean;
-  /** UI-15: set by composition after the read. */
+  /** Set by composition after the read. */
   tick?: Tick | null;
 };
 export type ListedConversation = {
@@ -155,7 +155,7 @@ export type ContextMessage = {
   seq: string;
   senderId: string;
   senderName: string;
-  /** The real text, hidden or not: the moderator needs to see what was hidden (spec C12-6). */
+  /** The real text, hidden or not: the moderator needs to see what was hidden. */
   body: string;
   createdAt: Date;
   hidden: boolean;

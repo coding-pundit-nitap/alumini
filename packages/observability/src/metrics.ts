@@ -1,9 +1,9 @@
 /**
- * Metrics port (decision D10). Every phase emits metric calls; Phase 13 installs a real adapter
+ * Metrics port. Every phase emits metric calls; installs a real adapter
  * (Prometheus/OpenTelemetry) with `setMetrics` without touching a call site.
  * Names follow Prometheus conventions (`http_requests_total`, `..._seconds`); labels stay low-cardinality
  * (never user ids or raw URLs).
- * State lives on globalThis so separate Next.js bundles share it (OD-7).
+ * State lives on globalThis so separate Next.js bundles share it.
  */
 export type MetricLabels = Record<string, string | number | boolean>;
 

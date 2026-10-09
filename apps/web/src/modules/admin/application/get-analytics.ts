@@ -73,7 +73,7 @@ function loader(
 }
 
 /**
- * Spec 12F F-1/F-3, SRS §44. Aggregates only, one section per data permission the actor co-holds with
+ * Aggregates only, one section per data permission the actor co-holds with
  * `analytics.view`; each section loads on its own and a failure renders "Unavailable", never the page.
  */
 export function createGetAnalytics(deps: {

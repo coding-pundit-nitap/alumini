@@ -70,7 +70,7 @@ describe("loadEnv", () => {
   });
 });
 
-describe("CLAMAV_URL (spec 16 SD-8)", () => {
+describe("CLAMAV_URL", () => {
   it("is optional outside production", () => {
     expect(loadEnv(valid).CLAMAV_URL).toBeUndefined();
   });

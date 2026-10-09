@@ -10,7 +10,7 @@ import { Rail } from "./rail";
 /**
  * The member chrome: rail (md+), mobile top and bottom bars (<md), and the content column. The bell is
  * rendered here and passed down because the notifications index reaches server code a client
- * component must not import. The right rail is per page (UI-2 `PageColumns`), not part of the shell.
+ * component must not import. The right rail is per page (`PageColumns`), not part of the shell.
  */
 export async function AppShell({ children }: { children: ReactNode }) {
   const data = await loadShell();

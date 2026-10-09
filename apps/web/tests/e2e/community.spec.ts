@@ -5,11 +5,8 @@ import { Pool } from "pg";
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
 
 /**
- * `RoleName` (`@nitap/database/role-permissions`) is a plain string-literal union, not something worth
- * re-declaring — but importing anything from `@nitap/database` itself pulls in the generated Prisma
- * client, which fails to load under Playwright's test transform (`import.meta` / ESM error, unrelated to
- * this task). A raw `pg` pool sidesteps that: it's already a dependency here, and the handful of queries
- * below don't need Prisma's type layer.
+ * Imports from `@nitap/database` pull in the generated Prisma client, which fails to load under
+ * Playwright's transform, so a raw `pg` pool is used for the few queries needed here.
  */
 type RoleName =
   | "STUDENT"
@@ -29,7 +26,7 @@ const BASE_URL =
 const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
-/** Uncaught page errors per member — see messaging.spec.ts for why hydration failures matter here. */
+/** Uncaught page errors per member; hydration failures matter here (see messaging.spec.ts). */
 const pageErrors = new WeakMap<Page, string[]>();
 const hydrationErrors = (page: Page) =>
   (pageErrors.get(page) ?? []).filter((m) => m.includes("Hydration failed"));
@@ -54,10 +51,8 @@ async function member(
 }
 
 /**
- * Direct DB access against the same dev database the webServer runs against (mirrors
- * apps/web/scripts/seed-dev-admin.ts's connection setup). There is no self-service admin UI to promote a
- * member to a reviewer role this phase, so e2e reviewer fixtures are seeded straight into user_role, the
- * same way tests/security/community.security.integration.test.ts's grantRole does against a test database.
+ * Direct DB access against the dev database the webServer uses. There is no admin UI to promote a member
+ * to a reviewer role, so reviewer fixtures are inserted straight into user_role.
  */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -133,10 +128,8 @@ test.describe("community journey", () => {
 
     await ravi.page.goto("/feed");
     await raviArticle.getByRole("button", { name: "Like" }).click();
-    // FeedList hardcodes `mine: null` for every viewer (feed-list.tsx), so a reaction never renders
-    // anywhere in the feed UI — not even back to the person who made it. That is a documented,
-    // deliberate simplification (feed-list.tsx's own "ponytail:" comment), not a bug this task patches.
-    // The only durable evidence of the reaction is the row it writes, so assert that directly.
+    // FeedList hardcodes `mine: null`, so a reaction never renders in the feed UI, even for its author.
+    // Assert on the row it writes instead.
     await expect(async () => {
       const raviId = await userId(ravi.email);
       const { rows } = await pool.query<{ type: string }>(
@@ -176,12 +169,7 @@ test.describe("community journey", () => {
       expect(hydrationErrors(page)).toEqual([]);
   });
 
-  /**
-   * Was BLOCKED (see task-14-report.md for the original write-up): `/achievements` always rendered
-   * `isReviewer={false}` and there was no query listing anyone else's SUBMITTED achievements. Fixed by
-   * `list-pending-achievements.ts` (gated on `ACHIEVEMENT_REVIEW`, lists across all users) plus a
-   * "Pending review" section on the same page, rendered only for actors holding that permission.
-   */
+  /** Reviewers see a "Pending review" section on /achievements, listing other members' submissions. */
   test("submit achievement, moderator approves, it appears in the feed as an ACHIEVEMENT post", async ({
     browser,
   }) => {
@@ -200,8 +188,7 @@ test.describe("community journey", () => {
     await expect(asha.page.getByText(title)).toBeVisible({ timeout: 15_000 });
     await expect(asha.page.getByText("Awaiting review")).toBeVisible();
 
-    // The moderator opens the same page (there is no dedicated reviewer queue this phase) and sees
-    // Asha's submission under "Pending review".
+    // The moderator opens the same page and sees Asha's submission under "Pending review".
     await moderator.page.goto("/achievements");
     await expect(moderator.page.getByText("Pending review")).toBeVisible();
     const pendingCard = moderator.page
@@ -214,7 +201,7 @@ test.describe("community journey", () => {
       .click();
     await expect(pendingCard).toHaveCount(0, { timeout: 15_000 });
 
-    // Approving publishes the achievement as an ACHIEVEMENT post (C-12); it shows up in the feed.
+    // Approving publishes the achievement as an ACHIEVEMENT post; it shows up in the feed.
     await moderator.page.goto("/feed");
     await expect(postArticle(moderator.page, title)).toBeVisible({
       timeout: 15_000,
@@ -226,15 +213,8 @@ test.describe("community journey", () => {
   });
 
   /**
-   * Was BLOCKED (see task-14-report.md for the original write-up): the Resolve/Dismiss affordance was
-   * session-local React state, invisible to any account other than the one that just filed the report.
-   * Fixed by joining `report` into `listFeed` (`PostRow.openReportId`), so any actor holding
-   * `report.review` sees the same durable state — including one who never filed the report themself.
-   *
-   * The Report button itself is still gated on `canModerate` (`post.moderate`/`report.review`), not
-   * `report.create` — a plain member has no Report affordance in the feed UI. That's a separate,
-   * documented gap this task's scope does not touch (see the controller's Fix 2 scope), so the reporter
-   * here is granted MODERATOR too, purely so the button is visible to file the report.
+   * Any actor holding `report.review` sees the same durable Resolve/Dismiss state, including one who never
+   * filed the report. The Report button is gated on `canModerate`, so the reporter is granted MODERATOR too.
    */
   test("report a post, moderator resolves, it disappears from both feeds", async ({
     browser,
@@ -262,12 +242,7 @@ test.describe("community journey", () => {
       raviArticle.getByRole("button", { name: "Resolve" })
     ).toBeVisible({ timeout: 15_000 });
 
-    // A separate moderator, who never filed the report, opens the feed and sees the same, real, durable
-    // Resolve/Dismiss affordance (not session-local state, which only the filer's own browser could ever
-    // have seen) and resolves it. (Ravi filing it himself means *his* click would be refused
-    // SELF_REVIEW_FORBIDDEN server-side — the UI doesn't hide the button per-filer, so a separate
-    // moderator account is used to actually resolve.)
-    // Resolve/Dismiss affordance (not session-local state) and resolves it.
+    // A separate moderator resolves it: the filer's own click would be refused with SELF_REVIEW_FORBIDDEN.
     await moderator.page.goto("/feed");
     const modArticle = postArticle(moderator.page, content);
     await expect(

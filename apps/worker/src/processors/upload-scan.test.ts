@@ -136,7 +136,7 @@ describe("upload.scan processor", () => {
     expect(store.rejected).toEqual([{ id: "up1", reason: "flagged" }]);
   });
 
-  it("propagates a scanner outage so the job retries; the row stays PENDING_SCAN (fails closed, spec 16 SD-8)", async () => {
+  it("propagates a scanner outage so the job retries; the row stays PENDING_SCAN (fails closed)", async () => {
     const storage = createFakeStoragePort();
     await storage.put(row.objectKey, await tinyPng(), "image/png");
     const store = fakeStore(row);
@@ -201,9 +201,9 @@ describe("upload.scan processor", () => {
   });
 });
 
-// File-upload attacks (strategy §10.1 "File upload", spec 16 16D). The declared type is checked at presign
+// File-upload attacks. The declared type is checked at presign
 // and pinned in the storage policy; these prove what the worker does with bytes that lie about themselves.
-describe("upload.scan against hostile files (spec 16 16D)", () => {
+describe("upload.scan against hostile files", () => {
   async function scanBytes(bytes: Buffer) {
     const storage = createFakeStoragePort();
     await storage.put(row.objectKey, bytes, "image/png");

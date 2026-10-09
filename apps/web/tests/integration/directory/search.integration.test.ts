@@ -228,7 +228,7 @@ describe("directory search against real PostgreSQL", () => {
     });
   });
 
-  describe("connections and blocks (Phase 5)", () => {
+  describe("connections and blocks", () => {
     /** Writes the pair's row directly, in canonical order, as the connections module would. */
     async function link(
       x: string,
@@ -436,7 +436,7 @@ describe("directory search against real PostgreSQL", () => {
   });
 });
 
-describe("directory query plans (strategy §9.4)", () => {
+describe("directory query plans", () => {
   // One database for the whole block: every test here only EXPLAINs, so the 120 000-row setup runs once.
   let db: TestDatabase;
   afterAll(async () => {
@@ -470,7 +470,7 @@ describe("directory query plans (strategy §9.4)", () => {
     await db.prisma.$executeRaw`
       INSERT INTO profile_experience (user_id, company, designation, start_date, is_current, updated_at)
       SELECT user_id, 'Company ' || (row_number() OVER ())::int % 500, 'Engineer', DATE '2020-01-01', true, now() FROM profile WHERE full_name LIKE '%1'`;
-    // A network to go with them (Phase 15 F-1): each member connected to the next three, ~90 000 pairs, as a
+    // A network to go with them: each member connected to the next three, ~90 000 pairs, as a
     // 10 000-member network has. Without it a full scan of `connection` costs nothing and hides.
     await db.prisma.$executeRaw`
       WITH bulk AS (SELECT id, (row_number() OVER (ORDER BY email))::int AS n,
@@ -572,7 +572,7 @@ describe("directory query plans (strategy §9.4)", () => {
     expect(plan).not.toMatch(/Seq Scan on profile(?![_\w])/);
   });
 
-  // Phase 15 F-1: the CONNECTIONS_ONLY check sat under an OR, so PostgreSQL hashed every ACCEPTED pair in the
+  // The CONNECTIONS_ONLY check sat under an OR, so PostgreSQL hashed every ACCEPTED pair in the
   // network (a full scan of `connection`) on each request. Only the viewer's own pairs may be read.
   it.each([
     ["name order", {}],

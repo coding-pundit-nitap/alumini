@@ -9,7 +9,7 @@ const audit = {
   enforced: false,
 };
 
-describe("retentionInputSchema (12G G-3)", () => {
+describe("retentionInputSchema", () => {
   it("applies the category's bounds", () => {
     const s = retentionInputSchema(audit);
     expect(s.safeParse({ retentionDays: 364 }).success).toBe(false);

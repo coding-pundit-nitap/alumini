@@ -2,8 +2,8 @@ import { Prisma } from "@nitap/database";
 import { PERMISSIONS } from "@nitap/database/permissions";
 
 /**
- * "Active mentor" minus availability (spec M-2): a verified account that holds `mentorship.respond` through a
- * role. Roles are never named here (RBAC §11): the permission is what defines a mentor. `accepting` and open
+ * "Active mentor" minus availability: a verified account that holds `mentorship.respond` through a
+ * role. Roles are never named here: the permission is what defines a mentor. `accepting` and open
  * slots are checked by the callers, which read them anyway.
  */
 export function activeMentorSql(userAlias: string) {

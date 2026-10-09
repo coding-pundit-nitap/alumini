@@ -30,7 +30,7 @@ end
 return {1, 0}
 `;
 
-// --- Fallback used only while Redis is unreachable (docs/architecture/system-architecture.md §8.3) ----------
+// --- Fallback used only while Redis is unreachable ----------
 // Per-instance and therefore weaker across instances, so it is deliberately stricter than the
 // configured rule: half the allowance, never below 1.
 const fallback = new Map<string, { count: number; resetAt: number }>();

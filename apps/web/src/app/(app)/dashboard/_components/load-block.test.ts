@@ -12,7 +12,7 @@ vi.mock("@/infrastructure/observability", () => ({
   logger: { warn: vi.fn() },
 }));
 
-describe("loadBlock (H-6, spec Errors and states)", () => {
+describe("loadBlock", () => {
   it("wraps a value", async () => {
     expect(await loadBlock(async () => 3)).toEqual({ status: "ok", value: 3 });
   });

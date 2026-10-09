@@ -21,7 +21,7 @@ describe("pickFields", () => {
   });
 });
 
-describe("assertFormData (spec 16 16B)", () => {
+describe("assertFormData", () => {
   it("passes FormData through", () => {
     expect(() => assertFormData(new FormData())).not.toThrow();
   });
@@ -36,7 +36,7 @@ describe("assertFormData (spec 16 16B)", () => {
   );
 });
 
-describe("assertObjectInput (spec 16 16B)", () => {
+describe("assertObjectInput", () => {
   it("passes a plain object", () => {
     expect(() => assertObjectInput({ mime: "image/png" })).not.toThrow();
   });

@@ -11,7 +11,7 @@ import {
 } from "@nitap/database/seed";
 
 /**
- * Development-only accounts (TASK.md Phase 1, Phase 2D): a super admin and an alumni coordinator, each
+ * Development-only accounts: a super admin and an alumni coordinator, each
  * seeded only when its email and password are set. With DEV_ROLES_PASSWORD set, also one verified account
  * per role, `dev-<role>@example.test` (e.g. dev-tp-admin@example.test), all sharing that password. Lives in apps/web because Better Auth's password
  * hashing does; @nitap/database only receives the finished hash. Run through `pnpm db:seed`, after the

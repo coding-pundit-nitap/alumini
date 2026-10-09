@@ -1,5 +1,5 @@
 /**
- * Layer and module boundary rules (docs/architecture/development-and-testing-strategy.md §2.3–2.4).
+ * Layer and module boundary rules.3–2.4).
  * `no-restricted-imports` replaces (does not merge) its options per matching block, so every block below
  * is built from the shared groups and lists everything that layer may not import.
  *
@@ -12,11 +12,11 @@ const infrastructureSdks = {
     // The bare "@nitap/database" is banned through `databaseRoot` below (`paths`, exact match): as a
     // gitignore-style pattern it would also cover every subpath and defeat the negation.
     "@nitap/database/*",
-    // The permission registry is pure data shared with the seed (rbac-permission-matrix.md §3). It is the
+    // The permission registry is pure data shared with the seed. It is the
     // one @nitap/database subpath the domain and application layers may import. Order matters: the
     // negation must come after the pattern it re-allows.
     "!@nitap/database/permissions",
-    // Role display labels (UI-15 ticks): pure data beside the role definitions, so app code never names a role.
+    // Role display labels (ticks): pure data beside the role definitions, so app code never names a role.
     "!@nitap/database/role-ticks",
     // Prisma-generated enum types are pure type data (no client, no runtime I/O) and are the single
     // source of truth for schema-backed unions such as NotificationDomain; domain code re-exports them
@@ -29,20 +29,18 @@ const infrastructureSdks = {
     "fastify",
     "express",
   ],
-  message:
-    "Prisma, Redis, queues and provider SDKs belong to infrastructure/ (strategy §2.3).",
+  message: "Prisma, Redis, queues and provider SDKs belong to infrastructure/.",
 };
 
 const databaseRoot = {
   name: "@nitap/database",
-  message:
-    "Prisma, Redis, queues and provider SDKs belong to infrastructure/ (strategy §2.3).",
+  message: "Prisma, Redis, queues and provider SDKs belong to infrastructure/.",
 };
 
 const authLibrary = {
   group: ["better-auth", "better-auth/*"],
   message:
-    "Better Auth is wired only in infrastructure/ (the createAuth factory) and app/ (its route handler); the domain and use cases stay library-free (ADR-005, spec 2C D-10).",
+    "Better Auth is wired only in infrastructure/ (the createAuth factory) and app/ (its route handler); the domain and use cases stay library-free.",
 };
 
 const react = {
@@ -63,7 +61,7 @@ const designSystem = {
 const anyInfrastructure = {
   group: ["**/infrastructure", "**/infrastructure/**"],
   message:
-    "Nothing inward imports infrastructure; depend on an interface the layer declares (strategy §2.3 rules 2, 6, 7).",
+    "Nothing inward imports infrastructure; depend on an interface the layer declares.",
 };
 
 const anyPresentation = {
@@ -79,7 +77,7 @@ const anyApplication = {
 const anyModule = {
   group: ["@/modules/*", "@/modules/*/*"],
   message:
-    "This layer may not import another module. Coordinate through the application layer or events (TDS §5.2).",
+    "This layer may not import another module. Coordinate through the application layer or events.",
 };
 
 const deepModuleImport = {
@@ -93,7 +91,7 @@ const deepModuleImport = {
     "!@/modules/*/client",
   ],
   message:
-    "Import another module only through its index (`@/modules/<name>`) or its server-only or client-safe entry point (`@/modules/<name>/server`, `/client`); use relative paths inside a module (strategy §2.3 rule 3).",
+    "Import another module only through its index (`@/modules/<name>`) or its server-only or client-safe entry point (`@/modules/<name>/server`, `/client`); use relative paths inside a module.",
 };
 
 const components = {
@@ -120,7 +118,7 @@ const browserGlobals = [
   "navigator",
 ].map((name) => ({
   name,
-  message: "The domain is pure: no browser APIs (strategy §2.4).",
+  message: "The domain is pure: no browser APIs.",
 }));
 
 /** Appended after the framework presets in each app's eslint.config. Globs are relative to the app root. */
@@ -149,7 +147,7 @@ export const layerRules = [
     rules: restrict(deepModuleImport, infrastructureSdks, {
       group: ["@/infrastructure/*", "@/infrastructure/**", "@/modules/*"],
       message:
-        "lib/ is pure: no I/O and no imports from modules/ or infrastructure/ (strategy §2.5).",
+        "lib/ is pure: no I/O and no imports from modules/ or infrastructure/.",
     }),
   },
   {

@@ -207,7 +207,7 @@ function Row({
 
 /**
  * A list of achievements: the caller's own (with Withdraw while SUBMITTED, when `onWithdraw` is given), or a
- * reviewer's queue (Approve/Reject with a confirm step, C-7). Reviewers never see their own here
+ * reviewer's queue (Approve/Reject with a confirm step). Reviewers never see their own here
  * (SELF_REVIEW_FORBIDDEN), so the two affordances never share a row.
  */
 export function AchievementList({

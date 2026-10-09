@@ -48,7 +48,7 @@ describe("input schemas", () => {
   });
 });
 
-describe("decideInteract (comment/react eligibility, C-10)", () => {
+describe("decideInteract (comment/react eligibility)", () => {
   const post = { id: "p1", authorId: A, deleted: false };
   it("allows any verified member on a visible post with no block", () => {
     expect(decideInteract(post, null)).toEqual({ ok: true });

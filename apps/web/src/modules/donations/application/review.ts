@@ -36,7 +36,7 @@ const isStatus = (v: unknown): v is DonationStatus =>
   DONATION_STATUSES.includes(v as DonationStatus);
 
 /**
- * `/admin/donations` (spec H-3). `donation.view_all` sees every pledge with a status filter; a holder of
+ * `/admin/donations`. `donation.view_all` sees every pledge with a status filter; a holder of
  * `campaign.manage` alone sees the open pledges — the confirmation queue — and nothing else.
  */
 export function createListDonationsForAdmin(deps: Deps) {
@@ -66,7 +66,7 @@ export function createListDonationsForAdmin(deps: Deps) {
   };
 }
 
-/** Locks the pledge, refuses a second decision (H-2) and a manager settling their own pledge (H-4). */
+/** Locks the pledge, refuses a second decision and a manager settling their own pledge. */
 async function openPledgeToDecide(tx: DonationTx, actor: Actor, id: string) {
   const row = await tx.findDonationForUpdate(id);
   if (!row) throw new NotFoundError();
@@ -78,7 +78,7 @@ async function openPledgeToDecide(tx: DonationTx, actor: Actor, id: string) {
 }
 
 /**
- * FR-DON-004, spec H-5: PLEDGED → CONFIRMED against a payment reference (the donor's, or the one the
+ * PLEDGED → CONFIRMED against a payment reference (the donor's, or the one the
  * manager reads off the statement). The per-campaign unique reference is the idempotency key.
  */
 export function createConfirmDonation(deps: Deps) {
@@ -135,7 +135,7 @@ export function createConfirmDonation(deps: Deps) {
   };
 }
 
-/** Spec H-5: PLEDGED → NOT_RECEIVED with a reason code; the donor is told. */
+/** PLEDGED → NOT_RECEIVED with a reason code; the donor is told. */
 export function createMarkNotReceived(deps: Deps) {
   const now = deps.now ?? (() => new Date());
   return async function markNotReceived(args: {

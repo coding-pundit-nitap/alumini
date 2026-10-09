@@ -33,7 +33,7 @@ function build(row: ReturnType<typeof jobRow> | null) {
   });
 }
 
-describe("getJob (spec J-8: a non-visible job is NOT_FOUND, never FORBIDDEN)", () => {
+describe("getJob (a non-visible job is NOT_FOUND, never FORBIDDEN)", () => {
   it("a PUBLISHED job is visible to anyone with job.read", async () => {
     const getJob = build(jobRow({ status: "PUBLISHED", postedBy: "poster-1" }));
     const result = await getJob({ actor: actor("stranger-1"), jobId: "job-1" });

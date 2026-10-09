@@ -30,7 +30,7 @@ export const metadata: Metadata = { title: "Report" };
 
 const LIVE = new Set(["OPEN", "UNDER_REVIEW"]);
 
-/** FR-MOD-002…004, spec C12-7. Viewing a MESSAGE report is the audited `message.read_reported` access. */
+/** Viewing a MESSAGE report is the audited `message.read_reported` access. */
 export default async function ReportPage({
   params,
 }: {

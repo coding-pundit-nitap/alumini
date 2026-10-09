@@ -15,7 +15,7 @@ const db = {} as UploadTransaction;
 const metricsFor = () =>
   createPrometheusMetrics({ service: "worker", version: "t" });
 
-describe("upload scan backlog collector (R-14, spec 18C)", () => {
+describe("upload scan backlog collector", () => {
   it("sets the pending count and the oldest row's age at scrape time", async () => {
     const metrics = metricsFor();
     registerUploadScanBacklogCollector(

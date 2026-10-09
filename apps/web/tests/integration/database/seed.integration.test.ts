@@ -19,7 +19,7 @@ async function snapshot(db: TestDatabase) {
   };
 }
 
-describe("seed (idempotent, TASK.md Phase 1)", () => {
+describe("seed (idempotent)", () => {
   let db: TestDatabase;
 
   beforeEach(async () => {

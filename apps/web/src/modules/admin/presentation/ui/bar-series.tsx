@@ -8,7 +8,7 @@ const weekLabel = (week: string) =>
   });
 
 /**
- * Weekly volume as CSS columns (spec F-7, no chart library). The total is printed, each column carries its
+ * Weekly volume as CSS columns. The total is printed, each column carries its
  * value in a tooltip, and a screen-reader table holds every point, so nothing depends on colour or shape.
  */
 export function BarSeries({

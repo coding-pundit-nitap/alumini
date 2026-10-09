@@ -1,4 +1,4 @@
-# Monthly restore drill (reliability §3.6; spec 17, O-11). Runs packages/scripts/drills/restore.ts: the production backup
+# Monthly restore drill. Runs packages/scripts/drills/restore.ts: the production backup
 # configuration (deploy/compose.yml, deploy/backup.sh) against a stand-in repository, a host-loss restore with
 # RPO/RTO measured, and a point-in-time restore. The result table is the run's summary; a failed run is the
 # alert, as in nightly.yml. The production server's own monthly `backup.sh restore-test` is separate (it proves

@@ -1,7 +1,7 @@
-// Event registration spike (strategy §13.3 "Spike"; §12): SPIKE_USERS distinct members register for one event
+// Event registration spike: SPIKE_USERS distinct members register for one event
 // within ~10 s. Passes when capacity is respected exactly (201 × capacity, 409 EVENT_FULL for the rest), there is
 // no 5xx storm, and latency stays bounded. The runner resets the target event before each run (--reset-spike).
-// This is where the pool question from Phase 8 is answered: production keeps a 2 s pool wait (maxWaitMs).
+// This is where the pool question is answered: production keeps a 2 s pool wait (maxWaitMs).
 import http from "k6/http";
 import type { Options } from "k6/options";
 import { check } from "k6";

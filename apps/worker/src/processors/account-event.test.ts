@@ -16,7 +16,7 @@ const ctx = (jobId = "j1") => ({
 });
 const account = { v: 1 as const, userId: "user-1", actorId: "admin-1" };
 
-describe("verification.decided processor (spec D12-1)", () => {
+describe("verification.decided processor", () => {
   it("delivers in-app only, transactional, with the decision", async () => {
     const deliver = vi.fn<DeliverNotification>(async () => {});
     await createVerificationDecidedProcessor({ deliver })(
@@ -33,7 +33,7 @@ describe("verification.decided processor (spec D12-1)", () => {
   });
 });
 
-describe("account state processor (spec D12-3)", () => {
+describe("account state processor", () => {
   it.each([
     ["user.suspended", "SUSPENDED"],
     ["user.reactivated", "VERIFIED"],

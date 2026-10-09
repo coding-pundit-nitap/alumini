@@ -32,7 +32,7 @@ beforeEach(() => {
   startDraining.mockReset();
 });
 
-describe("POST /health/drain (spec 14 RD-4)", () => {
+describe("POST /health/drain", () => {
   it("starts draining for a privileged caller and answers 202", async () => {
     detailsVisible.mockReturnValue(true);
     const response = await drain(

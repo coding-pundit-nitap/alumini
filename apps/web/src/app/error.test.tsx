@@ -4,7 +4,7 @@ import ErrorPage from "./error";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
-describe("app/error.tsx (TDS §16.4 rules 2 and 3)", () => {
+describe("app/error.tsx", () => {
   beforeEach(() => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });

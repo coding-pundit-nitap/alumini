@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { CompletenessCard } from "./completeness-card";
 
-describe("CompletenessCard (H-7)", () => {
+describe("CompletenessCard", () => {
   it("hides at 100 %", () => {
     const { container } = render(
       <CompletenessCard percent={100} missing={[]} />

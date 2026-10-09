@@ -1,4 +1,4 @@
-# Host, public probe and certificates (reliability §5.6 R-7, R-12; spec 18C). node_exporter reads the host's
+# Host, public probe and certificates. node_exporter reads the host's
 # root filesystem mounted at /host (deploy/monitoring.yml); the blackbox exporter probes APP_URL/health/ready.
 groups:
   - name: host
@@ -45,7 +45,7 @@ groups:
         labels: { severity: ticket, service: postgres }
         annotations:
           summary: "pg_wal is above 2 GiB and still growing"
-          description: "pg_wal holds {{ $value | humanize1024 }}B. Check WAL archiving first (R-8): segments stay until they are archived."
+          description: "pg_wal holds {{ $value | humanize1024 }}B. Check WAL archiving first: segments stay until they are archived."
           runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-7.md
 
       - alert: NodeExporterDown

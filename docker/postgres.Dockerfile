@@ -1,5 +1,5 @@
-# PostgreSQL with pgBackRest for the production stack (spec 17, ADR-011). CI publishes it with the app images and
-# servers release it by digest (spec 18 F-3); `deploy.sh build` builds it on the server instead.
+# PostgreSQL with pgBackRest for the production stack. CI publishes it with the app images and
+# servers release it by digest; `deploy.sh build` builds it on the server instead.
 # pgBackRest reads all of its configuration from PGBACKREST_* variables that compose.yml sets, so the image
 # holds no repository address or secret. Alpine packages an older pgBackRest, so it is built from the release
 # tarball; the runtime libraries come from the same Alpine release as the base image.

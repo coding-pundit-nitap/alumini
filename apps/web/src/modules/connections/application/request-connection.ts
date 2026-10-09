@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { cannotConnectSelf, refuse } from "./refusal";
 
-/** `connections.create`: 20 requests an hour per member, the brake on mass invitations (API spec §6.1). */
+/** `connections.create`: 20 requests an hour per member, the brake on mass invitations. */
 export const REQUEST_RATE = { max: 20, window: 60 * 60 } as const;
 
 export type RateLimiter = {
@@ -21,7 +21,7 @@ export type RateLimiter = {
 export type RequestConnectionResult = { connectionId: string };
 
 /**
- * FR-NET-001. The row and its `connection.requested` event commit together. Two members asking each other at
+ * The row and its `connection.requested` event commit together. Two members asking each other at
  * the same instant end with ONE row: the loser's insert is a no-op on the unique pair, it re-reads, and the
  * pair's state then refuses it as CONNECTION_EXISTS (the client should accept instead).
  */

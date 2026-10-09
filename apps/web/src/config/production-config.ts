@@ -1,5 +1,5 @@
 /**
- * What a production web instance cannot run without (spec 16 S-11). Checked once at startup
+ * What a production web instance cannot run without. Checked once at startup
  * (instrumentation.ts), so a release missing its auth secret fails to start instead of starting, reporting
  * healthy and answering every sign-in with a 500. Names the problems, never the values.
  */
@@ -31,7 +31,7 @@ export function assertProductionConfig(
   if (source.BETTER_AUTH_URL) {
     const url = new URL(source.BETTER_AUTH_URL);
     const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
-    // Secure cookies and HSTS depend on it (NFR-SEC-003); plain HTTP only for a production build run locally.
+    // Secure cookies and HSTS depend on it; plain HTTP only for a production build run locally.
     if (url.protocol !== "https:" && !local)
       problems.push("BETTER_AUTH_URL must be https:// in production");
   }

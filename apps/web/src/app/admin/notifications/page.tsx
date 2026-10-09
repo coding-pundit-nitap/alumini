@@ -105,7 +105,7 @@ function DeliveriesTable({
   );
 }
 
-/** FR-N-13 admin replay screen (spec C12-11). 404 without notification.replay (concealed). */
+/** Admin replay screen. 404 without notification.replay (concealed). */
 export default async function AdminNotificationsPage({
   searchParams,
 }: {

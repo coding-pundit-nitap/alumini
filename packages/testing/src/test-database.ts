@@ -27,7 +27,7 @@ export function testDatabaseName(): string {
 }
 
 /**
- * Clones the migrated template database (strategy §6.3) into a fresh, isolated database for one
+ * Clones the migrated template database into a fresh, isolated database for one
  * test (or one test file). PostgreSQL forbids `CREATE DATABASE … TEMPLATE` while any other
  * session holds a connection to the template, but the template itself is never connected to
  * after `global-setup.ts` migrates it, so this is safe to call concurrently across test files.

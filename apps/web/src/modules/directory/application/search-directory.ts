@@ -7,7 +7,7 @@ import type { Actor, Permission } from "@/modules/auth";
 
 type Authorize = (actor: Actor | null, permission: Permission) => Actor;
 
-/** `directory.search`: 60 a minute per member (API spec §2). Also the scraping brake (TDS §26). */
+/** `directory.search`: 60 a minute per member. Also the scraping brake. */
 export const SEARCH_RATE = { max: 60, window: 60 } as const;
 
 export type RateLimiter = {
@@ -20,7 +20,7 @@ export type RateLimiter = {
 export type AlumniSummary = Omit<PersonHit, "hasPhoto" | "userId"> & {
   id: string;
   photoUrl?: string;
-  /** UI-15: set by composition after the search; absent/null = no tick. */
+  /** Set by composition after the search; absent/null = no tick. */
   tick?: Tick | null;
 };
 
@@ -32,7 +32,7 @@ export type DirectoryPage = {
 /**
  * Directory search for a verified member. Which profiles and fields the searcher may see is the
  * search adapter's job, in the query; there is no privileged reach (see `SearchViewer`). There are no totals or counts anywhere,
- * so a private profile leaks through neither (SRS §27).
+ * so a private profile leaks through neither.
  */
 export function createSearchDirectory(deps: {
   authorize: Authorize;

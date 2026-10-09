@@ -5,8 +5,7 @@ import pluginNext from "@next/eslint-plugin-next";
 import { config as baseConfig } from "./base.js";
 /**
  * Shared ESLint preset for every workspace (Next.js core-web-vitals + TypeScript).
- * Layer/module boundary rules are added here as the first modules land
- * (docs/architecture/development-and-testing-strategy.md §2.4).
+ * Layer/module boundary rules are added here as the first modules land.
  * * @type {import("eslint").Linter.Config[]}
  */
 export const nextJsConfig = [

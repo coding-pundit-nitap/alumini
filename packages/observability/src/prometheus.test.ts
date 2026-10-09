@@ -15,7 +15,7 @@ const make = () =>
   createPrometheusMetrics({ service: "web", version: "1.2.3" });
 const scrape = async (m = make()) => (await m.render()).body;
 
-describe("Prometheus adapter (spec 13A A-1…A-5)", () => {
+describe("Prometheus adapter", () => {
   it("renders counters, histograms and gauges created lazily from the first call's labels", async () => {
     const m = make();
     m.increment("widgets_total", { kind: "a" });
@@ -39,7 +39,7 @@ describe("Prometheus adapter (spec 13A A-1…A-5)", () => {
     expect(await scrape(m)).toMatch(/flags_total\{on="true",service="web"\} 1/);
   });
 
-  it("drops and counts a call with an unknown label key or a type clash, never throws (A-2)", async () => {
+  it("drops and counts a call with an unknown label key or a type clash, never throws", async () => {
     const m = make();
     m.increment("mixed_total", { a: "1" });
     expect(() => m.increment("mixed_total", { b: "2" })).not.toThrow();
@@ -51,13 +51,13 @@ describe("Prometheus adapter (spec 13A A-1…A-5)", () => {
     );
   });
 
-  it("exports app_build_info and default process metrics (A-4)", async () => {
+  it("exports app_build_info and default process metrics", async () => {
     const body = await scrape();
     expect(body).toMatch(/app_build_info\{version="1.2.3",service="web"\} 1/);
     expect(body).toMatch(/process_cpu_user_seconds_total/);
   });
 
-  it("returns the same instance on a second create, so a reload never double-registers (A-5)", () => {
+  it("returns the same instance on a second create, so a reload never double-registers", () => {
     const first = make();
     expect(createPrometheusMetrics({ service: "web", version: "other" })).toBe(
       first
@@ -84,7 +84,7 @@ describe("Prometheus adapter (spec 13A A-1…A-5)", () => {
     );
   });
 
-  it("recordPoolStats sets db_pool_connections per state (A-10)", async () => {
+  it("recordPoolStats sets db_pool_connections per state", async () => {
     const m = make();
     recordPoolStats(m, { totalCount: 4, idleCount: 3, waitingCount: 1 });
     const body = await scrape(m);

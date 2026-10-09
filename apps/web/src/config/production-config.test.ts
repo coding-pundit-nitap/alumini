@@ -5,7 +5,7 @@ import {
   exitIfMisconfigured,
 } from "./production-config";
 
-// Spec 16 S-11: a production instance missing its auth secret started, reported healthy, and answered every
+// A production instance missing its auth secret started, reported healthy, and answered every
 // sign-in with a 500. It must refuse to start instead, so a broken release never passes its health checks.
 
 const complete = {
@@ -61,7 +61,7 @@ describe("assertProductionConfig", () => {
     expect(error?.message).not.toContain("short-secret");
   });
 
-  it("requires HTTPS for the public URL except on localhost (NFR-SEC-003)", () => {
+  it("requires HTTPS for the public URL except on localhost", () => {
     expect(() =>
       assertProductionConfig({
         ...complete,

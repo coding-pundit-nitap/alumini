@@ -1,4 +1,4 @@
-# Dashboards are code (reliability §5.3): edit the JSON in ops/grafana/dashboards/, not in the UI.
+# Dashboards are code: edit the JSON in ops/grafana/dashboards/, not in the UI.
 apiVersion: 1
 providers:
   - name: alumini

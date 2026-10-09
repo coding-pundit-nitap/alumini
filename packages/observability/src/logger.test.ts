@@ -18,7 +18,7 @@ function setup(options: Partial<Parameters<typeof createLogger>[0]> = {}) {
   return { logger, lines };
 }
 
-describe("logger (reliability §6.1)", () => {
+describe("logger", () => {
   it("writes one JSON object per line with the fixed fields", () => {
     const { logger, lines } = setup();
     logger.info("connection.request.created", { metadata: { count: 1 } });

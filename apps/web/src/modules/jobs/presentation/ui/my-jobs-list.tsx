@@ -31,7 +31,7 @@ const STATUS_BADGE: Record<
 };
 
 /**
- * FR-JOB. The caller's own postings, any status. `closeAction` (added in slice 7c), when given, renders a
+ * The caller's own postings, any status. `closeAction`, when given, renders a
  * Withdraw control on rows still eligible to close. It must be the `closeJobAction` Server Action itself —
  * not a closure — since this is a Client Component and only a Server Action reference crosses that boundary.
  */
@@ -151,7 +151,7 @@ export function MyJobsList({
   );
 }
 
-/** A confirm-then-close control for one row of `/jobs/mine` (spec J-7: poster's own withdrawal). */
+/** A confirm-then-close control for one row of `/jobs/mine`. */
 export function WithdrawButton({
   jobId,
   closeAction,

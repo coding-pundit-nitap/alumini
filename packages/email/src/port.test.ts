@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { hashEmail } from "./port.ts";
 import { createSmtpEmailPort } from "./smtp.ts";
 
-describe("email suppression (N-10)", () => {
+describe("email suppression", () => {
   it("hashes an address case- and whitespace-insensitively to sha256 hex, never the address itself", () => {
     const hash = hashEmail(" Person@Example.TEST ");
     expect(hash).toBe(hashEmail("person@example.test"));

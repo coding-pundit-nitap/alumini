@@ -38,7 +38,7 @@ export type AccessAuditEntry = {
   metadata: Record<string, string | number | null | readonly string[]>;
 };
 
-/** Every write happens through one of these, inside ONE transaction, with its audit row (overview AD-4). */
+/** Every write happens through one of these, inside ONE transaction, with its audit row. */
 export type AccessTx = {
   /** Locks the user row (FOR UPDATE) and returns its state and role names; null when absent. */
   findUserForUpdate(id: string): Promise<TargetUser | null>;
@@ -51,7 +51,7 @@ export type AccessTx = {
   ): Promise<boolean>;
   /** Returns how many sessions were deleted. */
   deleteSessions(userId: string): Promise<number>;
-  /** Locks every super-admin user_role row, then returns the ids of VERIFIED super admins (spec B12-5). */
+  /** Locks every super-admin user_role row, then returns the ids of VERIFIED super admins. */
   lockSuperAdmins(): Promise<readonly string[]>;
   /** Throws ConflictError("ROLE_ALREADY_HELD") on a duplicate. */
   insertUserRole(
@@ -68,7 +68,7 @@ export type AccessTx = {
   findGrant(userId: string, grantId: string): Promise<GrantRow | null>;
   deleteGrant(grantId: string): Promise<void>;
   audit(entry: AccessAuditEntry): Promise<void>;
-  /** Writes an outbox event in this transaction (spec D12-8). */
+  /** Writes an outbox event in this transaction. */
   enqueue(event: AccountOutboxEvent): Promise<void>;
 };
 

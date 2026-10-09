@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { defineJob } from "./define-job.ts";
 
-/** Deletes outbox rows published more than the retention window ago (ADR-007: 7 days). */
+/** Deletes outbox rows published more than the retention window ago. */
 export const outboxPrune = defineJob({
   name: "outbox.prune",
   version: 1,

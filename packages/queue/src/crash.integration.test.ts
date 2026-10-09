@@ -16,7 +16,7 @@ import {
   type WorkerRuntime,
 } from "./runtime.ts";
 
-// Worker crash mid-job and shutdown during a long job (TASK.md Phase 14; spec 14 RD-5, RD-7). A worker that
+// Worker crash mid-job and shutdown during a long job. A worker that
 // dies stops renewing its job's lock; the next worker's stalled check returns the job to the queue and runs
 // it. Real Redis, a real child process and a real SIGKILL: nothing is simulated.
 const eventually = (assertion: () => unknown | Promise<unknown>) =>
@@ -114,7 +114,7 @@ describe("worker crash and shutdown recovery (real Redis, real processes)", () =
     expect(runs).toHaveLength(1);
   }, 30_000);
 
-  it("a job still running when shutdown's grace period ends is redelivered as stalled to the next worker (RD-7)", async () => {
+  it("a job still running when shutdown's grace period ends is redelivered as stalled to the next worker", async () => {
     const { ns, port } = await namespace();
     let started = false;
     const first = runtimeFor(ns, async () => {

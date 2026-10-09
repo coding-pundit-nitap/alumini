@@ -181,7 +181,7 @@ function Donations({ data }: { data: DonationsData }) {
   );
 }
 
-/** Spec 12F §3: a section's content; a failed section says so in place and the rest render. */
+/** A section's content; a failed section says so in place and the rest render. */
 export function AnalyticsSectionBody({
   section,
 }: {

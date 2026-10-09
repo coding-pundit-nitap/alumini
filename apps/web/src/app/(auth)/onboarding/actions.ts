@@ -11,7 +11,7 @@ import {
 } from "@/modules/auth";
 
 /**
- * Submits alumni verification evidence (FR-AUTH-003). A Server Action is a public POST endpoint, so it
+ * Submits alumni verification evidence. A Server Action is a public POST endpoint, so it
  * takes the caller from the session, reads only the named fields (parseEvidenceForm), and lets the use
  * case authorize.
  */

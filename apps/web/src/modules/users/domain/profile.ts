@@ -30,7 +30,7 @@ export type ProfileRecord = {
   department: string | null;
   degree: string | null;
   graduationYear: number | null;
-  /** Set once a READY upload is attached (spec 3C); the domain never sees a storage key, only presence. */
+  /** Set once a READY upload is attached; the domain never sees a storage key, only presence. */
   photoUploadId: string | null;
   experience: ExperienceItem[];
   education: EducationItem[];
@@ -44,7 +44,7 @@ export type ProfileView = {
   userId: string;
   fullName: string;
   headline: string | null;
-  /** Always the stable app path `/api/photos/<userId>` (spec 3C F-5), never a raw storage URL: the route
+  /** Always the stable app path `/api/photos/<userId>`, never a raw storage URL: the route
    * re-checks visibility and issues a fresh presigned GET on every read. */
   photoUrl?: string;
   location?: string | null;
@@ -61,8 +61,8 @@ export type ProfileView = {
 };
 
 /**
- * Null means "not found" for this viewer (RBAC §6 rule 6: existence is not leaked). Guests and
- * unverified accounts get only the reduced set (FR-DIR-004): name, headline and, if allowed, location.
+ * Null means "not found" for this viewer. Guests and
+ * unverified accounts get only the reduced set: name, headline and, if allowed, location.
  */
 export function projectProfile(
   profile: ProfileRecord,
@@ -76,7 +76,7 @@ export function projectProfile(
     fullName: profile.fullName,
     headline: profile.headline,
   };
-  // The photo follows the core level (spec 3C F-5): the same viewers who see the name see it too.
+  // The photo follows the core level: the same viewers who see the name see it too.
   if (profile.photoUploadId !== null) {
     view.photoUrl = `/api/photos/${profile.userId}`;
   }
@@ -91,7 +91,7 @@ export function projectProfile(
       degree: profile.degree,
       graduationYear: profile.graduationYear,
     };
-    // Section mapping (spec 3B E-3): skills travel with experience, links with contact.
+    // Section mapping: skills travel with experience, links with contact.
     if (canView(effectiveLevel(settings, "experience"), viewer)) {
       view.experience = shown(profile.experience);
       view.skills = shown(profile.skills);

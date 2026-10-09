@@ -1,6 +1,6 @@
 // @ts-nocheck — deliberately bad code, never compiled: no tsconfig includes it, so the editor's loose check
 // has neither the workspace aliases nor the Node/React types. Semgrep only needs it to parse.
-// Fixtures for `semgrep --test .semgrep` (spec 16 16E): each rule must flag the `ruleid:` lines and only those.
+// Fixtures for `semgrep --test .semgrep`: each rule must flag the `ruleid:` lines and only those.
 "use client";
 
 // ruleid: nitap-client-imports-server-module

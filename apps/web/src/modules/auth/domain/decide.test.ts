@@ -29,7 +29,7 @@ const chapterGrant = (
 const check = (a: Actor, permission: Permission, resource?: Resource) =>
   decide({ actor: a, permission, resource, now: NOW });
 
-describe("decide: account-state gate (RBAC §7)", () => {
+describe("decide: account-state gate", () => {
   it("allows a VERIFIED actor holding a global grant", () => {
     const a = actor({ grants: [globalGrant(PERMISSIONS.EVENT_CREATE)] });
     expect(check(a, PERMISSIONS.EVENT_CREATE)).toEqual({ allow: true });
@@ -57,7 +57,7 @@ describe("decide: account-state gate (RBAC §7)", () => {
   );
 });
 
-describe("decide: grant match (RBAC §5)", () => {
+describe("decide: grant match", () => {
   it("denies NO_GRANT when the actor holds nothing", () => {
     expect(check(actor(), PERMISSIONS.EVENT_CREATE)).toEqual({
       allow: false,
@@ -134,7 +134,7 @@ describe("decide: grant match (RBAC §5)", () => {
   });
 });
 
-describe("decide: guardrails (RBAC §8.3 separation of duties)", () => {
+describe("decide: guardrails (separation of duties)", () => {
   const verifier = () =>
     actor({ grants: [globalGrant(PERMISSIONS.ALUMNI_VERIFY)] });
 
@@ -175,7 +175,7 @@ describe("decide: guardrails (RBAC §8.3 separation of duties)", () => {
   });
 });
 
-describe("decide: self-service guardrail (RBAC §8.2, spec B12-2)", () => {
+describe("decide: self-service guardrail", () => {
   const guarded = [
     PERMISSIONS.ROLE_ASSIGN,
     PERMISSIONS.PERMISSION_GRANT,

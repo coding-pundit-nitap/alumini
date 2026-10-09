@@ -4,7 +4,7 @@ import type { OwnVerification } from "../../application/get-own-verification";
 import { AuthCard } from "./auth-card";
 
 /**
- * Which panel of /onboarding applies (UI/UX spec §5.2.1). Pure presentation of an OwnVerification: the
+ * Which panel of /onboarding applies. Pure presentation of an OwnVerification: the
  * form arrives as a slot so this stays testable. It promises no turnaround.
  */
 export function OnboardingPanel({

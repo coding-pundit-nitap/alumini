@@ -11,7 +11,7 @@ import { refuse } from "./refusal";
 import { parse } from "./validation";
 
 /**
- * FR-MOD-004. Same shape as resolve-report, but the outcome is "dismiss": no content is touched, and only
+ * Same shape as resolve-report, but the outcome is "dismiss": no content is touched, and only
  * `report.resolved` (outcome: "dismissed") is emitted — no `content.removed`. Dismissing your own report or
  * your own content is refused SELF_REVIEW_FORBIDDEN; dismissing an already-terminal report is refused
  * INVALID_STATE_TRANSITION.

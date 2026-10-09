@@ -10,7 +10,7 @@ import { readJson } from "../_lib/request";
 const body = z.object({ userId: z.uuid() }).strict();
 
 /**
- * POST /api/v1/blocks — block a member (FR-NET-004). Blocking is by member, not by connection, because it
+ * POST /api/v1/blocks — block a member. Blocking is by member, not by connection, because it
  * needs no prior request. Lifting it is `DELETE /api/v1/connections/:id` on the blocked row.
  */
 export const POST = routeHandler(async (request) => {

@@ -7,7 +7,7 @@ import type {
 } from "../domain/moderation";
 import type { KeysetCursor } from "../domain/keyset-cursor";
 
-/** One report as the queue shows it (spec C12-5). `preview` is null for MESSAGE: its text is only read through C12-6. */
+/** One report as the queue shows it. `preview` is null for MESSAGE: its text is only read through. */
 export type ReportView = {
   id: string;
   status: ReportState;
@@ -32,7 +32,7 @@ export type ReportRow = {
   resolvedById: string | null;
   createdAt: Date;
 };
-/** Moderator actions leave audit rows in the same transaction (FR-MOD-004, spec A12-9). Ids and codes only. */
+/** Moderator actions leave audit rows in the same transaction. Ids and codes only. */
 export type ModerationAuditEntry =
   | {
       action: "report.claimed" | "report.resolved" | "report.dismissed";
@@ -73,7 +73,7 @@ export type ModerationTx = {
   ): Promise<void>;
   /** Cross-module write: sets message.hidden_at once. True only when this call hid it. */
   hideMessage(messageId: string): Promise<boolean>;
-  /** The reports queue and single-report reads (spec C12-5, C12-7). `reportId` narrows to one report; `statuses: []` means any. */
+  /** The reports queue and single-report reads. `reportId` narrows to one report; `statuses: []` means any. */
   listReports(input: {
     reportId?: string;
     statuses: readonly ReportState[];

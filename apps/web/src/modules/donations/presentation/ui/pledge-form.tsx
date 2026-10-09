@@ -20,7 +20,7 @@ export type PledgeAction = (
   input: { amount: string; paymentReference: string }
 ) => Promise<ActionResult<{ donationId: string }>>;
 
-/** FR-DON-002 (XD-6): the member records what they will pay; the payment itself happens outside the app. */
+/** The member records what they will pay; the payment itself happens outside the app. */
 export function PledgeForm(props: {
   campaignId: string;
   action: PledgeAction;

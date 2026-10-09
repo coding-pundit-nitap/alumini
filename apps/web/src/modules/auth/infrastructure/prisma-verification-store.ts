@@ -108,7 +108,7 @@ function createTx(tx: Prisma.TransactionClient, deps: Deps): VerificationTx {
       return result.count === 1;
     },
 
-    // FR-PROFILE-004: institutional fields change only through this workflow.
+    // Institutional fields change only through this workflow.
     async applyInstitutionalFields(userId, fields) {
       const user = await tx.user.findUniqueOrThrow({
         where: { id: userId },

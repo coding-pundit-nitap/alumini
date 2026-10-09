@@ -19,14 +19,14 @@ import { isPublicPath, safeNextPath } from "@/lib/route-access";
 /**
  * Next.js 16 proxy (formerly middleware). Three jobs, all cheap:
  *
- * 1. Assigns the request id (reliability §6.2): a well-formed incoming id is reused, anything else is
+ * 1. Assigns the request id: a well-formed incoming id is reused, anything else is
  *    replaced. It runs apart from the render code and must not rely on shared modules or globals, so
  *    the id travels in headers; `routeHandler` reads it from there.
- * 2. Optimistic auth redirect (ADR-005 §2, TDS §7.5): an anonymous request for a gated page goes to
+ * 2. Optimistic auth redirect: an anonymous request for a gated page goes to
  *    /login. It checks that a session cookie is PRESENT and nothing more: no database, no signature
  *    check, no authorization. Every page and handler still calls getActor(), and every use case still
  *    calls authorize(). `/health/*` and `/api/*` are never redirected (see lib/route-access.ts).
- * 3. Content Security Policy (spec 16 SD-1): a page gets a policy with a fresh nonce, which Next.js reads
+ * 3. Content Security Policy: a page gets a policy with a fresh nonce, which Next.js reads
  *    from the forwarded request header and stamps on its own scripts (the root layout passes it to the
  *    theme script). Data paths get a policy that loads nothing. The static headers are in next.config.ts.
  */

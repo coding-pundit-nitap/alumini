@@ -173,7 +173,7 @@ describe("getProfileForViewer: who is looking", () => {
   });
 });
 
-describe("getProfileForViewer: privileged reads (RBAC §12)", () => {
+describe("getProfileForViewer: privileged reads", () => {
   const privileged = { permissions: ["profile.read", "profile.read_any"] };
 
   it("shows a PRIVATE profile and audits the read", async () => {

@@ -68,7 +68,7 @@ describe("safeNextPath (open-redirect guard)", () => {
     expect(safeNextPath(input)).toBe("/dashboard");
   });
 
-  it("falls back to the dashboard when next is missing (H-3)", () => {
+  it("falls back to the dashboard when next is missing", () => {
     expect(safeNextPath(undefined)).toBe("/dashboard");
     expect(safeNextPath("//evil.com")).toBe("/dashboard");
   });

@@ -5,7 +5,7 @@ import { healthDetailsVisible } from "@/infrastructure/health";
 import { logger } from "@/infrastructure/observability";
 
 /**
- * Prometheus scrape target (spec 13A A-6). Not wrapped in routeHandler: a scrape is not API traffic.
+ * Prometheus scrape target. Not wrapped in routeHandler: a scrape is not API traffic.
  * Refused callers get a bare 404 so the endpoint is not advertised.
  */
 export async function GET(request: Request): Promise<Response> {

@@ -13,7 +13,7 @@ import type {
 import { refuse } from "./refusal";
 
 /**
- * FR-EVENT-006 (E-6). `releaseSeat` is the one guarded UPDATE that decides seat release; this only
+ * `releaseSeat` is the one guarded UPDATE that decides seat release; this only
  * classifies its miss for the caller. The seat release, the registration and
  * `event.registration-cancelled` commit in one transaction; `observe`/`observeRefusal` run only
  * after that transaction settles.

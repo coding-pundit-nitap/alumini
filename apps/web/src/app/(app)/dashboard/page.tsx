@@ -36,7 +36,7 @@ import { FirstRun, Greeting, Widgets, WidgetStrip } from "./_components/data";
 
 export const metadata: Metadata = { title: "Home" };
 
-/** Spec U-3: Home is the feed, with the §5.3.1 blocks as a highlights rail. Access per H-4. */
+/** Home is the feed, with the blocks as a highlights rail. Access. */
 export default async function DashboardPage({
   searchParams,
 }: {
@@ -69,7 +69,7 @@ export default async function DashboardPage({
   const canPost = can(actor, PERMISSIONS.POST_CREATE);
   const author = canPost ? await getViewerAuthor(actor) : undefined;
 
-  // The pinned slot is a nicety: a failure hides it, never the feed (SRS §44).
+  // The pinned slot is a nicety: a failure hides it, never the feed.
   const pinned = cursor
     ? null
     : await getPinnedAnnouncement({ actor }).catch(() => null);

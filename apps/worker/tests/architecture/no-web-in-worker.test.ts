@@ -23,7 +23,7 @@ afterEach(() => {
     fs.rmSync(dir, { recursive: true, force: true });
 });
 
-describe("the worker never depends on the Next.js app (ADR-018)", () => {
+describe("the worker never depends on the Next.js app", () => {
   it("apps/worker/src and tests import nothing from apps/web", () => {
     expect(checkNoWebImports(workerRoot)).toEqual([]);
   });

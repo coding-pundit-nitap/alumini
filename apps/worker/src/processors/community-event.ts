@@ -21,8 +21,8 @@ type Deps = {
 
 /**
  * Handles the nine Community outbox events. post.created and reaction.added deliberately notify no
- * one (spec catalogue). achievement.submitted, report.filed, and report.resolved notify moderators/reporters
- * in-app + email (overview XD-9, 12E). Every notifying processor re-reads current state at delivery time
+ * one. achievement.submitted, report.filed, and report.resolved notify moderators/reporters
+ * in-app + email. Every notifying processor re-reads current state at delivery time
  * and returns quietly if the row is gone (never throws into an endless retry). Ids only in logs and payloads.
  */
 export function createPostCreatedProcessor(): JobProcessor<PostCreatedPayload> {
@@ -80,7 +80,7 @@ export function createCommentCreatedProcessor(
   };
 }
 
-/** Deliberately no notification: high-frequency, low-signal (spec catalogue, reaction.added row). */
+/** Deliberately no notification: high-frequency, low-signal. */
 export function createReactionAddedProcessor(): JobProcessor<ReactionAddedPayload> {
   return async (payload, { logger }) => {
     logger.info("reaction.added.handled", {

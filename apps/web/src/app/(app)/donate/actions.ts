@@ -17,7 +17,7 @@ const id = (value: unknown) => {
   return value;
 };
 
-/** Phase 12H member actions (spec H-10). Each use case authorizes and validates again. */
+/** Member actions. Each use case authorizes and validates again. */
 export async function pledgeAction(
   campaignId: string,
   input: { amount: string; paymentReference: string }

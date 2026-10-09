@@ -222,7 +222,7 @@ describe("requestConnection", () => {
     );
   });
 
-  it("rolls the row back when the outbox write fails (NFR-REL-002)", async () => {
+  it("rolls the row back when the outbox write fails", async () => {
     const { request, rows, events } = setup([], { failEnqueue: true });
     await expect(request({ actor: actor(A), recipientId: B })).rejects.toThrow(
       "outbox down"

@@ -1,10 +1,10 @@
 /**
- * Which paths anonymous users may load (TDS §7.5). Used by proxy.ts, which is optimistic only: it
+ * Which paths anonymous users may load. Used by proxy.ts, which is optimistic only: it
  * never authorizes, it just saves rendering a gated page for someone with no session cookie.
  * Extend the list in the same change that adds a public page.
  *
  * `/api` is public HERE because handlers answer 401 themselves; redirecting a fetch() to an HTML login
- * page would only confuse API clients. `/health` must stay reachable for probes (reliability §4.1).
+ * page would only confuse API clients. `/health` must stay reachable for probes.
  */
 const PUBLIC_PREFIXES = [
   "/login",
@@ -13,13 +13,13 @@ const PUBLIC_PREFIXES = [
   "/forgot-password",
   "/reset-password",
   "/health",
-  // Prometheus scrapes; the route gates itself (spec 13A A-6).
+  // Prometheus scrapes; the route gates itself.
   "/metrics",
   "/api",
-  // Supporting pages (UI/UX §3.2); the footer links them for everyone.
+  // Supporting pages; the footer links them for everyone.
   "/terms",
   "/contact",
-  // Guests may view a PUBLIC profile (FR-DIR-004); the page itself answers 404 for anything else.
+  // Guests may view a PUBLIC profile; the page itself answers 404 for anything else.
   "/members",
   // Social crawlers fetch this with no session cookie when a link is shared.
   "/opengraph-image",
@@ -38,7 +38,7 @@ export function isPublicPath(pathname: string): boolean {
   );
 }
 
-/** H-3: where a signed-in person goes when `next` is absent or unsafe. */
+/** Where a signed-in person goes when `next` is absent or unsafe. */
 const FALLBACK = "/dashboard";
 
 /**

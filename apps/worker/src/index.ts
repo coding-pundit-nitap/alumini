@@ -36,7 +36,7 @@ initErrorTracker({
   release: env.APP_VERSION ?? "dev",
   service: "worker",
 });
-// Installed before anything records a metric (spec 13A A-7).
+// Installed before anything records a metric.
 const metrics = createPrometheusMetrics({
   service: "worker",
   version: env.APP_VERSION ?? "dev",

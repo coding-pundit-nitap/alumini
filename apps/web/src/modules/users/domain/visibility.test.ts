@@ -23,7 +23,7 @@ const NONE = {
   PRIVATE: false,
 };
 
-/** The visibility matrix: viewer type x level. This table is the documented contract (spec 3A §3.2). */
+/** The visibility matrix: viewer type x level. This table is the documented contract. */
 const EXPECTED: Record<Viewer, Record<Visibility, boolean>> = {
   owner: ALL,
   privileged: ALL,

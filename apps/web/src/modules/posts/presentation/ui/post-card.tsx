@@ -275,7 +275,7 @@ function PostEditor({
 }
 
 /**
- * A single feed post: Markdown-rendered content (never raw, C-2), images, reactions, a comment-count
+ * A single feed post: Markdown-rendered content (never raw), images, reactions, a comment-count
  * link, own-post edit (TEXT posts) and delete, and — for an actor holding `post.moderate`/`report.review` (`canModerate`) — an
  * inline Report affordance that flips to Resolve/Dismiss once `post.openReportId` is set (`list-feed`
  * joins the `report` table, so this is a durable per-post read, not session-local state: any moderator

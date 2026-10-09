@@ -16,7 +16,7 @@ const SUN_LATE_IST = new Date("2025-03-09T18:00:00Z");
 const MON_EARLY_IST = new Date("2025-03-09T19:00:00Z");
 const hours = (at: Date, h: number) => new Date(at.getTime() + h * 3_600_000);
 
-describe("PrismaAnalyticsStore (spec 12F F-4, F-5)", () => {
+describe("PrismaAnalyticsStore", () => {
   let db: TestDatabase;
   let store: ReturnType<typeof createPrismaAnalyticsStore>;
   let n = 0;
@@ -107,7 +107,7 @@ describe("PrismaAnalyticsStore (spec 12F F-4, F-5)", () => {
     });
     expect(raw.byState.VERIFIED).toBeGreaterThanOrEqual(5);
 
-    // Through the use case, the role bucket of 3 is suppressed (F-6).
+    // Through the use case, the role bucket of 3 is suppressed.
     const get = createGetAnalytics({
       store,
       authorize: (actor) => actor!,

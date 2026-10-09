@@ -5,9 +5,9 @@ import { adminNavigation, groupAdminNav } from "@/modules/admin";
 import { can, getActor } from "@/modules/auth";
 
 /**
- * The admin shell. NOT a security boundary (spec A12-4): layouts do not re-render on navigation, so every
+ * The admin shell. NOT a security boundary: layouts do not re-render on navigation, so every
  * page and route under it authorizes through its own use case. This only hides the shell from anyone
- * holding no admin-tier permission (404, never 403: RBAC §8 rule 6).
+ * holding no admin-tier permission (404, never 403: RBAC rule 6).
  */
 export default async function AdminLayout({
   children,

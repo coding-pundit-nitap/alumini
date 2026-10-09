@@ -34,7 +34,7 @@ async function newApplicant(page: Page, domain = "example.test") {
   return email;
 }
 
-test.describe("alumni verification (J-03)", () => {
+test.describe("alumni verification", () => {
   test("a submitted request is approved by a coordinator and the applicant becomes verified", async ({
     page,
     browser,
@@ -126,7 +126,7 @@ test.describe("alumni verification (J-03)", () => {
     // The applicant gets the not-found page and never the queue. The HTTP status is 200, not 404: the root
     // loading.tsx makes every dynamic route stream, so the status line is sent before notFound() throws
     // (Next.js docs, "Calling notFound() after streaming has started"). A real 404 needs the check
-    // before streaming, and the only pre-stream hook, proxy.ts, must never authorize (ADR-005, TDS §7).
+    // before streaming, and the only pre-stream hook, proxy.ts, must never authorize.
     await page.goto("/admin/verification");
     await expect(page.getByText("Page not found")).toBeVisible();
     await expect(page.getByText("Verification requests")).toHaveCount(0);

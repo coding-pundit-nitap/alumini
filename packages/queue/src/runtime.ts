@@ -59,7 +59,7 @@ export type ExecuteDeps = {
   registry: ReadonlyMap<string, RegisteredJob>;
   logger: Logger;
   metrics: Metrics;
-  /** Reports a dead job to the error tracker (spec 13B B-6); defaults to `@nitap/observability`'s. */
+  /** Reports a dead job to the error tracker; defaults to `@nitap/observability`'s. */
   captureError?: (error: unknown, context: CaptureContext) => void;
   /** How long to hold back a payload of a newer version than this worker knows. */
   unknownVersionDelayMs: number;
@@ -67,7 +67,7 @@ export type ExecuteDeps = {
 };
 
 /**
- * Everything that happens to one job (TDS §12.4), independent of BullMQ's Worker so it is unit-testable:
+ * Everything that happens to one job, independent of BullMQ's Worker so it is unit-testable:
  * validate, defer unknown versions, restore the request context, enforce the timeout, and translate
  * errors into BullMQ's retry / fail / delay semantics. Processors must not put personal data in error
  * messages: the message is logged.
@@ -215,7 +215,7 @@ export type WorkerRuntimeOptions = {
   /**
    * How long a job's lock lives without renewal, and how often stalled jobs are looked for. A worker that
    * dies mid-job stops renewing, so its job returns to the queue within about these two. BullMQ's 30 s
-   * defaults are kept in production; tests shorten them (spec 14 RD-5).
+   * defaults are kept in production; tests shorten them.
    */
   lockDurationMs?: number;
   stalledIntervalMs?: number;
@@ -370,7 +370,7 @@ export function createWorkerRuntime(
           await closing.quit().catch(() => closing.disconnect());
         } else {
           // Disconnecting (not quit(), which waits for replies) is what actually unblocks a stuck
-          // close: the job's lock then expires and it is recovered as stalled (TDS §12.2).
+          // close: the job's lock then expires and it is recovered as stalled.
           closing.disconnect();
         }
       }

@@ -13,7 +13,7 @@ const HEARTBEAT_MS = 25_000;
 /**
  * GET /api/v1/messages/stream — Server-Sent Events. Carries ids-only message and notification hints for the caller's own channels; the
  * browser refetches through the authorized list endpoints, so nothing here can leak a message. Without Redis
- * the answer is 503 and the client falls back to polling (spec M-3, M-12).
+ * the answer is 503 and the client falls back to polling.
  *
  * A caller needs MESSAGE_SEND, NOTIFICATION_READ, or both — permissions, never a role — to open the
  * connection at all (401/403 otherwise); each hint kind is then only ever written to the wire for a
@@ -71,7 +71,7 @@ export const GET = routeHandler(async (request) => {
       };
       request.signal.addEventListener("abort", end, { once: true });
       // An open stream never ends by itself, so it would hold a draining instance's shutdown open until the
-      // grace period kills it (spec 14 F-4). Ending it makes the browser reconnect (retry: 5000) elsewhere.
+      // grace period kills it. Ending it makes the browser reconnect (retry: 5000) elsewhere.
       stopDrainWatch = health.onDrain(end);
     },
   });

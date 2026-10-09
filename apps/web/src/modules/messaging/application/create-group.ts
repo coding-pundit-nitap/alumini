@@ -9,7 +9,7 @@ import type { MessagingObserver, MessagingStore } from "./messaging-store";
 import { CREATE_RATE, type RateLimiter } from "./rate-limit";
 import { parse } from "./validation";
 
-/** Creator-admin group of 3..20 verified members, none blocked with another (spec M-6). */
+/** Creator-admin group of 3..20 verified members, none blocked with another. */
 export function createCreateGroupConversation(deps: {
   store: MessagingStore;
   authorize: Authorize;

@@ -1,4 +1,4 @@
-// Shared by every scenario (Phase 15; strategy §13). Run through `node packages/scripts/perf/run.ts <scenario>`, which
+// Shared by every scenario. Run through `node packages/scripts/perf/run.ts <scenario>`, which
 // mounts this directory at /perf in the k6 container and passes BASE_URL, RATE, DURATION and RAMP.
 import { SharedArray } from "k6/data";
 import type { Options, Scenario } from "k6/options";
@@ -90,8 +90,8 @@ export function uuid(): string {
 }
 
 /**
- * SRS §47 (strategy §13.1): p50 < 200 ms, p95 < 500 ms, p99 < 1 s, error rate < 0.1 %. In the script, so a run
- * that breaks a budget exits non-zero (strategy §13.3).
+ * P50 < 200 ms, p95 < 500 ms, p99 < 1 s, error rate < 0.1 %. In the script, so a run
+ * that breaks a budget exits non-zero.
  */
 export const SRS_THRESHOLDS: NonNullable<Options["thresholds"]> = {
   http_req_duration: ["p(50)<200", "p(95)<500", "p(99)<1000"],
@@ -99,7 +99,7 @@ export const SRS_THRESHOLDS: NonNullable<Options["thresholds"]> = {
 };
 
 /**
- * Open model (strategy §13.3): requests arrive at RATE per second whether or not the server keeps up, so a slow
+ * Open model: requests arrive at RATE per second whether or not the server keeps up, so a slow
  * server shows up as latency, not as fewer requests. Ramps for RAMP, holds for DURATION.
  */
 export function arrival(defaults: {

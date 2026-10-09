@@ -123,7 +123,7 @@ describe("createJob", () => {
     ).rejects.toMatchObject({ name: "ValidationError" });
   });
 
-  it("is rate-limited at 10/hour/member (spec J-16)", async () => {
+  it("is rate-limited at 10/hour/member", async () => {
     const { createJob } = build({
       rateLimiter: {
         consume: async () => ({ allowed: false, retryAfter: 42 }),

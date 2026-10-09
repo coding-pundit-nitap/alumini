@@ -33,7 +33,7 @@ export const metadata: Metadata = { title: "Job" };
 
 const uuid = z.uuid();
 
-/** A posting's full view (spec J-8 visibility: PUBLISHED, or the poster, or an approver/manager; else 404). */
+/** A posting's full view (visible when PUBLISHED, or the poster, or an approver/manager; else 404). */
 export default async function JobPage({
   params,
 }: {

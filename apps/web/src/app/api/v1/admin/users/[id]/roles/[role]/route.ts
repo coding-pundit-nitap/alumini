@@ -14,7 +14,7 @@ const userId = async (ctx: Params) => {
   return parsed.data;
 };
 
-/** DELETE /api/v1/admin/users/:id/roles/:role — revoke a role (spec B12-5). */
+/** DELETE /api/v1/admin/users/:id/roles/:role — revoke a role. */
 export const DELETE = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const result = await revokeRole({

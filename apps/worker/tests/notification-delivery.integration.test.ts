@@ -29,7 +29,7 @@ const eventually = (assertion: () => unknown | Promise<unknown>) =>
   vi.waitFor(assertion, { timeout: 10_000, interval: 25 });
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** TASK.md Phase 11 failure-behaviour matrix, through the real composed worker (outbox → relay → queue → processor). */
+/** Failure-behaviour matrix, through the real composed worker (outbox → relay → queue → processor). */
 describe("notification delivery failure behaviour (real PostgreSQL, Redis and SMTP)", () => {
   let db: TestDatabase;
   let smtp: SmtpTestServer;
@@ -373,7 +373,7 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     expect(smtp.received).toHaveLength(1);
   });
 
-  // N-12 / TASK.md: retry exhaustion must end in NotificationDelivery FAILED with an alert-worthy metric.
+  // / retry exhaustion must end in NotificationDelivery FAILED with an alert-worthy metric.
   it("permanent email failure ends in NotificationDelivery FAILED with a metric, not infinite retry", async () => {
     const [actor, recipient] = await Promise.all([
       makeUser("actor"),
@@ -395,7 +395,7 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     );
   });
 
-  // N-9: the cache Redis (unread counter, hints, debounce) going down only degrades real-time push.
+  // The cache Redis (unread counter, hints, debounce) going down only degrades real-time push.
   it("a dead cache Redis still writes the in-app row, records EMAIL PENDING and sends the email", async () => {
     const [actor, recipient] = await Promise.all([
       makeUser("actor"),
@@ -464,12 +464,12 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     await eventually(async () =>
       expect(await notifications(recipient.id)).toHaveLength(1)
     );
-    // Phase 14 RD-6: without the debounce window there is no email at all, rather than one per message.
+    // Without the debounce window there is no email at all, rather than one per message.
     await wait(300);
     expect(smtp.received).toHaveLength(0);
   });
 
-  // N-6/N-7: one row per (recipient, conversation, window), not one per message.
+  // One row per (recipient, conversation, window), not one per message.
   it("two message.sent in one debounce window make one notification and one email; reading opens a new window", async () => {
     const [sender, recipient] = await Promise.all([
       makeUser("sender"),
@@ -538,7 +538,7 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
     }
   });
 
-  it("a suppressed address gets the in-app notification but no email (N-10)", async () => {
+  it("a suppressed address gets the in-app notification but no email", async () => {
     const [actor, recipient, control] = await Promise.all([
       makeUser("actor"),
       makeUser("recipient"),

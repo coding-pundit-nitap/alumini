@@ -16,7 +16,7 @@ export function createProfileAudit(deps: {
           action: "profile.read_any",
           targetType: "profile",
           targetId: targetUserId,
-          // A free-text reason arrives with the Phase 12 admin UI (spec 3A O-4).
+          // A free-text reason arrives with the admin UI.
           metadata: { reason: "direct view" },
         })
       ),

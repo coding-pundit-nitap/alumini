@@ -20,7 +20,7 @@ import { createPrismaGrantSource } from "./prisma-grant-source";
 
 const grantSource = createPrismaGrantSource(prisma);
 
-/** For admin checks on a target user (spec B12-8): role-derived ∪ live direct grants, regardless of state. */
+/** For admin checks on a target user: role-derived ∪ live direct grants, regardless of state. */
 export const loadGrants = (userId: string, now: Date) =>
   grantSource.loadGrants(userId, now);
 
@@ -31,9 +31,9 @@ export const loadGrants = (userId: string, now: Date) =>
  * disabled), so a revoked session or a changed account state is seen at once. Grants are loaded for
  * VERIFIED accounts only. Memoised per render by React `cache`; Route Handlers and Server Actions
  * call it once at the top and pass the actor down. Returns null when signed out. This proves
- * identity; permissions are checked by `authorize()` (TDS §7.3-7.4).
+ * identity; permissions are checked by `authorize()`.
  *
- * It also repairs the two gaps Better Auth's post-commit hooks can leave (spec 2C, D-3): a user with no
+ * It also repairs the two gaps Better Auth's post-commit hooks can leave: a user with no
  * profile, and a PENDING account whose email was confirmed but whose policy transition did not run.
  * Both use cases are idempotent, and a repair failure never fails the request.
  */
@@ -43,7 +43,7 @@ export const getActor = cache(async (): Promise<Actor | null> => {
   if (!session) return null;
 
   const userId = session.user.id;
-  // Inside a Route Handler, the caller's API-wide allowance (spec 16 SD-7); refused before any grant load.
+  // Inside a Route Handler, the caller's API-wide allowance; refused before any grant load.
   await apiBudget.charge(userId);
   const requestId = requestHeaders.get(REQUEST_ID_HEADER) ?? "unknown";
   const deps = { grantSource, now: () => new Date() };

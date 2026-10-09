@@ -12,7 +12,7 @@ export type SmtpEmailPortOptions = {
   greetingTimeoutMs?: number;
   socketTimeoutMs?: number;
   /**
-   * Suppression lookup by `hashEmail` (N-10). The provider has no bounce webhook yet, so the composition root
+   * Suppression lookup by `hashEmail`. The provider has no bounce webhook yet, so the composition root
    * passes a read of the email_suppression table; default: nothing is suppressed.
    */
   isSuppressed?: (emailHash: string) => Promise<boolean>;

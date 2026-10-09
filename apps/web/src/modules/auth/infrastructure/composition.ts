@@ -50,7 +50,7 @@ export const submitVerificationRequest = createSubmitVerificationRequest({
   instituteRecords: unavailableInstituteRecords,
 });
 
-// The role an approval grants is injected here: application code never names a role (RBAC §11).
+// The role an approval grants is injected here: application code never names a role.
 export const decideVerificationRequest = createDecideVerificationRequest({
   store: verificationStore,
   authorize,

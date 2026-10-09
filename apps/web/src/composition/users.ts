@@ -26,7 +26,7 @@ import {
 
 /**
  * Wires the users module to its adapters and to the auth module's `authorize`/`can`. It lives here, not in
- * the module, because a module's infrastructure may not import another module (TDS §5.2, R-10).
+ * the module, because a module's infrastructure may not import another module.
  */
 const store = createPrismaProfileStore(prisma);
 
@@ -57,12 +57,12 @@ export const updateProfilePhoto = createUpdateProfilePhoto({
 });
 export const updateOwnPrivacy = createUpdateOwnPrivacy({ store, authorize });
 
-// UI-15: the tick a member shows on their photo.
+// The tick a member shows on their photo.
 const badges = createPrismaBadgeStore(prisma);
 export const getBadgeSettings = createGetBadgeSettings({ badges, authorize });
 export const setBadgeRole = createSetBadgeRole({ badges, authorize });
 
-// The four detail collections (spec 3B): one shared use-case factory, four explicit Prisma stores.
+// The four detail collections: one shared use-case factory, four explicit Prisma stores.
 const now = () => new Date();
 
 export const experienceUseCases = createCollectionUseCases({

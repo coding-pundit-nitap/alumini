@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { defineJob } from "./define-job.ts";
 
-/** Ids only: a consumer looks the rows up, so the event never carries a name, message or note (reliability §6.4). */
+/** Ids only: a consumer looks the rows up, so the event never carries a name, message or note. */
 const mentorshipEventPayload = z
   .object({
     v: z.literal(1),
@@ -34,7 +34,7 @@ const mentorshipJob = <N extends `mentorship.${string}`>(name: N) =>
       "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.",
   });
 
-/** Facts a mentorship changed, written to the outbox with the change (FR-MENTOR, NFR-REL-002). Phase 11 notifies on them. */
+/** Facts a mentorship changed, written to the outbox with the change. notifies on them. */
 export const mentorshipJobs = {
   "mentorship.requested": mentorshipJob("mentorship.requested"),
   "mentorship.accepted": mentorshipJob("mentorship.accepted"),

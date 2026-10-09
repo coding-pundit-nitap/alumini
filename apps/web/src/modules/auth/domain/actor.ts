@@ -28,8 +28,8 @@ export type Grant =
     };
 
 /**
- * The authenticated caller. `grants` is empty unless `accountState` is VERIFIED (RBAC §7); it is
- * loaded once per request (TDS §7.3).
+ * The authenticated caller. `grants` is empty unless `accountState` is VERIFIED; it is
+ * loaded once per request.
  */
 export type Actor = {
   userId: string;
@@ -40,10 +40,10 @@ export type Actor = {
 
 /** What `decide()` needs to know about the record being acted on. */
 export type Resource = {
-  /** The chapter the record belongs to, or none. A resource without a chapter matches only GLOBAL grants (RBAC §5). */
+  /** The chapter the record belongs to, or none. A resource without a chapter matches only GLOBAL grants. */
   chapterId?: string | null;
-  /** The user the action is about, for separation of duties (RBAC §8.3). */
+  /** The user the action is about, for separation of duties. */
   subjectUserId?: string;
-  /** Set when the record's existence is itself sensitive: a denial then answers 404, not 403 (RBAC §8.6). */
+  /** Set when the record's existence is itself sensitive: a denial then answers 404, not 403. */
   concealed?: boolean;
 };

@@ -8,9 +8,9 @@ import type { ConnectionLookup } from "./connection-lookup";
 import type { ProfileStore } from "./profile-store";
 
 /**
- * The real storage key behind a profile's photo (spec 3C) — never exposed on `ProfileView`, which only
+ * The real storage key behind a profile's photo — never exposed on `ProfileView`, which only
  * ever carries the stable app path. Only `/api/photos/[userId]` calls this, to presign a fresh GET. The
- * photo follows the profile's core visibility level (spec 3C F-5), so the same viewer check as
+ * photo follows the profile's core visibility level, so the same viewer check as
  * `getProfileForViewer` applies; not-found either way, so a profile's existence is never leaked.
  */
 export function createGetProfilePhotoKey(deps: {

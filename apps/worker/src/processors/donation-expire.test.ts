@@ -11,7 +11,7 @@ const context = (signal = new AbortController().signal) => ({
   logger: silentLogger(),
 });
 
-describe("donation.expire-pledges processor (12H H-8)", () => {
+describe("donation.expire-pledges processor", () => {
   it("expires pledges older than 30 days in batches until a short one", async () => {
     const now = new Date("2026-10-01T00:00:00Z");
     const store = {

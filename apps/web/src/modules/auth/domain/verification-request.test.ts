@@ -118,7 +118,7 @@ describe("review notes", () => {
   });
 });
 
-describe("groupHistory (spec C12-10)", () => {
+describe("groupHistory", () => {
   const entry = (userId: string, n: number) => ({
     userId,
     status: "REJECTED" as const,

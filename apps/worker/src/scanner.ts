@@ -1,6 +1,6 @@
 export type ScanResult = { ok: true } | { ok: false; reason: string };
 
-/** Malware/content scanning for uploaded bytes (spec 3C). ClamAV is Phase 16; this is the seam. */
+/** Malware/content scanning for uploaded bytes. ClamAV plugs in here. */
 export interface ScannerPort {
   scan(bytes: Buffer): Promise<ScanResult>;
 }

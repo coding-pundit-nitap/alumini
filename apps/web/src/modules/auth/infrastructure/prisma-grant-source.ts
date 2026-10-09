@@ -7,9 +7,9 @@ import type { Grant } from "../domain/actor";
 import { isPermission } from "../domain/permission";
 
 /**
- * Effective grants = role-derived ∪ direct (`permission_grant`), excluding expired ones (RBAC §10.1).
+ * Effective grants = role-derived ∪ direct (`permission_grant`), excluding expired ones.
  * Role permissions are GLOBAL and never expire. Permission names are validated against the registry
- * because PostgreSQL does not (domain-model.md); an unknown name is dropped and logged, never trusted.
+ * because PostgreSQL does not; an unknown name is dropped and logged, never trusted.
  */
 export function createPrismaGrantSource(prisma: PrismaClient): GrantSource {
   return {

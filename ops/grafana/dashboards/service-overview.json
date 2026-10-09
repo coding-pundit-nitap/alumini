@@ -1,7 +1,7 @@
 {
   "uid": "alumini-overview",
   "title": "Service overview",
-  "description": "SLO view: availability, errors and latency against SRS \u00a747 (reliability \u00a75.3 dashboard 1).",
+  "description": "SLO view: availability, errors and latency against the availability and latency targets.",
   "tags": ["alumini", "phase-13"],
   "schemaVersion": 39,
   "version": 1,

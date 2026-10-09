@@ -18,18 +18,18 @@ const workerSchema = z.object({
   WORKER_HEALTH_PORT: z.coerce.number().int().min(0).max(65535).default(3001),
   LOG_LEVEL: logLevel.optional(),
   APP_VERSION: z.string().min(1).optional(),
-  // Gates /metrics in production (spec 13A OD-2); same token as the web health details.
+  // Gates /metrics in production; same token as the web health details.
   HEALTH_CHECK_TOKEN: z.string().min(16).optional(),
-  // Error tracker (Sentry protocol: Sentry or GlitchTip); off when unset (spec 13B B-2).
+  // Error tracker (Sentry protocol: Sentry or GlitchTip); off when unset.
   SENTRY_DSN: z.url().optional(),
-  // clamd for upload scanning, tcp://host:3310 (spec 16 SD-8). Unset outside production = no malware scan.
+  // clamd for upload scanning, tcp://host:3310. Unset outside production = no malware scan.
   CLAMAV_URL: z
     .string()
     .regex(/^tcp:\/\/[^/]+$/, "CLAMAV_URL must look like tcp://host:3310")
     .optional(),
 });
 
-/** Production never runs uploads without a malware scan (NFR-SEC-007). */
+/** Production never runs uploads without a malware scan. */
 const productionWorkerSchema = workerSchema.refine(
   (env) => env.NODE_ENV !== "production" || env.CLAMAV_URL !== undefined,
   { path: ["CLAMAV_URL"], message: "CLAMAV_URL is required in production" }

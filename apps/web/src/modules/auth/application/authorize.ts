@@ -17,7 +17,7 @@ export type AuthzEvent =
       userId: string;
       requestId: string;
       reason: DenyReason;
-      /** The user the action was about, when known; the audit target (spec B12-13). */
+      /** The user the action was about, when known; the audit target. */
       subjectUserId?: string;
       chapterId?: string | null;
     }

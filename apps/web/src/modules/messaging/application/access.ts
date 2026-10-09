@@ -4,7 +4,7 @@ import type { ConversationRow, MessagingTx } from "./messaging-store";
 
 /**
  * Locks the conversation and proves the caller may act inside it. Not a member, or a 1:1 whose other side has
- * blocked the caller, both read as NOT_FOUND: existence is not revealed (same stance as ADR-024).
+ * blocked the caller, both read as NOT_FOUND: existence is not revealed.
  */
 export async function requireParticipant(
   tx: MessagingTx,

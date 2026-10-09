@@ -9,7 +9,7 @@ export type PledgeExpiryStoreLike = {
 };
 
 /**
- * Spec H-8: open pledges with no payment reference after `days` become NOT_RECEIVED, in bounded batches
+ * Open pledges with no payment reference after `days` become NOT_RECEIVED, in bounded batches
  * until a short one (modeled on `job-expire.ts`). Each flip and its donor notice commit together in the store.
  */
 export function createDonationExpireProcessor(deps: {

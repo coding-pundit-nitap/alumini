@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { routeLabel } from "./route-label";
 
-describe("routeLabel (spec 13A A-8)", () => {
+describe("routeLabel", () => {
   it("replaces id-like segments with :id", () => {
     expect(
       routeLabel("/api/v1/posts/3f2b8c1e-9a4d-4e2b-8c1a-0d9e8f7a6b5c", 200)

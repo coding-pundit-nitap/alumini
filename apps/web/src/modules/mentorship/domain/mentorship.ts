@@ -1,5 +1,5 @@
 /**
- * The mentorship rules, pure (FR-MENTOR-004…006, spec M-3…M-7). Nothing here touches a database or a clock.
+ * The mentorship rules, pure. Nothing here touches a database or a clock.
  * A `NOT_FOUND` refusal means "this is not yours to know about": a stranger, a blocked-out party and a
  * hidden mentor all read the same. Checks run in a fixed order: participant → block → role → state → capacity.
  */
@@ -17,7 +17,7 @@ export const OPEN_STATES = [
   "ACCEPTED",
   "ACTIVE",
 ] as const satisfies readonly MentorshipState[];
-/** States that hold one of the mentor's slots (spec M-5): a request does not, an acceptance does. */
+/** States that hold one of the mentor's slots: a request does not, an acceptance does. */
 export const SLOT_STATES = [
   "ACCEPTED",
   "ACTIVE",
@@ -135,7 +135,7 @@ export function decideTransition(
   const { action } = input;
   const isMentor = actorId === row.mentorId;
   if (!isMentor && actorId !== row.menteeId) return refuse("NOT_FOUND");
-  // A block ends every move except leaving: nobody is trapped in a mentorship they cannot escape (spec M-7).
+  // A block ends every move except leaving: nobody is trapped in a mentorship they cannot escape.
   if (action !== "cancel" && ctx.blocked) return refuse("NOT_FOUND");
   if (action !== "cancel" && !isMentor) return refuse("NOT_MENTORSHIP_MENTOR");
 

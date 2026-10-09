@@ -3,7 +3,7 @@ import type { EmailSendPayload } from "@nitap/jobs";
 /** Better Auth's verification and reset links both live 60 minutes; the templates say so. */
 export const AUTH_LINK_TTL_MINUTES = 60;
 
-/** Where an email request is recorded durably. The adapter writes an outbox row (ADR-007). */
+/** Where an email request is recorded durably. The adapter writes an outbox row. */
 export type EmailOutbox = {
   enqueue(payload: EmailSendPayload): Promise<void>;
 };
@@ -11,7 +11,7 @@ export type EmailOutbox = {
 /**
  * The three messages the identity flows send. They replace fire-and-forget sending: a provider outage
  * no longer fails registration, the row waits in the outbox and the worker retries. Never log the
- * recipient or the link (reliability §6.4).
+ * recipient or the link.
  */
 export function createAuthEmailSender(deps: { outbox: EmailOutbox }) {
   return {

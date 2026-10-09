@@ -9,7 +9,7 @@ export type AttentionCounts = {
   unreadNotifications: number;
 };
 
-/** Each source is read with limit 50 (H-8); at the cap the exact number is unknown. */
+/** Each source is read with limit 50; at the cap the exact number is unknown. */
 export const COUNT_CAP = 50;
 
 const TILES: {
@@ -44,7 +44,7 @@ const TILES: {
   },
 ];
 
-/** §5.3.1 "Needs your attention": zero tiles hide; nothing to do → no block at all. */
+/** "Needs your attention": zero tiles hide; nothing to do → no block at all. */
 export function AttentionTiles({ counts }: { counts: AttentionCounts }) {
   const shown = TILES.filter((tile) => counts[tile.key] > 0);
   if (shown.length === 0) return null;

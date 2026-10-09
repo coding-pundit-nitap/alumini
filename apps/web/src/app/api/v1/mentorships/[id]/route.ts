@@ -17,7 +17,7 @@ const id = z.uuid();
 
 type Params = { params: Promise<{ id: string }> };
 
-/** PATCH /api/v1/mentorships/:id — accept, decline, cancel, start or complete (FR-MENTOR-005/006). */
+/** PATCH /api/v1/mentorships/:id — accept, decline, cancel, start or complete. */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const body = await readJson(request);

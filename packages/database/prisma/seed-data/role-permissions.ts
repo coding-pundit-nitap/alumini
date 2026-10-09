@@ -15,7 +15,7 @@ export const ROLE_NAMES = [
 export type RoleName = (typeof ROLE_NAMES)[number];
 
 /**
- * Roles reachable through self-service onboarding: an institutional email (Phase 2C) or, later, an
+ * Roles reachable through self-service onboarding: an institutional email or, later, an
  * approved verification request (2D). The institutional-email policy may name only these, so an admin
  * role can never be configured through an email domain.
  */
@@ -27,18 +27,18 @@ export const ONBOARDING_ROLE_NAMES = [
 ] as const satisfies readonly RoleName[];
 
 /**
- * The role an approved alumni verification request grants (FR-AUTH-003a). Named here, not in
- * apps/web/src, because application code names permissions, never roles (RBAC §11): the web
+ * The role an approved alumni verification request grants. Named here, not in
+ * apps/web/src, because application code names permissions, never roles: the web
  * composition root imports this constant and injects it into the use case.
  */
 export const VERIFIED_ALUMNI_ROLE = "ALUMNI" as const satisfies RoleName;
 
-/** The role guarded by RBAC §8.4 (the last active Super Admin can't be removed); injected into admin use cases. */
+/** The role guarded against removal (the last active Super Admin can't be removed); injected into admin use cases. */
 export const SUPER_ADMIN_ROLE = "SUPER_ADMIN" as const satisfies RoleName;
 
 const P = PERMISSIONS;
 
-/** Member baseline shared by every role that is a member (rbac-permission-matrix.md §2). */
+/** Member baseline shared by every role that is a member. */
 const MEMBER_BASELINE: Permission[] = [
   P.PROFILE_READ,
   P.PROFILE_UPDATE,

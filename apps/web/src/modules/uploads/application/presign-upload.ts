@@ -29,7 +29,7 @@ export type PresignUploadResult = {
 } & PresignedUpload;
 
 /**
- * The first step of the photo lifecycle (spec 3C): validates the declared type/size, checks the open-
+ * The first step of the photo lifecycle: validates the declared type/size, checks the open-
  * upload quota, creates a PENDING_UPLOAD row under `uploads/pending/`, then asks the store for a
  * presigned POST so the browser can send the bytes directly (they never touch this process).
  */

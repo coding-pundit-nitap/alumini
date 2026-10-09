@@ -10,7 +10,7 @@ import { refuse } from "./refusal";
 import { parse } from "./validation";
 
 /**
- * Phase 10 "edit own post". The author replaces the text of their own TEXT post; images and the link stay.
+ * "edit own post". The author replaces the text of their own TEXT post; images and the link stay.
  * Achievement posts carry reviewed content and announcements are audited, so neither is editable here (both
  * read as NOT_FOUND, like delete-post's announcement case). A report keeps no copy of the content, so an
  * edit while a report is open would rewrite the evidence: refused with POST_UNDER_REVIEW until it is decided.

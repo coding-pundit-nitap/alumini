@@ -25,7 +25,7 @@ const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
 /**
- * Phase 12H (spec H-3). campaign.manage alone sees the open pledges to confirm; donation.view_all sees
+ * Holders of campaign.manage alone see the open pledges to confirm; donation.view_all sees
  * every pledge with a status filter. 404 for anyone holding neither.
  */
 export default async function AdminDonationsPage({

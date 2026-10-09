@@ -1,4 +1,4 @@
-# Routing (reliability §5.5, spec 13C C-5). Receiver URLs are read from files so no secret lives in Git:
+# Routing. Receiver URLs are read from files so no secret lives in Git:
 # mount the real ones at /etc/alertmanager/secrets at deploy time; secrets.example/ holds local placeholders.
 global:
   resolve_timeout: 5m
@@ -10,9 +10,9 @@ route:
   group_interval: 5m
   repeat_interval: 24h
   routes:
-    # Always firing; the external dead-man's switch pages when these heartbeats STOP (reliability §5.1).
+    # Always firing; the external dead-man's switch pages when these heartbeats STOP.
     # A repeat goes out only on a group_interval tick once repeat_interval has passed. With both at 1m, jitter
-    # makes every other tick fall just short, and the heartbeat arrives every 2 minutes (spec 18C alert drill).
+    # makes every other tick fall just short, and the heartbeat arrives every 2 minutes.
     # Ticks every 30s with a 50s repeat give one heartbeat a minute.
     - matchers: [alertname="Watchdog"]
       receiver: deadmans-switch
@@ -26,7 +26,7 @@ route:
       receiver: ticket
       repeat_interval: 24h
 
-# An instance that is down or not ready explains its own errors and latency: one page, not three (§5.4.5).
+# An instance that is down or not ready explains its own errors and latency: one page, not three.
 inhibit_rules:
   - source_matchers: [alertname=~"WebDown|ReadinessFailing"]
     target_matchers:

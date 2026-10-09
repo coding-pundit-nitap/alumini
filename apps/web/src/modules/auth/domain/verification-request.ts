@@ -7,11 +7,11 @@ export type VerificationDecision = "APPROVED" | "REJECTED";
 /**
  * How an account gets verified. A recognised institutional domain that needs the institute's
  * confirmation (`autoVerify: false`, i.e. faculty and staff) is NOT an alumni evidence case: it waits
- * for admin tooling (Phase 12), and an alumni approval must never hand it the ALUMNI role.
+ * for admin tooling, and an alumni approval must never hand it the ALUMNI role.
  */
 export type VerificationTrack = "EVIDENCE" | "AWAITING_STAFF_CONFIRMATION";
 
-/** Three rejected requests lock an account: "contact the alumni office" (UI/UX spec §5.2.1). */
+/** Three rejected requests lock an account: "contact the alumni office". */
 export const MAX_REJECTED_SUBMISSIONS = 3;
 
 export const REVIEW_NOTE_MAX = 1000;
@@ -78,10 +78,10 @@ export type HistoryEntry = {
   note: string | null;
 };
 
-/** Earlier requests shown per applicant in the review queue (spec C12-10). */
+/** Earlier requests shown per applicant in the review queue. */
 export const HISTORY_LIMIT = 5;
 
-/** Earlier requests per applicant for the review queue (spec C12-10). Input newest first per user. */
+/** Earlier requests per applicant for the review queue. Input newest first per user. */
 export function groupHistory(
   rows: readonly (HistoryEntry & { userId: string })[],
   limit = HISTORY_LIMIT

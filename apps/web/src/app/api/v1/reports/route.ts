@@ -8,7 +8,7 @@ import { getActor } from "@/modules/auth";
 
 import { invalid, readJson } from "../_lib/request";
 
-// POST files reports for messages only; posts and comments arrive with Phase 10 (D6). GET lists every type.
+// POST files reports for messages only; posts and comments are not reportable yet. GET lists every type.
 const body = z
   .object({
     targetType: z.literal("MESSAGE"),

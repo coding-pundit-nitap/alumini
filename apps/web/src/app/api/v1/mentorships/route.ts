@@ -12,7 +12,7 @@ import { parseJson, readBodyText } from "../_lib/request";
 // Only the envelope is parsed here; the use case validates `message` and `topic` (and rejects extras).
 const envelope = z.object({ mentorId: z.uuid() }).passthrough();
 
-/** POST /api/v1/mentorships — ask a mentor (FR-MENTOR-004). Honours `Idempotency-Key` (API spec §1.6). */
+/** POST /api/v1/mentorships — ask a mentor. Honours `Idempotency-Key`. */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const rawBody = await readBodyText(request);

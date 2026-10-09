@@ -214,7 +214,7 @@ describe("mentorship lifecycle against real PostgreSQL", () => {
   });
 
   it("accept racing cancel: the guarded update serialises them, the row and its events always agree", async () => {
-    // Cancel is valid from ACCEPTED too (M-7: always allowed to both participants), so when the two
+    // Cancel is valid from ACCEPTED too, so when the two
     // transactions run one after the other rather than truly overlapping, accept can win and then cancel
     // legitimately cancels the now-ACCEPTED row. What must never happen is either both refusing, or an
     // outcome whose event counts disagree with what the row actually shows (mirrors the connections

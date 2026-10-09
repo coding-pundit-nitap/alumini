@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import type { PostsStore } from "./posts-store";
 import { refuse } from "./refusal";
 
-/** FR-FEED-003. Own-content delete needs no separate permission (mirrors messaging's own-delete pattern). Soft-delete only, never a hard delete or content redaction (C-9). */
+/** Own-content delete needs no separate permission (mirrors messaging's own-delete pattern). Soft-delete only, never a hard delete or content redaction. */
 export function createDeletePost(deps: {
   store: PostsStore;
   authorize: Authorize;
@@ -21,7 +21,7 @@ export function createDeletePost(deps: {
     const actorId = caller.userId.toLowerCase();
     await deps.store.transaction(async (tx) => {
       const post = await tx.findPost(args.postId);
-      // Announcements are removed only through removeAnnouncement, which audits (spec E-3).
+      // Announcements are removed only through removeAnnouncement, which audits.
       if (!post || post.deleted || post.postType === "ANNOUNCEMENT") {
         throw new NotFoundError();
       }

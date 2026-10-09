@@ -19,7 +19,7 @@ export type RoleDeps = {
   now?: () => Date;
 };
 
-/** Validates a role name against the injected catalogue and applies E1 (spec B12-3). */
+/** Validates a role name against the injected catalogue and applies E1. */
 export function checkRole(
   deps: RoleDeps,
   actor: Actor,
@@ -38,7 +38,7 @@ export function checkRole(
   if (reason) throw escalationError(reason);
 }
 
-/** RBAC §9 role.assigned; §6.1, §8.1, §8.2 via authorize + checkRole + guardTarget (spec B12-9). */
+/** RBAC role.assigned.1, via authorize + checkRole + guardTarget. */
 export function createAssignRole(deps: RoleDeps) {
   return async function assignRole(args: {
     actor: Actor | null;

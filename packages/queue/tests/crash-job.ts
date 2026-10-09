@@ -13,5 +13,5 @@ export const crashJob = defineJob({
   idempotency: "test job: a second run only records a second call",
 });
 
-/** Short locks so a dead worker's job is recovered in about two seconds, not a minute (spec 14 RD-5). */
+/** Short locks so a dead worker's job is recovered in about two seconds, not a minute. */
 export const FAST_STALL = { lockDurationMs: 1_000, stalledIntervalMs: 500 };

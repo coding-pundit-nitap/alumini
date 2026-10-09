@@ -46,8 +46,8 @@ CREATE INDEX "ix_event_organizer" ON "event"("organizer_id", "starts_at");
 -- CreateIndex
 CREATE INDEX "ix_event_registration_event" ON "event_registration"("event_id", "state");
 
--- One registration row per (user, event), forever: a re-registration after a cancel reuses it (spec E-4).
--- Also the index behind "my registrations" and the ALREADY_REGISTERED race (spec E-7).
+-- One registration row per (user, event), forever: a re-registration after a cancel reuses it.
+-- Also the index behind "my registrations" and the ALREADY_REGISTERED race.
 CREATE UNIQUE INDEX "uq_event_registration" ON "event_registration"("user_id", "event_id");
 
 -- AddForeignKey
@@ -59,8 +59,8 @@ ALTER TABLE "event_registration" ADD CONSTRAINT "event_registration_event_id_fke
 -- AddForeignKey
 ALTER TABLE "event_registration" ADD CONSTRAINT "event_registration_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Invariants no writer may break (spec E-9). `ck_event_registered_count` is the database backstop for the
--- guarded counter (SRS §37–38, TDS §17): even a buggy writer cannot oversell.
+-- Invariants no writer may break. `ck_event_registered_count` is the database backstop for the
+-- guarded counter: even a buggy writer cannot oversell.
 ALTER TABLE "event"
   ADD CONSTRAINT "ck_event_title" CHECK (char_length("title") BETWEEN 3 AND 150),
   ADD CONSTRAINT "ck_event_description" CHECK (char_length("description") BETWEEN 10 AND 10000),

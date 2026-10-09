@@ -60,7 +60,7 @@ export interface OutboxStore {
   /**
    * After a database restore: marks unpublished, unquarantined rows created before `before` (the restore
    * target) as published without publishing them, because their effects may already have happened after that
-   * point (reliability §7.3 step 7). Returns how many.
+   * point. Returns how many.
    */
   settle(before: Date, type?: string): Promise<number>;
 }

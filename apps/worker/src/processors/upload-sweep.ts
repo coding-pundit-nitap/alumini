@@ -15,8 +15,7 @@ export type UploadSweepStore = {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Deletes PENDING_UPLOAD rows older than the threshold, and their raw objects best-effort (spec 3C
- * F-3): evidence that never made it past presign. Walks bounded batches until a short one ends the run,
+ * Deletes PENDING_UPLOAD rows older than the threshold, and their raw objects best-effort: evidence that never made it past presign. Walks bounded batches until a short one ends the run,
  * so one very large backlog cannot hold the job open past its timeout.
  */
 export function createUploadSweepProcessor(deps: {

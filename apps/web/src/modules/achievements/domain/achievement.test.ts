@@ -12,7 +12,7 @@ const OWNER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const OTHER = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const row = (status: AchievementState) => ({ id: "a1", userId: OWNER, status });
 
-describe("achievement state machine (C-7)", () => {
+describe("achievement state machine", () => {
   it("withdraw: only the owner, only while SUBMITTED, is terminal", () => {
     for (const status of ACHIEVEMENT_STATES) {
       const asOwner = decideTransition(
@@ -250,7 +250,7 @@ describe("achievement state machine (C-7)", () => {
   });
 });
 
-describe("achievementInput (FR-ACH-001)", () => {
+describe("achievementInput", () => {
   const valid = { title: "t", description: "d", category: "AWARD" };
 
   it("accepts a well-formed submission", () => {

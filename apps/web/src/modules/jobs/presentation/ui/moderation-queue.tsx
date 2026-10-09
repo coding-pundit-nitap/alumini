@@ -179,7 +179,7 @@ function Row({
   );
 }
 
-/** FR-JOB-003. The moderation queue (spec J-6: approve/reject are guarded, single-winner updates). */
+/** The moderation queue. */
 export function ModerationQueue({
   items,
   approveAction,

@@ -1,4 +1,4 @@
-// Messaging (TASK.md Phase 15): the inbox, one conversation's latest messages, and a share of sends. Only load
+// Messaging: the inbox, one conversation's latest messages, and a share of sends. Only load
 // users who take part in a conversation are used.
 import http from "k6/http";
 import type { Options } from "k6/options";

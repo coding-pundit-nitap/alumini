@@ -51,7 +51,7 @@ function setup(
   return { ...fake, authorize, change };
 }
 
-describe("changeAccountState (spec B12-1, B12-5, B12-6)", () => {
+describe("changeAccountState", () => {
   it("suspends: picks user.suspend, revokes sessions, audits the reason code", async () => {
     const s = setup();
     await expect(
@@ -180,7 +180,7 @@ describe("changeAccountState (spec B12-1, B12-5, B12-6)", () => {
     expect(s.calls).toEqual([]);
   });
 
-  it("deactivation notifies nobody (spec D12-6)", async () => {
+  it("deactivation notifies nobody", async () => {
     const s = setup();
     await s.change({
       actor: actor(),

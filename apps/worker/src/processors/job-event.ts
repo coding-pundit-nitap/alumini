@@ -45,11 +45,11 @@ export function createJobEventProcessor(
           id === (payload as JobEventPayload).actorId
         )
           continue;
-        await send(id, true); // in-app + email (overview XD-9)
+        await send(id, true); // in-app + email
       }
       return;
     }
-    // Spec catalogue: only published/rejected email the poster; closed and expired are in-app only.
+    // Only published/rejected email the poster; closed and expired are in-app only.
     if (
       action === "closed" &&
       "actorId" in payload &&

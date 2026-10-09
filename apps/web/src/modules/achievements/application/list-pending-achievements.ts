@@ -18,11 +18,8 @@ const clampLimit = (limit: number | undefined) =>
   Math.min(Math.max(1, limit ?? DEFAULT_LIMIT), MAX_LIMIT);
 
 /**
- * FR-ACH reviewer-queue read: every SUBMITTED achievement across all users, gating on
- * `ACHIEVEMENT_REVIEW` (not `ACHIEVEMENT_SUBMIT`, own-content, like `listOwnAchievements`). Same
- * keyset-paged shape over `(createdAt DESC, id DESC)` as `listOwnAchievements`. There is no dedicated
- * reviewer queue page this phase (plan's explicit design intent) — this backs the "Pending Review"
- * section rendered inline on /achievements for actors holding the review permission.
+ * Every SUBMITTED achievement across all users, for reviewers. Gated on `ACHIEVEMENT_REVIEW` and paged like
+ * `listOwnAchievements`, over `(createdAt DESC, id DESC)`. Backs the "Pending Review" section on /achievements.
  */
 export function createListPendingAchievements(deps: {
   store: AchievementsStore;

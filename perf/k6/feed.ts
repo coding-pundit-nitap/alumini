@@ -1,4 +1,4 @@
-// Feed (strategy §13.2): GET /api/v1/posts — keyset pagination and per-viewer joins (reactions, blocks).
+// Feed: GET /api/v1/posts — keyset pagination and per-viewer joins (reactions, blocks).
 import http from "k6/http";
 import type { Options } from "k6/options";
 import { check } from "k6";

@@ -19,7 +19,7 @@ export type AchievementRow = {
 export type PendingAchievementRow = AchievementRow & {
   owner: { id: string; name: string };
 };
-/** Review decisions leave an audit row in the same transaction (FR-MOD-004, spec A12-9). Ids only. */
+/** Review decisions leave an audit row in the same transaction. Ids only. */
 export type AchievementAuditEntry = {
   action: "achievement.approved" | "achievement.rejected";
   actorId: string;
@@ -40,7 +40,7 @@ export type AchievementsTx = {
     patch: { status: string; reviewedById?: string; publishedPostId?: string }
   ): Promise<void>;
   /**
-   * The C-12 write: creates the ACHIEVEMENT-type Post and links it via published_post_id, in the SAME
+   * The write: creates the ACHIEVEMENT-type Post and links it via published_post_id, in the SAME
    * transaction as the status patch. This is modules/achievements writing a Post row directly by SQL —
    * not an import of modules/posts — the same cross-module-write-by-SQL shape as moderation's soft-delete.
    */

@@ -18,7 +18,7 @@ describe("Metrics port (decision D10)", () => {
     }).not.toThrow();
   });
 
-  it("delegates to whichever adapter Phase 13 installs", () => {
+  it("delegates to whichever adapter installs", () => {
     const calls: unknown[][] = [];
     const recording: Metrics = {
       increment: (...args) => calls.push(["increment", ...args]),
@@ -30,7 +30,7 @@ describe("Metrics port (decision D10)", () => {
     expect(calls).toEqual([["increment", "x_total", { a: "b" }]]);
   });
 
-  it("keeps the installed adapter across a module re-import (one slot per process, OD-7)", async () => {
+  it("keeps the installed adapter across a module re-import (one slot per process)", async () => {
     const recording: Metrics = {
       increment: vi.fn(),
       observe: vi.fn(),

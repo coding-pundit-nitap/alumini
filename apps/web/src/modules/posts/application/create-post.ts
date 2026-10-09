@@ -10,7 +10,7 @@ import type { PostsStore } from "./posts-store";
 import { parse } from "./validation";
 
 /**
- * FR-FEED-001. Every `imageUrls` id must be a READY upload owned by the caller (C-4, mirrors
+ * Every `imageUrls` id must be a READY upload owned by the caller (mirrors
  * uploads' set-profile-photo.ts); an id that isn't refuses UPLOAD_NOT_READY. `postType` is always
  * `TEXT` here — `ACHIEVEMENT` is set only by `modules/achievements`' own publish path.
  */

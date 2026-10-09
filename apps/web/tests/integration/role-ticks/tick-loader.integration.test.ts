@@ -5,7 +5,7 @@ import { createTestDatabase, type TestDatabase } from "@nitap/testing";
 
 import { createTickLoader } from "@/infrastructure/role-ticks";
 
-describe("createTickLoader (UI-15)", () => {
+describe("createTickLoader", () => {
   let db: TestDatabase;
 
   const user = async (

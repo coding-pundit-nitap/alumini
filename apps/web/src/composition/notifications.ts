@@ -15,7 +15,7 @@ import {
   createPrismaNotificationStore,
 } from "@/modules/notifications";
 
-/** Wires the notifications module to PostgreSQL and the shared Redis unread counter (Redis-optional, N-9). */
+/** Wires the notifications module to PostgreSQL and the shared Redis unread counter (Redis-optional). */
 const store = createPrismaNotificationStore(prisma);
 const useCases = createNotificationUseCases({
   store,
@@ -32,7 +32,7 @@ export const getUnreadCount = useCases.unreadCount;
 export const getNotificationPreferences = useCases.getPreferences;
 export const setNotificationPreference = useCases.setPreference;
 
-/** The queue Redis (noeviction, ADR-007) is a different server from the cache Redis; connect on first use only. */
+/** The queue Redis (noeviction) is a different server from the cache Redis; connect on first use only. */
 let queueAdmin: QueueAdmin | undefined;
 const replayUseCases = createReplayNotifications({
   authorize,

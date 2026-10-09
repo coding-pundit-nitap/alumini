@@ -1,4 +1,4 @@
-# Upload scanning (reliability §5.6 R-14, spec 18C). The worker samples the PENDING_SCAN backlog at scrape time.
+# Upload scanning. The worker samples the PENDING_SCAN backlog at scrape time.
 groups:
   - name: uploads
     rules:

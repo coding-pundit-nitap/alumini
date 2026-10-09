@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { ESLint } from "eslint";
 
 /**
- * The layer rules of strategy §2.4 (`packages/eslint-config/boundaries.mjs`), proven by linting snippets
+ * The layer rules (`packages/eslint-config/boundaries.mjs`), proven by linting snippets
  * placed at layer paths. A rule that cannot fail is not a rule: each ban has a case that must be reported.
  */
 const cwd = path.resolve(import.meta.dirname, "../..");

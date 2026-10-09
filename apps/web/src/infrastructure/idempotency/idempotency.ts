@@ -34,7 +34,7 @@ export type IdempotencyPort = {
 };
 
 /**
- * `Idempotency-Key` handling (API spec §1.6), independent of HTTP. Per user and key: the first request
+ * `Idempotency-Key` handling, independent of HTTP. Per user and key: the first request
  * claims the key and runs; a repeat with the same request replays the stored response; a repeat with a
  * different request is IDEMPOTENCY_KEY_REUSED; a repeat while the first still runs is REQUEST_IN_PROGRESS.
  *

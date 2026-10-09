@@ -1,7 +1,7 @@
-// Prisma ORM 7. Models are added per docs/architecture/domain-model.md.
+// Prisma ORM 7. Models are added per.
 //
-// user / session / account / verification are Better Auth's tables
-// (docs/adr/ADR-005-authentication.md). They were generated with
+// user / session / account / verification are Better Auth's tables.
+// They were generated with
 //   npx auth@latest generate --config apps/web/src/lib/auth.ts --output packages/database/prisma/schema.prisma
 // (rate limiting is stored in Redis, so the generator's rate_limit table is intentionally not kept)
 // and then adapted: snake_case columns via @map, timestamptz, and a real enum for account_state.
@@ -217,7 +217,7 @@ model RolePermission {
   roleId     String   @map("role_id") @db.Uuid
   role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
   // Validated against the code-side registry (packages/database/prisma/seed-data/permissions.ts), not by
-  // PostgreSQL — see the "Role / UserRole / RolePermission / PermissionGrant" note in domain-model.md.
+  // PostgreSQL — see the "Role / UserRole / RolePermission / PermissionGrant" note.
   permission String
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
@@ -266,7 +266,7 @@ model Profile {
   headline             String?
   bio                  String?
   // Nullable: faculty, staff and pending accounts may have no institutional record.
-  // Alumni-completeness (FR-PROFILE-004) is an application rule, enforced in Phase 3 — not here.
+  // Alumni-completeness is an application rule, enforced — not here.
   departmentId         String?            @map("department_id") @db.Uuid
   department           Department?        @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   degreeId             String?            @map("degree_id") @db.Uuid
@@ -274,18 +274,18 @@ model Profile {
   // Static CHECK (2010-2100), never date-dependent — see ck_profile_graduation_year in this migration's SQL.
   graduationYear       Int?               @map("graduation_year")
   location             String?
-  // The photo follows the core visibility level (spec 3C F-5): no fifth override column. Points at a
+  // The photo follows the core visibility level: no fifth override column. Points at a
   // READY upload; ownership and purpose are checked by the use case, never assumed from this column alone.
   photoUploadId        String?            @unique @map("photo_upload_id") @db.Uuid
   photoUpload          Upload?            @relation(fields: [photoUploadId], references: [id], onDelete: SetNull)
   visibility           ProfileVisibility  @default(MEMBERS_ONLY)
-  // Per-section overrides (spec 3A). NULL inherits `visibility`; never looser than it. The CHECKs are in
+  // Per-section overrides. NULL inherits `visibility`; never looser than it. The CHECKs are in
   // the profile_privacy migration's SQL (ck_profile_*_visibility); Postgres compares enums by declaration order.
   contactVisibility    ProfileVisibility? @map("contact_visibility")
   locationVisibility   ProfileVisibility? @map("location_visibility")
   experienceVisibility ProfileVisibility? @map("experience_visibility")
   educationVisibility  ProfileVisibility? @map("education_visibility")
-  // UI-15: the role whose tick shows on the photo. NULL = automatic, a role name while held, 'NONE' = hidden.
+  // The role whose tick shows on the photo. NULL = automatic, a role name while held, 'NONE' = hidden.
   // Length CHECK (ck_profile_badge_role_length) is in the profile_badge_role migration's SQL.
   badgeRole            String?            @map("badge_role")
   createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -299,7 +299,7 @@ model Profile {
   @@index([departmentId, graduationYear])
   @@index([degreeId])
   @@index([graduationYear])
-  // Trigram indexes for directory search (ADR-023); pg_trgm is created by the migration that adds them.
+  // Trigram indexes for directory search; pg_trgm is created by the migration that adds them.
   @@index([fullName(ops: raw("gin_trgm_ops"))], map: "idx_profile_full_name_trgm", type: Gin)
   @@index([headline(ops: raw("gin_trgm_ops"))], map: "idx_profile_headline_trgm", type: Gin)
   @@index([location(ops: raw("gin_trgm_ops"))], map: "idx_profile_location_trgm", type: Gin)
@@ -325,7 +325,7 @@ enum UploadStatus {
   REJECTED
 }
 
-/// A file the user owns, tracked from presign through scan (spec 3C). `objectKey` starts under
+/// A file the user owns, tracked from presign through scan. `objectKey` starts under
 /// uploads/pending/ and, once READY, is rewritten to the scanned derivative's key (avatars/<userId>/...);
 /// the CHECKs tying the prefix to status live in this migration's SQL.
 model Upload {
@@ -347,7 +347,7 @@ model Upload {
   @@map("upload")
 }
 
-/// Work history (spec 3B). CHECKs (dates, is_current <=> no end date, lengths) are in the profile_details migration.
+/// Work history. CHECKs (dates, is_current <=> no end date, lengths) are in the profile_details migration.
 model ProfileExperience {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId      String    @map("user_id") @db.Uuid
@@ -366,7 +366,7 @@ model ProfileExperience {
   @@map("profile_experience")
 }
 
-/// Additional education (prior or later study). The institutional record stays on `profile` (FR-PROFILE-004).
+/// Additional education (prior or later study). The institutional record stays on `profile`.
 model ProfileEducation {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId        String   @map("user_id") @db.Uuid
@@ -410,7 +410,7 @@ model ProfileLink {
   @@map("profile_link")
 }
 
-/// Transactional outbox (ADR-007). Written in the same transaction as a state change; a relay in the
+/// Transactional outbox. Written in the same transaction as a state change; a relay in the
 /// worker publishes unpublished rows to the queue. A row that can never be published is quarantined
 /// (failed_at / failure_reason). The partial indexes and CHECK constraints live in the migration SQL.
 model OutboxEvent {
@@ -438,7 +438,7 @@ enum CrossCheckResult {
   MISMATCH
 }
 
-/// Alumni verification evidence and its human decision (FR-AUTH-003/003a). There is no auto-approved
+/// Alumni verification evidence and its human decision. There is no auto-approved
 /// status by design. The partial unique index, CHECK constraints and the reviewer rule live in the
 /// migration SQL (Prisma's schema language cannot express them): see migrations/*_verification_and_audit.
 model VerificationRequest {
@@ -465,7 +465,7 @@ model VerificationRequest {
   @@map("verification_request")
 }
 
-/// Append-only record of sensitive operations (SRS §22). A trigger in the migration rejects UPDATE,
+/// Append-only record of sensitive operations. A trigger in the migration rejects UPDATE,
 /// DELETE and TRUNCATE. `target_id` is polymorphic (no foreign key). Metadata holds identifiers and
 /// outcomes, never free text or an email address.
 model AuditLog {
@@ -492,7 +492,7 @@ enum ConnectionState {
   BLOCKED
 }
 
-/// One row per unordered pair of users (FR-NET, domain-model §3). `user_a_id < user_b_id` is enforced,
+/// One row per unordered pair of users. `user_a_id < user_b_id` is enforced,
 /// so the unique pair catches A→B and B→A alike; who asked is `requested_by_id`. `NONE` is "no row".
 /// A rejected pair re-requests by updating this row. The CHECKs (order, requester, blocker, responded_at)
 /// live in the migration SQL: see migrations/*_connection.
@@ -523,7 +523,7 @@ enum MentorContactMethod {
   PHONE
 }
 
-/// FR-MENTOR-001/002. One opt-in row per user; "active mentor" is defined by the application (spec M-2).
+/// One opt-in row per user; "active mentor" is defined by the application.
 /// Length/range CHECKs live in the migration SQL (ck_mentor_*).
 model MentorProfile {
   userId                 String              @id @map("user_id") @db.Uuid
@@ -551,7 +551,7 @@ enum MentorshipState {
   CANCELLED
 }
 
-/// FR-MENTOR-004…006. History is kept: a terminal row is never reused (spec M-4). The open-pair index
+/// History is kept: a terminal row is never reused. The open-pair index
 /// `uq_mentorship_open_pair` is PARTIAL (WHERE state IN open states) and is written by hand in the migration.
 model Mentorship {
   id           String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -596,9 +596,9 @@ enum WorkMode {
   HYBRID
 }
 
-/// FR-JOB-001…005. No DRAFT state (D7, spec J-2): create is submit. REJECTED is NOT terminal (spec J-3):
+/// No DRAFT state (D7): create is submit. REJECTED is NOT terminal:
 /// editing a REJECTED job resubmits it to PENDING_REVIEW. EXPIRED and CLOSED are the only terminal states,
-/// and EXPIRED is set only by the `job.expire` worker sweep (spec J-7).
+/// and EXPIRED is set only by the `job.expire` worker sweep.
 model Job {
   id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   postedBy       String         @map("posted_by") @db.Uuid
@@ -632,7 +632,7 @@ enum IdempotencyState {
   DONE
 }
 
-/// `Idempotency-Key` bookkeeping (API spec §1.6): scoped per user, 24 h retention (swept daily). A claim
+/// `Idempotency-Key` bookkeeping: scoped per user, 24 h retention (swept daily). A claim
 /// commits on its own, outside the business transaction. The DONE/response pairing CHECK lives in the
 /// migration SQL: see migrations/*_idempotency_key.
 model IdempotencyKey {
@@ -664,7 +664,7 @@ enum ReportTargetType {
   COMMENT
 }
 
-/// FR-MSG. A 1:1 conversation carries `direct_pair_key` (`min:max` of the two lower-case user ids) so a pair
+/// A 1:1 conversation carries `direct_pair_key` (`min:max` of the two lower-case user ids) so a pair
 /// has exactly one; a group carries none. `last_message_*` are denormalised for the inbox order and are
 /// written only in the send transaction, which holds this row's lock. CHECKs live in the migration SQL.
 model Conversation {
@@ -711,7 +711,7 @@ model Message {
   body            String
   clientMessageId String       @map("client_message_id") @db.Uuid
   createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
-  /// Set when a moderator resolves a report on this message (12C C12-4). One-way; reads return a tombstone.
+  /// Set when a moderator resolves a report on this message. One-way; reads return a tombstone.
   hiddenAt        DateTime?    @map("hidden_at") @db.Timestamptz(3)
 
   @@unique([conversationId, senderId, clientMessageId], map: "uq_message_client_id")
@@ -719,8 +719,8 @@ model Message {
   @@map("message")
 }
 
-/// FR-MSG-004 (D6). Polymorphic target: `target_id` has no foreign key, validity is checked by the
-/// application. Phase 9 files reports for MESSAGE targets; moderation arrives in Phases 10 and 12.
+/// (D6). Polymorphic target: `target_id` has no foreign key, validity is checked by the
+/// application. files reports for MESSAGE targets; moderation arrives in Phases 10 and 12.
 model Report {
   id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   reporterId   String           @map("reporter_id") @db.Uuid
@@ -762,11 +762,10 @@ enum AchievementStatus {
   WITHDRAWN
 }
 
-/// FR-FEED. `content` is raw Markdown, rendered only through the sanitized pipeline (modules/posts,
-/// presentation/ui/markdown-view.tsx) — no images/headings/raw HTML in the render allow-list even though
-/// the source string itself isn't bounded to that subset. `chapter_id` exists for a later phase's scoping
-/// (C-5): every Phase 10 post has it null; no filter reads it yet. `post_type = ACHIEVEMENT` is set only by
-/// achievements' publish transaction (C-12), never by createPost directly — enforced at the application layer.
+/// `content` is raw Markdown, rendered only through the sanitized pipeline (modules/posts,
+/// presentation/ui/markdown-view.tsx), which allows no images, headings or raw HTML.
+/// `chapter_id` is reserved for chapter scoping: it is null on every post and no filter reads it yet.
+/// `post_type = ACHIEVEMENT` is set only by the achievements publish transaction, never by createPost.
 model Post {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   authorId    String       @map("author_id") @db.Uuid
@@ -774,7 +773,7 @@ model Post {
   chapterId   String?      @map("chapter_id") @db.Uuid
   chapter     Chapter?     @relation(fields: [chapterId], references: [id], onDelete: SetNull)
   content     String
-  /// Phase 12E: required for ANNOUNCEMENT, null for every other type (ck_post_title_announcement).
+  /// Required for ANNOUNCEMENT, null for every other type (ck_post_title_announcement).
   title       String?
   imageUrls   String[]     @default([]) @map("image_urls")
   linkUrl     String?      @map("link_url")
@@ -790,7 +789,7 @@ model Post {
   @@map("post")
 }
 
-/// FR-FEED-003. Soft-delete mirrors Post's (`deleted`), not a separate tombstone table (C-9).
+/// Soft-delete mirrors Post's (`deleted`), not a separate tombstone table.
 model Comment {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   postId    String   @map("post_id") @db.Uuid
@@ -821,8 +820,8 @@ model Reaction {
   @@map("reaction")
 }
 
-/// FR-ACH. State machine in modules/achievements/domain/achievement.ts mirrors mentorship.ts's shape.
-/// `published_post_id` is set only in the same transaction as the APPROVED → PUBLISHED transition (C-12);
+/// State machine in modules/achievements/domain/achievement.ts mirrors mentorship.ts's shape.
+/// `published_post_id` is set only in the same transaction as the APPROVED → PUBLISHED transition;
 /// ck_achievement_published ties the two together. `reviewed_by_id` is set on entering UNDER_REVIEW or later.
 model Achievement {
   id              String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -855,7 +854,7 @@ enum EventRegistrationState {
   NO_SHOW
 }
 
-/// FR-EVENT-001/002. `registered_count` is the guarded capacity counter (spec E-5): it only moves through
+/// `registered_count` is the guarded capacity counter: it only moves through
 /// `UPDATE … WHERE registered_count < capacity`, and `ck_event_registered_count` is the backstop. The CHECKs
 /// live in the migration SQL: see migrations/*_events.
 model Event {
@@ -883,7 +882,7 @@ model Event {
   @@map("event")
 }
 
-/// FR-EVENT-003/005. One row per (user, event) forever: re-registering after a cancel reuses it (spec E-4).
+/// One row per (user, event) forever: re-registering after a cancel reuses it.
 model EventRegistration {
   id           String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   eventId      String                 @map("event_id") @db.Uuid
@@ -907,9 +906,9 @@ enum NotificationCategory {
 }
 
 /**
- * The granular grouping the preferences UI toggles (N-14) — distinct from NotificationCategory, which
+ * The granular grouping the preferences UI toggles — distinct from NotificationCategory, which
  * only says whether preferences apply at all. Every event in the catalogue maps to exactly one domain
- * via domainFor() in the notifications domain layer (Task 3).
+ * via domainFor() in the notifications domain layer.
  */
 enum NotificationDomain {
   CONNECTION
@@ -987,7 +986,7 @@ model EmailSuppression {
   @@map("email_suppression")
 }
 
-/// Phase 12G (SRS §45): one row per retention category; approved_by stays null until institute sign-off.
+/// One row per retention category; approved_by stays null until institute sign-off.
 model RetentionSetting {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   category      String   @unique
@@ -1000,7 +999,7 @@ model RetentionSetting {
   @@map("retention_setting")
 }
 
-/// Phase 12H (XD-6): offline fundraising. The app records pledges; money moves outside it.
+/// Offline fundraising. The app records pledges; money moves outside it.
 enum CampaignStatus {
   DRAFT
   ACTIVE
@@ -1022,7 +1021,7 @@ model DonationCampaign {
   description         String
   purpose             String
   paymentInstructions String         @map("payment_instructions")
-  /// Integer paise (XD-7); null = no goal.
+  /// Integer paise; null = no goal.
   goalPaise           BigInt?        @map("goal_paise")
   startsOn            DateTime       @map("starts_on") @db.Date
   endsOn              DateTime       @map("ends_on") @db.Date
@@ -1042,7 +1041,7 @@ model Donation {
   donorId          String           @map("donor_id") @db.Uuid
   donor            User             @relation("DonationDonor", fields: [donorId], references: [id], onDelete: Restrict)
   amountPaise      BigInt           @map("amount_paise")
-  /// UTR / cheque number, upper-cased. Unique per campaign: one bank reference settles one pledge (FR-DON-004).
+  /// UTR / cheque number, upper-cased. Unique per campaign: one bank reference settles one pledge.
   paymentReference String?          @map("payment_reference")
   status           DonationStatus   @default(PLEDGED)
   decidedBy        String?          @map("decided_by") @db.Uuid

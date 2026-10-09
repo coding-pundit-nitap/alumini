@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { canTransition } from "./lifecycle";
 
-describe("account lifecycle (spec B12-1)", () => {
+describe("account lifecycle", () => {
   it.each([
     ["VERIFIED", "SUSPENDED", true],
     ["VERIFIED", "DEACTIVATED", true],

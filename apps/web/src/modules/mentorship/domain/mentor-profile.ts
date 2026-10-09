@@ -23,8 +23,8 @@ const topic = z
   .transform((value) => value.toLowerCase());
 
 /**
- * What a mentor may set (FR-MENTOR-002). `accepting: false` is the pause toggle and the only way to opt out
- * (spec M-10). The preferred contact method is a preference, never a contact detail.
+ * What a mentor may set. `accepting: false` is the pause toggle and the only way to opt out.
+ * The preferred contact method is a preference, never a contact detail.
  */
 export const mentorProfileInput = z
   .object({

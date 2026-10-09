@@ -41,7 +41,7 @@ export function PreferencesPanel({
     if (pendingDomains.has(domain)) return; // guarded by the disabled switch; defensive only
     setError(null);
     // Every domain always has a row by the time it reaches here (the API defaults a missing one to
-    // enabled, N-10), and the disabled switch above rules out a second concurrent write to the same
+    // enabled), and the disabled switch above rules out a second concurrent write to the same
     // domain, so this lookup can't miss.
     const previousEmail = preferences.find(
       (pref) => pref.domain === domain

@@ -68,7 +68,7 @@ describe("updateProfileSchema", () => {
     ]);
   });
 
-  // FR-PROFILE-004: self-service can never express an institutional change.
+  // Self-service can never express an institutional change.
   it.each([
     "departmentId",
     "degreeId",

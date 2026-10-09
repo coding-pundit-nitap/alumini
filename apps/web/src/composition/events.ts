@@ -28,7 +28,7 @@ const observe: EventObserver = (outcome, eventId) => {
   getMetrics().increment("event_total", { outcome });
 };
 
-/** One counter per refusal code (spec E-5..E-7): a refusal never commits, so there's no event id to log. */
+/** One counter per refusal code: a refusal never commits, so there's no event id to log. */
 const observeRefusal: RefusalObserver = (code) => {
   getMetrics().increment("event_total", { outcome: `refused_${code}` });
 };

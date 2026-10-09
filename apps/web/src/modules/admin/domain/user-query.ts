@@ -21,7 +21,7 @@ const STATES = [
   "DEACTIVATED",
 ] as const;
 
-/** Filters for the user list (spec B12-10). Shared by the API route and the page. */
+/** Filters for the user list. Shared by the API route and the page. */
 export const userListQuerySchema = z.preprocess(
   dropEmpty,
   z

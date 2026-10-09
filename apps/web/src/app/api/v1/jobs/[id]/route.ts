@@ -10,7 +10,7 @@ import { readJson } from "../../_lib/request";
 const id = z.uuid();
 type Params = { params: Promise<{ id: string }> };
 
-/** GET /api/v1/jobs/:id — visibility resolved entirely by getJob (spec J-8: non-visible is NOT_FOUND). */
+/** GET /api/v1/jobs/:id — visibility resolved entirely by getJob. */
 export const GET = routeHandler(async (_request, ctx: Params) => {
   const jobId = id.safeParse((await ctx.params).id);
   if (!jobId.success) throw new NotFoundError();
@@ -21,7 +21,7 @@ export const GET = routeHandler(async (_request, ctx: Params) => {
   );
 });
 
-/** PATCH /api/v1/jobs/:id — edit (FR-JOB-002). Ownership/job.manage is checked by editJob, not here. */
+/** PATCH /api/v1/jobs/:id — edit. Ownership/job.manage is checked by editJob, not here. */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const body = await readJson(request);

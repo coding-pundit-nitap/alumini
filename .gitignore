@@ -67,7 +67,7 @@ packages/database/generated
 # Performance seed output (signed load-user cookies) — never commit
 /perf/.data
 # Raw load-test output (packages/scripts/perf); the dated results page carries the numbers
-/docs/operations/perf/data/
+/packages/scripts/perf/results/data/
 /doc/operations/perf/data/
 
 # Server-side release history written by deploy/deploy.sh

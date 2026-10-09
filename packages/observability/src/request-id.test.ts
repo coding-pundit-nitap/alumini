@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { isValidRequestId, resolveRequestId } from "./request-id.ts";
 
-describe("request id (reliability §6.2)", () => {
+describe("request id", () => {
   it.each(["6f1c2c3e-aaaa-bbbb-cccc-1234567890ab", "abcdefgh", "A".repeat(64)])(
     "accepts a well-formed client id %s",
     (id) => {

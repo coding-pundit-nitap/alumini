@@ -11,9 +11,9 @@ export type RetentionSettingClient = Pick<
 >;
 
 export type NotificationRetentionStore = {
-  /** The configured period (12G G-5); the SRS §45 placeholder when the row is missing. */
+  /** The configured period; the default placeholder when the row is missing. */
   retentionDays(db: RetentionSettingClient): Promise<number>;
-  /** Deletes up to `limit` READ notifications read before `before`; unread are never swept (spec N-15). */
+  /** Deletes up to `limit` READ notifications read before `before`; unread are never swept. */
   sweep(
     db: NotificationRetentionClient,
     before: Date,

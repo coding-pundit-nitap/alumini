@@ -16,7 +16,7 @@ const directives = (csp: string) =>
     })
   );
 
-describe("page CSP (strategy §10.1 Headers, spec 16 SD-1/SD-2)", () => {
+describe("page CSP", () => {
   it("allows scripts only by this response's nonce, never inline or eval in production", () => {
     const csp = directives(buildPageCsp({ nonce: "abc", dev: false }));
     expect(csp.get("script-src")).toEqual([
@@ -88,7 +88,7 @@ describe("nonces", () => {
   });
 });
 
-describe("static headers (SD-3)", () => {
+describe("static headers", () => {
   const names = (production: boolean) =>
     staticSecurityHeaders({ production }).map((h) => h.key);
 
@@ -102,7 +102,7 @@ describe("static headers (SD-3)", () => {
     ]);
   });
 
-  it("add HSTS in production only (NFR-SEC-003)", () => {
+  it("add HSTS in production only", () => {
     expect(names(false)).not.toContain("Strict-Transport-Security");
     expect(names(true)).toContain("Strict-Transport-Security");
   });

@@ -23,7 +23,7 @@ afterEach(() => {
     fs.rmSync(dir, { recursive: true, force: true });
 });
 
-describe("request bodies are read through the bounded reader (spec 16 SD-4)", () => {
+describe("request bodies are read through the bounded reader", () => {
   it("no Route Handler reads a body directly", () => {
     expect(checkBoundedBodyReads(path.join(webRoot, "src"))).toEqual([]);
   });

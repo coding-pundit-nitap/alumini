@@ -1,4 +1,4 @@
-/** The message notification debounce window (spec N-7). */
+/** The message notification debounce window. */
 export const MESSAGE_DEBOUNCE_MS = 5 * 60_000;
 
 export function debounceKeyFor(

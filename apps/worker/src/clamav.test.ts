@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { createClamdScanner, parseClamavUrl } from "./clamav.ts";
 
-// Spec 16 SD-8: the adapter is tested against an in-process clamd that speaks the real INSTREAM framing
+// The adapter is tested against an in-process clamd that speaks the real INSTREAM framing
 // (z-prefixed command, 4-byte big-endian chunk lengths, a zero-length terminator, a NUL-terminated reply).
 
 const EICAR =

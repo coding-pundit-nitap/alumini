@@ -42,7 +42,7 @@ describe("message.sent processor", () => {
     });
   });
 
-  it("a hint publish failure is logged and never stops the notification fan-out (N-9: only real-time degrades)", async () => {
+  it("a hint publish failure is logged and never stops the notification fan-out", async () => {
     const logger = silentLogger();
     const warn = vi.spyOn(logger, "warn");
     const deliver = vi.fn(async () => {});
@@ -83,7 +83,7 @@ describe("message.sent processor", () => {
         owner ??= by;
         return { owner: owner === by, window: owner };
       }),
-      /** What reading the conversation does in the web app (N-7). */
+      /** What reading the conversation does in the web app. */
       read: () => {
         owner = null;
       },
@@ -105,7 +105,7 @@ describe("message.sent processor", () => {
   const sender = { ...payload, senderId: "sender" };
   type Delivered = { emailTo?: string; dedupeKey?: string };
 
-  it("keys every message in one window to one notification and emails once; reading starts a new window (N-6/N-7)", async () => {
+  it("keys every message in one window to one notification and emails once; reading starts a new window", async () => {
     const { deliver, debounce, deps } = notifyDeps();
     const p = createMessageSentProcessor(deps);
     await p(sender, { ...ctx(), jobId: "e1" });

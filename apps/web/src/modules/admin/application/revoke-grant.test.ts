@@ -69,7 +69,7 @@ function setup(
   return { ...fake, authorize, loadGrants, revoke };
 }
 
-describe("revokeGrant (spec B12-3, B12-9)", () => {
+describe("revokeGrant", () => {
   it("revokes a chapter-scoped grant on T and audits the row", async () => {
     const s = setup({
       grants: [

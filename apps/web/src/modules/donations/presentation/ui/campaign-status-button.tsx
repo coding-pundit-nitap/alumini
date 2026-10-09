@@ -9,7 +9,7 @@ export type CampaignStatusAction = (
   to: "ACTIVE" | "CLOSED"
 ) => Promise<ActionResult<unknown>>;
 
-/** Spec H-6: activate a draft, or close an active campaign (open pledges stay confirmable). */
+/** Activate a draft, or close an active campaign (open pledges stay confirmable). */
 export function CampaignStatusButton(props: {
   campaignId: string;
   title: string;

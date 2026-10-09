@@ -1,4 +1,4 @@
-// Input handling at the API boundary (strategy §10.1 "Input handling", spec 16 16C). Property-based: every
+// Input handling at the API boundary. Property-based: every
 // JSON route gets arbitrary bodies, every list route arbitrary query strings and an injection corpus, every
 // dynamic segment arbitrary text. The contract is the boundary's, not the business rules': an answer from
 // the error catalogue, never a 5xx, never a hang. Runs as a VERIFIED SUPER_ADMIN so input travels as deep
@@ -158,7 +158,7 @@ const SQL_AND_FRIENDS = [
   "\uD800",
 ];
 
-describe("API boundary under arbitrary input (strategy §10.1, spec 16 16C)", () => {
+describe("API boundary under arbitrary input", () => {
   let db: TestDatabase;
 
   beforeAll(async () => {

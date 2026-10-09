@@ -1,10 +1,10 @@
-# Monitoring on the application host (spec 18C, PRD-7): Prometheus, Alertmanager, Grafana and the exporters,
+# Monitoring on the application host: Prometheus, Alertmanager, Grafana and the exporters,
 # as their own compose project joined to the application's network. Run it only through deploy/monitoring.sh,
 # which sets the project name and APP_NETWORK and reads deploy/.env and deploy/monitoring.env.
 #
 # The rules, routing and dashboards are the reviewed code in ops/. Secrets reach the containers as compose
 # configs written from the env files. Nothing is published except on 127.0.0.1. The external probe and the
-# dead-man's-switch receiver live off this host (reliability §5.1); the README says what to set up.
+# dead-man's-switch receiver live off this host; the README says what to set up.
 name: alumini-prod-monitoring
 
 x-service: &service
@@ -22,8 +22,7 @@ services:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=30d
       # Firing alerts are resent every 15 s and expire in Alertmanager 4 × that after the last resend. The
-      # Watchdog heartbeat therefore stops about a minute after Prometheus does; with the default 1 m, about 4
-      # (spec 18C C-7, measured by the alert drill).
+      # Watchdog heartbeat therefore stops about a minute after Prometheus does; with the default 1 m, about 4.
       - --rules.alert.resend-delay=15s
       - --enable-feature=expand-external-labels
     environment:

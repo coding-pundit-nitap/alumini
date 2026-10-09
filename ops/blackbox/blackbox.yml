@@ -1,5 +1,5 @@
-# Blackbox exporter modules (spec 18C). http_ready: the public /health/ready must answer 200, over TLS when the
-# URL is https; probe_ssl_earliest_cert_expiry feeds the certificate alerts (R-12).
+# Blackbox exporter modules. http_ready: the public /health/ready must answer 200, over TLS when the
+# URL is https; probe_ssl_earliest_cert_expiry feeds the certificate alerts.
 modules:
   http_ready:
     prober: http

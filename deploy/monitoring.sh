@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs deploy/monitoring.yml beside this clone's application stack (spec 18C C-1): `docker compose` with the
+# Runs deploy/monitoring.yml beside this clone's application stack: `docker compose` with the
 # project `<app project>-monitoring`, joined to the application's network, reading deploy/.env and
 # deploy/monitoring.env. Takes any compose arguments:
 #

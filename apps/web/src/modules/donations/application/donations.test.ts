@@ -116,7 +116,7 @@ function setup(opts: {
   return { tx, queries, deps };
 }
 
-describe("pledgeDonation (FR-DON-002)", () => {
+describe("pledgeDonation", () => {
   it("writes a PLEDGED row and donation.pledged, ids only", async () => {
     const { tx, deps } = setup({});
     const result = await createPledgeDonation(deps)({
@@ -215,7 +215,7 @@ describe("getCampaign", () => {
   });
 });
 
-describe("confirmDonation (FR-DON-004, spec H-2/H-4/H-5)", () => {
+describe("confirmDonation", () => {
   it("confirms with the donor's reference, audits and notifies", async () => {
     const { deps, tx } = setup({
       donation: pledge({ paymentReference: "UTR1234" }),
@@ -279,7 +279,7 @@ describe("confirmDonation (FR-DON-004, spec H-2/H-4/H-5)", () => {
   });
 });
 
-describe("listDonationsForAdmin (spec H-3)", () => {
+describe("listDonationsForAdmin", () => {
   it("campaign.manage alone sees only open pledges, whatever the filter", async () => {
     const { deps, queries } = setup({ held: [PERMISSIONS.CAMPAIGN_MANAGE] });
     const r = await createListDonationsForAdmin(deps)({
@@ -308,7 +308,7 @@ describe("listDonationsForAdmin (spec H-3)", () => {
   });
 });
 
-describe("campaign lifecycle (spec H-6)", () => {
+describe("campaign lifecycle", () => {
   it("activates a draft and audits it; refuses CLOSED → ACTIVE", async () => {
     const { deps, tx } = setup({ campaign: campaign("DRAFT") });
     await createChangeCampaignStatus(deps)({

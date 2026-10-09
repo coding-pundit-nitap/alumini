@@ -8,10 +8,9 @@ import type { TestDatabase } from "../../support/test-database";
 import { createTestDatabase } from "../../support/test-database";
 
 /**
- * Every Phase 1 constraint, by its PostgreSQL name (TASK.md "(+) constraint tests that fail when a
- * constraint is dropped"). For each one:
- *   1. violating it is rejected, and the error names exactly that constraint;
- *   2. in a scratch copy where it is dropped, the same write succeeds — proving (1) is not vacuous.
+ * Every constraint, by its PostgreSQL name. For each one:
+ * 1. violating it is rejected, and the error names exactly that constraint;
+ * 2. in a scratch copy where it is dropped, the same write succeeds — proving (1) is not vacuous.
  */
 const CONSTRAINT_NAMES = [
   "uq_user_email_ci",
@@ -178,7 +177,7 @@ async function buildCases(
 async function dropConstraint(prisma: TestDatabase["prisma"], name: string) {
   const { table } = DROP[name as keyof typeof DROP] ?? {};
   if (table) {
-    // CASCADE: profile_pkey is referenced by the Phase 3B detail tables' foreign keys. This runs in a
+    // CASCADE: profile_pkey is referenced by the detail tables' foreign keys. This runs in a
     // disposable per-test database, and the test only proves the violation goes through once dropped.
     await prisma.$executeRawUnsafe(
       `ALTER TABLE "${table}" DROP CONSTRAINT IF EXISTS "${name}" CASCADE`
@@ -187,7 +186,7 @@ async function dropConstraint(prisma: TestDatabase["prisma"], name: string) {
   await prisma.$executeRawUnsafe(`DROP INDEX IF EXISTS "${name}"`);
 }
 
-describe("every Phase 1 constraint", () => {
+describe("every constraint", () => {
   let db: TestDatabase;
   let cases: ConstraintCase[];
 

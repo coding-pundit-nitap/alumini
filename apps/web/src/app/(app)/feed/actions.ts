@@ -46,7 +46,7 @@ function parseId(field: string, value: string): string {
 }
 
 /**
- * Feed Server Actions (FR-FEED, FR-MOD). Plain-value arguments, called from client buttons/forms; each
+ * Feed Server Actions. Plain-value arguments, called from client buttons/forms; each
  * use case authorizes and validates again, and the page re-renders afterwards (mirrors
  * app/connections/actions.ts and app/messages/actions.ts's wrapper pattern).
  */
@@ -214,7 +214,7 @@ export async function dismissReportAction(
 }
 
 /**
- * PostComposer's image pickers (spec 3C flow, reused as-is): the underlying upload rows are still
+ * PostComposer's image pickers: the underlying upload rows are still
  * tagged `purpose: "PROFILE_PHOTO"` (uploads' one current purpose) and gated on `profile.update`, which
  * every verified member holds (MEMBER_BASELINE) — `createPost`'s `uploadsReady` check only cares about
  * ownership and READY status, not purpose, so this works today. Mirrors app/profile/photo-actions.ts.

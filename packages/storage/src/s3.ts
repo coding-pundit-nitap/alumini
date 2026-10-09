@@ -19,7 +19,7 @@ import type {
 } from "./port.ts";
 import { StorageError } from "./port.ts";
 
-/** Every call gets a bound: no request to the store waits forever (TDS §17.2). */
+/** Every call gets a bound: no request to the store waits forever. */
 const REQUEST_TIMEOUT_MS = 5_000;
 const CONNECTION_TIMEOUT_MS = 2_000;
 
@@ -38,7 +38,7 @@ function wrapFailure(error: unknown, key: string): never {
 
 /**
  * The only file in this package that imports the AWS SDK. It speaks the S3 API, so MinIO now and any
- * S3-compatible provider later are the same code (TDS §13); only `env` changes.
+ * S3-compatible provider later are the same code; only `env` changes.
  */
 export function createS3StoragePort(env: StorageEnv): StoragePort {
   // ponytail: assumes path-style URLs (bucket in the path), which is what MinIO uses; a virtual-hosted
@@ -58,7 +58,7 @@ export function createS3StoragePort(env: StorageEnv): StoragePort {
       secretAccessKey: env.secretAccessKey,
     },
     // Without throwOnRequestTimeout the SDK only logs a warning past requestTimeout and keeps waiting, so a
-    // stalled store hung requests forever (spec 14 F-6). One attempt: the caller owns retries (the user's
+    // stalled store hung requests forever. One attempt: the caller owns retries (the user's
     // retry on a 503, the queue's backoff in the worker), so the bound stays one timeout, not three.
     requestHandler: {
       connectionTimeout: CONNECTION_TIMEOUT_MS,

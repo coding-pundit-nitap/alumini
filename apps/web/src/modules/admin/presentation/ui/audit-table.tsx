@@ -21,7 +21,7 @@ const when = new Intl.DateTimeFormat("en-IN", {
   timeZone: "Asia/Kolkata",
 });
 
-/** The filtered audit read (FR-ADMIN-004). Metadata is ids only by the writer's contract. */
+/** The filtered audit read. Metadata is ids only by the writer's contract. */
 export function AuditTable({ rows }: { rows: AuditRow[] }) {
   if (rows.length === 0)
     return (

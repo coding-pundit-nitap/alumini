@@ -40,7 +40,7 @@ const toGrant = (g: {
 });
 
 /**
- * Identity writes for the admin module (overview AD-1): user state, sessions, roles and grants, each with its
+ * Identity writes for the admin module: user state, sessions, roles and grants, each with its
  * audit row (and its notice event) in the same transaction. Lock order is always the target user row, then the super-admin rows
  * (locked in a fixed `ORDER BY ur.id`), so two admin writes cannot deadlock.
  *

@@ -1,12 +1,12 @@
 # Monitoring as code
 
-Alerts, routing, dashboards and runbooks for the web and worker processes (Phase 13C, ADR-028). Everything
+Alerts, routing, dashboards and runbooks for the web and worker processes. Everything
 here is reviewed like code and checked in CI by `pnpm ops:check`.
 
 | Path                            | What                                                                                                                           |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `prometheus/prometheus.yml`     | Local scrape config: web `:3000`, worker `:3001`, PostgreSQL and both Redis exporters                                          |
-| `prometheus/production.yml`     | Production scrape config, run by `deploy/monitoring.yml` (spec 18C): app, exporters, node_exporter, the public probe           |
+| `prometheus/production.yml`     | Production scrape config, run by `deploy/monitoring.yml`: app, exporters, node_exporter, the public probe                      |
 | `blackbox/blackbox.yml`         | The public probe's module: `/health/ready` answers 200, certificate expiry (R-12)                                              |
 | `prometheus/rules/*.yml`        | Alert rules. Each has `severity` (`page`/`ticket`/`none`), `service`, `summary`, `description`, `runbook_url`                  |
 | `prometheus/tests/*.test.yml`   | promtool unit tests: every rule fires on injected series and stays quiet below its threshold                                   |
@@ -38,22 +38,22 @@ Metrics the app labels `job` (`jobs_processed_total`, `jobs_dead_total`, `job_du
 
 ## Production
 
-`deploy/monitoring.yml` runs this stack on the application host (spec 18C), set up in
+`deploy/monitoring.yml` runs this stack on the application host, set up in
 [deploy/README.md step 9](../deploy/README.md#9-monitoring). The receiver URLs come from `deploy/monitoring.env`;
 web and worker are scraped with `HEALTH_CHECK_TOKEN`. Two drills prove it end to end
 (`.github/workflows/release-drill.yml`, monthly):
 
 - `packages/scripts/drills/alerts.ts`: these rules and this routing deliver a page, a ticket and the dead-man's-switch
   heartbeat to a sink, group and inhibit as configured, and the heartbeat stops within 2 minutes of Prometheus
-  stopping ([alert drills](../docs/operations/alert-drills.md)).
+  stopping ([alert drills](../packages/scripts/drills/reports/alert-drills.md)).
 - `packages/scripts/drills/release.ts` ends by starting the stack against a real release: every target up, the
   series the alerts need present, and nothing pending on a healthy system.
 
 ## Not shipped yet
 
-Alerts only ship for series that something exports (overview OD-6). These wait for their owner:
+Alerts only ship for series that something exports. These wait for their owner:
 
-| Alert (reliability §5.6)         | Runbook | Waits for                                                       |
+| Alert                            | Runbook | Waits for                                                       |
 | -------------------------------- | ------- | --------------------------------------------------------------- |
 | Site down, from outside the host | R-1     | An external uptime check, set up by the owner (deploy step 9)   |
 | Domain expiry                    | R-12    | Registrar auto-renew (owner checklist); not a Prometheus series |
@@ -63,6 +63,6 @@ Alerts only ship for series that something exports (overview OD-6). These wait f
 
 The internal half of R-1 ships as `SiteProbeFailing` (the blackbox probe through Nginx and TLS); disk and
 `pg_wal` (R-7), certificate expiry (R-12), login failures (R-9, `auth_sign_in_total`) and the upload scan
-backlog (R-14, `upload_scan_oldest_pending_age_seconds`) ship with spec 18C. The backup alerts (R-8) get
+backlog (R-14, `upload_scan_oldest_pending_age_seconds`) ship with. The backup alerts (R-8) get
 their job timestamps from node_exporter's textfile collector, which `deploy/monitoring.yml` points at
 `BACKUP_METRICS_DIR`.

@@ -10,7 +10,7 @@ export class InvalidAuditEntryError extends Error {
 
 export type AuditEntry = {
   actorId: string;
-  /** `namespace.verb`, lowercase, e.g. `alumni.verified` (RBAC §12). */
+  /** `namespace.verb`, lowercase, e.g. `alumni.verified`. */
   action: string;
   targetType: string;
   targetId: string;

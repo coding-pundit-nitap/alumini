@@ -8,7 +8,7 @@ import type { JobRow } from "../domain/job";
 import type { Authorize } from "./authz";
 import type { JobQueries } from "./job-queries";
 
-/** FR-JOB, spec J-8. A non-visible job (wrong status, wrong caller) reads as NOT_FOUND, never FORBIDDEN. */
+/** A non-visible job (wrong status, wrong caller) reads as NOT_FOUND, never FORBIDDEN. */
 export function createGetJob(deps: {
   queries: JobQueries;
   authorize: Authorize;

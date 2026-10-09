@@ -1,4 +1,4 @@
-# Database and Redis. Pool gauges come from the app (13A A-10); the rest from the exporters in the local stack.
+# Database and Redis. Pool gauges come from the app; the rest from the exporters in the local stack.
 groups:
   - name: data
     rules:
@@ -37,7 +37,7 @@ groups:
         labels: { severity: ticket, service: redis-cache }
         annotations:
           summary: "Cache Redis is unreachable"
-          description: "Rate limiting falls back and real-time hints stop; nothing durable is lost (ADR-006)."
+          description: "Rate limiting falls back and real-time hints stop; nothing durable is lost."
           runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-6.md
 
       - alert: QueueRedisDown

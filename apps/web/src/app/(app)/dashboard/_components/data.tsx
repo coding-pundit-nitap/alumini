@@ -40,12 +40,12 @@ const loadMentorProfile = cache((actor: Actor) =>
 );
 
 /**
- * H-8. ponytail: each count reads ≤ 50 rows and shows "50+" at the cap; add count queries if members
- * routinely exceed it (spec O-2).
+ * ponytail: each count reads ≤ 50 rows and shows "50+" at the cap; add count queries if members
+ * routinely exceed it.
  *
- * H-6: a real failure in one of the four reads must not read as "0 requests" with no signal — it's
+ * A real failure in one of the four reads must not read as "0 requests" with no signal — it's
  * excluded from its tile and `failed` tells `Attention` to render an inline error alongside whatever
- * tiles did load (spec Errors and states).
+ * tiles did load.
  */
 const loadCounts = cache(async (actor: Actor) => {
   const [
@@ -93,7 +93,7 @@ const loadCounts = cache(async (actor: Actor) => {
   });
 });
 
-/** H-12 greeting: the home page's one display-type moment. */
+/** Greeting: the home page's one display-type moment. */
 export async function Greeting({ actor }: { actor: Actor }) {
   const result = await loadProfile(actor);
   const first =
@@ -113,7 +113,7 @@ export async function Greeting({ actor }: { actor: Actor }) {
   );
 }
 
-/** H-7 completeness. */
+/** Completeness. */
 export async function Completeness({ actor }: { actor: Actor }) {
   const result = await loadProfile(actor);
   if (result.status === "error") return <BlockError what="your profile" />;
@@ -126,7 +126,7 @@ export async function Completeness({ actor }: { actor: Actor }) {
 
 const BLOCKS = [Completeness, Attention, Events, Jobs, RoleBlock];
 
-/** The home page's right rail (≥xl): every block streams on its own (H-6). */
+/** The home page's right rail (≥xl): every block streams on its own. */
 export function Widgets({ actor }: { actor: Actor }) {
   return BLOCKS.map((Block, i) => (
     <Suspense key={i} fallback={<BlockSkeleton rows={2} />}>
@@ -182,7 +182,7 @@ export async function Events({ actor }: { actor: Actor }) {
 }
 
 /**
- * H-10: mentors see their mentees; members who may request mentorship see suggested mentors; others see
+ * Mentors see their mentees; members who may request mentorship see suggested mentors; others see
  * nothing (the feed is the page itself). A denied branch falls through to the next one, never to an
  * error.
  */
@@ -255,7 +255,7 @@ export async function RoleBlock({ actor }: { actor: Actor }) {
   return null;
 }
 
-/** H-11: only when the profile is incomplete and the attention, jobs and events blocks are all empty. */
+/** Only when the profile is incomplete and the attention, jobs and events blocks are all empty. */
 export async function FirstRun({ actor }: { actor: Actor }) {
   const [profile, jobs, events, attention] = await Promise.all([
     loadProfile(actor),
@@ -267,7 +267,7 @@ export async function FirstRun({ actor }: { actor: Actor }) {
   if (profileCompleteness(record).percent >= 100) return null;
   if (jobs.status === "ok" && jobs.value.data.length > 0) return null;
   if (events.status === "ok" && events.value.data.length > 0) return null;
-  // A failed count is unknown, not zero — never claim "nothing to do" over an error (H-6).
+  // A failed count is unknown, not zero — never claim "nothing to do" over an error.
   if (attention.failed) return null;
   if (Object.values(attention.counts).some((n) => n > 0)) return null;
   return <Guidance batch={record?.graduationYear ?? null} />;

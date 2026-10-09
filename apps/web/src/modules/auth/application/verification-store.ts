@@ -86,7 +86,7 @@ export type VerificationTx = {
     from: readonly string[],
     to: string
   ): Promise<boolean>;
-  /** Returns the values it replaced, so the caller can audit old and new (RBAC §12). */
+  /** Returns the values it replaced, so the caller can audit old and new. */
   applyInstitutionalFields(
     userId: string,
     fields: InstitutionalFields
@@ -97,7 +97,7 @@ export type VerificationTx = {
     grantedBy: string
   ): Promise<void>;
   enqueueEmail(payload: EmailSendPayload): Promise<void>;
-  /** Writes an outbox event in this transaction (spec D12-8). */
+  /** Writes an outbox event in this transaction. */
   enqueue(event: {
     type: "verification.decided";
     payload: VerificationDecidedPayload;

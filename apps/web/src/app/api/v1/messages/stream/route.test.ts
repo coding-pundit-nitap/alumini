@@ -14,7 +14,7 @@ vi.mock("@/modules/auth", () => ({
   authorize: mocks.authorize,
 }));
 vi.mock("@/infrastructure/realtime/message-hub", () => mocks);
-// A real health service, so draining behaves exactly as in production (spec 14 F-4).
+// A real health service, so draining behaves exactly as in production.
 const drain = vi.hoisted(() => ({
   current: null as null | { startDraining(): void },
 }));
@@ -212,7 +212,7 @@ describe("GET /api/v1/messages/stream", () => {
   });
 });
 
-describe("GET /api/v1/messages/stream while the instance drains (spec 14 F-4)", () => {
+describe("GET /api/v1/messages/stream while the instance drains", () => {
   it("ends an open stream when draining starts and unsubscribes, then refuses new streams with 503", async () => {
     const unsubscribe = vi.fn();
     mocks.subscribeToUser.mockReturnValue(unsubscribe);

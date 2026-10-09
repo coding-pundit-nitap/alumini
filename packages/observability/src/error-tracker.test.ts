@@ -34,7 +34,7 @@ const leaks = [
 
 afterEach(() => closeErrorTracker());
 
-describe("scrubEvent (spec 13B B-4)", () => {
+describe("scrubEvent", () => {
   it("masks secrets wherever request data can land, and keeps only the user id", () => {
     const event: ErrorEvent = {
       type: undefined,
@@ -77,7 +77,7 @@ describe("scrubEvent (spec 13B B-4)", () => {
   });
 });
 
-describe("error tracker (spec 13B B-1, B-2, B-5)", () => {
+describe("error tracker", () => {
   it("stays off without a DSN, and capturing is then a no-op", () => {
     expect(
       initErrorTracker({ environment: "test", release: "t", service: "web" })

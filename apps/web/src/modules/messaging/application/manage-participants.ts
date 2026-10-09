@@ -18,7 +18,7 @@ type Deps = {
 type Args = { actor: Actor | null; conversationId: string; userId: string };
 
 /**
- * Creator-only add (spec M-6). The conversation row lock (taken by `requireParticipant`) makes the count and
+ * Creator-only add. The conversation row lock (taken by `requireParticipant`) makes the count and
  * the insert one atomic step, so the 20-member cap holds under concurrent adds.
  */
 export function createAddParticipant(deps: Deps) {

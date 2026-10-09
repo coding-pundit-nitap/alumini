@@ -27,7 +27,7 @@ const row = (
   ...over,
 });
 
-describe("listFailedDeliveries (spec C12-11)", () => {
+describe("listFailedDeliveries", () => {
   it("authorizes concealed, lists FAILED keyset-paged and PENDING older than an hour", async () => {
     const listEmailDeliveries = vi.fn(async ({ status }: { status: string }) =>
       status === "FAILED" ? [row(1), row(2)] : [row(3, { lastError: null })]

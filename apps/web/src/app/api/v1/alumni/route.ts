@@ -5,7 +5,7 @@ import { routeHandler } from "@/infrastructure/http/route-handler";
 import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 
-/** GET /api/v1/alumni — directory search (API spec §5.1). A thin adapter: parse, call the use case, map. */
+/** GET /api/v1/alumni — directory search. A thin adapter: parse, call the use case, map. */
 export const GET = routeHandler(async (request) => {
   const parsed = parseDirectoryQuery(new URL(request.url).searchParams);
   if (!parsed.ok) {

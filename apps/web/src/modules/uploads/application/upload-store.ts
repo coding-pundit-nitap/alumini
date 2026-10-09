@@ -22,7 +22,7 @@ export type NewUpload = {
   size: number;
 };
 
-/** The `upload.scan` job's payload (contract in `@nitap/jobs`, spec 3C). */
+/** The `upload.scan` job's payload (contract in `@nitap/jobs`). */
 export type UploadScanPayload = { v: 1; uploadId: string };
 
 export type UploadTx = {

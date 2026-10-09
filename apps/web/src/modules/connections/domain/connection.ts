@@ -1,5 +1,5 @@
 /**
- * The connection rules, pure (FR-NET-001…005, API spec §6, domain-model §3). One row per unordered pair;
+ * The connection rules, pure. One row per unordered pair;
  * `NONE` is "no row". Nothing here touches a database or a clock: callers pass `now`, and the application
  * layer turns a refusal into an error. A `NOT_FOUND` refusal means "this row is not yours to know about", so
  * a blocked member learns nothing.
@@ -24,7 +24,7 @@ export type ConnectionPatch = Pick<
   "state" | "requestedById" | "requestedAt" | "respondedAt" | "blockedById"
 >;
 
-/** How long a rejected requester waits before asking the same member again (API spec §6.1, proposed 30 days). */
+/** How long a rejected requester waits before asking the same member again. */
 export const REREQUEST_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** UUIDs compare bytewise in PostgreSQL, which for lower-case hex equals string order. */

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Pre-commit secret scan of the staged changes (strategy §10.2: gitleaks pre-commit AND in CI; spec 16 16E).
+# Pre-commit secret scan of the staged changes.
 # Uses a local gitleaks when installed, else the pinned container; with neither it warns and lets the commit
 # through, because the CI secret-scan job still blocks the merge.
 set -eu

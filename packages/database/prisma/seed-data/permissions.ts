@@ -1,7 +1,7 @@
 /**
- * Single source of truth for permission strings (rbac-permission-matrix.md §3). PostgreSQL cannot
+ * Single source of truth for permission strings. PostgreSQL cannot
  * validate that a `role_permission.permission` or `permission_grant.permission` value exists here —
- * drift is caught by role-permissions.test.ts instead. Phase 2's authorization code imports this
+ * drift is caught by role-permissions.test.ts instead.'s authorization code imports this
  * same registry from @nitap/database; it must never define its own copy.
  */
 export const PERMISSIONS = {
@@ -67,7 +67,7 @@ export const PERMISSIONS = {
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
-/** Permissions that make someone an operator of the platform (12A A12-2). A denial of one is audited (RBAC §9). */
+/** Permissions that make someone an operator of the platform. A denial of one is audited. */
 export const ADMIN_TIER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.ALUMNI_VERIFY,
   PERMISSIONS.USER_READ_ADMIN,
@@ -88,7 +88,7 @@ export const ADMIN_TIER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.DONATION_VIEW_ALL,
 ];
 
-/** The only permissions a CHAPTER-scoped grant may carry: the chapter-admin bundle (RBAC §3 "Scopable", §5). */
+/** The only permissions a CHAPTER-scoped grant may carry: the chapter-admin bundle. */
 export const CHAPTER_SCOPABLE_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.EVENT_CREATE,
   PERMISSIONS.EVENT_MANAGE,

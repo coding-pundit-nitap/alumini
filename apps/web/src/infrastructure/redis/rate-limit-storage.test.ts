@@ -33,7 +33,7 @@ describe("rate limiting while Redis is unreachable", () => {
     expect((await redisRateLimitStorage.consume(k, rule)).allowed).toBe(false);
   });
 
-  it("counts each fallback on dependency_unavailable_total (spec 14A)", async () => {
+  it("counts each fallback on dependency_unavailable_total", async () => {
     increment.mockClear();
     await redisRateLimitStorage.consume(key(), { window: 60, max: 4 });
     expect(increment).toHaveBeenCalledWith("dependency_unavailable_total", {

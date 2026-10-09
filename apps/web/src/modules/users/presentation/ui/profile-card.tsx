@@ -90,7 +90,7 @@ export function ProfileCard({
 }: {
   view: ProfileView;
   actions?: ReactNode;
-  /** UI-15: the seal on the photo and beside the name. */
+  /** The seal on the photo and beside the name. */
   tick?: Tick | null;
   /** Your own profile: where to change which tick shows. */
   tickHref?: string;

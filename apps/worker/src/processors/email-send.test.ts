@@ -103,8 +103,8 @@ describe("email.send processor", () => {
     expect(logged).not.toContain("alumni.example");
   });
 
-  describe("delivery status tracking (N-12)", () => {
-    it("counts a sent notification email by channel and category (spec 13A A-11)", async () => {
+  describe("delivery status tracking", () => {
+    it("counts a sent notification email by channel and category", async () => {
       const metrics = recordingMetrics();
       const processor = createEmailSendProcessor(
         { send: async () => {} },

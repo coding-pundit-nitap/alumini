@@ -12,7 +12,7 @@ const CH_ARCHIVED = "00000000-0000-4000-8000-0000000000dd";
 const CH_UNKNOWN = "00000000-0000-4000-8000-0000000000ee";
 const now = new Date("2026-09-24T12:00:00Z");
 
-// Coordinator: permission.grant + event.manage, both GLOBAL (rbac-permission-matrix.md §2).
+// Coordinator: permission.grant + event.manage, both GLOBAL.
 const coordinator = () =>
   ({
     userId: A,
@@ -50,7 +50,7 @@ function setup(opts: { targetExists?: boolean } = {}) {
   return { ...fake, authorize, loadGrants, grant };
 }
 
-describe("grantPermission (spec B12-3, B12-4)", () => {
+describe("grantPermission", () => {
   it("grants a chapter-scoped permission the coordinator holds globally", async () => {
     const s = setup();
     const result = await s.grant({

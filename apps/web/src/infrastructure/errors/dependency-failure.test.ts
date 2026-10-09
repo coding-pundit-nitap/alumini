@@ -27,7 +27,7 @@ const adapter = (cause: Record<string, unknown>) => ({
   driverAdapterError: { name: "DriverAdapterError", cause },
 });
 
-// Each case is an error shape measured against a dead or stalled PostgreSQL (spec 14 F-1) or storage (F-2).
+// Each case is an error shape measured against a dead or stalled PostgreSQL or storage.
 const unavailable: Array<[string, unknown]> = [
   ["refused, model query (P1001)", known("P1001")],
   [
@@ -67,7 +67,7 @@ const unavailable: Array<[string, unknown]> = [
   ],
   ["storage unavailable", new StorageError("down", "unavailable")],
   [
-    // Better Auth logs the pool timeout and rethrows this with no cause (measured under load: spec 15 F-2).
+    // Better Auth logs the pool timeout and rethrows this with no cause.
     "session lookup that failed inside Better Auth",
     APIError.from(
       "INTERNAL_SERVER_ERROR",
@@ -76,7 +76,7 @@ const unavailable: Array<[string, unknown]> = [
   ],
 ];
 
-describe("asDependencyFailure (spec 14 RD-3)", () => {
+describe("asDependencyFailure", () => {
   it.each(unavailable)(
     "%s → 503 SERVICE_UNAVAILABLE with Retry-After",
     (_name, error) => {
@@ -122,7 +122,7 @@ describe("asDependencyFailure (spec 14 RD-3)", () => {
   });
 });
 
-describe("text PostgreSQL cannot store is the client's input, not a server fault (spec 16 S-9)", () => {
+describe("text PostgreSQL cannot store is the client's input, not a server fault", () => {
   // Measured: a NUL byte in a filter or a write (Prisma 7 + adapter-pg) surfaces as P2010 for $queryRaw and
   // P2039 for model queries, with SQLSTATE 22021 on the adapter cause.
   it.each([

@@ -37,7 +37,7 @@ function parseUploadId(uploadId: string): string {
 }
 
 /**
- * The photo upload flow (spec 3C) is driven by client JavaScript, not an HTML `<form>`: the browser
+ * The photo upload flow is driven by client JavaScript, not an HTML `<form>`: the browser
  * picks a file and these actions are called directly with plain values (the use cases still authorize
  * and validate everything server-side). The bytes themselves go straight from the browser to the object
  * store via the presigned URL these actions return — never through this process.

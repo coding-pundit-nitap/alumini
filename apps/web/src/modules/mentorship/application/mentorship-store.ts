@@ -29,7 +29,7 @@ export type NewMentorship = {
 
 /**
  * Everything a write does happens through one of these, inside ONE database transaction, so a row and its
- * outbox event commit or roll back together (NFR-REL-002).
+ * outbox event commit or roll back together.
  */
 export type MentorshipTx = {
   findById(id: string): Promise<MentorshipRow | null>;

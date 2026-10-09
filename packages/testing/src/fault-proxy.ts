@@ -1,7 +1,7 @@
 import net from "node:net";
 
 /**
- * What the proxy does to traffic (strategy §11.1):
+ * What the proxy does to traffic:
  * - `down`: drops every open connection and refuses new ones (the service is gone).
  * - `stall`: accepts connections and holds every byte until `clear()` (slow, not dead: only timeouts end it).
  * - `reset`: resets every open and new connection (the peer crashed mid-conversation).
@@ -22,7 +22,7 @@ export type FaultProxy = {
 type Pair = { client: net.Socket; server: net.Socket | null };
 
 /**
- * A TCP proxy in front of a real service whose behaviour a test switches (spec 14 RD-1). Each test file
+ * A TCP proxy in front of a real service whose behaviour a test switches. Each test file
  * owns its proxies on ephemeral ports, so faults never leak between files.
  */
 export async function startFaultProxy(options: {

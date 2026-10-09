@@ -56,7 +56,7 @@ type State = {
   counts: Record<ReactionType, number>;
 };
 
-/** A one-click Like toggle plus a "More reactions" tray for the other three (FR-FEED-003). */
+/** A one-click Like toggle plus a "More reactions" tray for the other three. */
 export function ReactionPicker({
   postId,
   counts,

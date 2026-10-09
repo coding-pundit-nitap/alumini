@@ -13,7 +13,7 @@ import {
 } from "./words.ts";
 
 /**
- * The performance seed's generator (strategy §15.4; Phase 15 PD-4): options in, rows out, no I/O. The same
+ * The performance seed's generator: options in, rows out, no I/O. The same
  * options always produce the same rows, so two load-test results on the same `users`/`seed` ran against the
  * same data. Volumes scale with `users`; the ratios are recorded with every result through `options`.
  */
@@ -23,7 +23,7 @@ export type PerfOptions = {
   seed: number;
   /** Anchor for every relative date: upcoming events, live jobs and recent posts stay current. */
   now: Date;
-  /** Load users that get a pre-minted session (PD-5). */
+  /** Load users that get a pre-minted session. */
   sessions: number;
   /** Capacity of the event the registration spike targets; it starts with no registrations. */
   spikeCapacity: number;

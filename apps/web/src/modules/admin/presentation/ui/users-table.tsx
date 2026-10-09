@@ -25,7 +25,7 @@ const STATE_BADGE: Record<string, "success" | "brand" | "destructive"> = {
   DEACTIVATED: "destructive",
 };
 
-/** FR-ADMIN-002: the filtered user list; each name opens the user's page. */
+/** The filtered user list; each name opens the user's page. */
 export function UsersTable({ rows }: { rows: UserRow[] }) {
   if (rows.length === 0)
     return (

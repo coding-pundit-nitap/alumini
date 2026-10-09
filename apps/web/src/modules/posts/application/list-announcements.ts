@@ -8,7 +8,7 @@ import type { PostAuthor, PostRow, PostsStore } from "./posts-store";
 
 const PAGE = 20;
 
-/** Phase 12E admin list (spec E-9): live announcements, newest first. */
+/** Admin list: live announcements, newest first. */
 export function createListAnnouncements(deps: {
   store: PostsStore;
   authorize: Authorize;

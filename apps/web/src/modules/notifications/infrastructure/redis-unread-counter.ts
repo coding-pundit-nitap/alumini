@@ -19,7 +19,7 @@ type RedisLike = {
 /**
  * Web side of the worker's counter (same key). `getRedis` fails fast (250ms, offline queue off), so a
  * caught error means "Redis down": reads return null (recompute from Postgres) and writes are swallowed,
- * never a 503 (spec N-9).
+ * never a 503.
  */
 export function createRedisUnreadCounter(
   getClient: () => Promise<RedisLike>

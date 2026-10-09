@@ -38,7 +38,7 @@ export async function updatePrivacyAction(
   });
 }
 
-/** UI-15: which tick shows on the caller's photo ("AUTO", a held role, or "NONE"). */
+/** Which tick shows on the caller's photo ("AUTO", a held role, or "NONE"). */
 export async function setBadgeRoleAction(
   choice: string
 ): Promise<ActionResult<{ saved: true }>> {

@@ -9,7 +9,7 @@ import type { NotificationStore } from "./notification-store";
 
 type Authorize = (actor: Actor | null, permission: Permission) => Actor;
 
-/** Redis-backed unread counter. Never throws: `null`/no-op means "Redis unavailable, Postgres is truth" (N-9). */
+/** Redis-backed unread counter. Never throws: `null`/no-op means "Redis unavailable, Postgres is truth". */
 export type UnreadCounter = {
   get(userId: string): Promise<number | null>;
   seed(userId: string, count: number): Promise<void>;
@@ -23,7 +23,7 @@ export function createNotificationUseCases(deps: {
   store: NotificationStore;
   authorize: Authorize;
   counter: UnreadCounter;
-  /** The preference domains: the Prisma enum, passed in from infrastructure (N-14). */
+  /** The preference domains: the Prisma enum, passed in from infrastructure. */
   domains: readonly NotificationDomain[];
 }) {
   const { store, counter } = deps;

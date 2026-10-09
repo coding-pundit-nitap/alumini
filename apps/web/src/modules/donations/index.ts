@@ -1,5 +1,5 @@
 /**
- * Public API of the donations module (Phase 12H, client-safe). The Prisma store lives in `./server.ts`.
+ * Public API of the donations module. The Prisma store lives in `./server.ts`.
  */
 export {
   createChangeCampaignStatus,

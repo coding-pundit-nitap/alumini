@@ -5,7 +5,7 @@ import type { TransactionRunner } from "@/infrastructure/database/transaction-ru
 
 import type { SettingsStore, SettingsTx } from "../application/admin-store";
 
-/** 12G G-1/G-4: `retention_setting` reads, and locked writes audited in the same transaction. */
+/** `retention_setting` reads, and locked writes audited in the same transaction. */
 export function createPrismaSettingsStore(deps: {
   db: PrismaClient;
   runner: Pick<TransactionRunner, "run">;

@@ -19,7 +19,7 @@ const grantId = async (ctx: Params) => {
   return parsed.data;
 };
 
-/** DELETE /api/v1/admin/users/:id/permission-grants/:grantId — revoke a grant (spec B12-3, B12-4). */
+/** DELETE /api/v1/admin/users/:id/permission-grants/:grantId — revoke a grant. */
 export const DELETE = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   await revokeGrant({

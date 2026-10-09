@@ -123,7 +123,7 @@ describe("group management", () => {
   });
 });
 
-describe("toListedMessage (spec C12-4)", () => {
+describe("toListedMessage", () => {
   const row = {
     id: "m1",
     seq: "7",

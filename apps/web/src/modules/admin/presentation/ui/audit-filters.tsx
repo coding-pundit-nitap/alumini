@@ -22,7 +22,7 @@ const TEXT_FIELDS = [
 ] as const;
 
 /**
- * A plain GET form: works without JavaScript and produces a shareable URL (spec A12-8).
+ * A plain GET form: works without JavaScript and produces a shareable URL.
  * ponytail: datetime-local is parsed in the server's zone; send an explicit offset if admins span zones.
  */
 export function AuditFilters({ values }: { values: Record<string, string> }) {

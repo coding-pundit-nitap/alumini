@@ -13,7 +13,7 @@ export type FailedJobSummary = {
   finishedOn: number | null;
 };
 
-/** Jobs per BullMQ state, sampled for `queue_jobs` at scrape time (spec 13A A-9). */
+/** Jobs per BullMQ state, sampled for `queue_jobs` at scrape time. */
 export type JobCounts = Record<
   "waiting" | "active" | "delayed" | "failed" | "completed",
   number

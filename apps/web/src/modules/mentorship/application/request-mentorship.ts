@@ -10,7 +10,7 @@ import type { MentorshipObserver, MentorshipStore } from "./mentorship-store";
 import { cannotMentorSelf, refuse } from "./refusal";
 import { parse } from "./validation";
 
-/** `mentorship.create`: 10 requests an hour per member, the brake on mass asks (spec M-11). */
+/** `mentorship.create`: 10 requests an hour per member, the brake on mass asks. */
 export const REQUEST_RATE = { max: 10, window: 60 * 60 } as const;
 
 export type RateLimiter = {
@@ -28,9 +28,9 @@ export const requestInput = z
   .strict();
 
 /**
- * FR-MENTOR-004. The row and its `mentorship.requested` event commit together. Two identical requests at the
+ * The row and its `mentorship.requested` event commit together. Two identical requests at the
  * same instant end with ONE row: the partial unique index makes the loser's insert a no-op and it is told
- * MENTORSHIP_REQUEST_EXISTS. Capacity is advisory here (accept is authoritative, spec M-5).
+ * MENTORSHIP_REQUEST_EXISTS. Capacity is advisory here (accept is authoritative).
  */
 export function createRequestMentorship(deps: {
   store: MentorshipStore;

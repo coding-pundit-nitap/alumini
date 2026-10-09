@@ -1,9 +1,9 @@
-// Cache Redis down and slow, at system level (TASK.md Phase 14; strategy §11.2; spec 14A).
+// Cache Redis down and slow, at system level.
 //
 // The production Redis client (@/infrastructure/redis/client: 250 ms command timeout, no offline queue)
-// reaches the real cache Redis THROUGH a fault proxy. Cache Redis down is "degraded, not down"
-// (reliability §4.1 rule 1): readiness stays 200, the unread count comes from PostgreSQL, the auth rate
-// limiter falls back to its stricter in-memory twin. Only the session lookup is stubbed (spec 14 RD-2).
+// reaches the real cache Redis THROUGH a fault proxy. Cache Redis down is "degraded, not down":
+// readiness stays 200, the unread count comes from PostgreSQL, the auth rate
+// limiter falls back to its stricter in-memory twin. Only the session lookup is stubbed.
 import {
   afterAll,
   beforeAll,

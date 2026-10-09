@@ -77,7 +77,7 @@ describe("reviewAchievement", () => {
    * never fire through the full `reviewAchievement()` call in production. That makes it untestable via a
    * through-the-stack call (any such test would pass even if the branch were deleted). This test instead
    * exercises, directly, the exact two-step composition `reviewAchievement()`'s transaction body performs —
-   * `decideTransition(...)` then `refuse(decision)` on failure — with `isReviewer: false`, proving that
+   * `decideTransition(...)` then `refuse` on failure — with `isReviewer: false`, proving that
    * composition (both the domain check and its mapping to an AppError) is wired correctly and would break
    * if either half were removed.
    */

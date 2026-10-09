@@ -16,7 +16,7 @@ export type AnnouncementPublishedPayload = z.infer<
   typeof announcementPublishedPayload
 >;
 
-/** Phase 12E: fanned out to every verified member (in-app + email, preference-gated). */
+/** Fanned out to every verified member (in-app + email, preference-gated). */
 export const announcementPublished = defineJob({
   name: "announcement.published",
   version: 1,

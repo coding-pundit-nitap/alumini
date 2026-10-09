@@ -207,7 +207,7 @@ describe("deliverNotification", () => {
     expect(enqueueEmail).not.toHaveBeenCalled();
   });
 
-  it("stamps the enqueued email with the notification id (N-12 status tracking)", async () => {
+  it("stamps the enqueued email with the notification id (status tracking)", async () => {
     const store = fakeStore({
       insert: vi.fn(async () => ({ id: "notif-1", created: true })),
     });
@@ -374,7 +374,7 @@ describe("deliverNotification", () => {
     expect(publish).toHaveBeenCalledWith("u1", { notificationId: "notif-1" });
   });
 
-  it("a cache Redis outage (unread bump and hint both reject) still records PENDING and enqueues the email (N-9)", async () => {
+  it("a cache Redis outage (unread bump and hint both reject) still records PENDING and enqueues the email", async () => {
     const store = fakeStore();
     const enqueueEmail = vi.fn(async () => {});
     const warn = vi.fn();
@@ -404,7 +404,7 @@ describe("deliverNotification", () => {
     expect(warn).toHaveBeenCalled();
   });
 
-  it("a debounced duplicate (caller-supplied dedupeKey) bumps the existing row; a read row becomes unread again (N-7)", async () => {
+  it("a debounced duplicate (caller-supplied dedupeKey) bumps the existing row; a read row becomes unread again", async () => {
     const bump = vi.fn(async () => ({ wasRead: true }));
     const store = fakeStore({
       insert: vi.fn(async () => ({ id: "notif-1", created: false })),
@@ -444,7 +444,7 @@ describe("deliverNotification", () => {
     expect(increment).not.toHaveBeenCalled(); // still unread: already counted
   });
 
-  it("skips email to a suppressed address (N-10) but still writes in-app", async () => {
+  it("skips email to a suppressed address but still writes in-app", async () => {
     const store = fakeStore();
     const enqueueEmail = vi.fn(async () => {});
     const isSuppressed = vi.fn(async () => true);
@@ -474,7 +474,7 @@ describe("deliverNotification", () => {
     expect(enqueueEmail).not.toHaveBeenCalled();
   });
 
-  it("TRANSACTIONAL never asks for a preference and still emails (spec D12-4)", async () => {
+  it("TRANSACTIONAL never asks for a preference and still emails", async () => {
     const getPreference = vi.fn(async () => ({ enabled: false }));
     const enqueueEmail = vi.fn(async () => {});
     const deliver = createDeliverNotification({
@@ -498,7 +498,7 @@ describe("deliverNotification", () => {
     expect(enqueueEmail).toHaveBeenCalledTimes(1);
   });
 
-  describe("notification_delivered_total (spec 13A A-11)", () => {
+  describe("notification_delivered_total", () => {
     const build = (store: ReturnType<typeof fakeStore>) => {
       const metrics = recordingMetrics();
       const enqueueEmail = vi.fn<(p: unknown, o: unknown) => Promise<void>>(

@@ -233,7 +233,7 @@ describe("community tables (real PostgreSQL)", () => {
     ).toBe(0);
   });
 
-  it("accepts POST and COMMENT as report target types now that they are used (report table, unchanged shape from Phase 9)", async () => {
+  it("accepts POST and COMMENT as report target types now that they are used (report table, unchanged shape)", async () => {
     const report = await db.prisma.report.create({
       data: {
         reporterId: other,

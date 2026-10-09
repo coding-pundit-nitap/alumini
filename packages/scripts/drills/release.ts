@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Release drill (Phase 18B; reliability §8.3–§8.5, §9.3; spec 18 PRD-2, PRD-5). Runs the production release
+// Release drill. Runs the production release
 // tooling (deploy/compose.yml, deploy/deploy.sh) for real, in two throwaway clones of a local git origin, with a
 // local registry standing in for CI's:
 //
@@ -7,9 +7,9 @@
 //   production  promote N, promote N+1, rollback N, promote N+1  (staging's digests only)
 //
 // N+1 carries an expand migration (a nullable column, then a CONCURRENTLY index), so the rollback runs the old
-// release on the new schema, which is the claim that makes rollback safe (§9.3). The interruption of each
-// production release is measured from outside by polling /health/live, which decides PRD-2 (blue/green
-// becomes a launch gate above 30 s). Finally deploy/monitoring.sh starts the monitoring stack (spec 18C) against
+// release on the new schema, which is the claim that makes rollback safe. The interruption of each
+// production release is measured from outside by polling /health/live, which decides whether blue/green
+// becomes a launch gate (above 30 s). Finally deploy/monitoring.sh starts the monitoring stack against
 // production: every scrape target must be up and the series the alerts need must exist.
 //
 //   node packages/scripts/drills/release.ts [--skip-build] [--record] [--summary f] [--keep]
@@ -17,7 +17,7 @@
 // --skip-build uses existing alumini-{web,worker,migrate,postgres}:drill images (CI builds them with its layer
 // cache). Stand-ins, not under test: the registry; Mailpit for SMTP; a no-op for clamd, which the worker needs
 // only when a scan runs; archiving off, because the restore drill covers backups. --record appends the result to
-// docs/operations/release-drills.md, --summary <file> to another file (CI's step summary). Exit code 1 if any
+// packages/scripts/drills/reports/release-drills.md, --summary <file> to another file (CI's step summary). Exit code 1 if any
 // check fails.
 import { execFileSync, spawn } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
@@ -426,7 +426,7 @@ function bootstrap(env: Env, sha: string) {
 }
 
 /**
- * deploy/monitoring.sh against the running release (spec 18C §5). Stand-ins: receiver URLs that go nowhere, the
+ * deploy/monitoring.sh against the running release. Stand-ins: receiver URLs that go nowhere, the
  * probe aimed at web on the compose network (no TLS here), and a backup textfile like backup.sh writes.
  */
 async function monitoringChecks(env: Env) {
@@ -522,7 +522,7 @@ async function monitoringChecks(env: Env) {
   for (const [expr, what] of required)
     if ((await query(expr)).length === 0) missing.push(what);
   check(
-    "monitoring: the series the 18C alerts need exist",
+    "monitoring: the series the alerts need exist",
     missing.length === 0,
     missing.length
       ? `missing: ${missing.join(", ")}`
@@ -744,7 +744,7 @@ try {
 
   const worst = Math.max(...interruptions.map((i) => i.ms));
   check(
-    "longest interruption within 30 s (else blue/green is a launch gate, PRD-2)",
+    "longest interruption within 30 s (else blue/green is a launch gate)",
     worst <= 30_000,
     secs(worst)
   );
@@ -791,6 +791,9 @@ const report = [
   "",
 ].join("\n");
 if (args.record)
-  appendFileSync(path.join(root, "docs/operations/release-drills.md"), report);
+  appendFileSync(
+    path.join(root, "packages/scripts/drills/reports/release-drills.md"),
+    report
+  );
 if (args.summary) appendFileSync(args.summary, report);
 process.exit(failed.length === 0 ? 0 : 1);

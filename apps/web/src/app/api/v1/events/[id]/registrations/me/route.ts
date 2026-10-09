@@ -10,7 +10,7 @@ const id = z.uuid();
 
 type Params = { params: Promise<{ id: string }> };
 
-/** DELETE /api/v1/events/:id/registrations/me — cancel the caller's own registration (FR-EVENT-006). */
+/** DELETE /api/v1/events/:id/registrations/me — cancel the caller's own registration. */
 export const DELETE = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const eventId = id.safeParse((await ctx.params).id);

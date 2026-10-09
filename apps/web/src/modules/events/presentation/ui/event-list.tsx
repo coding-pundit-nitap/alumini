@@ -9,7 +9,7 @@ import { formatEventTime } from "../format";
 import { EventBadges } from "./event-badges";
 import { DateBlock, EventPlace, SpotsMeter } from "./event-parts";
 
-/** The `/events` list (spec "UI"). Server-renderable: no hooks, no client state. */
+/** The `/events` list. Server-renderable: no hooks, no client state. */
 export function EventList({
   events,
   loadMoreHref,

@@ -1,4 +1,4 @@
-# Backups and restore tests (ADR-011, reliability §3.6). WAL archiving comes from postgres_exporter's
+# Backups and restore tests. WAL archiving comes from postgres_exporter's
 # pg_stat_archiver; every deploy/backup.sh job writes alumini_backup_last_success_timestamp_seconds{kind} for
 # node_exporter's textfile collector. Thresholds follow the cron schedule in deploy/README.md step 8.
 groups:
@@ -44,7 +44,7 @@ groups:
           description: "The last successful {{ $labels.kind }} run was {{ $value | humanizeDuration }} ago."
           runbook_url: https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-8.md
 
-      # SRS §46: restore testing is scheduled, and a missed or failed one pages.
+      # Restore testing is scheduled, and a missed or failed one pages.
       - alert: RestoreTestOverdue
         expr: time() - alumini_backup_last_success_timestamp_seconds{kind="restore_test"} > 35 * 86400
         labels: { severity: page, service: backups }

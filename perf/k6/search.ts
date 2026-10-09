@@ -1,5 +1,5 @@
-// Search (strategy §13.2): GET /api/v1/alumni?q=… — the trigram/ILIKE paths over names, headlines, companies and
-// skills, including substrings and one-letter typos. Decides when OpenSearch is justified (TDS §14).
+// Search: GET /api/v1/alumni?q=… — the trigram/ILIKE paths over names, headlines, companies and
+// skills, including substrings and one-letter typos. Decides when OpenSearch is justified.
 import http from "k6/http";
 import type { Options } from "k6/options";
 import { check } from "k6";

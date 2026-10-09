@@ -20,7 +20,7 @@ const recordDenied = createDeniedAudit({
 
 /**
  * Every decision is counted (labels stay low-cardinality); every denial is logged; an admin-tier denial also
- * leaves a best-effort `authz.denied` audit row (RBAC §9, spec B12-13).
+ * leaves a best-effort `authz.denied` audit row.
  */
 export const authzObserver: AuthzObserver = {
   record(event) {

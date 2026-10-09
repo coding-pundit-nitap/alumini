@@ -13,7 +13,7 @@ import type {
 import { refuse } from "./refusal";
 
 /**
- * FR-EVENT (E-3). The organizer or an `event.manage` holder, only while `SCHEDULED`.
+ * The organizer or an `event.manage` holder, only while `SCHEDULED`.
  * `cancelEvent` (the guarded UPDATE) is the one write that decides; `decideCancelEvent` only
  * classifies a permission or state miss ahead of it. The row and `event.cancelled` commit in one
  * transaction; `observe`/`observeRefusal` run only after that transaction settles.

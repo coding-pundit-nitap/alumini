@@ -1,5 +1,5 @@
 /**
- * Response security headers (strategy §10.1 "Headers", spec 16 SD-1…SD-3). Dependency-free on purpose:
+ * Response security headers. Dependency-free on purpose:
  * both the proxy (per request) and next.config.ts (static headers, read at build and start) import it.
  */
 
@@ -15,7 +15,7 @@ export function createNonce(): string {
 /**
  * The page policy. Scripts run only with this response's nonce, or when loaded by a script that had it
  * ('strict-dynamic'); `unsafe-eval` is added under `next dev` only, where React needs it for error stacks.
- * Styles allow inline (SD-2): server-rendered `style` attributes cannot carry a nonce.
+ * Styles allow inline: server-rendered `style` attributes cannot carry a nonce.
  */
 export function buildPageCsp(options: {
   nonce: string;
@@ -64,7 +64,7 @@ export function storageOriginFor(
   }
 }
 
-/** API, health and metrics responses never render HTML, so nothing may load from them (SD-1). */
+/** API, health and metrics responses never render HTML, so nothing may load from them. */
 export const NON_PAGE_CSP = "default-src 'none'; frame-ancestors 'none'";
 
 /** Paths whose responses are data, not pages. */
@@ -72,7 +72,7 @@ export function isNonPagePath(pathname: string): boolean {
   return /^\/(api|health|metrics)(\/|$)/.test(pathname);
 }
 
-/** Sent on every response, static assets included (SD-3). HSTS only in production (NFR-SEC-003). */
+/** Sent on every response, static assets included. HSTS only in production. */
 export function staticSecurityHeaders(options: {
   production: boolean;
 }): { key: string; value: string }[] {

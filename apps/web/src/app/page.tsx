@@ -50,7 +50,7 @@ const TRUST = [
   { icon: EyeOff, term: "Contact details", detail: "Never shown to members" },
 ];
 
-/** §5.1.1. Anyone may view; VERIFIED visitors go to the app, other signed-in states see "Go to dashboard". */
+/** Anyone may view; VERIFIED visitors go to the app, other signed-in states see "Go to dashboard". */
 export default async function LandingPage() {
   const actor = await getActor();
   const home = verifiedHome(actor);

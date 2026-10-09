@@ -13,7 +13,7 @@ import {
 
 /**
  * The application's Better Auth instance: the factory called with the real dependencies. Authentication
- * only; authorization is our own model (docs/adr/ADR-005-authentication.md).
+ * only; authorization is our own model.
  */
 export const auth = createAuth({
   prisma,

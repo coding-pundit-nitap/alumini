@@ -36,7 +36,7 @@ export function pageOf<T>(
   };
 }
 
-/** FR-MSG-002: the caller's inbox, newest activity first. */
+/** The caller's inbox, newest activity first. */
 export function createListConversations(deps: {
   queries: MessagingQueries;
   authorize: Authorize;

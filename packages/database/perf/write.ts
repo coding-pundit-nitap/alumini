@@ -11,7 +11,7 @@ export type Queryable = {
 
 const CHUNK = 5_000;
 
-/** The seed refuses any other database (Phase 15 PD-3): 10 000 synthetic users must never land in a real one. */
+/** The seed refuses any other database: 10 000 synthetic users must never land in a real one. */
 export function assertPerfDatabase(databaseUrl: string): string {
   const name = decodeURIComponent(new URL(databaseUrl).pathname.slice(1));
   if (!name.endsWith("_perf")) {
@@ -30,7 +30,7 @@ const asText = (value: Value): string | null =>
 /**
  * Writes every table in one transaction (all or nothing), in the generator's order, which is foreign-key
  * order. Each chunk is one `INSERT … SELECT FROM unnest(text[], …)`: one round trip per 5 000 rows, every
- * value sent as text and cast to the column's type in SQL (PD-4). Then moves the message sequence past the
+ * value sent as text and cast to the column's type in SQL. Then moves the message sequence past the
  * explicit `seq` values and refreshes planner statistics, so the first load test sees production-like plans.
  */
 export async function writePerfData(

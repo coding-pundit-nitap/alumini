@@ -6,7 +6,7 @@ const request = (authorization?: string) =>
     headers: authorization ? { authorization } : {},
   });
 
-describe("canSeeHealthDetails (reliability §4.1: minimal on the public path)", () => {
+describe("canSeeHealthDetails", () => {
   it("hides details from anonymous callers in production", () => {
     expect(
       canSeeHealthDetails(request(), {

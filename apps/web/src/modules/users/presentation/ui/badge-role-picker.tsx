@@ -11,7 +11,7 @@ import { NO_TICK, type Tick } from "@/lib/role-tick";
 import { AUTO_TICK } from "../../application/badge-role";
 
 /**
- * UI-15: pick the tick on your photo. Saves on choice; the previous choice comes back if saving fails.
+ * Pick the tick on your photo. Saves on choice; the previous choice comes back if saving fails.
  * Automatic follows the highest role held, so it keeps up when roles change.
  */
 export function BadgeRolePicker({

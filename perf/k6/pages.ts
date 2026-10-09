@@ -1,5 +1,5 @@
-// Rendered pages (strategy §13.2): full RSC renders through `next start`. Anonymous landing and login answer the
-// TASK.md note "the root Header calls getActor() for the bell, so every page is dynamic"; the signed-in pages
+// Rendered pages: full RSC renders through `next start`. Anonymous landing and login answer the
+// note "the root Header calls getActor() for the bell, so every page is dynamic"; the signed-in pages
 // are the ones members open most. PAGE=<path> restricts the run to one page, for before/after comparisons.
 import http from "k6/http";
 import type { Options } from "k6/options";

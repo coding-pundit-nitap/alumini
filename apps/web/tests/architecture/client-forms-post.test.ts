@@ -19,7 +19,7 @@ function fixture(source: string) {
   return root;
 }
 
-describe("client-handled forms never submit as GET (spec 16 S-12)", () => {
+describe("client-handled forms never submit as GET", () => {
   it('every onSubmit form in the app says method="post"', () => {
     expect(checkClientFormsPost(path.join(webRoot, "src"))).toEqual([]);
   });

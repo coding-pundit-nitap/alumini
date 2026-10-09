@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Spec U-3: Home is the feed. Keeps `cursor` so no-JS "Load more" links still page. */
+/** Home is the feed. Keeps `cursor` so no-JS "Load more" links still page. */
 export default async function FeedPage({
   searchParams,
 }: {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Summarises V8 .cpuprofile files (from `node --cpu-prof`, e.g. `packages/scripts/perf/run.ts pages --server-env
 // NODE_OPTIONS=--cpu-prof --server-env ...`): where the web process spent its CPU, by self time per function
-// and by package. Phase 15 uses it to explain a CPU-bound render before changing anything (strategy §13.7).
+// and by package. uses it to explain a CPU-bound render before changing anything.
 //
 //   node packages/scripts/perf/cpuprofile-top.ts <file-or-dir>… [--top 40]
 import { readdirSync, readFileSync, statSync } from "node:fs";

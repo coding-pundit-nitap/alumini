@@ -12,7 +12,7 @@ import type { AdminStore, AuditRow } from "./admin-store";
 import type { Authorize } from "./authorize-port";
 import { toValidationError } from "./validation";
 
-/** FR-ADMIN-004, spec A12-7/A12-8. The audit log's existence is concealed from non-holders (404). */
+/** The audit log's existence is concealed from non-holders (404). */
 export function createListAuditLog(deps: {
   store: AdminStore;
   authorize: Authorize;

@@ -3,7 +3,7 @@ import { expect, test, type Page } from "./support/test";
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
 import { clientIp } from "./support/verification";
 
-// Strategy §10.1 "Headers", spec 16 SD-1…SD-3: the nonce CSP must not break any page, and the inline
+// "Headers": the nonce CSP must not break any page, and the inline
 // theme script must run because it carries the nonce, not because the policy is loose.
 
 const DOMAIN = process.env.E2E_INSTITUTIONAL_DOMAIN ?? "nitap.ac.in";

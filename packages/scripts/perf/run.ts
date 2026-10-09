@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Load-test runner (Phase 15; strategy §13.3–13.4). Starts the production build against the performance database,
+// Load-test runner. Starts the production build against the performance database,
 // runs one k6 scenario from the official container, samples the server while it runs, and writes the k6 summary
-// plus the samples to docs/operations/perf/data/<date>/<scenario>[-label].json.
+// plus the samples to packages/scripts/perf/results/data/<date>/<scenario>[-label].json.
 //
 //   pnpm --filter @nitap/web build
 //   pnpm docker:up && set -a && . ./.env && set +a
@@ -10,7 +10,7 @@
 //        [--env KEY=VALUE]… [--worker] [--reset-spike] [--smoke] [--server-env KEY=VALUE]…
 //
 // --smoke runs the strategy's smoke shape (RATE=2, 30 s) and writes nothing. Exit code is k6's: 99 when a
-// threshold (an SRS budget) broke.
+// threshold (a performance budget) broke.
 import { execFileSync, spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import { createRequire } from "node:module";
@@ -158,7 +158,7 @@ if (!args["no-server"]) {
     start("worker", "pnpm", ["--filter", "@nitap/worker", "start"], root, {
       ...serverEnv,
       WORKER_HEALTH_PORT: "3199",
-      // A production worker refuses to start without clamd (spec 16 SD-8); no scenario uploads a file, so the
+      // A production worker refuses to start without clamd; no scenario uploads a file, so the
       // address is never dialled.
       CLAMAV_URL: process.env.CLAMAV_URL ?? "tcp://127.0.0.1:3310",
     });
@@ -179,7 +179,7 @@ if (!args["no-server"]) {
   }
 }
 
-// ---- Sampling (PD-7) ----------------------------------------------------------------------------------------
+// ---- Sampling ----------------------------------------------------------------------------------------
 const db = new pg.Client({ connectionString: perfUrl });
 await db.connect();
 if (args["reset-spike"]) {
@@ -451,7 +451,7 @@ const result = {
   },
   seed: fixture.options,
   environment: {
-    note: "One workstation: k6, next start, worker and the database containers share it (Phase 15 PD-2).",
+    note: "One workstation: k6, next start, worker and the database containers share it.",
     cpu: os.cpus()[0]?.model,
     cores: os.cpus().length,
     memoryGb: Math.round(os.totalmem() / 2 ** 30),
@@ -488,7 +488,7 @@ console.log(
 );
 
 if (!args.smoke) {
-  const dir = path.join(root, "docs/operations/perf/data", stamp);
+  const dir = path.join(root, "packages/scripts/perf/results/data", stamp);
   mkdirSync(dir, { recursive: true });
   const file = path.join(dir, `${runId}.json`);
   writeFileSync(file, JSON.stringify(result, null, 1) + "\n");

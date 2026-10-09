@@ -40,7 +40,7 @@ const toSummary = (row: Row): EventSummaryRow => ({
 });
 
 /**
- * Read side for `listEvents`/`getEvent` (spec E-10). One `SELECT` per call; admission and cancellation
+ * Read side for `listEvents`/`getEvent`. One `SELECT` per call; admission and cancellation
  * are each a guarded write elsewhere (`prisma-event-store.ts`), never decided here.
  */
 export function createPrismaEventQueries(prisma: PrismaClient): EventQueries {

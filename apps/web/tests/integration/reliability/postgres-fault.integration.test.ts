@@ -1,9 +1,9 @@
-// PostgreSQL down and slow, at system level (TASK.md Phase 14; strategy §11.2; spec 14A).
+// PostgreSQL down and slow, at system level.
 //
 // The production database client (@/infrastructure/database/client: its pool cap, acquire timeout and
 // query timeouts) talks to a per-file test database THROUGH a fault proxy; DATABASE_URL is pointed at the
 // proxy before anything imports the client. Route Handlers, the readiness probe and the use cases are real.
-// Only the session lookup is stubbed (spec 14 RD-2).
+// Only the session lookup is stubbed.
 import {
   afterAll,
   beforeAll,
@@ -48,7 +48,7 @@ import { createPrismaGrantSource } from "@/modules/auth/infrastructure/prisma-gr
 
 const ORIGIN = "http://localhost:3000";
 const get = (path: string) => new Request(`${ORIGIN}${path}`);
-// Readiness caches each check for 2 s (reliability §4.1 rule 2); wait it out between states.
+// Readiness caches each check for 2 s; wait it out between states.
 const pastReadinessCache = () => new Promise((r) => setTimeout(r, 2_100));
 
 async function eventually<T>(

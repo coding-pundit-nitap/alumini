@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Achievements awaiting review" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/** FR-ACH reviewer queue under the admin shell (spec C12-9). 404 without achievement.review (AD-5). */
+/** Reviewer queue under the admin shell. 404 without achievement.review. */
 export default async function AdminAchievementsPage({
   searchParams,
 }: {

@@ -77,7 +77,7 @@ ALTER TABLE "post"
   ADD CONSTRAINT "ck_post_content" CHECK (char_length("content") BETWEEN 1 AND 5000),
   ADD CONSTRAINT "ck_post_images" CHECK (cardinality("image_urls") <= 4),
   -- Reuses the https-only shape used for external links elsewhere in the schema (no existing named
-  -- constraint to copy verbatim: profile_link only bounds length, not scheme — this is Phase 10's own check).
+  -- constraint to copy verbatim: profile_link only bounds length, not scheme — this is's own check).
   ADD CONSTRAINT "ck_post_link_https" CHECK ("link_url" IS NULL OR starts_with("link_url", 'https://'));
 
 ALTER TABLE "comment"
@@ -86,5 +86,5 @@ ALTER TABLE "comment"
 ALTER TABLE "achievement"
   ADD CONSTRAINT "ck_achievement_title" CHECK (char_length("title") BETWEEN 1 AND 200),
   ADD CONSTRAINT "ck_achievement_description" CHECK (char_length("description") BETWEEN 1 AND 5000),
-  -- A PUBLISHED achievement always has its post; no other status may have one (C-12).
+  -- A PUBLISHED achievement always has its post; no other status may have one.
   ADD CONSTRAINT "ck_achievement_published" CHECK (("status" = 'PUBLISHED') = ("published_post_id" IS NOT NULL));

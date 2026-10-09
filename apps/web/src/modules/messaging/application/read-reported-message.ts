@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import type { MessagingStore, ReportedMessageView } from "./messaging-store";
 
 /**
- * RBAC §6.1 `message.read_reported`, spec C12-6: the reported message and at most CONTEXT_EACH_SIDE either side,
+ * `message.read_reported`: the reported message and at most CONTEXT_EACH_SIDE either side,
  * never a cursor. The audit row is written in the read's transaction, on every call: no read without its record.
  */
 export function createReadReportedMessage(deps: {

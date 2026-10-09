@@ -17,7 +17,7 @@ import {
   storeFor,
 } from "./support";
 
-describe("readReportedMessage against real PostgreSQL (spec C12-6)", () => {
+describe("readReportedMessage against real PostgreSQL", () => {
   let db: TestDatabase;
   let asha: string;
   let ravi: string;

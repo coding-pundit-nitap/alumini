@@ -26,7 +26,7 @@ CREATE INDEX "ix_mentorship_mentor" ON "mentorship"("mentor_id", "state");
 CREATE INDEX "ix_mentorship_mentee" ON "mentorship"("mentee_id", "state");
 
 -- One OPEN mentorship per (mentor, mentee). Partial on purpose: terminal rows are history and must not block
--- a fresh request (spec M-4). Direction matters: (A mentors B) and (B mentors A) are different pairs.
+-- a fresh request. Direction matters: (A mentors B) and (B mentors A) are different pairs.
 CREATE UNIQUE INDEX "uq_mentorship_open_pair" ON "mentorship"("mentor_id", "mentee_id")
   WHERE "state" IN ('REQUESTED', 'ACCEPTED', 'ACTIVE');
 

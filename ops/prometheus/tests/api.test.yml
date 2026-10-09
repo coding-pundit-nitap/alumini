@@ -64,7 +64,7 @@ tests:
         exp_alerts:
           - exp_labels: { severity: ticket, service: web }
             exp_annotations:
-              summary: API p95 latency above 500 ms (SRS §47)
+              summary: API p95 latency above 500 ms
               description: p95 over the last 5 minutes is 975ms.
               runbook_url: "https://github.com/krotrn/alumini/blob/main/ops/runbooks/R-2.md"
       - eval_time: 15m

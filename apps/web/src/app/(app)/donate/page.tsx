@@ -12,7 +12,7 @@ import { CampaignCard } from "@/modules/donations";
 
 export const metadata: Metadata = { title: "Donate" };
 
-/** Phase 12H: campaigns open for pledges, and closed ones for the record. */
+/** Campaigns open for pledges, and closed ones for the record. */
 export default async function DonatePage() {
   const actor = await getActor();
   if (!actor) redirect("/login?next=%2Fdonate");

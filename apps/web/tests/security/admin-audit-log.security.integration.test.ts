@@ -170,7 +170,7 @@ describe("GET /api/v1/admin/audit-log", () => {
   it("lets audit.read filter by any actor: the log is admin-wide by design, not an IDOR", async () => {
     as(admin);
     const body = await (await get(`?actorId=${alumnus.userId}`)).json();
-    // The 404 test above may also leave a best-effort authz.denied row (12B B12-13) for this actor.
+    // The 404 test above may also leave a best-effort authz.denied row for this actor.
     const rows = body.data as { action: string; actor: { id: string } }[];
     expect(rows.every((r) => r.actor.id === alumnus.userId)).toBe(true);
     expect(rows.map((r) => r.action)).toContain("connection.blocked");

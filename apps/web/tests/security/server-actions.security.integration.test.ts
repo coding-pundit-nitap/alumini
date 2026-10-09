@@ -1,4 +1,4 @@
-// Every Server Action, signed out (strategy §10.1, spec 16 16B). Actions are discovered, not listed: any
+// Every Server Action, signed out. Actions are discovered, not listed: any
 // exported function in a "use server" file under src/app is called with several argument shapes and must
 // never succeed and never write a row. Role-level checks for actions live in the per-feature suites and
 // admin-actions.matrix.test.ts; this proves the floor holds for all of them, including future ones.
@@ -116,7 +116,7 @@ function argumentShapes(arity: number): unknown[][] {
   ];
 }
 
-describe("Server Actions refuse a signed-out caller (spec 16 16B)", () => {
+describe("Server Actions refuse a signed-out caller", () => {
   let db: TestDatabase;
   let tables: string[] = [];
 

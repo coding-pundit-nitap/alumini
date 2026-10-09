@@ -38,7 +38,7 @@ export type AuthDeps = {
 const LINK_TTL_SECONDS = AUTH_LINK_TTL_MINUTES * 60;
 
 /**
- * The Better Auth endpoints this app uses (spec 16 SD-11). Every /api/auth path is public, so the rest are
+ * The Better Auth endpoints this app uses. Every /api/auth path is public, so the rest are
  * switched off: change-email would skip the institutional policy, delete-user would hard-delete an
  * audited account, change-password lets the client keep other sessions alive, and the social/OAuth and
  * session-management endpoints back no feature. A test fails when Better Auth adds a path not classified here.
@@ -81,11 +81,11 @@ export const DISABLED_AUTH_PATHS = [
 
 /**
  * Authentication only (who you are, is the session valid). Authorization is our own model and is
- * deliberately NOT delegated to Better Auth's admin or organization plugins (ADR-005). Every hook and
+ * deliberately NOT delegated to Better Auth's admin or organization plugins. Every hook and
  * callback here delegates to a use case; the logic lives there and is tested there.
  *
  * Better Auth runs `create.after` hooks AFTER the user transaction commits, so provisioning is
- * idempotent and repaired by getActor() rather than atomic with the insert (spec 2C, D-3).
+ * idempotent and repaired by getActor() rather than atomic with the insert.
  */
 export function createAuth(deps: AuthDeps) {
   const plugins = deps.nextCookies === false ? [] : [nextCookies()];
@@ -103,7 +103,7 @@ export function createAuth(deps: AuthDeps) {
     }),
     advanced: {
       database: { generateId: "uuid" },
-      // ADR-005: origin and CSRF checks stay ON. Stated explicitly because Better Auth's default for the
+      // Origin and CSRF checks stay ON. Stated explicitly because Better Auth's default for the
       // origin check is `isTest()`, which would silently switch it off under NODE_ENV=test.
       disableOriginCheck: false,
       disableCSRFCheck: false,

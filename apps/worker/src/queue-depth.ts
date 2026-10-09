@@ -4,7 +4,7 @@ import type { PrometheusMetrics } from "@nitap/observability";
 import type { QueueAdmin } from "@nitap/queue";
 
 /**
- * Samples BullMQ job counts at scrape time (spec 13A A-9), so the series is fresh and still moves while
+ * Samples BullMQ job counts at scrape time, so the series is fresh and still moves while
  * the processors are stopped. A queue Redis failure is counted by the adapter and never blanks the scrape.
  */
 export function registerQueueDepthCollector(

@@ -7,7 +7,7 @@ import type { GrantSource } from "./grant-source";
 export type SessionIdentity = { userId: string; accountState: unknown };
 
 /**
- * Builds the Actor for one request. Only VERIFIED accounts hold effective permissions (RBAC §7), so
+ * Builds the Actor for one request. Only VERIFIED accounts hold effective permissions, so
  * grants are not even queried for any other state.
  */
 export async function resolveActor(

@@ -12,7 +12,7 @@ afterEach(() => {
   setMetrics(noopMetrics);
 });
 
-describe("health: live (reliability §4.1)", () => {
+describe("health: live", () => {
   it("answers ok without touching any dependency", () => {
     const checkPostgres = vi.fn(up);
     const checkRedis = vi.fn(up);
@@ -132,7 +132,7 @@ describe("health: ready", () => {
     });
   });
 
-  it("tells drain listeners once, immediately for late subscribers, and not after they unsubscribe (spec 14 F-4)", () => {
+  it("tells drain listeners once, immediately for late subscribers, and not after they unsubscribe", () => {
     const service = createHealthService({ checkPostgres: up, checkRedis: up });
     const early = vi.fn();
     const gone = vi.fn();

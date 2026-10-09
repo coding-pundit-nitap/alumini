@@ -16,8 +16,8 @@ import {
 } from "@/lib/errors";
 
 /**
- * Runs a Server Action's work inside the request context and turns any failure into an ActionResult
- * (TDS §10.2 rule 3), logged once at the boundary at the level of its class, like `routeHandler`.
+ * Runs a Server Action's work inside the request context and turns any failure into an ActionResult,
+ * logged once at the boundary at the level of its class, like `routeHandler`.
  * The message is the catalogue's safe one; an unexpected error is always the generic message.
  *
  * Never call `redirect()` or `notFound()` inside `work`: they work by throwing and would be caught here.

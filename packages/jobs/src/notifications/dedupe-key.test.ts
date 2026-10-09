@@ -27,7 +27,7 @@ describe("dedupeKeyFor", () => {
     );
   });
 
-  it("keys a debounced message notification by (recipient, conversation, window), not by event (N-6)", () => {
+  it("keys a debounced message notification by (recipient, conversation, window), not by event", () => {
     const w1 = { recipientId: "r1", conversationId: "c1", windowBucket: "w1" };
     expect(messageDedupeKeyFor(w1)).toBe(messageDedupeKeyFor({ ...w1 }));
     expect(messageDedupeKeyFor(w1)).not.toBe(

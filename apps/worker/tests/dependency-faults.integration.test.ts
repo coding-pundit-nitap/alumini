@@ -20,7 +20,7 @@ import { composeWorker, type ComposedWorker } from "../src/compose.ts";
 import { createPrismaClient } from "../src/prisma.ts";
 import { recordingMetrics, silentLogger } from "./support.ts";
 
-// Dependency faults for the worker at system level (TASK.md Phase 14; spec 14A). The worker uses the
+// Dependency faults for the worker at system level. The worker uses the
 // production pool (createPrismaClient) and a real queue Redis, each THROUGH a fault proxy, so the
 // timeouts under test are the ones that ship. The test writes outbox rows on a direct connection: the
 // database is up, only the worker's path to it fails.
@@ -115,7 +115,7 @@ describe("worker under dependency faults (real PostgreSQL, Redis and SMTP throug
   const unpublished = () =>
     db.prisma.outboxEvent.count({ where: { publishedAt: null } });
 
-  /** A readiness probe must answer within its own bound, whatever the dependency does (reliability §4.1). */
+  /** A readiness probe must answer within its own bound, whatever the dependency does. */
   async function probe() {
     const started = Date.now();
     const readiness = await worker.ready();

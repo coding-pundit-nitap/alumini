@@ -12,23 +12,23 @@ import {
 
 export type TransactionRunner = {
   /**
-   * Opens one Prisma interactive transaction and passes `tx` to the callback (TDS §3.3). On a
+   * Opens one Prisma interactive transaction and passes `tx` to the callback. On a
    * serialization failure or deadlock it retries the WHOLE callback, never just the commit, up to
-   * `maxRetries` attempts with jittered backoff (TDS §17.5).
+   * `maxRetries` attempts with jittered backoff.
    *
    * Because the callback can run more than once it must perform no I/O except through `tx`: no
-   * email, HTTP, Redis or queue calls (TDS §17.2). Write an outbox row instead and let a worker
+   * email, HTTP, Redis or queue calls. Write an outbox row instead and let a worker
    * act after commit.
    */
   run: <T>(fn: (tx: Prisma.TransactionClient) => Promise<T>) => Promise<T>;
 };
 
 export type TransactionRunnerOptions = {
-  /** Total attempts for serialization failures and deadlocks (TDS §17.5: 3). */
+  /** Total attempts for serialization failures and deadlocks. */
   maxRetries?: number;
-  /** Prisma's cap on transaction duration (TDS §18.1: 5 s). */
+  /** Prisma's cap on transaction duration. */
   timeoutMs?: number;
-  /** Prisma's cap on waiting for a pooled connection (TDS §18.1: 2 s). */
+  /** Prisma's cap on waiting for a pooled connection. */
   maxWaitMs?: number;
   /** Backoff before attempt n+1 is `baseBackoffMs * 2^(n-1)` plus up to `baseBackoffMs` of jitter. */
   baseBackoffMs?: number;
@@ -76,7 +76,7 @@ export function createTransactionRunner(
             maxWait: maxWaitMs,
           });
         } catch (error) {
-          // Unreachable, timed out, pool exhausted, or the server closed the connection (spec 14 RD-3).
+          // Unreachable, timed out, pool exhausted, or the server closed the connection.
           if (isDatabaseUnavailable(error)) {
             getMetrics().increment("db_transaction_unavailable_total");
             throw new DependencyUnavailableError({

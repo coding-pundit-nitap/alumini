@@ -7,7 +7,7 @@ type DeniedEvent = Extract<AuthzEvent, { outcome: "denied" }>;
 const ADMIN_TIER: ReadonlySet<string> = new Set(ADMIN_TIER_PERMISSIONS);
 
 /**
- * RBAC §9 `authz.denied`, admin-tier only (spec B12-13). `authorize()` is synchronous and there is no business
+ * `authz.denied`, admin-tier only. `authorize()` is synchronous and there is no business
  * write to join, so this is the one non-transactional audit: fire-and-forget, at most `maxInFlight` writes
  * pending, drops and failures counted by the caller's callbacks. Never throws into the request.
  */

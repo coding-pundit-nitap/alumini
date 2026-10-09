@@ -111,7 +111,7 @@ describe("donations (12H) against PostgreSQL", () => {
     });
   });
 
-  it("the same bank reference can't settle two pledges in a campaign (FR-DON-004)", async () => {
+  it("the same bank reference can't settle two pledges in a campaign", async () => {
     await pledge("100", "UTR-2222");
     await expect(pledge("200", "utr-2222")).rejects.toMatchObject({
       code: "PAYMENT_REFERENCE_TAKEN",

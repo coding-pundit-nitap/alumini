@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { REDACTED, redact } from "./redact.ts";
 
-describe("redact (reliability §6.4)", () => {
+describe("redact", () => {
   it("masks every secret-bearing key in a fixture, at any depth", () => {
     const fixture = {
       password: "hunter2",

@@ -8,7 +8,7 @@ import type { DeliverNotification } from "../notifications/deliver.ts";
 
 /**
  * In-app row for the applicant. No email: the decision already sent its own transactional email in the
- * same transaction (spec D12-1). Ids only in logs.
+ * same transaction. Ids only in logs.
  */
 export function createVerificationDecidedProcessor(deps: {
   deliver: DeliverNotification;
@@ -32,8 +32,8 @@ export function createVerificationDecidedProcessor(deps: {
 }
 
 /**
- * Suspension and reactivation notices. Email goes only while the account is still in the announced state
- * (spec D12-3, N-3), so a suspension undone before this runs sends no suspension email.
+ * Suspension and reactivation notices. Email goes only while the account is still in the announced state,
+ * so a suspension undone before this runs sends no suspension email.
  */
 export function createAccountStateProcessor(
   type: "user.suspended" | "user.reactivated",

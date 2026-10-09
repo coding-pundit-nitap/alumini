@@ -10,7 +10,7 @@ import {
   rupeesToPaise,
 } from "./donation";
 
-describe("money (XD-7: integer paise)", () => {
+describe("money", () => {
   it("parses rupees as typed into paise, rejecting anything else", () => {
     expect(rupeesToPaise("1,500")).toBe(150_000);
     expect(rupeesToPaise("₹ 99.5")).toBe(9_950);
@@ -34,7 +34,7 @@ describe("money (XD-7: integer paise)", () => {
   });
 });
 
-describe("payment reference (spec H-1)", () => {
+describe("payment reference", () => {
   it("is upper-cased with whitespace removed, so a match ignores case and spacing", () => {
     expect(
       referenceInputSchema.parse({ paymentReference: " utr 4421 99ab " })
@@ -55,7 +55,7 @@ describe("payment reference (spec H-1)", () => {
   });
 });
 
-describe("campaign window (spec H-6, IST dates)", () => {
+describe("campaign window", () => {
   const c = {
     status: "ACTIVE" as const,
     startsOn: "2026-10-01",

@@ -25,7 +25,7 @@ export type JobEvent =
       payload: JobEventBasePayload & { directPublish: boolean };
     };
 
-/** Admin decisions on a job leave an audit row in the same transaction (FR-MOD-004, spec A12-9). Ids only. */
+/** Admin decisions on a job leave an audit row in the same transaction. Ids only. */
 export type JobAuditEntry = {
   action: "job.approved" | "job.rejected" | "job.publish_direct" | "job.closed";
   actorId: string;
@@ -37,7 +37,7 @@ export type NewJob = JobContent & { postedBy: string; status: JobStatus };
 
 /**
  * Everything a write does happens through one of these, inside ONE database transaction, so a row and its
- * outbox event commit or roll back together (NFR-REL-002), mirroring `modules/mentorship`'s `MentorshipTx`.
+ * outbox event commit or roll back together, mirroring `modules/mentorship`'s `MentorshipTx`.
  */
 export type JobTx = {
   findById(id: string): Promise<JobRow | null>;
@@ -59,7 +59,7 @@ export type JobStore = {
   transaction<T>(work: (tx: JobTx) => Promise<T>): Promise<T>;
 };
 
-/** One committed outcome, for logs and metrics (spec J-15). `publish_direct` is logged distinctly from `published`. */
+/** One committed outcome, for logs and metrics. `publish_direct` is logged distinctly from `published`. */
 export type JobOutcome =
   | "submitted"
   | "published"

@@ -7,7 +7,7 @@ import type { Authorize } from "./authz";
 import type { MentorProfileRecord, MentorProfileStore } from "./mentor-ports";
 import { parse } from "./validation";
 
-/** FR-MENTOR-001/002: opt in and edit the offer. Only the caller's own row can be written. */
+/** Opt in and edit the offer. Only the caller's own row can be written. */
 export function createSaveMentorProfile(deps: {
   store: MentorProfileStore;
   authorize: Authorize;

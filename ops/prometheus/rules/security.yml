@@ -1,8 +1,8 @@
-# Auth & security (reliability §5.6, R-9). auth_sign_in_total{outcome} is counted by the /api/auth POST handler (spec 18C).
+# Auth & security. auth_sign_in_total{outcome} is counted by the /api/auth POST handler.
 groups:
   - name: security
     rules:
-      # A starting threshold: reliability §5.6 sets it from data, so retune it after a month of production.
+      # A starting threshold: reliability sets it from data, so retune it after a month of production.
       - alert: LoginFailureSpike
         expr: sum(increase(auth_sign_in_total{job="web",outcome=~"invalid_credentials|rate_limited"}[10m])) > 50
         for: 10m

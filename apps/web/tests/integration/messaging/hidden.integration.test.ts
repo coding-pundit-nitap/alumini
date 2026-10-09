@@ -10,7 +10,7 @@ import { createPrismaMessagingQueries } from "@/modules/messaging/infrastructure
 
 import { actor, allowAll, authorize, cid, member, storeFor } from "./support";
 
-describe("hidden messages read as tombstones (spec C12-4)", () => {
+describe("hidden messages read as tombstones", () => {
   let db: TestDatabase;
   let asha: string;
   let ravi: string;

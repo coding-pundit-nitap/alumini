@@ -101,7 +101,7 @@ function Section({
   );
 }
 
-/** FR-JOB-001/002. One form for both create (`/jobs/new`) and edit (`/jobs/[id]/edit`). */
+/** One form for both create (`/jobs/new`) and edit (`/jobs/[id]/edit`). */
 export function JobForm({
   defaults,
   submitAction,

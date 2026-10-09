@@ -21,7 +21,7 @@ const sent = () => {
   return { url: String(url), init: init!, headers: new Headers(init!.headers) };
 };
 
-describe("/storage proxy (spec 3C F-7)", () => {
+describe("/storage proxy", () => {
   it("forwards to S3_ENDPOINT read at request time, keeping the encoded path and the signature", async () => {
     vi.stubEnv("S3_ENDPOINT", "http://store.internal:9000");
     await GET(

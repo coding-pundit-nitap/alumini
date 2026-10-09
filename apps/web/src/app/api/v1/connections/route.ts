@@ -26,7 +26,7 @@ const invalid = (error: z.ZodError) =>
     })),
   });
 
-/** POST /api/v1/connections — send a request (API spec §6.1). Honours `Idempotency-Key` (§1.6). */
+/** POST /api/v1/connections — send a request. Honours `Idempotency-Key`. */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const rawBody = await readBodyText(request);
@@ -55,7 +55,7 @@ export const POST = routeHandler(async (request) => {
   });
 });
 
-/** GET /api/v1/connections — the caller's own list (API spec §6.3). */
+/** GET /api/v1/connections — the caller's own list. */
 export const GET = routeHandler(async (request) => {
   const parsed = listQuery.safeParse(
     Object.fromEntries(new URL(request.url).searchParams)

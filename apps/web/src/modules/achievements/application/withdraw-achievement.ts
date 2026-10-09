@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import type { AchievementsStore } from "./achievements-store";
 import { refuse } from "./refusal";
 
-/** FR-ACH-002. Own-content withdraw needs no separate permission (mirrors posts' own-delete pattern); only while SUBMITTED (C-7). */
+/** Own-content withdraw needs no separate permission (mirrors posts' own-delete pattern); only while SUBMITTED. */
 export function createWithdrawAchievement(deps: {
   store: AchievementsStore;
   authorize: Authorize;

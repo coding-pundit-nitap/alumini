@@ -61,7 +61,7 @@ function revive(p: { posts: WirePost[]; nextCursor: string | null }): Page {
   };
 }
 
-/** The feed, as returned by `listFeed` (newest-first, C-6); a Link carries the next keyset cursor. */
+/** The feed, as returned by `listFeed` (newest-first); a Link carries the next keyset cursor. */
 export function FeedList({
   posts,
   nextCursor,

@@ -26,7 +26,7 @@ afterEach(() => {
     fs.rmSync(dir, { recursive: true, force: true });
 });
 
-describe("handlers and use cases name permissions, never roles (RBAC §11)", () => {
+describe("handlers and use cases name permissions, never roles", () => {
   it("apps/web/src contains no role-name literal", () => {
     expect(checkNoRoleNames(srcRoot, ROLE_NAMES)).toEqual([]);
   });

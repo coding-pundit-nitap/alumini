@@ -16,7 +16,7 @@ const failureKind = (error: unknown) =>
       : error.kind
     : "unexpected";
 
-/** The worker-side write path onto the EMAIL `NotificationDelivery` row (spec N-12). */
+/** The worker-side write path onto the EMAIL `NotificationDelivery` row. */
 export type EmailDeliveryUpdater = {
   markSent(notificationId: string, attempt: number): Promise<void>;
   markFailed(
@@ -27,7 +27,7 @@ export type EmailDeliveryUpdater = {
 };
 
 export type EmailSendProcessorDeps = {
-  /** Present only when this worker also tracks notification delivery status (N-12). */
+  /** Present only when this worker also tracks notification delivery status. */
   deliveries?: EmailDeliveryUpdater;
   metrics?: Metrics;
   /** The job definition's `retry.attempts`, so a transient failure on the last try is treated as final. */
@@ -38,7 +38,7 @@ export type EmailSendProcessorDeps = {
  * Sends one templated email. The job id is the Message-ID key, so a re-run of the same event carries the
  * same id. Never logs the recipient or the parameters: they hold an address and a token.
  *
- * When the payload is a `notification` template carrying a `notificationId` (N-12), the outcome is also
+ * When the payload is a `notification` template carrying a `notificationId`, the outcome is also
  * written back onto that notification's EMAIL delivery row: SENT (with `notification_delivered_total`) on success, FAILED (with the
  * `notification_delivery_failed_total` metric) on a permanent error or the final retry attempt. A status
  * write never masks the real send outcome: a `markSent`/`markFailed` failure is logged, not thrown, so a
@@ -54,7 +54,7 @@ export function createEmailSendProcessor(
     const { subject, text } = renderEmail(payload);
     const notificationId =
       payload.template === "notification" ? payload.notificationId : undefined;
-    // Same label keys on both counters so one selector covers sent and failed (spec 13A A-11).
+    // Same label keys on both counters so one selector covers sent and failed.
     const deliveryLabels = {
       channel: "EMAIL",
       category:

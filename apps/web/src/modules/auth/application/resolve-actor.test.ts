@@ -38,7 +38,7 @@ describe("resolveActor", () => {
   });
 
   it.each(["PENDING", "REJECTED", "SUSPENDED", "DEACTIVATED"])(
-    "does not load grants for a %s account (RBAC §7)",
+    "does not load grants for a %s account",
     async (accountState) => {
       const { loadGrants, deps } = setup();
       const actor = await resolveActor(

@@ -64,11 +64,11 @@ export type UserDetail = {
     expiresAt: Date | null;
     grantedBy: PersonRef;
   }[];
-  /** True when this user is the only VERIFIED super admin (drives the disabled state, spec B12-5). */
+  /** True when this user is the only VERIFIED super admin (drives the disabled state). */
   isLastSuperAdmin: boolean;
 };
 
-/** Read-only, cross-module SQL (overview AD-2). No method writes. */
+/** Read-only, cross-module SQL. No method writes. */
 export type AdminStore = {
   countTile(key: TileKey, now: Date): Promise<TileCount>;
   listAuditLog(args: {
@@ -85,7 +85,7 @@ export type AdminStore = {
   listChapters(): Promise<{ id: string; slug: string }[]>;
 };
 
-/** Spec 12F §3: one aggregate read per analytics section, all over `[from, to)`. Read-only. */
+/** One aggregate read per analytics section, all over `[from, to)`. Read-only. */
 export type AnalyticsStore = {
   membersSection(window: AnalyticsWindow): Promise<MembersRaw>;
   jobsSection(window: AnalyticsWindow): Promise<JobsRaw>;
@@ -103,7 +103,7 @@ export type RetentionRow = {
   updatedBy: { id: string; name: string } | null;
 };
 
-/** 12G G-4: settings writes, each with its `config.changed` audit row in the same transaction. */
+/** Settings writes, each with its `config.changed` audit row in the same transaction. */
 export type SettingsTx = {
   findForUpdate(
     category: string

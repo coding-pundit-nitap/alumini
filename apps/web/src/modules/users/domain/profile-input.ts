@@ -11,7 +11,7 @@ import {
 const FORMAT = /\p{Cf}/gu;
 const CONTROL = /\p{Cc}/gu;
 
-/** Plain text on one line: whitespace collapsed, control and zero-width characters removed (spec 3A D-6). */
+/** Plain text on one line: whitespace collapsed, control and zero-width characters removed. */
 export function sanitiseSingleLine(value: string): string {
   return value
     .replace(FORMAT, "")
@@ -51,7 +51,7 @@ export const PROFILE_FIELDS = [
 ] as const;
 
 /**
- * Strict: `departmentId`, `degreeId`, `graduationYear` (FR-PROFILE-004) and any other key fail validation.
+ * Strict: `departmentId`, `degreeId`, `graduationYear` and any other key fail validation.
  * Self-service cannot express an institutional change at all.
  */
 export const updateProfileSchema = z

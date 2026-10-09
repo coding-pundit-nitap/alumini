@@ -2,7 +2,7 @@ import type { PrometheusMetrics } from "@nitap/observability";
 import type { UploadStore, UploadTransaction } from "@nitap/database/uploads";
 
 /**
- * Samples the upload scan backlog at scrape time (R-14, spec 18C), so the age keeps rising while the
+ * Samples the upload scan backlog at scrape time, so the age keeps rising while the
  * scanner or the worker's processors are stuck. A database failure is counted by the adapter and never
  * blanks the scrape.
  */

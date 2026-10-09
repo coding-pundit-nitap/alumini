@@ -24,7 +24,7 @@ export type UploadScanStore = {
 };
 
 /**
- * Scans and re-encodes one pending upload (spec 3C). Idempotent: a row already READY or REJECTED is a
+ * Scans and re-encodes one pending upload. Idempotent: a row already READY or REJECTED is a
  * no-op, so a re-delivered job (BullMQ at-least-once) is harmless. A bad image or a scanner rejection is
  * a SUCCESSFUL outcome (the row moves to REJECTED, the job does not throw) — only a storage outage
  * throws, so the queue retries and the row stays PENDING_SCAN (fails closed).

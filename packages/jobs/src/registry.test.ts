@@ -102,7 +102,7 @@ describe("registry", () => {
     }
   });
 
-  it("no notifying outbox event still claims it only reads and logs (Phase 11 delivers notifications)", () => {
+  it("no notifying outbox event still claims it only reads and logs (delivers notifications)", () => {
     for (const job of Object.values(OUTBOX_EVENTS)) {
       expect(job.idempotency, job.name).not.toMatch(/only reads and logs/);
     }

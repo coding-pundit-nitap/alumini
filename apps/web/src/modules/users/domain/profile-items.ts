@@ -143,7 +143,7 @@ export const EDUCATION_FIELDS = [
   "endYear",
 ] as const;
 
-/** Additional education (prior or later study). The institutional record is not editable here (FR-PROFILE-004). */
+/** Additional education (prior or later study). The institutional record is not editable here. */
 export const educationSchema = z
   .object({
     institution: requiredText("Enter the institution.", 150),

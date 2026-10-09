@@ -9,7 +9,7 @@ const serverEnvSchema = z.object({
   // Optional at validation time so builds and tests that never touch the database still work;
   // src/infrastructure/database/client.ts throws if it is missing when a client is actually created.
   DATABASE_URL: z.string().min(1).optional(),
-  // Connections per web instance (TDS §18.1, §25.1: an explicit cap per instance). Sized from the Phase 15
+  // Connections per web instance. Sized from load
   // measurements; instances × this must stay under PostgreSQL's max_connections with the worker's share.
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(100).default(10),
   // Better Auth reads BETTER_AUTH_SECRET itself and refuses to run in production without it.
@@ -18,15 +18,15 @@ const serverEnvSchema = z.object({
   BETTER_AUTH_URL: z.string().url().optional(),
   // Cache / rate-limit Redis. Optional for the same reason; src/infrastructure/redis/client.ts throws if it is missing when used.
   REDIS_URL: z.string().min(1).optional(),
-  // Job-queue Redis (separate server, ADR-007). Optional; the admin replay endpoint throws if it is missing when used.
+  // Job-queue Redis (separate server). Optional; the admin replay endpoint throws if it is missing when used.
   QUEUE_REDIS_URL: z.string().min(1).optional(),
-  // Log threshold (reliability §6.3). Defaults: info, and silent under test.
+  // Log threshold. Defaults: info, and silent under test.
   LOG_LEVEL: z
     .enum(["debug", "info", "warn", "error", "fatal", "silent"])
     .optional(),
   // Bearer token that lets monitoring see the `checks` detail of /health/ready in production.
   HEALTH_CHECK_TOKEN: z.string().min(16).optional(),
-  // Error tracker (Sentry protocol: Sentry or GlitchTip); off when unset (spec 13B B-2).
+  // Error tracker (Sentry protocol: Sentry or GlitchTip); off when unset.
   SENTRY_DSN: z.string().url().optional(),
   // Build/commit identifier stamped on every log line. Set by the deploy pipeline.
   APP_VERSION: z.string().min(1).optional(),

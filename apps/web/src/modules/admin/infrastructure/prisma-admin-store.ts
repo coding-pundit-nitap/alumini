@@ -10,7 +10,7 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const escapeLike = (text: string) => text.replace(/[\\%_]/g, "\\$&");
 
 /**
- * Cross-module, read-only SQL (overview AD-2). Every queue count is on an indexed status column; the audit
+ * Cross-module, read-only SQL. Every queue count is on an indexed status column; the audit
  * keyset uses (created_at DESC, id DESC) and lands on ix_audit_actor / ix_audit_action / ix_audit_target.
  */
 export function createPrismaAdminStore(db: PrismaClient): AdminStore {

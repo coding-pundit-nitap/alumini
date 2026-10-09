@@ -10,7 +10,7 @@ import type { SettingsStore } from "./admin-store";
 import type { Authorize } from "./authorize-port";
 
 /**
- * 12G G-3. Rows in catalogue order, each with its bounds and whether a sweep enforces it; a category the
+ * Rows in catalogue order, each with its bounds and whether a sweep enforces it; a category the
  * catalogue no longer knows is left out. Concealed from non-holders (404), like the audit log.
  */
 export function createListRetentionSettings(deps: {

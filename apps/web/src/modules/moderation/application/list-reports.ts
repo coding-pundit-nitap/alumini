@@ -12,7 +12,7 @@ import type { Authorize } from "./authz";
 import type { ModerationStore, ReportView } from "./moderation-store";
 import { parse } from "./validation";
 
-/** FR-MOD-002, spec C12-5: the reports queue. Concealed from non-holders (404, spec C-3). */
+/** The reports queue. Concealed from non-holders (404). */
 export function createListReports(deps: {
   store: ModerationStore;
   authorize: Authorize;

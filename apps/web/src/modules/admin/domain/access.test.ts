@@ -37,7 +37,7 @@ describe("admin access", () => {
     expect(dashboardTiles(can)).toEqual(["openReports", "members"]);
   });
 
-  it("links each queue under /admin only for its permission (spec C12-12)", () => {
+  it("links each queue under /admin only for its permission", () => {
     const can = holding(
       PERMISSIONS.AUDIT_READ,
       PERMISSIONS.ALUMNI_VERIFY,

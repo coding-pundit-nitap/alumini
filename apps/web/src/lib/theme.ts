@@ -7,7 +7,7 @@ export function parseTheme(value: string | undefined): ThemePref {
     : "system";
 }
 
-/** Runs in <head> before paint so the page never flashes the wrong theme (spec U-5). */
+/** Runs in <head> before paint so the page never flashes the wrong theme. */
 export const THEME_SCRIPT = `(()=>{try{var m=document.cookie.match(/(?:^|; )theme=(light|dark)(?:;|$)/);var t=m?m[1]:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");var d=document.documentElement;d.classList.toggle("dark",t==="dark");d.style.colorScheme=t}catch(e){}})()`;
 
 export function applyTheme(pref: ThemePref) {

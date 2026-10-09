@@ -9,7 +9,7 @@ import { ValidationError } from "@/lib/errors";
 import { routeHandler } from "./route-handler";
 
 /**
- * TASK.md Phase 13 tests 1–2 over the real wrapper (spec 13B): the request id reaches the response
+ * Over the real wrapper: the request id reaches the response
  * header, the error body, the log line and the tracker event; none of the request's secrets reach the
  * log line or the tracker.
  */

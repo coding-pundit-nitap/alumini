@@ -20,7 +20,7 @@ export type JobDefinition<TName extends string = string, TPayload = unknown> = {
   readonly schema: ZodType<TPayload>;
   readonly retry: RetryPolicy;
   readonly timeoutMs: number;
-  /** What makes a second run harmless (TDS §12.4). A reviewer must be able to read it. */
+  /** What makes a second run harmless. A reviewer must be able to read it. */
   readonly idempotency: string;
 };
 
@@ -62,9 +62,7 @@ export function defineJob<TName extends string, TPayload>(
     throw new Error(`Job "${name}": timeoutMs must be positive`);
   }
   if (idempotency.trim().length < 10) {
-    throw new Error(
-      `Job "${name}" must state its idempotency rule (TDS §12.4)`
-    );
+    throw new Error(`Job "${name}" must state its idempotency rule`);
   }
   return Object.freeze({ ...definition, retry: Object.freeze({ ...retry }) });
 }

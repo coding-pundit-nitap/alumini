@@ -91,7 +91,7 @@ export default async function AchievementsPage({
           </div>
           {/*
            * `listOwnAchievements` only ever returns the caller's own submissions, and a reviewer may
-           * never review their own (SELF_REVIEW_FORBIDDEN, C-7) — so this list never shows the review
+           * never review their own (SELF_REVIEW_FORBIDDEN) — so this list never shows the review
            * affordance. A reviewer who lacks `achievement.submit` (e.g. ALUMNI_COORDINATOR) has nothing
            * of their own to submit or list, so this section is skipped entirely for them rather than
            * calling `listOwnAchievements`, which would 403.

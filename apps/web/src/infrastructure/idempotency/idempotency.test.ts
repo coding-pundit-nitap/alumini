@@ -72,7 +72,7 @@ const code = (p: Promise<unknown>) =>
     (e: { code?: string }) => e.code
   );
 
-describe("idempotency (API spec §1.6)", () => {
+describe("idempotency", () => {
   it("first request: runs, stores the response, and is not a replay", async () => {
     const clock = { now: new Date("2026-09-21T10:00:00Z") };
     const { port, rows } = fakePort(clock);

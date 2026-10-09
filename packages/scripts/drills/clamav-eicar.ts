@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Upload malware-scan drill (spec 16 SD-8, NFR-SEC-007). Runs the worker's real clamd adapter against a real
+// Upload malware-scan drill. Runs the worker's real clamd adapter against a real
 // ClamAV:
 //
 //   pnpm docker:scan                     # first start downloads signatures; wait until healthy
 //   node packages/scripts/drills/clamav-eicar.ts  # CLAMAV_URL=tcp://localhost:3310 by default
 //
 // It scans the EICAR test string (every antivirus flags it; it is harmless), a clean PNG, and EICAR hidden
-// after a valid image (a polyglot), prints a pass/fail table for docs/operations/security-verification.md,
-// and exits 1 if any check fails.
+// after a valid image (a polyglot), prints a pass/fail table for
+// packages/scripts/drills/reports/security-verification.md, and exits 1 if any check fails.
 import {
   createClamdScanner,
   parseClamavUrl,

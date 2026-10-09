@@ -16,7 +16,7 @@ const denied = (permission: string, subjectUserId?: string) =>
     subjectUserId,
   }) as const;
 
-describe("createDeniedAudit (spec B12-13)", () => {
+describe("createDeniedAudit", () => {
   it("writes an authz.denied row for an admin-tier denial, targeting the subject", async () => {
     const write = vi.fn(async () => {});
     const record = createDeniedAudit({

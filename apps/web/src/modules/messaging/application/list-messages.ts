@@ -9,7 +9,7 @@ import type { Authorize } from "./authz";
 import { clampLimit, pageOf } from "./list-conversations";
 import type { ListedMessage, MessagingQueries, Page } from "./messaging-store";
 
-/** FR-MSG-001: a conversation's messages, newest first, keyset-paged on `seq`. */
+/** A conversation's messages, newest first, keyset-paged on `seq`. */
 export function createListMessages(deps: {
   queries: MessagingQueries;
   authorize: Authorize;

@@ -13,7 +13,7 @@ import type {
 import { refuse } from "./refusal";
 
 /**
- * FR-EVENT-005 (E-5). `claimSeat` is the one guarded UPDATE that decides admission; this only
+ * `claimSeat` is the one guarded UPDATE that decides admission; this only
  * classifies its miss for the caller. The row, the registration and `event.registered` commit in
  * one transaction; `observe`/`observeRefusal` run only after that transaction settles.
  */

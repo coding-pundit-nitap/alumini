@@ -1,4 +1,4 @@
-// The API-wide per-user allowance (SRS §36, spec 16 SD-7) through a real Route Handler, the real getActor
+// The API-wide per-user allowance through a real Route Handler, the real getActor
 // and real Redis. Only Better Auth's session lookup and next/headers are doubled; the database is a test one.
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -60,7 +60,7 @@ const call = () =>
     new Request("https://alumni.example.test/api/v1/notifications/unread-count")
   );
 
-describe("API budget through a real route (SRS §36, spec 16 SD-7)", () => {
+describe("API budget through a real route", () => {
   let db: TestDatabase;
   const userIds: string[] = [];
 

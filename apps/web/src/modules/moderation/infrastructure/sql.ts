@@ -27,7 +27,7 @@ export const softDeleteContentSql = (
     ? Prisma.sql`UPDATE "post" SET deleted = true WHERE id = ${targetId}::uuid`
     : Prisma.sql`UPDATE "comment" SET deleted = true WHERE id = ${targetId}::uuid`;
 
-/** Guarded: an already hidden message is left alone (spec: hiding twice is a no-op). */
+/** Guarded: an already hidden message is left alone. */
 export const hideMessageSql = (messageId: string) =>
   Prisma.sql`UPDATE "message" SET hidden_at = now() WHERE id = ${messageId}::uuid AND hidden_at IS NULL`;
 

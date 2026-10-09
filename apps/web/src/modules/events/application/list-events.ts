@@ -9,7 +9,7 @@ import type { Authorize } from "./ports";
 export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 50;
 
-/** FR-EVENT-002, spec E-10. Scope and cancelled-visibility are applied by the query. */
+/** Scope and cancelled-visibility are applied by the query. */
 export function createListEvents(deps: {
   queries: EventQueries;
   authorize: Authorize;

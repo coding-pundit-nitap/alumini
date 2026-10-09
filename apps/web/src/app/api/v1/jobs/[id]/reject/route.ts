@@ -10,7 +10,7 @@ import { readJson } from "../../../_lib/request";
 const id = z.uuid();
 type Params = { params: Promise<{ id: string }> };
 
-/** POST /api/v1/jobs/:id/reject — body: `{ reviewNote }` (spec, Interfaces section). */
+/** POST /api/v1/jobs/:id/reject — body: `{ reviewNote }`. */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const body = await readJson(request);

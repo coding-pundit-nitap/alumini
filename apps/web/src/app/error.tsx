@@ -18,7 +18,7 @@ export default function Error({
 
   useEffect(() => {
     // Server-side failures are already logged by instrumentation.ts (with this digest). This only
-    // reaches the browser console until a client error tracker exists (Phase 13).
+    // reaches the browser console until a client error tracker exists.
     console.error("Application runtime error:", error);
   }, [error]);
 

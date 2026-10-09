@@ -32,7 +32,7 @@ const full: ProfileRecord = {
   links: [{}] as ProfileRecord["links"],
 };
 
-describe("profileCompleteness (H-7)", () => {
+describe("profileCompleteness", () => {
   it("is 0 % with every item missing for an empty profile", () => {
     expect(profileCompleteness(empty)).toEqual({
       percent: 0,

@@ -7,7 +7,7 @@ import { checkGrantChange } from "../domain/escalation";
 import { escalationError, guardTarget } from "./access-guards";
 import { grantAuditMetadata, type GrantDeps } from "./grant-permission";
 
-/** RBAC §9 permission.revoked. Revoking needs the same holding as granting (E2), checked against the stored row. */
+/** RBAC permission.revoked. Revoking needs the same holding as granting (E2), checked against the stored row. */
 export function createRevokeGrant(deps: GrantDeps) {
   return async function revokeGrant(args: {
     actor: Actor | null;

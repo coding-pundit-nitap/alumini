@@ -31,9 +31,8 @@ export type EventStoreHarness = {
 const HOUR = 60 * 60 * 1000;
 
 /**
- * Behaviour every EventStore must satisfy, run once against the fake (this task) and once against
- * Prisma (this task too, by controller ruling). Both back onto real time: the fake's clock must be
- * real `Date.now()` here so a "now - 1h" deadline reads as past for both implementations.
+ * Behaviour every EventStore must satisfy, run against the fake and against Prisma. The fake's clock is real
+ * `Date.now()` so a "now - 1h" deadline reads as past for both.
  */
 export function describeEventStoreContract(
   name: string,

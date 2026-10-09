@@ -41,7 +41,7 @@ const FORM_FIELD: Record<string, keyof EventFormValues> = {
   registrationDeadline: "deadlineLocal",
 };
 
-/** Create an event (FR-EVENT-001, spec "UI"). The server stays authoritative for the date rules. */
+/** Create an event. The server stays authoritative for the date rules. */
 export function EventForm({
   createAction,
 }: {

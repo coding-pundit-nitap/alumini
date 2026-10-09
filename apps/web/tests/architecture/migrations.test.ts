@@ -7,7 +7,7 @@ const migrations = path.resolve(
   "../../../../packages/database/prisma/migrations"
 );
 
-describe("migration history (reliability §1, §11)", () => {
+describe("migration history", () => {
   it("has no migration dated in the future: a placeholder like 2099… would sort after every real one", () => {
     const now = new Date().toISOString().replace(/\D/g, "").slice(0, 14);
     const dated = fs

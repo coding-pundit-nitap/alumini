@@ -15,7 +15,7 @@ afterEach(() => {
   ];
 });
 
-describe("sign-in metrics (R-9, spec 18C)", () => {
+describe("sign-in metrics", () => {
   it.each([
     [200, "success"],
     [401, "invalid_credentials"],

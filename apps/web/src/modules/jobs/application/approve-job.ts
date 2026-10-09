@@ -8,7 +8,7 @@ import type { Authorize } from "./authz";
 import type { JobObserver, JobStore } from "./job-store";
 import { refuse } from "./refusal";
 
-/** FR-JOB-003, spec J-5/J-6. Self-review is refused by the domain even for a job.approve holder. */
+/** Self-review is refused by the domain even for a job.approve holder. */
 export function createApproveJob(deps: {
   store: JobStore;
   authorize: Authorize;

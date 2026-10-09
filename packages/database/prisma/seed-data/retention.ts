@@ -1,5 +1,5 @@
 /**
- * SRS §45 retention categories (Phase 12G, G-2). Pure data shared by the seed, the admin domain (bounds)
+ * Retention categories. Pure data shared by the seed, the admin domain (bounds)
  * and the worker (which category it enforces). The defaults are MVP placeholders until the institute signs off.
  */
 export const RETENTION_CATEGORIES = [
@@ -31,7 +31,7 @@ export const RETENTION_CATALOGUE: Record<
     enforced: false,
   },
   reports: { defaultDays: 365, minDays: 7, maxDays: 3650, enforced: false },
-  // SRS §45: audit logs at least a year; donation records 7 years (finance office to confirm).
+  // Audit logs at least a year; donation records 7 years (finance office to confirm).
   audit_logs: {
     defaultDays: 365,
     minDays: 365,

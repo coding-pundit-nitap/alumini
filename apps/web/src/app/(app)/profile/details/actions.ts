@@ -21,7 +21,7 @@ import {
 } from "@/modules/users";
 
 /**
- * 12 thin Server Actions, one add/update/remove per detail collection (spec 3B). Every one takes the
+ * 12 thin Server Actions, one add/update/remove per detail collection. Every one takes the
  * caller from the session, reads only its own named fields (the item schema, or just `id`), and lets the
  * use case authorize and enforce the cap/uniqueness/ownership. No action reads a user id from the form.
  *

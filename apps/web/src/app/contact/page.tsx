@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "How to reach the NIT Arunachal Pradesh alumni office, and where to go for account, content and privacy questions.",
 };
 
-/** UI/UX §3.2 supporting page. The office's details come from config/legal.ts once the institute supplies them (OW-7). */
+/** UI/UX supporting page. The office's details come from config/legal.ts once the institute supplies them. */
 export default async function ContactPage() {
   const signedIn = (await getActor()) !== null;
   const office = legalConfig.alumniOffice;

@@ -25,7 +25,7 @@ export type DonationEvent = {
   payload: { v: 1; donationId: string; campaignId: string; donorId: string };
 };
 
-/** RBAC §9; identifiers and codes only (audit writer contract). */
+/**; identifiers and codes only (audit writer contract). */
 export type DonationAuditEntry =
   | {
       action: "campaign.changed";
@@ -57,7 +57,7 @@ export type LockedDonation = {
   paymentReference: string | null;
 };
 
-/** One transaction per write (spec H-2): the row, its audit and its outbox event commit together. */
+/** One transaction per write: the row, its audit and its outbox event commit together. */
 export type DonationTx = {
   /** Read under FOR SHARE, so a concurrent close waits for a pledge in flight (and vice versa). */
   findCampaign(id: string): Promise<Campaign | null>;

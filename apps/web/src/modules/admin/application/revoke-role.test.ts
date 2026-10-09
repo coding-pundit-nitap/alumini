@@ -70,7 +70,7 @@ function setup(
   return { ...fake, authorize, loadGrants, revoke };
 }
 
-describe("revokeRole (spec B12-3, B12-5, B12-9)", () => {
+describe("revokeRole", () => {
   it("revoking a held role audits and returns the remaining roles", async () => {
     const s = setup({ roles: ["ALUMNI", "STUDENT"] });
     await expect(

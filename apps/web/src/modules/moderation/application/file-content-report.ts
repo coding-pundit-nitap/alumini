@@ -9,7 +9,7 @@ import type { Authorize } from "./authz";
 import type { ModerationStore } from "./moderation-store";
 import { parse } from "./validation";
 
-/** FR-MOD-001. Filing is idempotent per (reporter, target); a nonexistent target is refused NOT_FOUND. */
+/** Filing is idempotent per (reporter, target); a nonexistent target is refused NOT_FOUND. */
 export function createFileContentReport(deps: {
   store: ModerationStore;
   authorize: Authorize;

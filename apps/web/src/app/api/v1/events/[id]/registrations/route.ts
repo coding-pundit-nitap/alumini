@@ -17,7 +17,7 @@ const listQuery = z.object({
   cursor: z.string().max(200).optional(),
 });
 
-/** GET /api/v1/events/:id/registrations?limit=&cursor= — organizer/manager only (E-8). */
+/** GET /api/v1/events/:id/registrations?limit=&cursor= — organizer/manager only. */
 export const GET = routeHandler(async (request, ctx: Params) => {
   const eventId = id.safeParse((await ctx.params).id);
   if (!eventId.success) throw new NotFoundError();
@@ -47,7 +47,7 @@ export const GET = routeHandler(async (request, ctx: Params) => {
   });
 });
 
-/** POST /api/v1/events/:id/registrations — register for an event (FR-EVENT-005). Honours `Idempotency-Key` (spec E-14). */
+/** POST /api/v1/events/:id/registrations — register for an event. Honours `Idempotency-Key`. */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const eventId = id.safeParse((await ctx.params).id);

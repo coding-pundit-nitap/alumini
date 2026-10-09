@@ -54,7 +54,7 @@ export function createGetBadgeSettings(deps: {
   };
 }
 
-/** A member picks the tick on their photo (UI-15): automatic, one of the roles they hold, or none. */
+/** A member picks the tick on their photo: automatic, one of the roles they hold, or none. */
 export function createSetBadgeRole(deps: {
   badges: BadgeStore;
   authorize: Authorize;

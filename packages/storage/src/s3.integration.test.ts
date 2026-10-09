@@ -95,7 +95,7 @@ describe("S3 storage adapter against real MinIO", () => {
     await expect(storage.head(key)).rejects.toBeInstanceOf(StorageError);
   });
 
-  // Storage isolation (NFR-SEC-007, spec 16 16D). The web app proxies /storage/* to the store on its own
+  // Storage isolation. The web app proxies /storage/* to the store on its own
   // origin, so an object readable without a signature would be content served from this origin.
   it("an object cannot be read, listed or overwritten without a signature", async () => {
     const key = trackedKey();

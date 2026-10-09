@@ -9,7 +9,7 @@ import { OUTBOX_EVENTS, isOutboxEventType } from "./registry.ts";
 
 const id = () => crypto.randomUUID();
 
-describe("account outbox contracts (spec D12-5, D12-6)", () => {
+describe("account outbox contracts", () => {
   it("registers all three as outbox events on the default queue", () => {
     for (const job of [verificationDecided, userSuspended, userReactivated]) {
       expect(isOutboxEventType(job.name)).toBe(true);

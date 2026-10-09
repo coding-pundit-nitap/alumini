@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { MarkdownView } from "./markdown-view";
 
-describe("MarkdownView (C-2 sanitized allow-list)", () => {
+describe("MarkdownView (sanitized allow-list)", () => {
   it("renders bold, italic, links and lists", () => {
     render(
       <MarkdownView

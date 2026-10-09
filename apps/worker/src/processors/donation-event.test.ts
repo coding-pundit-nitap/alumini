@@ -29,7 +29,7 @@ function setup() {
   return { deliver, deps };
 }
 
-describe("donation event processor (12H H-7)", () => {
+describe("donation event processor", () => {
   it("pledged: every manager but the donor, in-app + email, ids only", async () => {
     const { deliver, deps } = setup();
     await createDonationEventProcessor("donation.pledged", deps)(

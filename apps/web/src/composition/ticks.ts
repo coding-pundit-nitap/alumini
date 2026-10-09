@@ -3,7 +3,7 @@ import { logger } from "@/infrastructure/observability";
 import { createTickLoader } from "@/infrastructure/role-ticks";
 import type { Tick } from "@/lib/role-tick";
 
-/** UI-15: the one batch loader every people-returning use case shares. */
+/** The one batch loader every people-returning use case shares. */
 export const loadTicks = createTickLoader(prisma);
 
 type Ticked = { tick?: Tick | null };

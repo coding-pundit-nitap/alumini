@@ -1,7 +1,7 @@
 {
   "uid": "alumini-api-red",
   "title": "API (RED per route)",
-  "description": "Rate, errors and duration per /api/v1 route template (reliability \u00a75.3 dashboard 2; 13A A-8).",
+  "description": "Rate, errors and duration per /api/v1 route template.",
   "tags": ["alumini", "phase-13"],
   "schemaVersion": 39,
   "version": 1,

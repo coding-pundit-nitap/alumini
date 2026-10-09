@@ -1,7 +1,7 @@
 {
   "uid": "alumini-auth-security",
   "title": "Auth & security",
-  "description": "Permission decisions and audit health (reliability \u00a75.3 dashboard 5). Login-failure and rate-limit series are not exported yet (spec 13C C-7).",
+  "description": "Permission decisions and audit health. Login-failure and rate-limit series are not exported yet.",
   "tags": ["alumini", "phase-13"],
   "schemaVersion": 39,
   "version": 1,
@@ -158,7 +158,7 @@
         "overrides": []
       },
       "options": {},
-      "description": "Non-zero means denied admin actions are missing from the audit log (runbook R-9)."
+      "description": "Non-zero means denied admin actions are missing from the audit log."
     },
     {
       "type": "timeseries",

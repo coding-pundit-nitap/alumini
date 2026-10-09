@@ -165,7 +165,7 @@ describe("PrismaGrantSource (real PostgreSQL)", () => {
   });
 });
 
-describe("the actor follows the live account state (RBAC §7)", () => {
+describe("the actor follows the live account state", () => {
   let db: TestDatabase;
 
   beforeEach(async () => {

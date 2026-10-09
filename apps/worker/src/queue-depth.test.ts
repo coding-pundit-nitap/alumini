@@ -12,7 +12,7 @@ afterEach(() => {
 
 const zero = { waiting: 0, active: 0, delayed: 0, failed: 0, completed: 0 };
 
-describe("queue depth collector (spec 13A A-9)", () => {
+describe("queue depth collector", () => {
   it("sets queue_jobs for every queue and state at scrape time", async () => {
     const metrics = createPrometheusMetrics({
       service: "worker",

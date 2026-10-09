@@ -1,4 +1,4 @@
-// Object storage down and slow, at system level (TASK.md Phase 14; strategy §11.2; spec 14A).
+// Object storage down and slow, at system level.
 //
 // The production S3 adapter (5 s request timeout) reaches the real MinIO THROUGH a fault proxy, driven by
 // the real photo-upload Server Actions: presign → the browser's POST straight to the store → complete.

@@ -13,7 +13,7 @@ import type {
 import { refuse } from "./refusal";
 
 /**
- * FR-EVENT (E-4). The organizer or an `event.manage` holder, only after `starts_at`, on a
+ * The organizer or an `event.manage` holder, only after `starts_at`, on a
  * non-cancelled registration. `markAttendance` (the guarded UPDATE) is the one write that decides;
  * `decideAttendance` only classifies a permission or state miss ahead of it. The row and
  * `event.attendance-marked` commit in one transaction; `observe`/`observeRefusal` run only after

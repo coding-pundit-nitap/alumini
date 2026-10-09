@@ -13,9 +13,9 @@ import { apiBudget } from "./api-budget-instance";
 import { routeLabel } from "./route-label";
 
 /**
- * Wraps a Route Handler with the request context and the one error translation (TDS §16.3):
+ * Wraps a Route Handler with the request context and the one error translation:
  * establishes the request id, maps a thrown error to the API error envelope, logs it once at the
- * boundary at the level of its class (TDS §16.4 rule 1) and echoes `X-Request-Id` on every response.
+ * boundary at the level of its class and echoes `X-Request-Id` on every response.
  *
  * Route files stay adapters: parse → call use case → map. They throw `AppError`s and never build
  * error responses themselves.
@@ -30,10 +30,10 @@ export function routeHandler<Args extends unknown[]>(
       const started = performance.now();
       let response: Response;
       try {
-        // The scope lets getActor charge the caller's API allowance once (spec 16 SD-7).
+        // The scope lets getActor charge the caller's API allowance once.
         response = await apiBudget.scope(async () => handler(request, ...args));
       } catch (thrown) {
-        // A dead or slow PostgreSQL / object store is a 503 to retry, not a 500 bug (spec 14 RD-3).
+        // A dead or slow PostgreSQL / object store is a 503 to retry, not a 500 bug.
         const error = asDependencyFailure(thrown);
         const { status, headers, body } = toApiError(error, requestId);
         logger[logLevelFor(error)]("http.request.failed", {
@@ -47,7 +47,7 @@ export function routeHandler<Args extends unknown[]>(
           },
         });
         response = Response.json(body, { status, headers });
-        // 4xx are the client's mistakes (reliability §6.3); only server failures go to the tracker.
+        // 4xx are the client's mistakes; only server failures go to the tracker.
         if (status >= 500)
           captureError(error, {
             tags: {
