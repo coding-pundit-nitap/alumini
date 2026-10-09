@@ -207,9 +207,9 @@ function prepare() {
     [
       `COMPOSE_PROJECT_NAME=${project}`,
       // Only migrate and postgres run here; compose needs every image reference to interpolate.
-      "WEB_IMAGE=nitap-web:drill",
-      "WORKER_IMAGE=nitap-worker:drill",
-      "MIGRATE_IMAGE=nitap-migrate:drill",
+      "WEB_IMAGE=alumini-web:drill",
+      "WORKER_IMAGE=alumini-worker:drill",
+      "MIGRATE_IMAGE=alumini-migrate:drill",
       `POSTGRES_PASSWORD=${password}`,
       `APP_DB_PASSWORD=${randomBytes(12).toString("hex")}`,
       "MINIO_ROOT_USER=drill-storage",
@@ -387,7 +387,7 @@ try {
         "--target",
         "migrate",
         "-t",
-        "nitap-migrate:drill",
+        "alumini-migrate:drill",
         ".",
       ],
       { cwd: root }

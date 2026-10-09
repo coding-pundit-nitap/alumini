@@ -14,7 +14,7 @@
 //
 //   node packages/scripts/drills/release.ts [--skip-build] [--record] [--summary f] [--keep]
 //
-// --skip-build uses existing nitap-{web,worker,migrate,postgres}:drill images (CI builds them with its layer
+// --skip-build uses existing alumini-{web,worker,migrate,postgres}:drill images (CI builds them with its layer
 // cache). Stand-ins, not under test: the registry; Mailpit for SMTP; a no-op for clamd, which the worker needs
 // only when a scan runs; archiving off, because the restore drill covers backups. --record appends the result to
 // docs/operations/release-drills.md, --summary <file> to another file (CI's step summary). Exit code 1 if any
@@ -288,15 +288,15 @@ function buildImages() {
         cwd: root,
       }
     );
-  build("docker/web.Dockerfile", "nitap-web:drill");
-  build("docker/web.Dockerfile", "nitap-migrate:drill", [
+  build("docker/web.Dockerfile", "alumini-web:drill");
+  build("docker/web.Dockerfile", "alumini-migrate:drill", [
     "--target",
     "migrate",
   ]);
-  build("docker/worker.Dockerfile", "nitap-worker:drill");
+  build("docker/worker.Dockerfile", "alumini-worker:drill");
   build(
     "docker/postgres.Dockerfile",
-    "nitap-postgres:drill",
+    "alumini-postgres:drill",
     [],
     path.join(root, "docker")
   );
@@ -336,11 +336,11 @@ function deriveNext(): string[] {
   for (const name of ["web", "worker"])
     writeFileSync(
       path.join(next, `${name}.Dockerfile`),
-      `FROM nitap-${name}:drill\nLABEL drill.release=next\n`
+      `FROM alumini-${name}:drill\nLABEL drill.release=next\n`
     );
   writeFileSync(
     path.join(next, "migrate.Dockerfile"),
-    "FROM nitap-migrate:drill\nCOPY migrations/ /repo/packages/database/prisma/migrations/\n"
+    "FROM alumini-migrate:drill\nCOPY migrations/ /repo/packages/database/prisma/migrations/\n"
   );
   for (const name of ["web", "worker", "migrate"])
     run(
@@ -351,7 +351,7 @@ function deriveNext(): string[] {
         "-f",
         `${name}.Dockerfile`,
         "-t",
-        `nitap-${name}:drill-next`,
+        `alumini-${name}:drill-next`,
         ".",
       ],
       { cwd: next }
@@ -363,9 +363,9 @@ function publish(sha: string, suffix: "" | "-next") {
   for (const name of images) {
     const source =
       name === "postgres"
-        ? "nitap-postgres:drill"
-        : `nitap-${name}:drill${suffix}`;
-    const target = `${registry}/nitap-${name}:${sha}`;
+        ? "alumini-postgres:drill"
+        : `alumini-${name}:drill${suffix}`;
+    const target = `${registry}/alumini-${name}:${sha}`;
     run("docker", ["tag", source, target]);
     run("docker", ["push", "-q", target]);
   }
@@ -398,7 +398,7 @@ function teardown() {
 
 /** Before the first release: schema and the smoke account, as README steps 6–7 do on a new server. */
 function bootstrap(env: Env, sha: string) {
-  const refs = images.map((name) => `${registry}/nitap-${name}:${sha}`);
+  const refs = images.map((name) => `${registry}/alumini-${name}:${sha}`);
   const envFile = path.join(env.deploy, ".env");
   let text = readFileSync(envFile, "utf8");
   images.forEach((name, i) => {

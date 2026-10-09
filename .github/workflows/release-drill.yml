@@ -54,7 +54,7 @@ jobs:
           file: docker/web.Dockerfile
           target: run
           build-args: GIT_SHA=drill
-          tags: nitap-web:drill
+          tags: alumini-web:drill
           load: true
           cache-from: type=gha,scope=web
       - uses: docker/build-push-action@v7
@@ -63,7 +63,7 @@ jobs:
           file: docker/web.Dockerfile
           target: migrate
           build-args: GIT_SHA=drill
-          tags: nitap-migrate:drill
+          tags: alumini-migrate:drill
           load: true
           cache-from: type=gha,scope=migrate
       - uses: docker/build-push-action@v7
@@ -72,14 +72,14 @@ jobs:
           file: docker/worker.Dockerfile
           target: run
           build-args: GIT_SHA=drill
-          tags: nitap-worker:drill
+          tags: alumini-worker:drill
           load: true
           cache-from: type=gha,scope=worker
       - uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/postgres.Dockerfile
-          tags: nitap-postgres:drill
+          tags: alumini-postgres:drill
           load: true
           cache-from: type=gha,scope=postgres
       - name: Drill

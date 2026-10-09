@@ -11,13 +11,13 @@ Internet ─▶ Nginx on the host (TLS, rate limit, 6 MB bodies) ─▶ 127.0.0.
             postgres · redis (cache) · queue-redis · minio · clamav · worker
 ```
 
-| File                 | What                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------- |
-| `compose.yml`        | Production services. Only `web` is published, on `127.0.0.1:3000`                     |
-| `.env.example`       | Template for `deploy/.env` (gitignored): environment, secrets, domain, SMTP           |
-| `deploy.sh`          | `build` / `pull` / `promote <sha> <approver>` / `rollback <sha>` / `smoke` / `status` |
-| `nginx/alumini.conf` | Host Nginx site                                                                       |
-| `monitoring.yml`     | Prometheus, Alertmanager, Grafana and exporters, run with `monitoring.sh` (step 9)    |
+| File                 | What                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| `compose.yml`        | Production services. Only `web` is published, on `127.0.0.1:3000` (`WEB_BIND`, `WEB_PORT`) |
+| `.env.example`       | Template for `deploy/.env` (gitignored): environment, secrets, domain, SMTP                |
+| `deploy.sh`          | `build` / `pull` / `promote <sha> <approver>` / `rollback <sha>` / `smoke` / `status`      |
+| `nginx/alumini.conf` | Host Nginx site                                                                            |
+| `monitoring.yml`     | Prometheus, Alertmanager, Grafana and exporters, run with `monitoring.sh` (step 9)         |
 
 The server is a clone of this repository. Every release runs exactly one commit: `deploy.sh` refuses a clone
 with local changes, moves it to that commit, and releases that commit's images, built on the server or by CI.
@@ -132,7 +132,7 @@ token (classic) with only `read:packages`, then:
 echo "$TOKEN" | docker login ghcr.io -u OWNER --password-stdin
 ```
 
-Packages are private by default. To skip the login, make the four `nitap-*` packages public under GitHub →
+Packages are private by default. To skip the login, make the four `alumini-*` packages public under GitHub →
 Packages instead.
 
 ### 6. First release
@@ -302,6 +302,46 @@ A second, smaller server (2 vCPU, 4 GB) set up with steps 1–9, with these diff
 - Monitoring (step 9) is optional. If you run it, send its pages to the ticket receiver: staging pages wake no
   one. Every alert carries `environment=staging`.
 
+## Behind Nginx Proxy Manager
+
+When TLS ends at an Nginx Proxy Manager (NPM) on another machine, the host Nginx and certbot are not used, and
+web listens on port 80 for NPM alone. Steps 1–9 still apply, with these changes:
+
+- **Step 1:** install `git` but not `nginx` or `certbot`. Docker-published ports bypass `ufw`, so admit only
+  NPM to web (the rule sees the container port, 3000, after Docker's translation):
+
+  ```bash
+  sudo iptables -I DOCKER-USER -p tcp --dport 3000 ! -s <NPM_IP> -j DROP
+  sudo apt install -y iptables-persistent   # keeps the rule across reboots
+  ```
+
+  A cloud firewall that admits port 80 only from NPM does the same. Without either, the app is reachable over
+  plain http around NPM.
+
+- **Step 3:** skip it.
+- **Step 4:** add `WEB_BIND=0.0.0.0` and `WEB_PORT=80`. `NEXT_PUBLIC_APP_URL`, `BETTER_AUTH_URL` and `APP_URL`
+  stay `https://YOUR.DOMAIN`: users reach the app over https, and cookies and origin checks follow that. If NPM
+  runs on this same host, it holds port 80: use `WEB_PORT=3000` and forward NPM to `<host IP>:3000`.
+- **Without a staging server**, `pull` and `promote` refuse to release production: use `deploy.sh build`
+  for the first release and every later one (4 GB of free RAM; the swap file in step 1 covers it).
+
+**In NPM**, add a Proxy Host for the domain: scheme `http`, forward to `<server IP>` port `80`, Websockets
+off. On the SSL tab: a Let's Encrypt certificate, Force SSL, HTTP/2 and HSTS. On the Advanced tab, what
+`nginx/alumini.conf` does on a host Nginx:
+
+```nginx
+# The app reads the client's address from the first X-Forwarded-For entry (client-ip.ts). NPM appends to the
+# header, which would let a client choose that entry, so overwrite it.
+proxy_set_header X-Forwarded-For $remote_addr;
+proxy_set_header X-Real-IP $remote_addr;
+# Uploads are capped at 5 MB by the presigned policy.
+client_max_body_size 6m;
+# The message stream holds one request open (heartbeat every 25 s; it sends X-Accel-Buffering: no itself).
+proxy_read_timeout 1h;
+# Monitoring only (the app also requires HEALTH_CHECK_TOKEN).
+location ~ ^/(metrics|health/drain)$ { deny all; }
+```
+
 ## Releasing
 
 Merge to `main` and wait for the **Publish images** job to go green (its run summary lists the four digests).
@@ -316,7 +356,7 @@ Each release:
 
 1. Moves the clone to the commit: `git pull --ff-only` on staging; on production, a fast-forward to exactly
    `<sha>`, which must be on `origin/main`. A dirty clone or a diverged history is refused.
-2. Staging pulls `nitap-*:<sha>` and pins each image's digest. Production takes the digests from the staging
+2. Staging pulls `alumini-*:<sha>` and pins each image's digest. Production takes the digests from the staging
    line for `<sha>` and refuses if there is none with `source=pull` and `smoke=pass`.
 3. Runs `prisma migrate deploy` and then the reference seed (roles, permissions, departments; insert-only, so
    it adds what the release introduces and never changes what an admin edited), then grants the runtime role
@@ -358,7 +398,7 @@ docker compose exec postgres psql -U alumini alumini
 ```
 
 - **Disk:** images pile up, about 1 GB per release. Keep the last few for rollback:
-  `docker image ls 'nitap-*'` (build mode) or `docker image ls --digests 'ghcr.io/*/nitap-*'`, and delete
+  `docker image ls 'alumini-*'` (build mode) or `docker image ls --digests 'ghcr.io/*/alumini-*'`, and delete
   images no recent `releases.log` line names with `docker image rm`. Do not run `docker system prune -a`: it deletes the rollback images.
 - **Health:** `/health/live`, `/health/ready` and `/health/startup` are public. `/metrics` and `/health/drain`
   answer only from the host (Nginx) and only with `Authorization: Bearer $HEALTH_CHECK_TOKEN` (the app).

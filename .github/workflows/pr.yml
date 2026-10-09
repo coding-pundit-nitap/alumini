@@ -184,14 +184,14 @@ jobs:
           file: ${{ matrix.file }}
           target: ${{ matrix.target }}
           build-args: GIT_SHA=${{ github.sha }}
-          tags: nitap-${{ matrix.image }}:${{ github.sha }}
+          tags: alumini-${{ matrix.image }}:${{ github.sha }}
           load: ${{ matrix.scan }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,scope=${{ matrix.image }},mode=max
       - name: Scan image
         if: matrix.scan
         run: |
-          image="nitap-${{ matrix.image }}:${{ github.sha }}"
+          image="alumini-${{ matrix.image }}:${{ github.sha }}"
           # .trivyignore.yaml holds the reviewed exceptions, each scoped to one file.
           trivy() {
             docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
@@ -539,7 +539,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - id: prefix
-        run: echo "value=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nitap-" >> "$GITHUB_OUTPUT"
+        run: echo "value=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/alumini-" >> "$GITHUB_OUTPUT"
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
         with:

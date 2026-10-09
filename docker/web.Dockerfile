@@ -1,5 +1,5 @@
 # Web app image (spec 16 16E). Build from the repository root:
-#   docker build -f docker/web.Dockerfile --build-arg GIT_SHA=$(git rev-parse HEAD) -t nitap-web .
+#   docker build -f docker/web.Dockerfile --build-arg GIT_SHA=$(git rev-parse HEAD) -t alumini-web .
 # Runtime configuration comes from the environment at `docker run`; nothing secret is baked in.
 # `--target migrate` builds a one-shot image that runs `prisma migrate deploy` and then the reference seed
 # (roles, RBAC bundles, departments: insert-only upserts, so a release adds what is new and changes nothing an

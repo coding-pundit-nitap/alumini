@@ -63,11 +63,11 @@ git_advance() {
 
 build_images() {
   local sha=$1
-  docker build -f "$REPO/docker/web.Dockerfile" --build-arg GIT_SHA="$sha" -t "nitap-web:$sha" "$REPO"
+  docker build -f "$REPO/docker/web.Dockerfile" --build-arg GIT_SHA="$sha" -t "alumini-web:$sha" "$REPO"
   docker build -f "$REPO/docker/web.Dockerfile" --build-arg GIT_SHA="$sha" --target migrate \
-    -t "nitap-migrate:$sha" "$REPO"
-  docker build -f "$REPO/docker/worker.Dockerfile" --build-arg GIT_SHA="$sha" -t "nitap-worker:$sha" "$REPO"
-  docker build -f "$REPO/docker/postgres.Dockerfile" -t "nitap-postgres:$sha" "$REPO/docker"
+    -t "alumini-migrate:$sha" "$REPO"
+  docker build -f "$REPO/docker/worker.Dockerfile" --build-arg GIT_SHA="$sha" -t "alumini-worker:$sha" "$REPO"
+  docker build -f "$REPO/docker/postgres.Dockerfile" -t "alumini-postgres:$sha" "$REPO/docker"
 }
 
 # The digest reference (repo@sha256:…) of a tag that has been pulled.
@@ -152,7 +152,7 @@ case "${1:-}" in
     sha=$(git_update)
     build_images "$sha"
     [ "$ENVIRONMENT" = staging ] || echo "deploy: build mode skips staging; this release is not promoted" >&2
-    release "$sha" build yes "$(whoami)" "nitap-web:$sha" "nitap-worker:$sha" "nitap-migrate:$sha" "nitap-postgres:$sha"
+    release "$sha" build yes "$(whoami)" "alumini-web:$sha" "alumini-worker:$sha" "alumini-migrate:$sha" "alumini-postgres:$sha"
     ;;
   pull)
     [ "$ENVIRONMENT" = staging ] ||
@@ -162,9 +162,9 @@ case "${1:-}" in
     sha=$(git_update)
     refs=()
     for name in "${IMAGES[@]}"; do
-      docker pull "$registry/nitap-$name:$sha" ||
+      docker pull "$registry/alumini-$name:$sha" ||
         die "no $name image for $sha yet: CI publishes only after every check on main passes"
-      refs+=("$(digest_of "$registry/nitap-$name:$sha")")
+      refs+=("$(digest_of "$registry/alumini-$name:$sha")")
     done
     release "$sha" pull yes "$(whoami)" "${refs[@]}"
     ;;

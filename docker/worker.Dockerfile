@@ -1,5 +1,5 @@
 # Worker image (spec 16 16E). Build from the repository root:
-#   docker build -f docker/worker.Dockerfile --build-arg GIT_SHA=$(git rev-parse HEAD) -t nitap-worker .
+#   docker build -f docker/worker.Dockerfile --build-arg GIT_SHA=$(git rev-parse HEAD) -t alumini-worker .
 # Node runs the TypeScript sources directly (type stripping), so there is no compile step.
 ARG NODE_IMAGE=node:24.21.0-alpine3.24
 ARG ALPINE_IMAGE=alpine:3.24
