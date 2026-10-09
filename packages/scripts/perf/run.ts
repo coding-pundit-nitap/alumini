@@ -360,7 +360,7 @@ const k6 = spawn(
     "--quiet",
     "--summary-export",
     summaryPath,
-    `/perf/k6/${scenario}.js`,
+    `/perf/k6/${scenario}.ts`,
   ],
   { stdio: "inherit" }
 );

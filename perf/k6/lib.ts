@@ -1,35 +1,71 @@
 // Shared by every scenario (Phase 15; strategy §13). Run through `node packages/scripts/perf/run.ts <scenario>`, which
 // mounts this directory at /perf in the k6 container and passes BASE_URL, RATE, DURATION and RAMP.
 import { SharedArray } from "k6/data";
+import type { Options, Scenario } from "k6/options";
+import type { RefinedParams, ResponseType } from "k6/http";
 
 export const BASE = __ENV.BASE_URL || "http://localhost:3100";
 
 const FIXTURE = "/perf/.data/fixture.json";
+
+/** `perf/.data/fixture.json`, as written by `apps/web/scripts/perf-seed.ts` (shape: `PerfFixture` in packages/database/perf/generate.ts). */
+export type LoadUser = { userId: string; email: string; cookie: string };
+export type Fixture = {
+  password: string;
+  cookieName: string;
+  spikeEvent: { id: string; capacity: number };
+  upcomingEventIds: string[];
+  publishedJobIds: string[];
+  profileUserIds: string[];
+  signInEmails: string[];
+  searchTerms: string[];
+  departmentCodes: string[];
+};
+type FixtureFile = Fixture & {
+  loadUsers: LoadUser[];
+  conversationsByUser: Record<string, string[]>;
+};
 // SharedArray keeps one copy for all VUs instead of one per VU (2 000 cookies × hundreds of VUs).
-export const loadUsers = new SharedArray(
+export const loadUsers = new SharedArray<LoadUser>(
   "loadUsers",
-  () => JSON.parse(open(FIXTURE)).loadUsers
+  () => (JSON.parse(open(FIXTURE)) as FixtureFile).loadUsers
 );
-const small = JSON.parse(open(FIXTURE));
-delete small.loadUsers;
-delete small.conversationsByUser;
-export const fixture = small;
-export const conversations = new SharedArray("conversations", () => {
-  const all = JSON.parse(open(FIXTURE));
+const {
+  loadUsers: _users,
+  conversationsByUser: _conversations,
+  ...small
+} = JSON.parse(open(FIXTURE)) as FixtureFile;
+export const fixture: Fixture = small;
+export const conversations = new SharedArray<string[]>("conversations", () => {
+  const all = JSON.parse(open(FIXTURE)) as FixtureFile;
   return all.loadUsers.map((u) => all.conversationsByUser[u.userId] || []);
 });
 
-export const pick = (items) => items[Math.floor(Math.random() * items.length)];
-export const randomIndex = (n) => Math.floor(Math.random() * n);
+export const pick = <T>(items: readonly T[]): T =>
+  items[Math.floor(Math.random() * items.length)] as T;
+export const randomIndex = (n: number): number => Math.floor(Math.random() * n);
 
 /** A random load user, with its index (to look up its conversations). */
-export function anyUser() {
+/** Strict-index helpers: `loadUsers[i]` is `LoadUser | undefined` under noUncheckedIndexedAccess. */
+export const loadUserAt = (index: number): LoadUser =>
+  loadUsers[index] as LoadUser;
+export const conversationsOf = (index: number): string[] =>
+  conversations[index] ?? [];
+
+export type IndexedUser = LoadUser & { index: number };
+export function anyUser(): IndexedUser {
   const index = randomIndex(loadUsers.length);
-  return { index, ...loadUsers[index] };
+  return { index, ...loadUserAt(index) };
 }
 
 /** Request params for a signed-in member. Origin is what `assertSameOrigin` checks on writes. */
-export function as(user, extra = {}) {
+export function as(
+  user: LoadUser,
+  extra: {
+    headers?: Record<string, string>;
+    tags?: Record<string, string>;
+  } = {}
+): RefinedParams<ResponseType | undefined> {
   return {
     headers: {
       cookie: `${fixture.cookieName}=${user.cookie}`,
@@ -41,7 +77,7 @@ export function as(user, extra = {}) {
   };
 }
 
-export function uuid() {
+export function uuid(): string {
   const hex = "0123456789abcdef";
   let out = "";
   for (let i = 0; i < 36; i += 1) {
@@ -57,7 +93,7 @@ export function uuid() {
  * SRS §47 (strategy §13.1): p50 < 200 ms, p95 < 500 ms, p99 < 1 s, error rate < 0.1 %. In the script, so a run
  * that breaks a budget exits non-zero (strategy §13.3).
  */
-export const SRS_THRESHOLDS = {
+export const SRS_THRESHOLDS: NonNullable<Options["thresholds"]> = {
   http_req_duration: ["p(50)<200", "p(95)<500", "p(99)<1000"],
   http_req_failed: ["rate<0.001"],
 };
@@ -66,7 +102,11 @@ export const SRS_THRESHOLDS = {
  * Open model (strategy §13.3): requests arrive at RATE per second whether or not the server keeps up, so a slow
  * server shows up as latency, not as fewer requests. Ramps for RAMP, holds for DURATION.
  */
-export function arrival(defaults) {
+export function arrival(defaults: {
+  rate: number;
+  ramp?: string;
+  duration?: string;
+}): Scenario {
   const rate = Number(__ENV.RATE || defaults.rate);
   const ramp = __ENV.RAMP || defaults.ramp || "30s";
   const hold = __ENV.DURATION || defaults.duration || "3m";
@@ -83,7 +123,7 @@ export function arrival(defaults) {
   };
 }
 
-export const summaryTrendStats = [
+export const summaryTrendStats: string[] = [
   "avg",
   "min",
   "med",
@@ -98,7 +138,10 @@ export const summaryTrendStats = [
  * Non-failing thresholds on each endpoint's tag, so the end-of-run summary (and the runner's result file)
  * carries p50/p95/p99, throughput and error rate per endpoint, not only for the whole run.
  */
-export function perEndpoint(names, thresholds) {
+export function perEndpoint(
+  names: readonly string[],
+  thresholds: NonNullable<Options["thresholds"]>
+): NonNullable<Options["thresholds"]> {
   const out = { ...thresholds };
   for (const name of names) {
     out[`http_req_duration{name:${name}}`] = out[

@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "lint": "eslint --max-warnings=0",
-    "typecheck": "tsc --noEmit",
-    "check-types": "tsc --noEmit --skipLibCheck",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p ../../perf/k6",
+    "check-types": "tsc --noEmit --skipLibCheck && tsc --noEmit --skipLibCheck -p ../../perf/k6",
     "lint:fix": "eslint --fix"
   },
   "devDependencies": {
     "@nitap/eslint-config": "workspace:*",
     "@nitap/typescript-config": "workspace:*",
+    "@types/k6": "^2.3.0",
     "@types/node": "^26.6.2",
     "@types/pg": "^8.23.1",
     "eslint": "^10.11.0",

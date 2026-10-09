@@ -1,6 +1,7 @@
 // Directory browse + filters (strategy §13.2): GET /api/v1/alumni without a search term. The heaviest read:
 // filters, per-viewer visibility and block checks, keyset pagination.
 import http from "k6/http";
+import type { Options } from "k6/options";
 import { check } from "k6";
 
 import {
@@ -13,9 +14,9 @@ import {
   SRS_THRESHOLDS,
   perEndpoint,
   summaryTrendStats,
-} from "./lib.js";
+} from "./lib.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: { directory: arrival({ rate: 50 }) },
   thresholds: perEndpoint(
     ["GET /api/v1/alumni", "GET /api/v1/alumni (next page)"],
@@ -47,16 +48,16 @@ export default function () {
     `${BASE}/api/v1/alumni?limit=20&${filters()}`,
     as(user, { tags })
   );
-  check(first, { 200: (r) => r.status === 200 });
+  check(first, { 200: (r: { status: number }) => r.status === 200 });
   // A third of visitors page on once.
   if (first.status === 200 && Math.random() < 0.3) {
-    const next = first.json("page.nextCursor");
+    const next = first.json("page.nextCursor") as string | null;
     if (next) {
       const more = http.get(
         `${first.url}&cursor=${encodeURIComponent(next)}`,
         as(user, { tags: { name: "GET /api/v1/alumni (next page)" } })
       );
-      check(more, { 200: (r) => r.status === 200 });
+      check(more, { 200: (r: { status: number }) => r.status === 200 });
     }
   }
 }

@@ -8,6 +8,7 @@
 // Each sign-in comes from its own client address (x-forwarded-for, as behind the platform proxy), so the
 // sign-in limiter (10/min per IP) is not what is measured either; it has its own tests.
 import http from "k6/http";
+import type { Options } from "k6/options";
 import { check } from "k6";
 import exec from "k6/execution";
 
@@ -17,11 +18,11 @@ import {
   fixture,
   perEndpoint,
   summaryTrendStats,
-} from "./lib.js";
+} from "./lib.ts";
 
 const SIGN_IN = "POST /api/auth/sign-in/email";
 
-export const options = {
+export const options: Options = {
   scenarios: { signIn: arrival({ rate: 10 }) },
   thresholds: perEndpoint([SIGN_IN], {
     [`http_req_failed{name:${SIGN_IN}}`]: ["rate<0.001"],
@@ -46,5 +47,5 @@ export default function () {
       tags: { name: SIGN_IN },
     }
   );
-  check(res, { 200: (r) => r.status === 200 });
+  check(res, { 200: (r: { status: number }) => r.status === 200 });
 }

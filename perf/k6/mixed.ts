@@ -3,6 +3,8 @@
 // dominate). RATE sets the arrival rate; STRESS=1 keeps raising it until the run is stopped or a budget breaks,
 // to find the breaking point and the first bottleneck.
 import http from "k6/http";
+import type { RefinedResponse, ResponseType } from "k6/http";
+import type { Options } from "k6/options";
 import { check } from "k6";
 
 import {
@@ -10,18 +12,21 @@ import {
   arrival,
   as,
   BASE,
-  conversations,
+  conversationsOf,
+  type IndexedUser,
   fixture,
   pick,
   SRS_THRESHOLDS,
   perEndpoint,
   summaryTrendStats,
-} from "./lib.js";
+} from "./lib.ts";
 
 const stress = __ENV.STRESS === "1";
 const peak = Number(__ENV.RATE || 100);
 
-const MIX = [
+type Run = (u: IndexedUser) => RefinedResponse<ResponseType | undefined>;
+
+const MIX: [name: string, weight: number, run: Run][] = [
   [
     "page /dashboard",
     15,
@@ -99,7 +104,7 @@ const MIX = [
     "GET /api/v1/conversations/:id/messages",
     5,
     (u) => {
-      const list = conversations[u.index];
+      const list = conversationsOf(u.index);
       if (list.length === 0)
         return http.get(
           `${BASE}/api/v1/conversations?limit=20`,
@@ -121,7 +126,7 @@ const MIX = [
       ),
   ],
 ];
-export const options = {
+export const options: Options = {
   scenarios: {
     mixed: stress
       ? {
@@ -178,7 +183,7 @@ export default function () {
   for (const [, weight, run] of MIX) {
     roll -= weight;
     if (roll < 0) {
-      check(run(user), { 200: (r) => r.status === 200 });
+      check(run(user), { 200: (r: { status: number }) => r.status === 200 });
       return;
     }
   }

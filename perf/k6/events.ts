@@ -3,6 +3,7 @@
 // no 5xx storm, and latency stays bounded. The runner resets the target event before each run (--reset-spike).
 // This is where the pool question from Phase 8 is answered: production keeps a 2 s pool wait (maxWaitMs).
 import http from "k6/http";
+import type { Options } from "k6/options";
 import { check } from "k6";
 import exec from "k6/execution";
 import { Counter } from "k6/metrics";
@@ -11,11 +12,12 @@ import {
   as,
   BASE,
   fixture,
+  loadUserAt,
   loadUsers,
   perEndpoint,
   summaryTrendStats,
   uuid,
-} from "./lib.js";
+} from "./lib.ts";
 
 const users = Math.min(Number(__ENV.SPIKE_USERS || 1000), loadUsers.length);
 const registered = new Counter("registrations_created");
@@ -25,7 +27,7 @@ const serverErrors = new Counter("server_errors");
 // 201 and 409 are both correct answers in a spike (200 is the teardown read); anything else is a failure.
 http.setResponseCallback(http.expectedStatuses(200, 201, 409));
 
-export const options = {
+export const options: Options = {
   scenarios: {
     spike: {
       executor: "ramping-arrival-rate",
@@ -52,7 +54,7 @@ export const options = {
 export default function () {
   const n = exec.scenario.iterationInTest;
   if (n >= users) return; // each member registers once
-  const user = loadUsers[n];
+  const user = loadUserAt(n);
   const res = http.post(
     `${BASE}/api/v1/events/${fixture.spikeEvent.id}/registrations`,
     "{}",
@@ -67,14 +69,17 @@ export default function () {
   if (res.status === 201) registered.add(1);
   else if (res.status === 409) full.add(1);
   else if (res.status >= 500) serverErrors.add(1);
-  check(res, { "201 or 409": (r) => r.status === 201 || r.status === 409 });
+  check(res, {
+    "201 or 409": (r: { status: number }) =>
+      r.status === 201 || r.status === 409,
+  });
 }
 
 export function teardown() {
   // The capacity check: read the event back as any member.
   const res = http.get(
     `${BASE}/api/v1/events/${fixture.spikeEvent.id}`,
-    as(loadUsers[0])
+    as(loadUserAt(0))
   );
   const count = res.json("data.registeredCount");
   console.log(

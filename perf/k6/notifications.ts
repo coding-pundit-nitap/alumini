@@ -1,6 +1,7 @@
 // Notifications (strategy §13.2 "unread polling"): the bell's unread count, polled by every open tab, and the
 // inbox list. Fan-out throughput is measured by packages/scripts/perf/fanout.ts, not here.
 import http from "k6/http";
+import type { Options } from "k6/options";
 import { check } from "k6";
 
 import {
@@ -11,9 +12,9 @@ import {
   SRS_THRESHOLDS,
   perEndpoint,
   summaryTrendStats,
-} from "./lib.js";
+} from "./lib.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: { notifications: arrival({ rate: 100 }) },
   thresholds: perEndpoint(
     ["GET /api/v1/notifications/unread-count", "GET /api/v1/notifications"],
@@ -29,12 +30,12 @@ export default function () {
       `${BASE}/api/v1/notifications/unread-count`,
       as(user, { tags: { name: "GET /api/v1/notifications/unread-count" } })
     );
-    check(res, { 200: (r) => r.status === 200 });
+    check(res, { 200: (r: { status: number }) => r.status === 200 });
   } else {
     const res = http.get(
       `${BASE}/api/v1/notifications?limit=20`,
       as(user, { tags: { name: "GET /api/v1/notifications" } })
     );
-    check(res, { 200: (r) => r.status === 200 });
+    check(res, { 200: (r: { status: number }) => r.status === 200 });
   }
 }

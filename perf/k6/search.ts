@@ -1,6 +1,7 @@
 // Search (strategy §13.2): GET /api/v1/alumni?q=… — the trigram/ILIKE paths over names, headlines, companies and
 // skills, including substrings and one-letter typos. Decides when OpenSearch is justified (TDS §14).
 import http from "k6/http";
+import type { Options } from "k6/options";
 import { check } from "k6";
 
 import {
@@ -13,9 +14,9 @@ import {
   SRS_THRESHOLDS,
   perEndpoint,
   summaryTrendStats,
-} from "./lib.js";
+} from "./lib.ts";
 
-export const options = {
+export const options: Options = {
   scenarios: { search: arrival({ rate: 30 }) },
   thresholds: perEndpoint(["GET /api/v1/alumni?q"], SRS_THRESHOLDS),
   summaryTrendStats,
@@ -30,5 +31,5 @@ export default function () {
     `${BASE}/api/v1/alumni?limit=20&q=${q}${withDepartment}`,
     as(user, { tags: { name: "GET /api/v1/alumni?q" } })
   );
-  check(res, { 200: (r) => r.status === 200 });
+  check(res, { 200: (r: { status: number }) => r.status === 200 });
 }
