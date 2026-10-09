@@ -40,7 +40,7 @@
     "ops:check": "node packages/scripts/check-ops.ts",
     "launch:check": "node packages/scripts/launch-check.ts",
     "perf:seed": "pnpm --filter @nitap/web perf:seed",
-    "perf:run": "node packages/scripts/perf/run.ts"
+    "perf:run": "node --env-file-if-exists=.env packages/scripts/perf/run.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
