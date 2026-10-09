@@ -18,6 +18,7 @@ import { createListComments } from "@/modules/posts/application/list-comments";
 import { createListFeed } from "@/modules/posts/application/list-feed";
 import { createReact } from "@/modules/posts/application/react";
 import { createUnreact } from "@/modules/posts/application/unreact";
+import { createUpdatePost } from "@/modules/posts/application/update-post";
 import { createPrismaPostsStore } from "@/modules/posts/infrastructure/prisma-posts-store";
 
 const actor = (userId: string): Actor => ({
@@ -105,6 +106,7 @@ describe("posts use cases against real PostgreSQL", () => {
     return {
       createPost: createCreatePost(deps),
       deletePost: createDeletePost(deps),
+      updatePost: createUpdatePost(deps),
       listFeed: createListFeed(deps),
       getPost: createGetPost(deps),
       getPostImageKey: createGetPostImageKey(deps),
@@ -198,6 +200,126 @@ describe("posts use cases against real PostgreSQL", () => {
       expect(await code(m.deletePost({ actor: actor(asha), postId }))).toBe(
         "NOT_FOUND"
       );
+    });
+  });
+
+  describe("update-post", () => {
+    it("replaces the author's own text and stamps editedAt, visible in the feed", async () => {
+      const m = build();
+      const { postId } = await m.createPost({
+        actor: actor(asha),
+        input: { content: "first draft" },
+      });
+      await m.updatePost({
+        actor: actor(asha),
+        postId,
+        input: { content: "  second draft  " },
+      });
+      const post = await db.prisma.post.findUniqueOrThrow({
+        where: { id: postId },
+      });
+      expect(post.content).toBe("second draft");
+      expect(post.editedAt).toBeInstanceOf(Date);
+      const { posts } = await m.listFeed({ actor: actor(ravi) });
+      const seen = posts.find((p) => p.id === postId);
+      expect(seen?.content).toBe("second draft");
+      expect(seen?.editedAt).toBeInstanceOf(Date);
+    });
+
+    it("leaves editedAt unset when the text did not change", async () => {
+      const m = build();
+      const { postId } = await m.createPost({
+        actor: actor(asha),
+        input: { content: "same" },
+      });
+      await m.updatePost({
+        actor: actor(asha),
+        postId,
+        input: { content: "same" },
+      });
+      expect(
+        (await db.prisma.post.findUniqueOrThrow({ where: { id: postId } }))
+          .editedAt
+      ).toBeNull();
+    });
+
+    it("refuses a non-author, a deleted post, other post types and invalid input", async () => {
+      const m = build();
+      const { postId } = await m.createPost({
+        actor: actor(asha),
+        input: { content: "mine" },
+      });
+      const edit = (by: string, id: string, content: unknown = "changed") =>
+        code(
+          m.updatePost({ actor: actor(by), postId: id, input: { content } })
+        );
+
+      expect(await edit(ravi, postId)).toBe("NOT_OWNER");
+      expect(
+        await code(
+          m.updatePost({ actor: null, postId, input: { content: "x" } })
+        )
+      ).toBe("UNAUTHENTICATED");
+      expect(await edit(asha, postId, "")).toBe("VALIDATION_FAILED");
+      expect(
+        await code(
+          m.updatePost({
+            actor: actor(asha),
+            postId,
+            input: { content: "x", linkUrl: "https://example.test" },
+          })
+        )
+      ).toBe("VALIDATION_FAILED");
+
+      const achievement = await db.prisma.post.create({
+        data: { authorId: asha, content: "Award", postType: "ACHIEVEMENT" },
+      });
+      expect(await edit(asha, achievement.id)).toBe("NOT_FOUND");
+
+      await m.deletePost({ actor: actor(asha), postId });
+      expect(await edit(asha, postId)).toBe("NOT_FOUND");
+      expect(
+        (await db.prisma.post.findUniqueOrThrow({ where: { id: postId } }))
+          .content
+      ).toBe("mine");
+    });
+
+    it("refuses an edit while a report against the post is open, and allows it once decided", async () => {
+      const m = build();
+      const { postId } = await m.createPost({
+        actor: actor(asha),
+        input: { content: "reported text" },
+      });
+      const report = await db.prisma.report.create({
+        data: {
+          reporterId: ravi,
+          targetType: "POST",
+          targetId: postId,
+          reason: "spam",
+        },
+      });
+      const edit = () =>
+        code(
+          m.updatePost({
+            actor: actor(asha),
+            postId,
+            input: { content: "cleaned up" },
+          })
+        );
+      expect(await edit()).toBe("POST_UNDER_REVIEW");
+      expect(
+        (await db.prisma.post.findUniqueOrThrow({ where: { id: postId } }))
+          .content
+      ).toBe("reported text");
+
+      await db.prisma.report.update({
+        where: { id: report.id },
+        data: {
+          status: "DISMISSED",
+          resolvedById: await member(db, "Moderator"),
+        },
+      });
+      expect(await edit()).toBe("ok");
     });
   });
 

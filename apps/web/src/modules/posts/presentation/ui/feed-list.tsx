@@ -23,6 +23,10 @@ import { PostCard } from "./post-card";
 type DeleteAction = (
   postId: string
 ) => Promise<ActionResult<Record<string, never>>>;
+type EditAction = (
+  postId: string,
+  input: { content: string }
+) => Promise<ActionResult<Record<string, never>>>;
 type ReactAction = (
   postId: string,
   input: { type: ReactionType }
@@ -40,7 +44,10 @@ type ResolveAction = (
   reason: string
 ) => Promise<ActionResult<Record<string, never>>>;
 
-type WirePost = Omit<FeedPost, "createdAt"> & { createdAt: string };
+type WirePost = Omit<FeedPost, "createdAt" | "editedAt"> & {
+  createdAt: string;
+  editedAt: string | null;
+};
 type Page = { posts: FeedPost[]; nextCursor: string | null };
 
 function revive(p: { posts: WirePost[]; nextCursor: string | null }): Page {
@@ -49,6 +56,7 @@ function revive(p: { posts: WirePost[]; nextCursor: string | null }): Page {
     posts: p.posts.map((post) => ({
       ...post,
       createdAt: new Date(post.createdAt),
+      editedAt: post.editedAt ? new Date(post.editedAt) : null,
     })),
   };
 }
@@ -60,6 +68,7 @@ export function FeedList({
   currentUserId,
   canModerate,
   onDelete,
+  onEdit,
   onReact,
   onUnreact,
   onReport,
@@ -73,6 +82,7 @@ export function FeedList({
   currentUserId: string | null;
   canModerate: boolean;
   onDelete: DeleteAction;
+  onEdit?: EditAction;
   onReact: ReactAction;
   onUnreact: UnreactAction;
   onReport: ReportAction;
@@ -154,6 +164,7 @@ export function FeedList({
             currentUserId={currentUserId}
             canModerate={canModerate}
             onDelete={onDelete}
+            onEdit={onEdit}
             onReact={onReact}
             onUnreact={onUnreact}
             onReport={onReport}
@@ -187,6 +198,7 @@ export function FeedList({
                 currentUserId={currentUserId}
                 canModerate={canModerate}
                 onDelete={onDelete}
+                onEdit={onEdit}
                 onReact={onReact}
                 onUnreact={onUnreact}
                 onReport={onReport}

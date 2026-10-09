@@ -12,6 +12,7 @@ import {
   reportContentAction,
   resolveReportAction,
   unreactAction,
+  updatePostAction,
 } from "../actions";
 import { PageColumns } from "@/components/shell/page-columns";
 import { getPost, getViewerAuthor, listComments } from "@/composition/posts";
@@ -80,6 +81,7 @@ export default async function PostPage({
         canModerate={canModerate}
         expanded
         onDelete={deletePostAndGoHomeAction}
+        onEdit={updatePostAction}
         onReact={reactAction}
         onUnreact={unreactAction}
         onReport={reportContentAction}

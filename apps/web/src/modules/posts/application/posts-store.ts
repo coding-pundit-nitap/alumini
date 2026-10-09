@@ -12,6 +12,7 @@ export type PostRow = {
   postType: "TEXT" | "ACHIEVEMENT" | "ANNOUNCEMENT";
   deleted: boolean;
   createdAt: Date;
+  editedAt: Date | null;
 };
 export type PostAuthor = {
   id: string;
@@ -63,6 +64,10 @@ export type PostsTx = {
   /** Serves only a READY upload that a live post's `imageUrls` references; see get-post-image-key.ts. */
   findPostImage(uploadId: string): Promise<{ objectKey: string } | null>;
   softDeletePost(id: string): Promise<void>;
+  /** Replaces the content and stamps `editedAt`. */
+  updatePostContent(id: string, content: string): Promise<void>;
+  /** Is a report against this post still OPEN or UNDER_REVIEW? */
+  openReportExists(postId: string): Promise<boolean>;
   listFeed(args: {
     limit: number;
     after: { createdAt: Date; id: string } | null;

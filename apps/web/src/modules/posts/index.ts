@@ -11,6 +11,7 @@ export { createListComments } from "./application/list-comments";
 export { createListFeed } from "./application/list-feed";
 export { createPublishAnnouncement } from "./application/publish-announcement";
 export { createReact } from "./application/react";
+export { createUpdatePost } from "./application/update-post";
 export { createRemoveAnnouncement } from "./application/remove-announcement";
 export { createUnreact } from "./application/unreact";
 export { createPrismaPostsStore } from "./infrastructure/prisma-posts-store";

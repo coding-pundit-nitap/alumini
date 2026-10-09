@@ -16,6 +16,9 @@ const PUBLIC_PREFIXES = [
   // Prometheus scrapes; the route gates itself (spec 13A A-6).
   "/metrics",
   "/api",
+  // Supporting pages (UI/UX §3.2); the footer links them for everyone.
+  "/terms",
+  "/contact",
   // Guests may view a PUBLIC profile (FR-DIR-004); the page itself answers 404 for anything else.
   "/members",
   // Social crawlers fetch this with no session cookie when a link is shared.

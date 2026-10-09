@@ -12,7 +12,14 @@ import {
   Trophy,
 } from "lucide-react";
 import Link from "next/link";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 
 import {
   AlertDialog,
@@ -24,12 +31,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@nitap/ui/components/alert-dialog";
+import { Button } from "@nitap/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@nitap/ui/components/dropdown-menu";
+import { Textarea } from "@nitap/ui/components/textarea";
 
 import type { ActionResult } from "@/lib/action-result";
 import { cn } from "@/lib/utils";
@@ -48,6 +57,10 @@ import { ReactionPicker } from "./reaction-picker";
 
 type DeleteAction = (
   postId: string
+) => Promise<ActionResult<Record<string, never>>>;
+type EditAction = (
+  postId: string,
+  input: { content: string }
 ) => Promise<ActionResult<Record<string, never>>>;
 type ReactAction = (
   postId: string,
@@ -71,6 +84,8 @@ const IMAGE_GRID: Record<"1" | "2" | "many", string> = {
   "2": "grid-cols-2 aspect-square",
   many: "grid-cols-2",
 };
+
+const MAX_CONTENT = 5000;
 
 const ACTION =
   "text-muted-foreground focus-visible:ring-ring flex h-8 min-w-8 items-center justify-center gap-1.5 rounded-full px-2.5 text-[13px] font-medium tabular-nums transition-colors duration-150 outline-none focus-visible:ring-2";
@@ -195,9 +210,73 @@ function PostBody({
   );
 }
 
+/** The author's in-place edit of a TEXT post's text (images and link stay as posted). */
+function PostEditor({
+  initial,
+  onSave,
+  onCancel,
+}: {
+  initial: string;
+  onSave: (content: string) => Promise<string | null>;
+  onCancel: () => void;
+}) {
+  const [content, setContent] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const trimmed = content.trim();
+  const canSave =
+    trimmed.length > 0 && trimmed.length <= MAX_CONTENT && !saving;
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (!canSave) return;
+    setSaving(true);
+    const failure = await onSave(trimmed);
+    setSaving(false);
+    setError(failure);
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      onCancel();
+    }
+  }
+
+  return (
+    <form method="post" onSubmit={onSubmit} className="mt-2 space-y-2">
+      <Textarea
+        aria-label="Edit post"
+        autoFocus
+        value={content}
+        maxLength={MAX_CONTENT}
+        onChange={(event) => setContent(event.target.value)}
+        onKeyDown={onKeyDown}
+        className="text-[15px]"
+      />
+      {error ? (
+        <p role="alert" className="text-destructive text-sm">
+          {error}
+        </p>
+      ) : null}
+      <div className="flex justify-end gap-1.5">
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" variant="brand" size="sm" disabled={!canSave}>
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 /**
  * A single feed post: Markdown-rendered content (never raw, C-2), images, reactions, a comment-count
- * link, own-post delete, and — for an actor holding `post.moderate`/`report.review` (`canModerate`) — an
+ * link, own-post edit (TEXT posts) and delete, and — for an actor holding `post.moderate`/`report.review` (`canModerate`) — an
  * inline Report affordance that flips to Resolve/Dismiss once `post.openReportId` is set (`list-feed`
  * joins the `report` table, so this is a durable per-post read, not session-local state: any moderator
  * viewing the feed sees the same affordance, and it clears once the report is resolved/dismissed).
@@ -208,6 +287,7 @@ export function PostCard({
   canModerate,
   expanded = false,
   onDelete,
+  onEdit,
   onReact,
   onUnreact,
   onReport,
@@ -219,6 +299,7 @@ export function PostCard({
   canModerate: boolean;
   expanded?: boolean;
   onDelete: DeleteAction;
+  onEdit?: EditAction;
   onReact: ReactAction;
   onUnreact: UnreactAction;
   onReport: ReportAction;
@@ -226,6 +307,12 @@ export function PostCard({
   onDismiss: ResolveAction;
 }) {
   const [deleted, setDeleted] = useState(false);
+  const [editing, setEditing] = useState(false);
+  // A later feed page is client-cached and not re-rendered by refresh(), so the saved text shows from here.
+  const [saved, setSaved] = useState<{
+    content: string;
+    editedAt: Date;
+  } | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "failed">(
@@ -235,7 +322,10 @@ export function PostCard({
   const isOwn = currentUserId === post.authorId;
   const reportId = post.openReportId ?? null;
   const showReport = canModerate && !reportId;
+  const canEdit = isOwn && post.postType === "TEXT" && onEdit != null;
   const hasMenu = isOwn && post.postType !== "ANNOUNCEMENT";
+  const content = saved?.content ?? post.content;
+  const editedAt = saved?.editedAt ?? post.editedAt;
 
   if (deleted) return null;
 
@@ -248,6 +338,15 @@ export function PostCard({
     setDeleteError(null);
     setConfirmDelete(false);
     setDeleted(true);
+  }
+
+  async function handleEdit(next: string): Promise<string | null> {
+    if (!onEdit) return null;
+    const result = await onEdit(post.id, { content: next });
+    if (!result.ok) return result.error.message;
+    setSaved({ content: next, editedAt: new Date() });
+    setEditing(false);
+    return null;
   }
 
   async function handleShare() {
@@ -289,6 +388,7 @@ export function PostCard({
         <PostAuthorLine
           author={post.author}
           createdAt={post.createdAt}
+          editedAt={editedAt}
           currentUserId={currentUserId}
           badge={badge}
         />
@@ -306,6 +406,11 @@ export function PostCard({
               <MoreHorizontal className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {canEdit ? (
+                <DropdownMenuItem onClick={() => setEditing(true)}>
+                  Edit
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuItem onClick={() => setConfirmDelete(true)}>
                 Delete
               </DropdownMenuItem>
@@ -326,7 +431,7 @@ export function PostCard({
             <div
               className={`text-muted-foreground first-line:text-foreground min-w-0 pt-1.5 leading-relaxed first-line:font-semibold ${bodySize}`}
             >
-              <PostBody content={post.content} expanded={expanded} />
+              <PostBody content={content} expanded={expanded} />
             </div>
           </div>
         ) : post.postType === "ANNOUNCEMENT" ? (
@@ -337,12 +442,18 @@ export function PostCard({
             <div
               className={`text-muted-foreground mt-1.5 leading-relaxed ${bodySize}`}
             >
-              <PostBody content={post.content} expanded={expanded} />
+              <PostBody content={content} expanded={expanded} />
             </div>
           </div>
+        ) : editing ? (
+          <PostEditor
+            initial={content}
+            onSave={handleEdit}
+            onCancel={() => setEditing(false)}
+          />
         ) : (
           <div className={`mt-2 leading-relaxed ${bodySize}`}>
-            <PostBody content={post.content} expanded={expanded} />
+            <PostBody key={content} content={content} expanded={expanded} />
           </div>
         )}
 

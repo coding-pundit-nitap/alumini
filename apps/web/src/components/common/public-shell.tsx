@@ -22,6 +22,8 @@ const NETWORK = [
 const ABOUT = [
   { label: "How it works", href: "/#how-it-works" },
   { label: "Privacy", href: "/#privacy" },
+  { label: "Terms", href: "/terms" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const ACCOUNT = [

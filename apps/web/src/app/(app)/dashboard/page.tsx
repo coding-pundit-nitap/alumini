@@ -14,6 +14,7 @@ import {
   reportContentAction,
   resolveReportAction,
   unreactAction,
+  updatePostAction,
 } from "@/app/(app)/feed/actions";
 import {
   Segmented,
@@ -126,6 +127,7 @@ export default async function DashboardPage({
         currentUserId={actor.userId}
         canModerate={canModerate}
         onDelete={deletePostAction}
+        onEdit={updatePostAction}
         onReact={reactAction}
         onUnreact={unreactAction}
         onReport={reportContentAction}

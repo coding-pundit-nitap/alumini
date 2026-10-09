@@ -19,6 +19,7 @@ import {
   createReact,
   createRemoveAnnouncement,
   createUnreact,
+  createUpdatePost,
   type PostAuthor,
 } from "@/modules/posts";
 
@@ -38,6 +39,7 @@ const deps = { store, authorize };
 
 export const createPost = createCreatePost(deps);
 export const deletePost = createDeletePost(deps);
+export const updatePost = createUpdatePost(deps);
 export const publishAnnouncement = createPublishAnnouncement(deps);
 export const removeAnnouncement = createRemoveAnnouncement(deps);
 export const listAnnouncements = createListAnnouncements(deps);

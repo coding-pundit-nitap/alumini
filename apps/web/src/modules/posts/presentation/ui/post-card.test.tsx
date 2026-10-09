@@ -21,6 +21,7 @@ const basePost: FeedPost = {
   postType: "TEXT",
   deleted: false,
   createdAt: new Date("2026-01-01T00:00:00Z"),
+  editedAt: null,
   author: {
     id: authorId,
     fullName: "Ada Lovelace",
@@ -36,6 +37,7 @@ const basePost: FeedPost = {
 function actions(over: Record<string, unknown> = {}) {
   return {
     onDelete: vi.fn(async () => ({ ok: true as const, data: {} })),
+    onEdit: vi.fn(async () => ({ ok: true as const, data: {} })),
     onReact: vi.fn(async () => ({ ok: true as const, data: {} })),
     onUnreact: vi.fn(async () => ({ ok: true as const, data: {} })),
     onReport: vi.fn(async () => ({
@@ -203,6 +205,90 @@ describe("PostCard", () => {
     await user.click(screen.getByRole("button", { name: "Delete" }));
     expect(await screen.findByText("Could not delete.")).toBeInTheDocument();
     expect(screen.getByText("Ada Lovelace")).toBeInTheDocument();
+  });
+
+  it("lets the author edit a TEXT post in place, then marks it edited", async () => {
+    const a = actions();
+    render(
+      <PostCard
+        post={{ ...basePost, content: "First draft" }}
+        currentUserId={authorId}
+        canModerate={false}
+        {...a}
+      />
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /post options/i }));
+    await user.click(screen.getByRole("menuitem", { name: "Edit" }));
+    const box = screen.getByRole("textbox", { name: "Edit post" });
+    expect(box).toHaveValue("First draft");
+    await user.clear(box);
+    await user.type(box, "  Second draft  ");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(a.onEdit).toHaveBeenCalledWith(postId, { content: "Second draft" });
+    expect(await screen.findByText("Second draft")).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "Edit post" })).toBeNull();
+    expect(screen.getByText("· edited")).toBeInTheDocument();
+  });
+
+  it("keeps the editor open with the error when the edit is refused", async () => {
+    const a = actions({
+      onEdit: vi.fn(async () => ({
+        ok: false as const,
+        error: { code: "POST_UNDER_REVIEW", message: "Under review." },
+        requestId: "q",
+      })),
+    });
+    render(
+      <PostCard
+        post={basePost}
+        currentUserId={authorId}
+        canModerate={false}
+        {...a}
+      />
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /post options/i }));
+    await user.click(screen.getByRole("menuitem", { name: "Edit" }));
+    await user.type(screen.getByRole("textbox", { name: "Edit post" }), "!");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Under review.");
+    expect(
+      screen.getByRole("textbox", { name: "Edit post" })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByRole("textbox", { name: "Edit post" })).toBeNull();
+    expect(screen.queryByText("· edited")).toBeNull();
+  });
+
+  it("offers Edit only on the author's own TEXT post", async () => {
+    const onEdit = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <PostCard
+        post={{ ...basePost, postType: "ACHIEVEMENT" }}
+        currentUserId={authorId}
+        canModerate={false}
+        {...actions({ onEdit })}
+      />
+    );
+    await user.click(screen.getByRole("button", { name: /post options/i }));
+    expect(screen.queryByRole("menuitem", { name: "Edit" })).toBeNull();
+    expect(
+      screen.getByRole("menuitem", { name: /delete/i })
+    ).toBeInTheDocument();
+  });
+
+  it("shows the edited marker for a post edited earlier", () => {
+    render(
+      <PostCard
+        post={{ ...basePost, editedAt: new Date("2026-01-02T00:00:00Z") }}
+        currentUserId={otherId}
+        canModerate={false}
+        {...actions()}
+      />
+    );
+    expect(screen.getByText("· edited")).toBeInTheDocument();
   });
 
   it("hides Delete and Report, and renders no options menu, for a non-owner non-moderator", () => {

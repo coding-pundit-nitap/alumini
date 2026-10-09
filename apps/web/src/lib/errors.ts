@@ -197,6 +197,11 @@ export const ERROR_CATALOG: Record<
     status: 400,
     message: "The uploaded file does not match what was declared.",
   },
+  POST_UNDER_REVIEW: {
+    status: 409,
+    message:
+      "This post has been reported and cannot be edited until a moderator has reviewed it.",
+  },
   UPLOAD_NOT_READY: {
     status: 409,
     message: "This upload is not ready to be used yet.",

@@ -21,6 +21,7 @@ function makePost(id: string, content: string, createdAt: string) {
     postType: "TEXT" as const,
     deleted: false,
     createdAt: new Date(createdAt),
+    editedAt: null,
     author: {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       fullName: "Author One",

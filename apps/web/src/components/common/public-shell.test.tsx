@@ -73,6 +73,24 @@ describe("PublicShell", () => {
     );
   });
 
+  it("links Terms and Contact from the footer, signed in or not", () => {
+    for (const signedIn of [false, true]) {
+      const { unmount } = render(
+        <PublicShell signedIn={signedIn}>x</PublicShell>
+      );
+      const about = within(screen.getByRole("navigation", { name: "About" }));
+      expect(about.getByRole("link", { name: "Terms" })).toHaveAttribute(
+        "href",
+        "/terms"
+      );
+      expect(about.getByRole("link", { name: "Contact" })).toHaveAttribute(
+        "href",
+        "/contact"
+      );
+      unmount();
+    }
+  });
+
   it("lists account links in the footer when signed out", () => {
     render(<PublicShell signedIn={false}>body</PublicShell>);
     const account = within(screen.getByRole("navigation", { name: "Account" }));

@@ -23,6 +23,11 @@ export const postInput = z
   })
   .strict();
 
+/** Phase 10 "edit own post": only the text changes; images and the link stay as posted. */
+export const postEditInput = z
+  .object({ content: postInput.shape.content })
+  .strict();
+
 /** Phase 12E (spec E-1): an announcement is a post with a title; body and attachments follow the post rules. */
 export const announcementInput = postInput.extend({
   title: z.string().trim().min(1).max(120),

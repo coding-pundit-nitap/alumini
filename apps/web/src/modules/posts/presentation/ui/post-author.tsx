@@ -34,12 +34,14 @@ export function PostAuthorAvatar({
 export function PostAuthorLine({
   author,
   createdAt,
+  editedAt = null,
   currentUserId,
   size = "default",
   badge,
 }: {
   author: PostAuthor;
   createdAt: Date;
+  editedAt?: Date | null;
   currentUserId: string | null;
   size?: "sm" | "default";
   badge?: ReactNode;
@@ -74,6 +76,15 @@ export function PostAuthorLine({
           >
             {relativeTime(createdAt)}
           </time>
+          {editedAt ? (
+            <span
+              title={`Edited ${editedAt.toLocaleString()}`}
+              suppressHydrationWarning
+              className="text-muted-foreground shrink-0 text-[13px]"
+            >
+              · edited
+            </span>
+          ) : null}
         </div>
         {author.headline ? (
           <div className="text-muted-foreground truncate text-[13px]">

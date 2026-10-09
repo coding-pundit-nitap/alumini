@@ -19,6 +19,8 @@ describe("isPublicPath", () => {
     "/robots.txt",
     "/images/logo.svg",
     "/opengraph-image",
+    "/terms",
+    "/contact",
   ])("treats %s as public", (pathname) => {
     expect(isPublicPath(pathname)).toBe(true);
   });
@@ -32,6 +34,7 @@ describe("isPublicPath", () => {
     "/login-help/secret",
     "/healthcheck",
     "/apis",
+    "/termsx",
     "/profile/edit",
   ])("treats %s as gated", (pathname) => {
     expect(isPublicPath(pathname)).toBe(false);

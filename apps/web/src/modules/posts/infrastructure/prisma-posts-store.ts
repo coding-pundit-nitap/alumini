@@ -244,6 +244,25 @@ export function createPrismaPostsStore(deps: {
         await db.post.update({ where: { id }, data: { deleted: true } });
       },
 
+      async updatePostContent(id, content) {
+        await db.post.update({
+          where: { id },
+          data: { content, editedAt: new Date() },
+        });
+      },
+
+      async openReportExists(postId) {
+        const report = await db.report.findFirst({
+          where: {
+            targetType: "POST",
+            targetId: postId,
+            status: { in: ["OPEN", "UNDER_REVIEW"] },
+          },
+          select: { id: true },
+        });
+        return report != null;
+      },
+
       async listFeed({ limit, after, viewerId }) {
         const posts = await db.post.findMany({
           where: {

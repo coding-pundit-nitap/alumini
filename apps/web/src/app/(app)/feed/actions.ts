@@ -11,6 +11,7 @@ import {
   deletePost,
   react,
   unreact,
+  updatePost,
 } from "@/composition/posts";
 import {
   claimReport,
@@ -66,6 +67,21 @@ export async function deletePostAction(
     await deletePost({
       actor: await getActor(),
       postId: parseId("postId", postId),
+    });
+    refresh();
+    return {};
+  });
+}
+
+export async function updatePostAction(
+  postId: string,
+  input: unknown
+): Promise<ActionResult<Record<string, never>>> {
+  return runAction(async () => {
+    await updatePost({
+      actor: await getActor(),
+      postId: parseId("postId", postId),
+      input,
     });
     refresh();
     return {};
