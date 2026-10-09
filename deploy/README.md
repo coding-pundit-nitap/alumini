@@ -302,10 +302,32 @@ A second, smaller server (2 vCPU, 4 GB) set up with steps 1–9, with these diff
 - Monitoring (step 9) is optional. If you run it, send its pages to the ticket receiver: staging pages wake no
   one. Every alert carries `environment=staging`.
 
-## Behind Nginx Proxy Manager
+## One server behind Nginx Proxy Manager
 
-When TLS ends at an Nginx Proxy Manager (NPM) on another machine, the host Nginx and certbot are not used, and
-web listens on port 80 for NPM alone. Steps 1–9 still apply, with these changes:
+The whole stack on one server, with TLS ending at an Nginx Proxy Manager (NPM) on another machine. No staging
+server, so every release is built on the server (`deploy.sh build`).
+
+**The server.** Sized from the load tests ([perf 2026-10-01](../docs/operations/perf/2026-10-01.md) §4):
+
+|      | Minimum          | Recommended          |
+| ---- | ---------------- | -------------------- |
+| CPU  | 2 vCPU           | **4 vCPU**           |
+| RAM  | 4 GB + 4 GB swap | **8 GB** + 4 GB swap |
+| Disk | 40 GB            | **60–80 GB SSD**     |
+| OS   | Ubuntu 24.04     | Ubuntu 24.04         |
+
+8 GB is for the build: `next build` needs ~4 GB free while the running stack holds ~3 GB (ClamAV ~1 GB, web
+~1.5 GB, Postgres, two Redis, MinIO, worker). The disk goes on images (~1 GB per release, a few kept for
+rollback), the build cache and ClamAV's signatures; uploads and the database stay small (photos are re-encoded to
+512 px WebP, ~50 KB each).
+
+**One instance of each service:** one web, one worker, one Postgres, one of each Redis, MinIO, ClamAV. One web
+instance sustains ~25–35 mixed requests/s on a cloud vCPU (the measured ~50/s per core, less the 1 GB heap cap's
+GC cost); an alumni network of ~10 000 accounts asks a small fraction of that. Its heap is capped at 1 GB
+(`NODE_OPTIONS` in `compose.yml`; `WEB_NODE_OPTIONS` in `.env` overrides it). A second web instance needs a
+second service and load balancing in NPM; add one only when monitoring shows web CPU near one core.
+
+**Setup:** steps 1–9 above, with these changes:
 
 - **Step 1:** install `git` but not `nginx` or `certbot`. Docker-published ports bypass `ufw`, so admit only
   NPM to web (the rule sees the container port, 3000, after Docker's translation):
@@ -322,8 +344,9 @@ web listens on port 80 for NPM alone. Steps 1–9 still apply, with these change
 - **Step 4:** add `WEB_BIND=0.0.0.0` and `WEB_PORT=80`. `NEXT_PUBLIC_APP_URL`, `BETTER_AUTH_URL` and `APP_URL`
   stay `https://YOUR.DOMAIN`: users reach the app over https, and cookies and origin checks follow that. If NPM
   runs on this same host, it holds port 80: use `WEB_PORT=3000` and forward NPM to `<host IP>:3000`.
-- **Without a staging server**, `pull` and `promote` refuse to release production: use `deploy.sh build`
-  for the first release and every later one (4 GB of free RAM; the swap file in step 1 covers it).
+  `IMAGE_REGISTRY` and `STAGING_RELEASES` stay unset.
+- **Step 5:** skip it.
+- **Step 6:** `deploy/deploy.sh build` (`pull` and `promote` need a staging server).
 
 **In NPM**, add a Proxy Host for the domain: scheme `http`, forward to `<server IP>` port `80`, Websockets
 off. On the SSL tab: a Let's Encrypt certificate, Force SSL, HTTP/2 and HSTS. On the Advanced tab, what
@@ -341,6 +364,22 @@ proxy_read_timeout 1h;
 # Monitoring only (the app also requires HEALTH_CHECK_TOKEN).
 location ~ ^/(metrics|health/drain)$ { deny all; }
 ```
+
+**Updating.** Merge to `main` and let CI go green; then on the server:
+
+```bash
+/opt/alumini/deploy/deploy.sh build    # git pull, build, migrate, restart, smoke test (5–10 min)
+```
+
+The site is down for a few seconds while web restarts, so release outside busy hours. If the release is bad:
+
+```bash
+/opt/alumini/deploy/deploy.sh status               # live release and history
+/opt/alumini/deploy/deploy.sh rollback <old-sha>   # earlier images, no git or database change
+```
+
+Build-mode images exist only on this server: keep the last few releases' images for rollback (see
+[Operating](#operating)), and do not run `docker system prune -a`.
 
 ## Releasing
 

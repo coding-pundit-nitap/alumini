@@ -78,6 +78,11 @@ services:
       # 127.0.0.1 behind the host's Nginx. Behind a proxy on another machine (e.g. Nginx Proxy Manager),
       # WEB_BIND=0.0.0.0 and WEB_PORT=80, and firewall the port to that proxy: Docker bypasses ufw.
       - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-3000}:3000"
+    environment:
+      <<: *app-env
+      # Uncapped, V8 sizes its heap from the host's memory and web reached 2.3 GB RSS; with 1 GB it stays near
+      # 1.5 GB under load (perf 2026-10-01 F-4). Override in .env with WEB_NODE_OPTIONS.
+      NODE_OPTIONS: ${WEB_NODE_OPTIONS:---max-old-space-size=1024}
     # The drain step (reliability §8.3 step 7) lets in-flight requests finish within this.
     stop_grace_period: 30s
 
