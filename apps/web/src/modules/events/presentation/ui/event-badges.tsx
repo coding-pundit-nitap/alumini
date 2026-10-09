@@ -9,7 +9,10 @@ const HOLDS_A_SEAT: ReadonlyArray<RegistrationState | null> = [
   "NO_SHOW",
 ];
 
-/** Status badges shared by the list rows and the detail page. The place has its own line (`EventPlace`). */
+/**
+ * Status badges shared by the list rows and the detail page. The place has its
+ * own line (`EventPlace`).
+ */
 export function EventBadges({ event }: { event: EventSummary }) {
   const cancelled = event.status === "CANCELLED";
   const full = event.spotsRemaining <= 0;

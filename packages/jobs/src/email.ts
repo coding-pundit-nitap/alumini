@@ -73,7 +73,10 @@ export const emailSendPayload = z.discriminatedUnion("template", [
 
 export type EmailSendPayload = z.infer<typeof emailSendPayload>;
 
-/** 13 attempts from 30 s capped at 60 min: about six hours, enough to ride out a provider outage. */
+/**
+ * 13 attempts from 30 s capped at 60 min: about six hours, enough to ride out a
+ * provider outage.
+ */
 export const emailSend = defineJob({
   name: "email.send",
   version: 1,

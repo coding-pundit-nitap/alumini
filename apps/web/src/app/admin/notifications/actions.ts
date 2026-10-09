@@ -8,7 +8,10 @@ import { NotFoundError } from "@/lib/errors";
 import { isUuid } from "@/modules/admin";
 import { getActor } from "@/modules/auth";
 
-/** Replays one failed email (existing audited use case). REPLAY_JOB_GONE comes back as the inline error. */
+/**
+ * Replays one failed email (existing audited use case). REPLAY_JOB_GONE comes
+ * back as the inline error.
+ */
 export async function replayNotificationAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {

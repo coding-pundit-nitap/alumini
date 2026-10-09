@@ -10,7 +10,10 @@ import type { Authorize } from "./ports";
 export const DEFAULT_LIMIT = 20;
 export const MAX_LIMIT = 50;
 
-/** Returns FORBIDDEN rather than NOT_FOUND, since any `event.read` holder can already see the event. */
+/**
+ * Returns FORBIDDEN rather than NOT_FOUND, since any `event.read` holder can
+ * already see the event.
+ */
 export function createListRegistrants(deps: {
   queries: EventQueries;
   authorize: Authorize;

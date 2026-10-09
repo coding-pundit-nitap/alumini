@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-/** Pure rules. `NOT_FOUND` means "not yours to know about", so a blocked member learns nothing. */
+/**
+ * Pure rules. `NOT_FOUND` means "not yours to know about", so a blocked member
+ * learns nothing.
+ */
 export const MAX_GROUP_SIZE = 20;
 export const MAX_BODY = 4000;
 /** How many messages either side of a reported one a moderator sees. */
@@ -33,12 +36,18 @@ export const reportInput = z
   .object({ reason: z.string().trim().min(1).max(1000) })
   .strict();
 
-/** A decimal string: `seq` is a BIGINT and must not pass through a JavaScript number. */
+/**
+ * A decimal string: `seq` is a BIGINT and must not pass through a JavaScript
+ * number.
+ */
 export const readInput = z
   .object({ upToSeq: z.string().regex(/^\d{1,18}$/) })
   .strict();
 
-/** `min:max` of the two lower-cased ids: the same key for A→B and B→A (unique index `uq_conversation_direct_pair`). */
+/**
+ * `min:max` of the two lower-cased ids: the same key for A→B and B→A (unique
+ * index `uq_conversation_direct_pair`).
+ */
 export function directPairKey(x: string, y: string): string {
   const [a, b] = [x.toLowerCase(), y.toLowerCase()].sort();
   return `${a}:${b}`;
@@ -54,7 +63,10 @@ export type Refusal = {
 };
 type Decision = { ok: true } | ({ ok: false } & Refusal);
 
-/** May `viewerId` write to a 1:1 whose pair has this block row (if any)? The blocker is told; the blocked is not. */
+/**
+ * May `viewerId` write to a 1:1 whose pair has this block row (if any)? The
+ * blocker is told; the blocked is not.
+ */
 export function decideDirectAccess(
   block: { blockedById: string } | null,
   viewerId: string
@@ -78,7 +90,10 @@ export function decideAddCapacity(currentCount: number): Decision {
     : { ok: false, code: "GROUP_FULL" };
 }
 
-/** A message as a member reads it. A hidden message keeps its place and loses its text. */
+/**
+ * A message as a member reads it. A hidden message keeps its place and loses
+ * its text.
+ */
 export type ListedMessage = {
   id: string;
   seq: string;

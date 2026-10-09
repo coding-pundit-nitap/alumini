@@ -97,7 +97,10 @@ function OpenPledgeActions(props: {
   );
 }
 
-/** `/donations`: each pledge and where it stands; open ones can take a reference or be withdrawn. */
+/**
+ * `/donations`: each pledge and where it stands; open ones can take a reference
+ * or be withdrawn.
+ */
 export function MyDonations(props: {
   donations: readonly Donation[];
   setReference: ReferenceAction;

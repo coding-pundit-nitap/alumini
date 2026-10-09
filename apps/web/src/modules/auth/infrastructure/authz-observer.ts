@@ -18,7 +18,10 @@ const recordDenied = createDeniedAudit({
   },
 });
 
-/** Every decision is counted, every denial logged, and admin-tier denials leave a best-effort audit row. */
+/**
+ * Every decision is counted, every denial logged, and admin-tier denials leave
+ * a best-effort audit row.
+ */
 export const authzObserver: AuthzObserver = {
   record(event) {
     getMetrics().increment("authz_decisions_total", {

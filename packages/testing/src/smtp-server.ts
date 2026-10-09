@@ -16,7 +16,10 @@ export type SmtpTestServer = {
   close(): Promise<void>;
 };
 
-/** A real in-process SMTP server whose behaviour tests can switch, so email failures are deterministic. */
+/**
+ * A real in-process SMTP server whose behaviour tests can switch, so email
+ * failures are deterministic.
+ */
 export async function startSmtpTestServer(
   initial: SmtpMode = "accept"
 ): Promise<SmtpTestServer> {

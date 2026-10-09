@@ -16,9 +16,9 @@ import { refuse } from "./refusal";
 import { parse } from "./validation";
 
 /**
- * The message, unread counters and `message.sent` commit together. The conversation lock orders `seq`
- * and lets a retried `clientMessageId` find its first result. The send budget is charged only for
- * messages actually written.
+ * The message, unread counters and `message.sent` commit together. The
+ * conversation lock orders `seq` and lets a retried `clientMessageId` find its
+ * first result. The send budget is charged only for messages actually written.
  */
 export function createSendMessage(deps: {
   store: MessagingStore;

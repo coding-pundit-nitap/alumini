@@ -1,0 +1,25 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreBinaries": ["openssl", "pgrep", "prisma"],
+  "workspaces": {
+    ".": {
+      "entry": ["perf/k6/*.ts", "docker/*.mjs"],
+      "ignore": [".semgrep/**"]
+    },
+    "apps/web": {
+      "entry": ["tests/e2e/support/*.ts"],
+      "ignoreDependencies": ["@sentry/node"]
+    },
+    "packages/database": {
+      "ignoreDependencies": ["@prisma/client"]
+    },
+    "packages/queue": {
+      "entry": ["tests/*.ts"]
+    },
+    "packages/scripts": {
+      "entry": ["drills/*.ts", "perf/*.ts"],
+      "ignore": ["drills/release.ts"]
+    }
+  },
+  "ignoreUnresolved": ["next"]
+}

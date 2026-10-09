@@ -7,7 +7,10 @@ import { CONTEXT_EACH_SIDE } from "../domain/messaging";
 import type { Authorize } from "./authz";
 import type { MessagingStore, ReportedMessageView } from "./messaging-store";
 
-/** The reported message plus CONTEXT_EACH_SIDE either side. Every read is audited in the same transaction. */
+/**
+ * The reported message plus CONTEXT_EACH_SIDE either side. Every read is
+ * audited in the same transaction.
+ */
 export function createReadReportedMessage(deps: {
   store: MessagingStore;
   authorize: Authorize;

@@ -9,7 +9,10 @@ const BASE_URL =
 const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
-/** Uncaught page errors per member, mainly hydration mismatches, which drop clicks and cause flicker. */
+/**
+ * Uncaught page errors per member, mainly hydration mismatches, which drop
+ * clicks and cause flicker.
+ */
 const pageErrors = new WeakMap<Page, string[]>();
 const hydrationErrors = (page: Page) =>
   (pageErrors.get(page) ?? []).filter((m) => m.includes("Hydration failed"));
@@ -38,11 +41,17 @@ async function setLevel(page: Page, label: string) {
   await expect(page.getByText("Privacy settings saved.")).toBeVisible();
 }
 
-/** Excludes the draft box: React mirrors a textarea's value into its text, so getByText matches typed text. */
+/**
+ * Excludes the draft box: React mirrors a textarea's value into its text, so
+ * getByText matches typed text.
+ */
 const posted = (page: Page, body: string) =>
   page.getByRole("log", { name: "Messages" }).getByText(body);
 
-/** Wait until the "Sending" marker clears, or another member's page may load without the message. */
+/**
+ * Wait until the "Sending" marker clears, or another member's page may load
+ * without the message.
+ */
 async function expectSent(page: Page, body: string) {
   await expect(posted(page, body)).toBeVisible({ timeout: 15_000 });
   await expect(

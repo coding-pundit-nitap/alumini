@@ -6,7 +6,10 @@ import { Field, FieldLabel } from "@nitap/ui/components/field";
 import { REPORT_TARGET_TYPES } from "../../domain/moderation";
 import { TARGET_LABELS } from "./labels";
 
-/** Human labels for every query field, so a validation error can name what to fix. */
+/**
+ * Human labels for every query field, so a validation error can name what to
+ * fix.
+ */
 export const REPORT_FILTER_LABELS: Record<string, string> = {
   status: "Status",
   targetType: "Type",

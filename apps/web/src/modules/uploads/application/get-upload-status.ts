@@ -11,7 +11,10 @@ export type UploadStatusResult = {
   rejectReason: string | null;
 };
 
-/** Lets the caller's browser poll its own upload while the worker scans it. Owner-scoped. */
+/**
+ * Lets the caller's browser poll its own upload while the worker scans it.
+ * Owner-scoped.
+ */
 export function createGetUploadStatus(deps: {
   store: UploadStore;
   authorize: Authorize;

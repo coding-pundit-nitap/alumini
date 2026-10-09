@@ -2,7 +2,10 @@ import { Prisma } from "@nitap/database";
 
 import type { ModerationTarget, ReportTargetType } from "../domain/moderation";
 
-/** Cross-module reads/writes by SQL — modules/moderation never imports posts, messaging or users. */
+/**
+ * Cross-module reads/writes by SQL — modules/moderation never imports posts,
+ * messaging or users.
+ */
 export function findContentAuthor(
   targetType: ReportTargetType,
   targetId: string
@@ -31,7 +34,10 @@ export const softDeleteContentSql = (
 export const hideMessageSql = (messageId: string) =>
   Prisma.sql`UPDATE "message" SET hidden_at = now() WHERE id = ${messageId}::uuid AND hidden_at IS NULL`;
 
-/** Owner and preview of each reported target, one round trip. MESSAGE never selects its body. */
+/**
+ * Owner and preview of each reported target, one round trip. MESSAGE never
+ * selects its body.
+ */
 export const reportTargetsSql = (
   ids: Record<ReportTargetType, string[]>
 ) => Prisma.sql`

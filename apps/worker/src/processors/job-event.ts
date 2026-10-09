@@ -11,7 +11,10 @@ export type JobEventDeps = {
   deliver: DeliverNotification;
   /** Re-reads the current email; null skips email (account may be deactivated). */
   findEmail: (userId: string) => Promise<string | null>;
-  /** Only used for "submitted": holders of job.approve, resolved at delivery time. */
+  /**
+   * Only used for "submitted": holders of job.approve, resolved at delivery
+   * time.
+   */
   findModerators?: (permission: "job.approve") => Promise<string[]>;
 };
 

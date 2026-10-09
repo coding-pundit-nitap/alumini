@@ -4,7 +4,10 @@ import { useState, useTransition } from "react";
 
 import type { ActionResult } from "@/lib/action-result";
 
-/** Runs one Server Action at a time, shows its safe message on failure. The action itself refreshes the page. */
+/**
+ * Runs one Server Action at a time, shows its safe message on failure. The
+ * action itself refreshes the page.
+ */
 export function useMentorshipAction() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);

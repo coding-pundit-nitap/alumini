@@ -25,7 +25,10 @@ const DAY = 24 * 60 * 60 * 1000;
 const utcDay = (d: Date) =>
   Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 
-/** A deadline is a date, so days compare in UTC. `soon` marks the last three days. */
+/**
+ * A deadline is a date, so days compare in UTC. `soon` marks the last three
+ * days.
+ */
 export function deadlineLabel(
   deadline: Date,
   now: Date = new Date()

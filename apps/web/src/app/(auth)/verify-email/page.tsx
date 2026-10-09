@@ -9,7 +9,10 @@ export const metadata: Metadata = { title: "Confirm your email" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/** Shows the outcome only: Better Auth verifies the token and redirects here with `?status` or `?error`. */
+/**
+ * Shows the outcome only: Better Auth verifies the token and redirects here
+ * with `?status` or `?error`.
+ */
 export default async function VerifyEmailPage({
   searchParams,
 }: {

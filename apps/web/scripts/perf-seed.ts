@@ -18,14 +18,18 @@ import {
 import { runSeed } from "@nitap/database/seed";
 
 /**
- * Creates and seeds the `_perf` database and writes `perf/.data/fixture.json` with signed session
- * cookies for the k6 scenarios.
+ * Creates and seeds the `_perf` database and writes `perf/.data/fixture.json`
+ * with signed session cookies for the k6 scenarios.
  *
- *   pnpm perf:seed -- --users 10000 [--seed 1] [--sessions 2000] [--spike-capacity 500] [--reset]
+ * Pnpm perf:seed -- --users 10000 [--seed 1] [--sessions 2000]
+ * [--spike-capacity 500] [--reset]
  */
 const root = path.resolve(import.meta.dirname, "../../..");
 
-/** Better Auth's session cookie value (better-call signCookieValue): `token.base64(HMAC-SHA256)`, URI-encoded. */
+/**
+ * Better Auth's session cookie value (better-call signCookieValue):
+ * `token.base64(HMAC-SHA256)`, URI-encoded.
+ */
 export function signSessionCookie(token: string, secret: string): string {
   const signature = createHmac("sha256", secret).update(token).digest("base64");
   return encodeURIComponent(`${token}.${signature}`);

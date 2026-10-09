@@ -5,7 +5,10 @@ import type { TransactionRunner } from "@/infrastructure/database/transaction-ru
 
 import type { UploadStore, UploadTx } from "../application/upload-store";
 
-/** Writes the `upload.scan` outbox event in the same transaction as the status change. */
+/**
+ * Writes the `upload.scan` outbox event in the same transaction as the status
+ * change.
+ */
 export function createPrismaUploadStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   outbox: OutboxWriter;

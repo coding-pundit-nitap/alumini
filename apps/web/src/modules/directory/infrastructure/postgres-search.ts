@@ -10,10 +10,16 @@ import {
 
 import { profileVisibilitySql } from "@/infrastructure/database/profile-visibility-sql";
 
-/** Below the default 0.6 so a one-letter typo in a name still matches; the trigram GIN index serves `<%`. */
+/**
+ * Below the default 0.6 so a one-letter typo in a name still matches; the
+ * trigram GIN index serves `<%`.
+ */
 const TYPO_THRESHOLD = "0.45";
 
-/** Sort key expression, its SQL cast for the cursor value, and its direction. Ties always break on user_id ASC. */
+/**
+ * Sort key expression, its SQL cast for the cursor value, and its direction.
+ * Ties always break on user_id ASC.
+ */
 const KEYS: Record<
   Sort,
   { cast: string; desc: boolean; expr: (q: DirectoryQuery) => Prisma.Sql }
@@ -49,8 +55,8 @@ function relevanceScore(query: DirectoryQuery): Prisma.Sql {
 }
 
 /**
- * Queries PostgreSQL directly. Visibility applies per section in the WHERE clause, so a hidden section
- * can neither be shown nor matched.
+ * Queries PostgreSQL directly. Visibility applies per section in the WHERE
+ * clause, so a hidden section can neither be shown nor matched.
  */
 export function createPostgresSearch(prisma: PrismaClient): SearchPort {
   return {

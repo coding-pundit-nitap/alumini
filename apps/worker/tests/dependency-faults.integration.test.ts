@@ -113,7 +113,10 @@ describe("worker under dependency faults (real PostgreSQL, Redis and SMTP throug
   const unpublished = () =>
     db.prisma.outboxEvent.count({ where: { publishedAt: null } });
 
-  /** A readiness probe must answer within its own bound, whatever the dependency does. */
+  /**
+   * A readiness probe must answer within its own bound, whatever the dependency
+   * does.
+   */
   async function probe() {
     const started = Date.now();
     const readiness = await worker.ready();

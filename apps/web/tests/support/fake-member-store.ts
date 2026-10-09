@@ -4,7 +4,10 @@ import type {
   MemberUser,
 } from "@/modules/auth/application/member-store";
 
-/** In-memory MemberStore for unit tests. It does not simulate rollback; integration tests cover that. */
+/**
+ * In-memory MemberStore for unit tests. It does not simulate rollback;
+ * integration tests cover that.
+ */
 export function createFakeMemberStore(users: MemberUser[]) {
   const table = new Map(users.map((user) => [user.id, { ...user }]));
   const profiles = new Map<string, string>();

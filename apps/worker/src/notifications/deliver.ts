@@ -21,7 +21,10 @@ export type DeliverInput = {
   payload: Record<string, unknown>;
   /** Omit to skip email regardless of preference. */
   emailTo?: string;
-  /** Debounced notifications only: a duplicate bumps the existing row instead of being skipped. */
+  /**
+   * Debounced notifications only: a duplicate bumps the existing row instead of
+   * being skipped.
+   */
   dedupeKey?: string;
 };
 
@@ -52,8 +55,9 @@ export type DeliveryStore = {
 };
 
 /**
- * In-app row first, then email if category, channel and preference allow. Idempotent on the dedupe key.
- * The EMAIL row is written PENDING before enqueueing, so the job can never mark it SENT before it exists.
+ * In-app row first, then email if category, channel and preference allow.
+ * Idempotent on the dedupe key. The EMAIL row is written PENDING before
+ * enqueueing, so the job can never mark it SENT before it exists.
  */
 export function createDeliverNotification(deps: {
   store: DeliveryStore;
@@ -62,7 +66,10 @@ export function createDeliverNotification(deps: {
     domain: NotificationDomain,
     channel: "EMAIL"
   ) => Promise<{ enabled: boolean } | null>;
-  /** `jobId` is the dedupe key, so a redelivered event cannot enqueue a second email. */
+  /**
+   * `jobId` is the dedupe key, so a redelivered event cannot enqueue a second
+   * email.
+   */
   enqueueEmail: (
     payload: EmailSendPayload,
     options: { jobId: string }

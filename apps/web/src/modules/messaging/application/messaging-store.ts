@@ -27,7 +27,10 @@ export type MessagingTx = {
   blockBetween(x: string, y: string): Promise<{ blockedById: string } | null>;
   anyBlockAmong(userIds: string[]): Promise<boolean>;
   anyBlockWith(userId: string, others: string[]): Promise<boolean>;
-  /** Locks the conversation row (FOR UPDATE): sends, adds and read-marks on it are serialised. */
+  /**
+   * Locks the conversation row (FOR UPDATE): sends, adds and read-marks on it
+   * are serialised.
+   */
   lockConversation(id: string): Promise<ConversationRow | null>;
   participantIds(conversationId: string): Promise<string[]>;
   getOrCreateDirect(
@@ -39,7 +42,10 @@ export type MessagingTx = {
     title: string | null;
     memberIds: string[];
   }): Promise<{ id: string }>;
-  /** Joins with the read marker already at `lastReadSeq`: a new member does not inherit the backlog as unread. */
+  /**
+   * Joins with the read marker already at `lastReadSeq`: a new member does not
+   * inherit the backlog as unread.
+   */
   addParticipant(
     conversationId: string,
     userId: string,
@@ -57,7 +63,10 @@ export type MessagingTx = {
     body: string;
     clientMessageId: string;
   }): Promise<MessageRow>;
-  /** Sets the conversation's last-message fields and bumps unread for everyone but the sender (and blocked pairs). */
+  /**
+   * Sets the conversation's last-message fields and bumps unread for everyone
+   * but the sender (and blocked pairs).
+   */
   recordSend(message: MessageRow): Promise<void>;
   markRead(
     conversationId: string,
@@ -77,11 +86,17 @@ export type MessagingTx = {
     type: "message.sent";
     payload: MessageSentPayload;
   }): Promise<void>;
-  /** The MESSAGE report's message, or null (unknown report, other type, or the message is gone). */
+  /**
+   * The MESSAGE report's message, or null (unknown report, other type, or the
+   * message is gone).
+   */
   reportedMessage(
     reportId: string
   ): Promise<{ messageId: string; conversationId: string; seq: string } | null>;
-  /** Oldest first: up to `eachSide` before `seq`, the message at `seq`, up to `eachSide` after. One conversation only. */
+  /**
+   * Oldest first: up to `eachSide` before `seq`, the message at `seq`, up to
+   * `eachSide` after. One conversation only.
+   */
   messageContext(
     conversationId: string,
     seq: string,
@@ -131,7 +146,10 @@ export type ConversationDetail = ListedConversation & {
   lastReadSeq: string;
 };
 export type MessagingQueries = {
-  /** Conversations with at least one message, newest activity first. Hides 1:1s whose other side blocked the viewer. */
+  /**
+   * Conversations with at least one message, newest activity first. Hides 1:1s
+   * whose other side blocked the viewer.
+   */
   listConversations(
     viewerId: string,
     filter: { limit: number; before?: string }
@@ -140,7 +158,10 @@ export type MessagingQueries = {
     viewerId: string,
     conversationId: string
   ): Promise<ConversationDetail | null>;
-  /** Newest first; null when the viewer cannot see the conversation. Hides messages from anyone blocked with the viewer. */
+  /**
+   * Newest first; null when the viewer cannot see the conversation. Hides
+   * messages from anyone blocked with the viewer.
+   */
   listMessages(
     viewerId: string,
     conversationId: string,

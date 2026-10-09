@@ -1,6 +1,9 @@
 import type { CSSProperties } from "react";
 
-/** Far → near. Low-poly peaks echo the DawnMark; the nearest ridge takes the page colour so the hero melts into the page. */
+/**
+ * Far → near. Low-poly peaks echo the DawnMark; the nearest ridge takes the
+ * page colour so the hero melts into the page.
+ */
 const RIDGES = [
   {
     d: "M0 220L80 190 150 205 240 150 310 175 390 120 460 160 540 135 615 112 690 176 745 158 830 102 900 150 980 128 1060 165 1140 118 1220 150 1300 132 1380 165 1440 150V400H0Z",
@@ -31,7 +34,10 @@ const STARS = Array.from({ length: 28 }, (_, i) => ({
   opacity: 0.25 + ((i * 13) % 50) / 100,
 }));
 
-/** Decorative dawn over the ridges: sky, stars, a rising sun and four parallax ridgelines. */
+/**
+ * Decorative dawn over the ridges: sky, stars, a rising sun and four parallax
+ * ridgelines.
+ */
 export function DawnScene() {
   return (
     <div

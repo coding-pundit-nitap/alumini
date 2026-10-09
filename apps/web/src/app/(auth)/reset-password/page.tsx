@@ -8,7 +8,10 @@ export const metadata: Metadata = { title: "Choose a new password" };
 const first = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 
-/** Better Auth's emailed link redirects here with `?token=` or `?error=INVALID_TOKEN`. */
+/**
+ * Better Auth's emailed link redirects here with `?token=` or
+ * `?error=INVALID_TOKEN`.
+ */
 export default async function ResetPasswordPage({
   searchParams,
 }: {

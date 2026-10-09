@@ -20,7 +20,10 @@ export type VisibilitySettings = { visibility: Visibility } & Record<
   Visibility | null
 >;
 
-/** Who is looking, resolved by the use case. `blocked` and `privileged` come from the connection and RBAC checks. */
+/**
+ * Who is looking, resolved by the use case. `blocked` and `privileged` come
+ * from the connection and RBAC checks.
+ */
 export type Viewer =
   | "owner"
   | "privileged"
@@ -63,7 +66,10 @@ export function canView(level: Visibility, viewer: Viewer): boolean {
   }
 }
 
-/** The sections whose override is looser than the profile level (the same invariant as the database CHECKs). */
+/**
+ * The sections whose override is looser than the profile level (the same
+ * invariant as the database CHECKs).
+ */
 export function overridesNotLooser(
   settings: VisibilitySettings
 ): OverrideSection[] {

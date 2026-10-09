@@ -57,7 +57,10 @@ export async function member(
   return user.id;
 }
 
-/** `blocker` blocked `blocked` (the connection row stores the pair in canonical order). */
+/**
+ * `blocker` blocked `blocked` (the connection row stores the pair in canonical
+ * order).
+ */
 export async function block(
   db: TestDatabase,
   blocker: string,

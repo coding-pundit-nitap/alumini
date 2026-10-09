@@ -6,7 +6,10 @@ import sharp from "sharp";
 import type { ScannerPort } from "../scanner.ts";
 
 const ALLOWED_FORMATS = new Set(["jpeg", "png", "webp"]);
-/** Guards against decompression bombs: a decoded image larger than this is refused before re-encoding. */
+/**
+ * Guards against decompression bombs: a decoded image larger than this is
+ * refused before re-encoding.
+ */
 const MAX_DIMENSION = 8_000;
 
 export type UploadScanStoreRow = {
@@ -24,8 +27,8 @@ export type UploadScanStore = {
 };
 
 /**
- * Idempotent. A bad image or scanner rejection moves the row to REJECTED without throwing; only a
- * storage outage throws, leaving it PENDING_SCAN.
+ * Idempotent. A bad image or scanner rejection moves the row to REJECTED
+ * without throwing; only a storage outage throws, leaving it PENDING_SCAN.
  */
 export function createUploadScanProcessor(deps: {
   store: UploadScanStore;

@@ -3,7 +3,10 @@ import type { JobProcessor } from "@nitap/queue";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Bounded batches until a short one, so a backlog can't outlast the job timeout. */
+/**
+ * Bounded batches until a short one, so a backlog can't outlast the job
+ * timeout.
+ */
 export function createIdempotencySweepProcessor(deps: {
   sweep: (before: Date, limit: number) => Promise<number>;
   olderThanMs?: number;

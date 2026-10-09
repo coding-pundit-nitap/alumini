@@ -4,7 +4,10 @@ import { Pool } from "pg";
 
 import { confirmEmail, register, signIn, unique } from "./support/accounts";
 
-/** `@nitap/database` fails to load under Playwright's transform, so this uses raw `pg`. */
+/**
+ * `@nitap/database` fails to load under Playwright's transform, so this uses
+ * raw `pg`.
+ */
 type RoleName =
   | "STUDENT"
   | "ALUMNI"
@@ -23,7 +26,10 @@ const BASE_URL =
 const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
-/** Uncaught page errors per member; hydration failures matter here (see messaging.spec.ts). */
+/**
+ * Uncaught page errors per member; hydration failures matter here (see
+ * messaging.spec.ts).
+ */
 const pageErrors = new WeakMap<Page, string[]>();
 const hydrationErrors = (page: Page) =>
   (pageErrors.get(page) ?? []).filter((m) => m.includes("Hydration failed"));
@@ -47,7 +53,10 @@ async function member(
   return { page, email };
 }
 
-/** There is no UI to grant reviewer roles, so fixtures insert into user_role directly. */
+/**
+ * There is no UI to grant reviewer roles, so fixtures insert into user_role
+ * directly.
+ */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function userId(email: string): Promise<string> {
@@ -77,7 +86,10 @@ test.afterAll(async () => {
 const postArticle = (page: Page, content: string) =>
   page.locator("article", { hasText: content });
 
-/** The composer on Home starts collapsed behind a prompt button; opening it reveals the form. */
+/**
+ * The composer on Home starts collapsed behind a prompt button; opening it
+ * reveals the form.
+ */
 async function publishPost(page: Page, content: string) {
   await page
     .getByRole("button", { name: /Share something with your batchmates/ })
@@ -158,7 +170,10 @@ test.describe("community journey", () => {
       expect(hydrationErrors(page)).toEqual([]);
   });
 
-  /** Reviewers see a "Pending review" section on /achievements, listing other members' submissions. */
+  /**
+   * Reviewers see a "Pending review" section on /achievements, listing other
+   * members' submissions.
+   */
   test("submit achievement, moderator approves, it appears in the feed as an ACHIEVEMENT post", async ({
     browser,
   }) => {
@@ -199,7 +214,10 @@ test.describe("community journey", () => {
       expect(hydrationErrors(page)).toEqual([]);
   });
 
-  /** Any `report.review` holder sees the same Resolve/Dismiss state, including one who never filed the report. */
+  /**
+   * Any `report.review` holder sees the same Resolve/Dismiss state, including
+   * one who never filed the report.
+   */
   test("report a post, moderator resolves, it disappears from both feeds", async ({
     browser,
   }) => {

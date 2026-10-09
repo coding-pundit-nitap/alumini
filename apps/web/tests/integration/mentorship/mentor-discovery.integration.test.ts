@@ -82,7 +82,10 @@ describe("mentor discovery against real PostgreSQL", () => {
       data: { userId, expertise: "Databases", ...over } as never,
     });
 
-  /** Writes the pair's row directly, in canonical order, as the connections module would. */
+  /**
+   * Writes the pair's row directly, in canonical order, as the connections
+   * module would.
+   */
   async function link(
     x: string,
     y: string,

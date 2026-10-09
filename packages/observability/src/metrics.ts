@@ -1,6 +1,7 @@
 /**
- * Adapters are installed with `setMetrics`. Use Prometheus naming and low-cardinality labels (never user
- * ids or raw URLs). State lives on globalThis so separate Next.js bundles share it.
+ * Adapters are installed with `setMetrics`. Use Prometheus naming and
+ * low-cardinality labels (never user ids or raw URLs). State lives on
+ * globalThis so separate Next.js bundles share it.
  */
 export type MetricLabels = Record<string, string | number | boolean>;
 

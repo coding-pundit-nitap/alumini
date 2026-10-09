@@ -44,7 +44,10 @@ const cliSchema = workerSchema.pick({
 export type WorkerEnv = z.infer<typeof workerSchema>;
 export type CliEnv = z.infer<typeof cliSchema>;
 
-/** Names the offending variables, never their values (SMTP_URL and DATABASE_URL carry credentials). */
+/**
+ * Names the offending variables, never their values (SMTP_URL and DATABASE_URL
+ * carry credentials).
+ */
 function parse<T extends z.ZodType>(
   schema: T,
   source: Record<string, string | undefined>

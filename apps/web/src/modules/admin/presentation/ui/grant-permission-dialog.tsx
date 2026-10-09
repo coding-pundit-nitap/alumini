@@ -17,7 +17,10 @@ const message = (reason: Reason) =>
     : reason === "NOT_SCOPABLE"
       ? "This permission cannot be scoped to a chapter."
       : ESCALATION_MESSAGES[reason];
-/** `datetime-local` wants local wall time without an offset. Only rendered while open, so client-only. */
+/**
+ * `datetime-local` wants local wall time without an offset. Only rendered while
+ * open, so client-only.
+ */
 function localNow() {
   const d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());

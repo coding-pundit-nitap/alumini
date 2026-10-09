@@ -5,7 +5,10 @@ import { cn } from "@/lib/utils";
 
 import type { Person } from "../../application/messaging-store";
 
-/** Window events that keep an open inbox in step with an open thread in the same tab. */
+/**
+ * Window events that keep an open inbox in step with an open thread in the same
+ * tab.
+ */
 export const MESSAGES_READ_EVENT = "messages:read";
 export const MESSAGES_CHANGED_EVENT = "messages:changed";
 

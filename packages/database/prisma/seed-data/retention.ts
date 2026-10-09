@@ -1,4 +1,7 @@
-/** Shared by the seed, the admin domain and the worker. Defaults are placeholders until approved. */
+/**
+ * Shared by the seed, the admin domain and the worker. Defaults are
+ * placeholders until approved.
+ */
 export const RETENTION_CATEGORIES = [
   "notifications",
   "deactivated_accounts",

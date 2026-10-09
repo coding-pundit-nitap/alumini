@@ -10,8 +10,8 @@ import type { JobRow } from "../domain/job";
 const toRow = (r: JobRow): JobRow => ({ ...r, skills: [...r.skills] });
 
 /**
- * State changes are `UPDATE … WHERE status = <expected>`; zero rows means the row already moved.
- * The outbox event shares the transaction.
+ * State changes are `UPDATE … WHERE status = <expected>`; zero rows means the
+ * row already moved. The outbox event shares the transaction.
  */
 export function createPrismaJobStore(deps: {
   runner: Pick<TransactionRunner, "run">;

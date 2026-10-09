@@ -60,7 +60,10 @@ import { readRoleMatrixFromDoc } from "../support/rbac-matrix-doc";
 /** Thrown by any dependency the use case touches after authorization passed. */
 class ReachedStore extends Error {}
 
-/** Any property read or call throws ReachedStore. Typed `never` so it stands in for any dependency. */
+/**
+ * Any property read or call throws ReachedStore. Typed `never` so it stands in
+ * for any dependency.
+ */
 const tripwire = (): never =>
   new Proxy(function () {}, {
     get: (_target, prop) => {

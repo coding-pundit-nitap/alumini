@@ -34,7 +34,10 @@ export const COMMENT_FORM_ID = "add-comment";
 const MAX_BODY = 2000;
 const COUNTER_THRESHOLD = 1800;
 
-/** Newest first; older pages load on scroll, with "Load more comments" as a fallback. */
+/**
+ * Newest first; older pages load on scroll, with "Load more comments" as a
+ * fallback.
+ */
 export function CommentThread({
   postId,
   comments: firstPage,

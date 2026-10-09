@@ -49,8 +49,8 @@ describe("TransactionRunner against real PostgreSQL", () => {
   });
 
   /**
-   * Locks two rows in opposite order so PostgreSQL detects a deadlock on the first attempt; retries
-   * skip the barrier.
+   * Locks two rows in opposite order so PostgreSQL detects a deadlock on the
+   * first attempt; retries skip the barrier.
    */
   async function deadlockingPair(maxRetries: number) {
     const a = await db.prisma.chapter.create({ data: { slug: "row-a" } });

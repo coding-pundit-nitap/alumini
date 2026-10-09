@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * One ref-counted `EventSource` per tab, shared by every subscriber. Opens on the first subscriber and
- * closes after the last.
+ * One ref-counted `EventSource` per tab, shared by every subscriber. Opens on
+ * the first subscriber and closes after the last.
  */
 
 type Listener = (event: MessageEvent) => void;

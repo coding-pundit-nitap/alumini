@@ -4,7 +4,10 @@ import { cn } from "@/lib/utils";
 
 import { monogram } from "./format";
 
-/** A company or institution tile: its initials on a tint that stays the same wherever it appears. */
+/**
+ * A company or institution tile: its initials on a tint that stays the same
+ * wherever it appears.
+ */
 export function ItemTile({
   name,
   className,

@@ -11,11 +11,17 @@ import {
 
 export type DevAdmin = {
   email: string;
-  /** Already hashed by the caller (Better Auth's hashPassword); this package never sees plaintext. */
+  /**
+   * Already hashed by the caller (Better Auth's hashPassword); this package
+   * never sees plaintext.
+   */
   passwordHash: string;
 };
 
-/** Roles, permissions, departments and degrees. Safe in every environment and idempotent. */
+/**
+ * Roles, permissions, departments and degrees. Safe in every environment and
+ * idempotent.
+ */
 export async function runSeed(prisma: PrismaClient): Promise<void> {
   for (const name of ROLE_NAMES) {
     await prisma.role.upsert({ where: { name }, create: { name }, update: {} });
@@ -86,11 +92,17 @@ export type SeedUser = {
   email: string;
   name: string;
   roleName: RoleName;
-  /** Already hashed by the caller (Better Auth's hashPassword); this package never sees plaintext. */
+  /**
+   * Already hashed by the caller (Better Auth's hashPassword); this package
+   * never sees plaintext.
+   */
   passwordHash: string;
 };
 
-/** Self-granted, since nobody exists yet to grant it. Idempotent and never overwrites a password hash. */
+/**
+ * Self-granted, since nobody exists yet to grant it. Idempotent and never
+ * overwrites a password hash.
+ */
 export async function seedAdminUser(
   prisma: PrismaClient,
   seedUser: SeedUser
@@ -146,7 +158,10 @@ export async function seedDevAdmin(
   });
 }
 
-/** Development-only alumni coordinator: the reviewer for verification requests in local runs and E2E. */
+/**
+ * Development-only alumni coordinator: the reviewer for verification requests
+ * in local runs and E2E.
+ */
 export async function seedDevCoordinator(
   prisma: PrismaClient,
   admin: DevAdmin

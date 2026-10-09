@@ -3,8 +3,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@nitap/database";
 
 /**
- * Seeds a past event with one registrant, since the form refuses past start times. Standalone because
- * the Prisma client needs ESM. Prints `{ eventId, registrantName }` as JSON.
+ * Seeds a past event with one registrant, since the form refuses past start
+ * times. Standalone because the Prisma client needs ESM. Prints `{ eventId,
+ * registrantName }` as JSON.
  */
 async function main() {
   const connectionString = process.env.DATABASE_URL;

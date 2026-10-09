@@ -7,8 +7,8 @@ import {
 } from "@/modules/admin";
 
 /**
- * Decides what the nav shows from permissions and account state, never role names.
- * Pages still authorize on their own.
+ * Decides what the nav shows from permissions and account state, never role
+ * names. Pages still authorize on their own.
  */
 
 export type NavIconName =

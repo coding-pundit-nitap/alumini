@@ -9,7 +9,10 @@ const WEEK = Prisma.sql`to_char(date_trunc('week', created_at AT TIME ZONE 'Asia
 const inWindow = (column: string, w: AnalyticsWindow) =>
   Prisma.sql`${Prisma.raw(column)} >= ${w.from}::timestamptz AND ${Prisma.raw(column)} < ${w.to}::timestamptz`;
 
-/** Only counts leave this file. Names passed to Prisma.raw are constants, never input. */
+/**
+ * Only counts leave this file. Names passed to Prisma.raw are constants, never
+ * input.
+ */
 export function createPrismaAnalyticsStore(db: PrismaClient): AnalyticsStore {
   const weekly = (table: string, w: AnalyticsWindow, extra = Prisma.empty) =>
     db.$queryRaw<WeekPoint[]>`

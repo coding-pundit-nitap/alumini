@@ -1,6 +1,12 @@
-/** Error taxonomy and the API error envelope. Pure: adapters convert with `toApiError`. */
+/**
+ * Error taxonomy and the API error envelope. Pure: adapters convert with
+ * `toApiError`.
+ */
 
-/** Safe, human-readable message and HTTP status for every code. Clients branch on `code`. */
+/**
+ * Safe, human-readable message and HTTP status for every code. Clients branch
+ * on `code`.
+ */
 export const ERROR_CATALOG: Record<
   string,
   { status: number; message: string }
@@ -295,9 +301,15 @@ export type ValidationDetail = {
 };
 
 type ErrorOptions = {
-  /** Overrides the default code within the kind (e.g. `ACCOUNT_SUSPENDED` for an authorization error). */
+  /**
+   * Overrides the default code within the kind (e.g. `ACCOUNT_SUSPENDED` for an
+   * authorization error).
+   */
   code?: string;
-  /** Overrides the catalogue message. Ignored for `UnexpectedError`, which is always generic. */
+  /**
+   * Overrides the catalogue message. Ignored for `UnexpectedError`, which is
+   * always generic.
+   */
   message?: string;
   details?: unknown[];
   /** The underlying error. Logged, never sent to the client. */
@@ -335,7 +347,10 @@ export class ValidationError extends AppError {
   }
 }
 
-/** The request itself was refused before validation: a body too large (413) or not JSON (415). */
+/**
+ * The request itself was refused before validation: a body too large (413) or
+ * not JSON (415).
+ */
 export class RequestRejectedError extends AppError {
   readonly kind = "validation";
   constructor(
@@ -358,7 +373,10 @@ export class AuthenticationError extends AppError {
 
 export class AuthorizationError extends AppError {
   readonly kind = "authorization";
-  /** `hideExistence` answers 404 so a caller cannot learn that a resource exists. */
+  /**
+   * `hideExistence` answers 404 so a caller cannot learn that a resource
+   * exists.
+   */
   constructor(options: ErrorOptions & { hideExistence?: boolean } = {}) {
     super(
       options.hideExistence ? 404 : 403,
@@ -375,7 +393,10 @@ export class NotFoundError extends AppError {
   }
 }
 
-/** Duplicate, capacity, invalid transition. The code is always specific (`CONNECTION_EXISTS`, `EVENT_FULL`, …). */
+/**
+ * Duplicate, capacity, invalid transition. The code is always specific
+ * (`CONNECTION_EXISTS`, `EVENT_FULL`, …).
+ */
 export class ConflictError extends AppError {
   readonly kind = "conflict";
   constructor(code: string, options: Omit<ErrorOptions, "code"> = {}) {
@@ -405,7 +426,10 @@ export class DependencyUnavailableError extends AppError {
   }
 }
 
-/** Contention between requests, not an unreachable dependency, so it is not a DependencyUnavailableError. */
+/**
+ * Contention between requests, not an unreachable dependency, so it is not a
+ * DependencyUnavailableError.
+ */
 export class TransactionRetryExhaustedError extends AppError {
   readonly kind = "transaction_conflict";
   constructor(options: ErrorOptions = {}) {
@@ -413,7 +437,10 @@ export class TransactionRetryExhaustedError extends AppError {
   }
 }
 
-/** A bug or unknown failure. The message is for logs; the client always gets the generic one. */
+/**
+ * A bug or unknown failure. The message is for logs; the client always gets the
+ * generic one.
+ */
 export class UnexpectedError extends AppError {
   readonly kind = "unexpected";
   constructor(message?: string, options: Omit<ErrorOptions, "message"> = {}) {
@@ -432,7 +459,10 @@ export type ApiErrorResponse = {
   body: ApiErrorBody;
 };
 
-/** The one place an error becomes a status, headers and the envelope. Unknown errors become `INTERNAL_ERROR`. */
+/**
+ * The one place an error becomes a status, headers and the envelope. Unknown
+ * errors become `INTERNAL_ERROR`.
+ */
 export function toApiError(
   error: unknown,
   requestId: string

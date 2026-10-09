@@ -57,9 +57,15 @@ export const TOMBSTONE_TEXT = "This message was removed by a moderator.";
 const BACKFILL_MS = 30_000;
 const OLDER_PAGE = 30;
 const MAX_BODY = 4000;
-/** Consecutive messages from one sender within this window share a cluster (one avatar, one tail). */
+/**
+ * Consecutive messages from one sender within this window share a cluster (one
+ * avatar, one tail).
+ */
 const CLUSTER_MS = 5 * 60_000;
-/** Within this distance of the bottom, new messages scroll into view instead of raising the pill. */
+/**
+ * Within this distance of the bottom, new messages scroll into view instead of
+ * raising the pill.
+ */
 const NEAR_BOTTOM_PX = 120;
 const LONG_BODY_CHARS = 700;
 const LONG_BODY_LINES = 12;
@@ -110,8 +116,9 @@ function layout(messages: ThreadMessage[], viewerId: string) {
 }
 
 /**
- * The server renders the first page; older pages load on scroll-up. An SSE hint, a 30 s poll and tab
- * focus keep it fresh through the API; the stream carries only ids.
+ * The server renders the first page; older pages load on scroll-up. An SSE
+ * hint, a 30 s poll and tab focus keep it fresh through the API; the stream
+ * carries only ids.
  */
 export function Thread(props: {
   conversationId: string;
@@ -121,7 +128,10 @@ export function Thread(props: {
   isGroup?: boolean;
   initialMessages: ThreadMessage[];
   initialNextCursor: string | null;
-  /** Where the viewer had read up to when the page loaded; draws the unread divider. */
+  /**
+   * Where the viewer had read up to when the page loaded; draws the unread
+   * divider.
+   */
   initialLastReadSeq?: string | null;
 }) {
   const { conversationId, viewerId, people, isGroup = false } = props;

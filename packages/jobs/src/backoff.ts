@@ -1,6 +1,9 @@
 import type { RetryPolicy } from "./define-job.ts";
 
-/** Exponential from `baseDelayMs`, capped at `maxDelayMs`, with jitter so failures don't retry in lockstep. */
+/**
+ * Exponential from `baseDelayMs`, capped at `maxDelayMs`, with jitter so
+ * failures don't retry in lockstep.
+ */
 export function computeBackoffMs(
   policy: RetryPolicy,
   attemptsMade: number,

@@ -9,13 +9,13 @@
     "./hooks/*": "./src/hooks/*.ts"
   },
   "scripts": {
-    "lint": "eslint . --max-warnings 0",
-    "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit --skipLibCheck",
-    "lint:fix": "eslint --fix",
-    "typecheck": "tsc --noEmit",
+    "generate:component": "turbo gen react-component",
+    "lint": "oxlint --type-aware --max-warnings=0",
+    "lint:fix": "oxlint --type-aware --fix",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -25,12 +25,7 @@
     "lucide-react": "^1.47.0",
     "tailwind-merge": "^3.7.0"
   },
-  "peerDependencies": {
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
-  },
   "devDependencies": {
-    "@nitap/eslint-config": "workspace:*",
     "@nitap/typescript-config": "workspace:*",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -38,11 +33,15 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "eslint": "^10.11.0",
     "happy-dom": "^20.14.5",
+    "oxlint": "^1.87.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
+  },
+  "peerDependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   }
 }

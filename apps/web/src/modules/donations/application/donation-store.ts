@@ -57,15 +57,24 @@ export type LockedDonation = {
   paymentReference: string | null;
 };
 
-/** One transaction per write: the row, its audit and its outbox event commit together. */
+/**
+ * One transaction per write: the row, its audit and its outbox event commit
+ * together.
+ */
 export type DonationTx = {
-  /** Read under FOR SHARE, so a concurrent close waits for a pledge in flight (and vice versa). */
+  /**
+   * Read under FOR SHARE, so a concurrent close waits for a pledge in flight
+   * (and vice versa).
+   */
   findCampaign(id: string): Promise<Campaign | null>;
   findCampaignForUpdate(id: string): Promise<Campaign | null>;
   insertCampaign(input: CampaignInput, createdBy: string): Promise<string>;
   updateCampaign(id: string, input: CampaignInput): Promise<void>;
   setCampaignStatus(id: string, to: CampaignStatus): Promise<void>;
-  /** Throws ConflictError(PAYMENT_REFERENCE_TAKEN) on a reference already used in the campaign. */
+  /**
+   * Throws ConflictError(PAYMENT_REFERENCE_TAKEN) on a reference already used
+   * in the campaign.
+   */
   insertDonation(input: {
     campaignId: string;
     donorId: string;
@@ -93,7 +102,10 @@ export type DonationStore = {
 };
 
 export type DonationQueries = {
-  /** Campaigns in the given states with progress; ACTIVE ones soonest-ending first, then newest. */
+  /**
+   * Campaigns in the given states with progress; ACTIVE ones soonest-ending
+   * first, then newest.
+   */
   listCampaigns(
     statuses: readonly CampaignStatus[]
   ): Promise<CampaignWithProgress[]>;

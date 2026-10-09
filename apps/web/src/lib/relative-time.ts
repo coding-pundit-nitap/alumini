@@ -2,7 +2,10 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-/** "just now" (<60s or future, clock skew), "5m", "3h", "2d" (<7d), else "12 Mar" (same year) / "12 Mar 2025". */
+/**
+ * "just now" (<60s or future, clock skew), "5m", "3h", "2d" (<7d), else "12
+ * Mar" (same year) / "12 Mar 2025".
+ */
 export function relativeTime(date: Date, now: Date = new Date()): string {
   const diff = now.getTime() - date.getTime();
 

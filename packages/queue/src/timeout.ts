@@ -5,7 +5,10 @@ export class TimeoutError extends Error {
   }
 }
 
-/** Rejects with a TimeoutError if `work` has not settled within `ms`. The work itself is not cancelled. */
+/**
+ * Rejects with a TimeoutError if `work` has not settled within `ms`. The work
+ * itself is not cancelled.
+ */
 export async function withTimeout<T>(
   work: Promise<T>,
   ms: number,

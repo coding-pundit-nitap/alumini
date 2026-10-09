@@ -63,7 +63,10 @@ export const OUTBOX_EVENTS = {
   ...eventJobs,
 } as const;
 
-/** Every job the worker knows, including scheduled ones that no outbox event produces. */
+/**
+ * Every job the worker knows, including scheduled ones that no outbox event
+ * produces.
+ */
 export const JOBS = {
   ...OUTBOX_EVENTS,
   "outbox.prune": outboxPrune,

@@ -23,8 +23,8 @@ export type AccessAction = (
 ) => Promise<ActionResult<unknown>>;
 
 /**
- * Confirms, posts `fields` to a Server Action and refreshes on success. The server takes the actor
- * from the session.
+ * Confirms, posts `fields` to a Server Action and refreshes on success. The
+ * server takes the actor from the session.
  */
 export function ConfirmButton(props: {
   label: string;
@@ -37,7 +37,10 @@ export function ConfirmButton(props: {
   ready?: boolean;
   disabledReason?: string | undefined;
   action: AccessAction;
-  /** Called whenever the dialog closes, so a form inside it starts empty next time. */
+  /**
+   * Called whenever the dialog closes, so a form inside it starts empty next
+   * time.
+   */
   onClose?: () => void;
   children?: ReactNode;
 }) {

@@ -25,7 +25,10 @@ const RETRYABLE_CODES = new Set([
   "EPROTOCOL",
 ]);
 
-/** Classifies as retryable or permanent without copying the message, which often echoes the recipient. */
+/**
+ * Classifies as retryable or permanent without copying the message, which often
+ * echoes the recipient.
+ */
 function classify(error: unknown): EmailSendError {
   if (error instanceof EmailSendError) return error;
   const { code, responseCode } = error as {

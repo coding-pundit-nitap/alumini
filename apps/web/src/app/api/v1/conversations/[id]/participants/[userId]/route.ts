@@ -7,7 +7,10 @@ import { uuidParam } from "../../../../_lib/request";
 
 type Params = { params: Promise<{ id: string; userId: string }> };
 
-/** DELETE /api/v1/conversations/:id/participants/:userId — the creator removes a member; a member removing themselves leaves. */
+/**
+ * DELETE /api/v1/conversations/:id/participants/:userId — the creator removes a
+ * member; a member removing themselves leaves.
+ */
 export const DELETE = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const params = await ctx.params;

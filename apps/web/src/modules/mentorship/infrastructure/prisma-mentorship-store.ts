@@ -16,8 +16,8 @@ import { activeMentorSql } from "./active-mentor-sql";
 const toRow = (r: MentorshipRow): MentorshipRow => ({ ...r });
 
 /**
- * Open-pair uniqueness is enforced by the database (`uq_mentorship_open_pair`). State changes are
- * guarded updates, and outbox events share the transaction.
+ * Open-pair uniqueness is enforced by the database (`uq_mentorship_open_pair`).
+ * State changes are guarded updates, and outbox events share the transaction.
  */
 export function createPrismaMentorshipStore(deps: {
   runner: Pick<TransactionRunner, "run">;

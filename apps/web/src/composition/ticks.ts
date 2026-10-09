@@ -8,7 +8,10 @@ export const loadTicks = createTickLoader(prisma);
 
 type Ticked = { tick?: Tick | null };
 
-/** Adds `tick` to each row in one query. Best effort: on failure, rows show without one. */
+/**
+ * Adds `tick` to each row in one query. Best effort: on failure, rows show
+ * without one.
+ */
 export async function addTicks<T>(
   rows: readonly T[],
   idOf: (row: T) => string,

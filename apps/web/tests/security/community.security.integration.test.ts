@@ -33,8 +33,9 @@ import { createUnreact } from "@/modules/posts/application/unreact";
 import { createPrismaPostsStore } from "@/modules/posts/infrastructure/prisma-posts-store";
 
 /**
- * RBAC and IDOR cases for posts, achievements and moderation against real PostgreSQL and the real
- * seed. `achievement.review` is held by the coordinator and admin roles, not MODERATOR.
+ * RBAC and IDOR cases for posts, achievements and moderation against real
+ * PostgreSQL and the real seed. `achievement.review` is held by the coordinator
+ * and admin roles, not MODERATOR.
  */
 describe("community security", () => {
   let db: TestDatabase;
@@ -88,7 +89,10 @@ describe("community security", () => {
     });
   }
 
-  /** A verified member holding exactly the grants of `roleName` (or no role at all). */
+  /**
+   * A verified member holding exactly the grants of `roleName` (or no role at
+   * all).
+   */
   async function actorWithRole(roleName?: RoleName): Promise<{
     userId: string;
     actor: Actor;

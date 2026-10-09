@@ -4,8 +4,9 @@ import Markdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
 /**
- * The only place post and comment Markdown is rendered, so this allow-list (bold, italic, links,
- * lists) is the whole defense. No images, headings or raw HTML.
+ * The only place post and comment Markdown is rendered, so this allow-list
+ * (bold, italic, links, lists) is the whole defense. No images, headings or raw
+ * HTML.
  */
 const schema = {
   ...defaultSchema,

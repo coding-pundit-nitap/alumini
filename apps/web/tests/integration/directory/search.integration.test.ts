@@ -229,7 +229,10 @@ describe("directory search against real PostgreSQL", () => {
   });
 
   describe("connections and blocks", () => {
-    /** Writes the pair's row directly, in canonical order, as the connections module would. */
+    /**
+     * Writes the pair's row directly, in canonical order, as the connections
+     * module would.
+     */
     async function link(
       x: string,
       y: string,
@@ -489,7 +492,10 @@ describe("directory query plans", () => {
     known = row!.full_name;
   }, 120_000);
 
-  /** The adapter's own SQL and parameters, captured from a query log of one real call. */
+  /**
+   * The adapter's own SQL and parameters, captured from a query log of one real
+   * call.
+   */
   async function capture(
     params: Record<string, string>
   ): Promise<{ sql: string; values: unknown[] }> {
@@ -540,7 +546,10 @@ describe("directory query plans", () => {
     "Actual Loops"?: number;
     Plans?: PlanNode[];
   };
-  /** Rows the executed query actually read from `connection`, over every node and loop. */
+  /**
+   * Rows the executed query actually read from `connection`, over every node
+   * and loop.
+   */
   async function connectionRowsRead(
     params: Record<string, string>
   ): Promise<number> {

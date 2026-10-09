@@ -3,8 +3,8 @@ import { UnexpectedError } from "@/lib/errors";
 import type { MemberStore } from "./member-store";
 
 /**
- * Idempotent, so sign-up, email verification and getActor() can all call it. Assigns no role; that
- * comes with the VERIFIED transition.
+ * Idempotent, so sign-up, email verification and getActor() can all call it.
+ * Assigns no role; that comes with the VERIFIED transition.
  */
 export function createProvisionMember(deps: { store: MemberStore }) {
   return async function provisionMember(

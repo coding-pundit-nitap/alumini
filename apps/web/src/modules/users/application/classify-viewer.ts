@@ -6,7 +6,10 @@ import type { Viewer } from "../domain/visibility";
 import type { Can } from "./authz";
 import type { ConnectionLookup, Relation } from "./connection-lookup";
 
-/** A failed connection lookup fails closed: the viewer is treated as a plain member. */
+/**
+ * A failed connection lookup fails closed: the viewer is treated as a plain
+ * member.
+ */
 export function classifyViewer(deps: {
   connections: ConnectionLookup;
   can: Can;

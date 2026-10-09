@@ -17,7 +17,8 @@ import {
 
 /**
  * Runs a Server Action and turns any failure into an ActionResult, logged once.
- * Never call `redirect()` or `notFound()` inside `work`: they throw and would be caught here.
+ * Never call `redirect()` or `notFound()` inside `work`: they throw and would
+ * be caught here.
  */
 export async function runAction<T>(
   work: () => Promise<T>

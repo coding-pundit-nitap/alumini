@@ -1,7 +1,10 @@
 import { Prisma } from "@nitap/database";
 import { PERMISSIONS } from "@nitap/database/permissions";
 
-/** A verified account holding `mentorship.respond` through a role. Callers check `accepting` and slots. */
+/**
+ * A verified account holding `mentorship.respond` through a role. Callers check
+ * `accepting` and slots.
+ */
 export function activeMentorSql(userAlias: string) {
   const u = Prisma.raw(userAlias);
   return Prisma.sql`(${u}.account_state = 'VERIFIED' AND EXISTS (

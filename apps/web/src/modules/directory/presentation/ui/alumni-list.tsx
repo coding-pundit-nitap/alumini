@@ -95,7 +95,10 @@ function Person({ person, isYou }: { person: AlumniSummary; isYou: boolean }) {
   );
 }
 
-/** The server renders the first page; later pages load from `GET /api/v1/alumni`. */
+/**
+ * The server renders the first page; later pages load from `GET
+ * /api/v1/alumni`.
+ */
 export function AlumniList({
   people,
   viewerId,
@@ -106,7 +109,10 @@ export function AlumniList({
 }: {
   people: AlumniSummary[];
   viewerId?: string;
-  /** The search's params without `cursor`; omit to disable loading more in place. */
+  /**
+   * The search's params without `cursor`; omit to disable loading more in
+   * place.
+   */
   query?: string;
   nextCursor?: string | null;
   nextHref?: string | null;

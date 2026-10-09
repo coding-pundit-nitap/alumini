@@ -20,7 +20,10 @@ export function formError(result: ItemActionResult | null): string | null {
     : null;
 }
 
-/** Return to the list after a saved edit; `refresh()` alone would keep showing the form. */
+/**
+ * Return to the list after a saved edit; `refresh()` alone would keep showing
+ * the form.
+ */
 export function useReturnToListOnSavedEdit(
   section: string,
   id: string | undefined,

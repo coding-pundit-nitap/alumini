@@ -10,7 +10,10 @@ export type EventActivityDeps = {
   deliver: DeliverNotification;
   /** Re-reads the current email; null skips email (account may be deactivated). */
   findEmail: (userId: string) => Promise<string | null>;
-  /** Non-CANCELLED registrants right now (REGISTERED/ATTENDED/NO_SHOW: current state, not at emit time). */
+  /**
+   * Non-CANCELLED registrants right now (REGISTERED/ATTENDED/NO_SHOW: current
+   * state, not at emit time).
+   */
   findActiveRegistrants: (eventId: string) => Promise<string[]>;
   /** Symmetric, checked at delivery time. */
   blocked: (a: string, b: string) => Promise<boolean>;

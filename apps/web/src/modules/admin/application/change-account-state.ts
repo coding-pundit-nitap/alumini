@@ -14,7 +14,10 @@ import { guardTarget } from "./access-guards";
 import type { Authorize, LoadGrants } from "./authorize-port";
 import { toValidationError } from "./validation";
 
-/** The requested state picks the permission; anything but "VERIFIED" needs user.suspend. */
+/**
+ * The requested state picks the permission; anything but "VERIFIED" needs
+ * user.suspend.
+ */
 export function createChangeAccountState(deps: {
   store: AccessStore;
   authorize: Authorize;

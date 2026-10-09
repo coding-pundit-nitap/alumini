@@ -70,9 +70,9 @@ describe("scrubEvent", () => {
     expect(scrubbed.user).toEqual({ id: "u1" });
     expect(scrubbed.request?.url).toBe("https://alumni.example/api/v1/x");
     expect(scrubbed.request?.headers?.["x-request-id"]).toBe("r1");
-    expect((scrubbed.request?.data as Record<string, unknown>).password).toBe(
-      REDACTED
-    );
+    expect(
+      (scrubbed.request?.data as Record<string, unknown> | undefined)?.password
+    ).toBe(REDACTED);
     expect(scrubbed.exception?.values?.[0]?.value).toBe("boom");
   });
 });

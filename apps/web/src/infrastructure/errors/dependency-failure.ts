@@ -8,7 +8,10 @@ import {
   ValidationError,
 } from "@/lib/errors";
 
-/** How long a client should wait before retrying a request that met an unavailable dependency. */
+/**
+ * How long a client should wait before retrying a request that met an
+ * unavailable dependency.
+ */
 export const DEPENDENCY_RETRY_AFTER_SECONDS = 5;
 
 type Dependency = "postgres" | "storage";
@@ -76,8 +79,8 @@ function databaseUnavailable(error: unknown): boolean {
 }
 
 /**
- * Better Auth rethrows database failures during session reads as a bare FAILED_TO_GET_SESSION,
- * which can only mean PostgreSQL did not answer.
+ * Better Auth rethrows database failures during session reads as a bare
+ * FAILED_TO_GET_SESSION, which can only mean PostgreSQL did not answer.
  */
 function failedSessionLookup(error: unknown): boolean {
   return (
@@ -112,7 +115,10 @@ function classify(error: unknown): Dependency | null {
   return null;
 }
 
-/** Maps PostgreSQL and storage outages to a 503, and text PostgreSQL rejects (NUL bytes) to a 400. */
+/**
+ * Maps PostgreSQL and storage outages to a 503, and text PostgreSQL rejects
+ * (NUL bytes) to a 400.
+ */
 export function asDependencyFailure(error: unknown): unknown {
   if (error instanceof AppError) return error;
   if (unstorableText(error))
@@ -126,7 +132,10 @@ export function asDependencyFailure(error: unknown): unknown {
   });
 }
 
-/** True when `error` means PostgreSQL could not be reached or answered in time (no metric, no wrapping). */
+/**
+ * True when `error` means PostgreSQL could not be reached or answered in time
+ * (no metric, no wrapping).
+ */
 export function isDatabaseUnavailable(error: unknown): boolean {
   return classify(error) === "postgres";
 }

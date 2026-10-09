@@ -30,7 +30,10 @@ const STATUS_BADGE: Record<
   CLOSED: "secondary",
 };
 
-/** `closeAction` must be the Server Action itself, not a closure, to cross into this Client Component. */
+/**
+ * `closeAction` must be the Server Action itself, not a closure, to cross into
+ * this Client Component.
+ */
 export function MyJobsList({
   items,
   closeAction,

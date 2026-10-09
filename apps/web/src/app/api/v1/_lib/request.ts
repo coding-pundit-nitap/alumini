@@ -15,7 +15,10 @@ export function uuidParam(value: string): string {
   return parsed.data;
 }
 
-/** Far above the largest legitimate body (a few KiB) without letting a client make us buffer megabytes. */
+/**
+ * Far above the largest legitimate body (a few KiB) without letting a client
+ * make us buffer megabytes.
+ */
 export const MAX_JSON_BODY_BYTES = 64 * 1024;
 
 function isJsonMediaType(header: string | null): boolean {
@@ -25,7 +28,10 @@ function isJsonMediaType(header: string | null): boolean {
   );
 }
 
-/** Refuses non-JSON with 415 and oversized bodies with 413, counting bytes as they stream. */
+/**
+ * Refuses non-JSON with 415 and oversized bodies with 413, counting bytes as
+ * they stream.
+ */
 export async function readBodyText(request: Request): Promise<string> {
   // No body (a bodiless POST such as an event registration): nothing to type-check or bound.
   if (!request.body || request.headers.get("content-length") === "0") return "";
@@ -62,7 +68,10 @@ export function parseJson(text: string): unknown {
   }
 }
 
-/** Every Route Handler reads a JSON body through this (an architecture test forbids `request.json()`). */
+/**
+ * Every Route Handler reads a JSON body through this (an architecture test
+ * forbids `request.json()`).
+ */
 export async function readJson(request: Request): Promise<unknown> {
   return parseJson(await readBodyText(request));
 }

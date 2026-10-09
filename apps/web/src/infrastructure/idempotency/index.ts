@@ -25,7 +25,10 @@ const port: IdempotencyPort = {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Without a key or a signed-in user, the work just runs. The fingerprint is method, path and raw body. */
+/**
+ * Without a key or a signed-in user, the work just runs. The fingerprint is
+ * method, path and raw body.
+ */
 export async function respondIdempotently(
   request: Request,
   args: {

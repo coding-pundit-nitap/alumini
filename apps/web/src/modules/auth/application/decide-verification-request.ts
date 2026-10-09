@@ -20,8 +20,9 @@ export type DecideResult =
   { outcome: "decided" } | { outcome: "already_decided" };
 
 /**
- * The only path to APPROVED. Everything a decision changes commits in one transaction. Self-review is
- * checked explicitly so the client gets SELF_REVIEW_FORBIDDEN; a database CHECK backs it.
+ * The only path to APPROVED. Everything a decision changes commits in one
+ * transaction. Self-review is checked explicitly so the client gets
+ * SELF_REVIEW_FORBIDDEN; a database CHECK backs it.
  */
 export function createDecideVerificationRequest(deps: {
   store: VerificationStore;

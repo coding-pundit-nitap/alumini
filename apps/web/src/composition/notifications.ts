@@ -31,7 +31,10 @@ export const getUnreadCount = useCases.unreadCount;
 export const getNotificationPreferences = useCases.getPreferences;
 export const setNotificationPreference = useCases.setPreference;
 
-/** The queue Redis (noeviction) is a different server from the cache Redis; connect on first use only. */
+/**
+ * The queue Redis (noeviction) is a different server from the cache Redis;
+ * connect on first use only.
+ */
 let queueAdmin: QueueAdmin | undefined;
 const replayUseCases = createReplayNotifications({
   authorize,

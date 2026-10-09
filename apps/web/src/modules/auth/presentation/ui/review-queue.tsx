@@ -21,7 +21,10 @@ const CROSS_CHECK_BADGE = {
   MISMATCH: "destructive",
 } as const;
 
-/** The pending queue, oldest first. Each item carries its evidence, its cross-check result and a decision form. */
+/**
+ * The pending queue, oldest first. Each item carries its evidence, its
+ * cross-check result and a decision form.
+ */
 export function ReviewQueue({
   page,
   action,

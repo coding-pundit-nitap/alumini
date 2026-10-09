@@ -5,8 +5,8 @@ import { adminNavigation, groupAdminNav } from "@/modules/admin";
 import { can, getActor } from "@/modules/auth";
 
 /**
- * Not a security boundary: every page authorizes through its own use case. This only hides the
- * shell (404) from anyone without an admin permission.
+ * Not a security boundary: every page authorizes through its own use case. This
+ * only hides the shell (404) from anyone without an admin permission.
  */
 export default async function AdminLayout({
   children,

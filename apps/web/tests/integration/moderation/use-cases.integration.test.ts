@@ -16,7 +16,10 @@ import type { ModerationStore } from "@/modules/moderation/application/moderatio
 import { createResolveReport } from "@/modules/moderation/application/resolve-report";
 import { createPrismaModerationStore } from "@/modules/moderation/infrastructure/prisma-moderation-store";
 
-/** Resolves once `n` callers have reached it, so none proceeds before all have arrived. Can't deadlock: it runs before any lock is taken. */
+/**
+ * Resolves once `n` callers have reached it, so none proceeds before all have
+ * arrived. Can't deadlock: it runs before any lock is taken.
+ */
 function barrier(n: number) {
   let arrived = 0;
   let release: () => void;

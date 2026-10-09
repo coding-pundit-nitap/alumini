@@ -8,7 +8,10 @@ import type { Authorize } from "./authz";
 import type { PostsStore } from "./posts-store";
 import { refuse } from "./refusal";
 
-/** Removes the caller's reaction row, if any. Not an error to unreact when there was nothing to remove. */
+/**
+ * Removes the caller's reaction row, if any. Not an error to unreact when there
+ * was nothing to remove.
+ */
 export function createUnreact(deps: {
   store: PostsStore;
   authorize: Authorize;

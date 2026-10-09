@@ -4,8 +4,8 @@ import type { JobProcessor } from "@nitap/queue";
 import type { DeliverNotification } from "../notifications/deliver.ts";
 
 /**
- * Pledges notify campaign managers; confirmations and non-receipts notify the donor. Transactional,
- * since they are records of money.
+ * Pledges notify campaign managers; confirmations and non-receipts notify the
+ * donor. Transactional, since they are records of money.
  */
 export function createDonationEventProcessor(
   type: "donation.pledged" | "donation.confirmed" | "donation.not-received",

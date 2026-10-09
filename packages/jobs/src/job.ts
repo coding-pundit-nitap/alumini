@@ -2,19 +2,28 @@ import { z } from "zod";
 
 import { defineJob, FANOUT_TIMEOUT_MS } from "./define-job.ts";
 
-/** Ids only: a consumer re-reads the row, never trusts a name or note in the event. */
+/**
+ * Ids only: a consumer re-reads the row, never trusts a name or note in the
+ * event.
+ */
 const jobEventPayload = z
   .object({
     v: z.literal(1),
     jobId: z.uuid(),
     postedBy: z.uuid(),
-    /** Who acted: the poster (submit), a reviewer (publish/reject), or whoever closed it. */
+    /**
+     * Who acted: the poster (submit), a reviewer (publish/reject), or whoever
+     * closed it.
+     */
     actorId: z.uuid(),
   })
   .strict();
 export type JobEventPayload = z.infer<typeof jobEventPayload>;
 
-/** `job.published` alone distinguishes a moderated publish from a `job.approve` holder's direct one. */
+/**
+ * `job.published` alone distinguishes a moderated publish from a `job.approve`
+ * holder's direct one.
+ */
 const jobPublishedPayload = jobEventPayload.extend({
   directPublish: z.boolean(),
 });

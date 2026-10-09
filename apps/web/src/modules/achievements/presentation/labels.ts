@@ -53,7 +53,10 @@ export const CATEGORY: Record<
   },
 };
 
-/** The category's display meta; an unknown value (the column is a plain string) falls back to Other. */
+/**
+ * The category's display meta; an unknown value (the column is a plain string)
+ * falls back to Other.
+ */
 export const categoryMeta = (category: string) =>
   CATEGORY[category as Category] ?? CATEGORY.OTHER;
 

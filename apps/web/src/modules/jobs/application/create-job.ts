@@ -21,7 +21,10 @@ export type RateLimiter = {
   ): Promise<{ allowed: boolean; retryAfter: number | null }>;
 };
 
-/** Creating also submits; the outcome depends on whether the actor holds `job.approve`. */
+/**
+ * Creating also submits; the outcome depends on whether the actor holds
+ * `job.approve`.
+ */
 export function createCreateJob(deps: {
   store: JobStore;
   authorize: Authorize;

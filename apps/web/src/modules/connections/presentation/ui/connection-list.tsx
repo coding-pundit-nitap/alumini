@@ -62,7 +62,10 @@ function context(item: ListedConnection, tab: ConnectionTab) {
 
 const PILL = "rounded-full";
 
-/** Opens (or starts) the 1:1 with this member. Its own component: only it needs the router. */
+/**
+ * Opens (or starts) the 1:1 with this member. Its own component: only it needs
+ * the router.
+ */
 function MessageControl({
   userId,
   action,
@@ -247,8 +250,9 @@ type WireConnection = Omit<ListedConnection, "requestedAt" | "respondedAt"> & {
 };
 
 /**
- * The server renders the first page; later pages load from `GET /api/v1/connections`. `messageAction`
- * is passed in because this module does not depend on messaging.
+ * The server renders the first page; later pages load from `GET
+ * /api/v1/connections`. `messageAction` is passed in because this module does
+ * not depend on messaging.
  */
 export function ConnectionList({
   items,

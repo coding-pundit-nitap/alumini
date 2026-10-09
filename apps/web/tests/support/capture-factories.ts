@@ -6,7 +6,10 @@ export type Captured = {
   built: ReturnType<typeof vi.fn>;
 };
 
-/** Replaces each `create*` factory with one that records its dependencies and returns a mock. */
+/**
+ * Replaces each `create*` factory with one that records its dependencies and
+ * returns a mock.
+ */
 export function captureFactories<T extends Record<string, unknown>>(
   real: T,
   captured: Map<string, Captured>

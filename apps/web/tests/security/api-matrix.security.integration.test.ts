@@ -84,7 +84,10 @@ const NON_VERIFIED: AccountState[] = [
   "DEACTIVATED",
 ];
 
-/** A well-formed placeholder for every dynamic segment: unknown ids, and a real role name. */
+/**
+ * A well-formed placeholder for every dynamic segment: unknown ids, and a real
+ * role name.
+ */
 function concretePath(template: string) {
   const params: Record<string, string> = {};
   const url = template.replace(/\[([^\]]+)\]/g, (_m, name: string) => {

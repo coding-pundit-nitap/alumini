@@ -9,7 +9,10 @@ import { cn } from "@/lib/utils";
 
 import { SELECT_CLASS, STATE_LABEL } from "./labels";
 
-/** A plain GET form, like the audit filters: works without JavaScript and gives a shareable URL. */
+/**
+ * A plain GET form, like the audit filters: works without JavaScript and gives
+ * a shareable URL.
+ */
 export function UserFilters({
   values,
   roles,

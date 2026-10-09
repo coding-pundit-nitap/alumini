@@ -8,7 +8,10 @@ import {
 export { PERMISSIONS };
 export type { GrantablePermission };
 
-/** Granted by account state alone, never by a role, so they are not in the grant registry. */
+/**
+ * Granted by account state alone, never by a role, so they are not in the grant
+ * registry.
+ */
 export const SELF_SERVICE_PERMISSIONS = {
   VERIFICATION_REQUEST: "verification.request",
 } as const;
@@ -20,7 +23,10 @@ export type Permission = GrantablePermission | SelfServicePermission;
 
 const REGISTERED: ReadonlySet<string> = new Set(Object.values(PERMISSIONS));
 
-/** Self-service names are rejected, so a database row naming one is dropped like any unknown grant. */
+/**
+ * Self-service names are rejected, so a database row naming one is dropped like
+ * any unknown grant.
+ */
 export function isPermission(value: string): value is GrantablePermission {
   return REGISTERED.has(value);
 }

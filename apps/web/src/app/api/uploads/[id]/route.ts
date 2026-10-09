@@ -7,7 +7,10 @@ import { getActor } from "@/modules/auth";
 
 const IMAGE_URL_TTL_SECONDS = 60;
 
-/** Post images: only uploads a live post references resolve; a fresh short-lived presigned GET each time. */
+/**
+ * Post images: only uploads a live post references resolve; a fresh short-lived
+ * presigned GET each time.
+ */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }

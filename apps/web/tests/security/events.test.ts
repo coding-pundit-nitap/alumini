@@ -5,7 +5,10 @@ import {
   type RoleName,
 } from "@nitap/database/role-permissions";
 
-/** Organizer tools against the real authorizer: 401, 403 for strangers, and the before-start rule. */
+/**
+ * Organizer tools against the real authorizer: 401, 403 for strangers, and the
+ * before-start rule.
+ */
 import { AuthenticationError, AuthorizationError } from "@/lib/errors";
 import { createAuthorization } from "@/modules/auth/application/authorize";
 import type { Actor } from "@/modules/auth";

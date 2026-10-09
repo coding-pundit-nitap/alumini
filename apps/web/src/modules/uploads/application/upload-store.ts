@@ -29,12 +29,18 @@ export type UploadTx = {
   find(id: string): Promise<UploadRecord | null>;
   countOpen(ownerId: string): Promise<number>;
   create(input: NewUpload): Promise<UploadRecord>;
-  /** Guarded: only a PENDING_UPLOAD row moves. False if the row was not in that state (or missing). */
+  /**
+   * Guarded: only a PENDING_UPLOAD row moves. False if the row was not in that
+   * state (or missing).
+   */
   markPendingScan(id: string): Promise<boolean>;
   enqueueScan(payload: UploadScanPayload): Promise<void>;
 };
 
-/** Every operation runs in the caller's transaction, so a row and its outbox event commit together. */
+/**
+ * Every operation runs in the caller's transaction, so a row and its outbox
+ * event commit together.
+ */
 export type UploadStore = {
   transaction<T>(work: (tx: UploadTx) => Promise<T>): Promise<T>;
 };

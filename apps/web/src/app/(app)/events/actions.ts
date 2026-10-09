@@ -19,8 +19,8 @@ import {
 } from "@/modules/events";
 
 /**
- * Converts the form's wall times and zone to UTC. Returns the id instead of redirecting, because
- * `redirect()` throws and `runAction` would catch it.
+ * Converts the form's wall times and zone to UTC. Returns the id instead of
+ * redirecting, because `redirect()` throws and `runAction` would catch it.
  */
 export async function createEventAction(
   form: EventFormValues
@@ -96,7 +96,10 @@ export async function cancelEventAction(
   );
 }
 
-/** Marks a registrant's attendance: the organizer or an `event.manage` holder, after the start. */
+/**
+ * Marks a registrant's attendance: the organizer or an `event.manage` holder,
+ * after the start.
+ */
 export async function markAttendanceAction(
   eventId: string,
   registrationId: string,

@@ -93,7 +93,10 @@ const fill = (template: string, value: (name: string) => string) => {
 const placeholder = (name: string) =>
   name === "role" ? "ALUMNI" : crypto.randomUUID();
 
-/** Classifies a response against the boundary contract; returns a reason when it breaks it. */
+/**
+ * Classifies a response against the boundary contract; returns a reason when it
+ * breaks it.
+ */
 async function breach(response: Response): Promise<string | null> {
   if (response.status >= 500) return `server error ${response.status}`;
   if (response.status < 400) {

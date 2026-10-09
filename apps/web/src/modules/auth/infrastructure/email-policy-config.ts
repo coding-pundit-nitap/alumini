@@ -5,7 +5,10 @@ import { env } from "@/config/env";
 
 import type { EmailPolicy } from "../domain/email-policy";
 
-/** Lowercase hostnames with at least one dot. No wildcards: every recognised domain is listed. */
+/**
+ * Lowercase hostnames with at least one dot. No wildcards: every recognised
+ * domain is listed.
+ */
 const DOMAIN =
   /^(?=.{1,253}$)[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
 
@@ -15,7 +18,10 @@ const entrySchema = z
 
 const policySchema = z.record(z.string().regex(DOMAIN), entrySchema);
 
-/** The configured policy is unusable. The message names problems, never the configured values. */
+/**
+ * The configured policy is unusable. The message names problems, never the
+ * configured values.
+ */
 export class InvalidEmailPolicyError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -23,7 +29,10 @@ export class InvalidEmailPolicyError extends Error {
   }
 }
 
-/** Parses INSTITUTIONAL_EMAIL_POLICY. Unset means no domain is institutional; malformed fails closed. */
+/**
+ * Parses INSTITUTIONAL_EMAIL_POLICY. Unset means no domain is institutional;
+ * malformed fails closed.
+ */
 export function parseEmailPolicy(raw: string | undefined): EmailPolicy {
   if (raw === undefined || raw.trim() === "") return new Map();
 
@@ -55,7 +64,10 @@ export function getEmailPolicy(): EmailPolicy {
   return cached;
 }
 
-/** Called at server start so a bad value stops the process instead of surprising the first sign-up. */
+/**
+ * Called at server start so a bad value stops the process instead of surprising
+ * the first sign-up.
+ */
 export function assertEmailPolicyValid(): void {
   getEmailPolicy();
 }

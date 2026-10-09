@@ -5,7 +5,10 @@ import { ROLE_NAMES, type RoleName } from "@nitap/database/role-permissions";
 
 const DOC = path.resolve(import.meta.dirname, "rbac-permission-matrix.md");
 
-/** Parses the RBAC matrix doc into role → permissions. ● and ○ mean held; any other symbol is an error. */
+/**
+ * Parses the RBAC matrix doc into role → permissions. ● and ○ mean held; any
+ * other symbol is an error.
+ */
 export function readRoleMatrixFromDoc(): Record<RoleName, ReadonlySet<string>> {
   if (!fs.existsSync(DOC)) {
     throw new Error(

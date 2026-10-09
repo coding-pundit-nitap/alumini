@@ -45,7 +45,10 @@ function preview(c: InboxConversation, viewerId: string) {
   );
 }
 
-/** Kept fresh by the SSE hint, a 30 s poll and tab focus. Older conversations load on scroll. */
+/**
+ * Kept fresh by the SSE hint, a 30 s poll and tab focus. Older conversations
+ * load on scroll.
+ */
 export function ConversationList({
   conversations: initial,
   viewerId,

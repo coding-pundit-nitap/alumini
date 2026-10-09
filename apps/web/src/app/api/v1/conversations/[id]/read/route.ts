@@ -7,7 +7,10 @@ import { readJson, uuidParam } from "../../../_lib/request";
 
 type Params = { params: Promise<{ id: string }> };
 
-/** POST /api/v1/conversations/:id/read — body `{ upToSeq }`: mark everything up to what the client displayed. */
+/**
+ * POST /api/v1/conversations/:id/read — body `{ upToSeq }`: mark everything up
+ * to what the client displayed.
+ */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const input = await readJson(request);

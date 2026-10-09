@@ -42,7 +42,10 @@ const listQuery = z.object({
   cursor: z.string().max(300).optional(),
 });
 
-/** GET /api/v1/jobs — the public listing, or `?mine=true` for the caller's own (any status). */
+/**
+ * GET /api/v1/jobs — the public listing, or `?mine=true` for the caller's own
+ * (any status).
+ */
 export const GET = routeHandler(async (request) => {
   const params = new URL(request.url).searchParams;
   const parsed = listQuery.safeParse(Object.fromEntries(params));

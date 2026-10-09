@@ -27,7 +27,10 @@ import { UserMenu } from "./user-menu";
 
 const FOCUS = "focus-visible:ring-ring outline-none focus-visible:ring-2";
 
-/** Below md: a slim top bar and a bottom tab bar whose last tab ("More") opens the full nav. */
+/**
+ * Below md: a slim top bar and a bottom tab bar whose last tab ("More") opens
+ * the full nav.
+ */
 export function MobileBar({
   nav,
   user,

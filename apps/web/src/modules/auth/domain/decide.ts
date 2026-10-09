@@ -52,7 +52,10 @@ const noSelfService: Guardrail = ({ permission, actor, resource }) =>
 // Escalation and last-super-admin checks need target data, so they live in the admin use cases.
 const GUARDRAILS: readonly Guardrail[] = [separationOfDuties, noSelfService];
 
-/** Self-service permissions an account has because of its state, without any grant. */
+/**
+ * Self-service permissions an account has because of its state, without any
+ * grant.
+ */
 const STATE_ALLOWANCES: Readonly<
   Record<Exclude<AccountState, "VERIFIED">, readonly Permission[]>
 > = {
@@ -71,7 +74,10 @@ const STATE_ALLOWANCES: Readonly<
 const isLive = (grant: Grant, now: Date) =>
   grant.expiresAt === null || grant.expiresAt > now;
 
-/** Authorization rules in order; the first failure denies. Record-level checks belong to the use case. */
+/**
+ * Authorization rules in order; the first failure denies. Record-level checks
+ * belong to the use case.
+ */
 export function decide({
   actor,
   permission,

@@ -22,7 +22,10 @@ export type PostAuthor = {
   /** Set by composition after the read; absent/null = no tick. */
   tick?: Tick | null;
 };
-/** A post with its author, reaction counts, live comment count, the viewer's reaction and any open report. */
+/**
+ * A post with its author, reaction counts, live comment count, the viewer's
+ * reaction and any open report.
+ */
 export type FeedPost = PostRow & {
   author: PostAuthor;
   reactionCounts: Record<ReactionType, number>;
@@ -54,7 +57,10 @@ export type PostsTx = {
   findPost(id: string, opts?: { forUpdate?: boolean }): Promise<PostRow | null>;
   /** Null when missing or soft-deleted (deleted posts never resolve). */
   findFeedPost(id: string, viewerId: string): Promise<FeedPost | null>;
-  /** Serves only a READY upload that a live post's `imageUrls` references; see get-post-image-key.ts. */
+  /**
+   * Serves only a READY upload that a live post's `imageUrls` references; see
+   * get-post-image-key.ts.
+   */
   findPostImage(uploadId: string): Promise<{ objectKey: string } | null>;
   softDeletePost(id: string): Promise<void>;
   /** Replaces the content and stamps `editedAt`. */
@@ -103,7 +109,10 @@ export type PostsTx = {
     limit: number;
     after: { createdAt: Date; id: string } | null;
   }): Promise<(PostRow & { author: PostAuthor })[]>;
-  /** The newest live announcement created at or after `since`, enriched for the viewer; null when none. */
+  /**
+   * The newest live announcement created at or after `since`, enriched for the
+   * viewer; null when none.
+   */
   findPinnedAnnouncement(args: {
     since: Date;
     viewerId: string;

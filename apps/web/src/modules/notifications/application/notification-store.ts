@@ -32,9 +32,15 @@ export type NotificationStore = {
     lastError?: string;
     providerMessageId?: string;
   }): Promise<void>;
-  /** Dedupe key (the email job id) when the notification's EMAIL delivery is FAILED, else null. */
+  /**
+   * Dedupe key (the email job id) when the notification's EMAIL delivery is
+   * FAILED, else null.
+   */
   failedEmailJobId(notificationId: string): Promise<string | null>;
-  /** EMAIL deliveries of one status, newest first (`updated_at DESC, id DESC`), keyset-paged. */
+  /**
+   * EMAIL deliveries of one status, newest first (`updated_at DESC, id DESC`),
+   * keyset-paged.
+   */
   listEmailDeliveries(input: {
     status: "FAILED" | "PENDING";
     after?: { updatedAt: Date; id: string };

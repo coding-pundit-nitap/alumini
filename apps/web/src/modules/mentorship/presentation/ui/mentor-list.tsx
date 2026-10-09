@@ -93,7 +93,10 @@ function Row({
   );
 }
 
-/** `requestSlot` renders the request control so this list stays unaware of the request use case. */
+/**
+ * `requestSlot` renders the request control so this list stays unaware of the
+ * request use case.
+ */
 export function MentorList({
   items,
   requestSlot,

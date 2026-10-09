@@ -19,8 +19,10 @@ import { LAST_SUPER_ADMIN_NOTE } from "./labels";
 const date = (d: Date) =>
   d.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
 
-/** The user's roles. A remove action is passed only when the viewer may use it; a blocked one is
- * disabled with its reason. */
+/**
+ * The user's roles. A remove action is passed only when the viewer may use it;
+ * a blocked one is disabled with its reason.
+ */
 export function RolesTable(props: {
   user: UserDetail;
   options: AccessOptions;
@@ -82,7 +84,10 @@ export function RolesTable(props: {
   );
 }
 
-/** The user's direct permission grants. Same revoke/blocked contract as {@link RolesTable}. */
+/**
+ * The user's direct permission grants. Same revoke/blocked contract as
+ * {@link RolesTable}.
+ */
 export function GrantsTable(props: {
   user: UserDetail;
   options: AccessOptions;

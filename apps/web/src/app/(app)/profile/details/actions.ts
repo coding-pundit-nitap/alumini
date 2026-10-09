@@ -21,8 +21,9 @@ import {
 } from "@/modules/users";
 
 /**
- * Add/update/remove actions for each profile detail collection. The caller comes from the session
- * and the use case authorizes. `refresh()` re-renders the route after a successful mutation.
+ * Add/update/remove actions for each profile detail collection. The caller
+ * comes from the session and the use case authorizes. `refresh()` re-renders
+ * the route after a successful mutation.
  */
 
 export async function addExperienceAction(

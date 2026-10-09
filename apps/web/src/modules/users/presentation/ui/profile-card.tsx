@@ -45,7 +45,10 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** Low-poly ridges over a dawn wash, echoing the landing and the DawnMark. Decorative. */
+/**
+ * Low-poly ridges over a dawn wash, echoing the landing and the DawnMark.
+ * Decorative.
+ */
 function Cover() {
   return (
     <div

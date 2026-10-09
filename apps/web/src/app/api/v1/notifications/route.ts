@@ -14,7 +14,10 @@ const listQuery = z.object({
   cursor: z.string().max(200).optional(),
 });
 
-/** GET /api/v1/notifications?limit=&cursor= — the caller's own notifications, newest first. */
+/**
+ * GET /api/v1/notifications?limit=&cursor= — the caller's own notifications,
+ * newest first.
+ */
 export const GET = routeHandler(async (request) => {
   const actor = await getActor();
   authorizeNotifications(actor); // 401/403 before the query is validated

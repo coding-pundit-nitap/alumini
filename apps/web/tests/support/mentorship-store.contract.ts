@@ -16,9 +16,15 @@ export type MentorshipStoreHarness = {
   seedMentor: (id: string, config: MentorConfig) => void;
   seedUser: (id: string) => void;
   seedBlock: (a: string, b: string) => void;
-  /** Occupies `n` of the mentor's slots with ACCEPTED rows, for capacity assertions. */
+  /**
+   * Occupies `n` of the mentor's slots with ACCEPTED rows, for capacity
+   * assertions.
+   */
   openSlotsTaker: (mentorId: string, n: number) => void;
-  /** Optional: when the backing store can say, lets the suite confirm a rollback dropped the event too. */
+  /**
+   * Optional: when the backing store can say, lets the suite confirm a rollback
+   * dropped the event too.
+   */
   events?: () => MentorshipEvent[] | Promise<MentorshipEvent[]>;
 };
 

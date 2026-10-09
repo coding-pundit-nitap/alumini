@@ -1,6 +1,7 @@
 /**
- * Client-safe exports only. Server-only ones are in `./server.ts`: Turbopack bundles anything reachable
- * from here, and the Prisma client crashes in the browser.
+ * Client-safe exports only. Server-only ones are in `./server.ts`: Turbopack
+ * bundles anything reachable from here, and the Prisma client crashes in the
+ * browser.
  */
 export { createClaimReport } from "./application/claim-report";
 export { createDismissReport } from "./application/dismiss-report";

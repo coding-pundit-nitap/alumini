@@ -4,14 +4,20 @@ import {
   type Value,
 } from "./generate.ts";
 
-/** The slice of `pg`'s Client/PoolClient the writer needs, so this package takes no `pg` dependency. */
+/**
+ * The slice of `pg`'s Client/PoolClient the writer needs, so this package takes
+ * no `pg` dependency.
+ */
 export type Queryable = {
   query(text: string, values?: unknown[]): Promise<unknown>;
 };
 
 const CHUNK = 5_000;
 
-/** The seed refuses any other database: 10 000 synthetic users must never land in a real one. */
+/**
+ * The seed refuses any other database: 10 000 synthetic users must never land
+ * in a real one.
+ */
 export function assertPerfDatabase(databaseUrl: string): string {
   const name = decodeURIComponent(new URL(databaseUrl).pathname.slice(1));
   if (!name.endsWith("_perf")) {
@@ -28,8 +34,8 @@ const asText = (value: Value): string | null =>
   value === null ? null : typeof value === "string" ? value : String(value);
 
 /**
- * One transaction, in foreign-key order, 5,000 rows per `INSERT … unnest(…)`. Then advances the
- * message sequence and runs ANALYZE.
+ * One transaction, in foreign-key order, 5,000 rows per `INSERT … unnest(…)`.
+ * Then advances the message sequence and runs ANALYZE.
  */
 export async function writePerfData(
   client: Queryable,

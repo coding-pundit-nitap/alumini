@@ -2,7 +2,10 @@ import type { ProfileRecord } from "./profile";
 
 const text = (value: string | null) => Boolean(value?.trim());
 
-/** Eight equally weighted, member-editable checks. Institutional fields are not counted. */
+/**
+ * Eight equally weighted, member-editable checks. Institutional fields are not
+ * counted.
+ */
 const CHECKS: [label: string, done: (p: ProfileRecord) => boolean][] = [
   ["Headline", (p) => text(p.headline)],
   ["About", (p) => text(p.bio)],

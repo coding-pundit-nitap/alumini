@@ -14,7 +14,10 @@ export const dayKey = (date: Date) =>
 export const clockTime = (date: Date) =>
   date.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
 
-/** The thread's day separator: Today, Yesterday, a weekday within the week, else a full date. */
+/**
+ * The thread's day separator: Today, Yesterday, a weekday within the week, else
+ * a full date.
+ */
 export function dayLabel(date: Date, now = new Date()): string {
   const days = daysAgo(date, now);
   if (days === 0) return "Today";
@@ -28,7 +31,10 @@ export function dayLabel(date: Date, now = new Date()): string {
   });
 }
 
-/** The inbox's timestamp: a time today, then Yesterday, a short weekday, else a short date. */
+/**
+ * The inbox's timestamp: a time today, then Yesterday, a short weekday, else a
+ * short date.
+ */
 export function inboxStamp(date: Date, now = new Date()): string {
   const days = daysAgo(date, now);
   if (days === 0) return clockTime(date);

@@ -13,7 +13,10 @@ import { photoOf } from "./conversation-avatar";
 
 type Act<T> = Promise<ActionResult<T>>;
 
-/** The creator adds and removes members; everyone else can only leave. The server enforces it. */
+/**
+ * The creator adds and removes members; everyone else can only leave. The
+ * server enforces it.
+ */
 export function GroupMembers({
   conversationId,
   viewerId,

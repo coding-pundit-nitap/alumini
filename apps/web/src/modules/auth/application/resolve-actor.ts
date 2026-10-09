@@ -3,7 +3,10 @@ import { UnexpectedError } from "@/lib/errors";
 import { isAccountState, type Actor } from "../domain/actor";
 import type { GrantSource } from "./grant-source";
 
-/** What the session layer knows about the caller. `accountState` is untrusted until checked. */
+/**
+ * What the session layer knows about the caller. `accountState` is untrusted
+ * until checked.
+ */
 export type SessionIdentity = { userId: string; accountState: unknown };
 
 /** Only VERIFIED accounts have permissions, so grants are not queried otherwise. */

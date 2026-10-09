@@ -87,7 +87,10 @@ export const listComments: typeof listCommentsBare = async (args) => {
 export const react = createReact(deps);
 export const unreact = createUnreact(deps);
 
-/** The signed-in member as a post/comment author (avatar and name); undefined when their profile can't be read. */
+/**
+ * The signed-in member as a post/comment author (avatar and name); undefined
+ * when their profile can't be read.
+ */
 export async function getViewerAuthor(
   actor: Actor
 ): Promise<PostAuthor | undefined> {

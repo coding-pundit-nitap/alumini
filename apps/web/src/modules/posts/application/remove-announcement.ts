@@ -6,7 +6,10 @@ import type { Actor } from "@/modules/auth";
 import type { Authorize } from "./authz";
 import type { PostsStore } from "./posts-store";
 
-/** Any `announcement.publish` holder removes any announcement; soft-delete + audit. */
+/**
+ * Any `announcement.publish` holder removes any announcement; soft-delete +
+ * audit.
+ */
 export function createRemoveAnnouncement(deps: {
   store: PostsStore;
   authorize: Authorize;

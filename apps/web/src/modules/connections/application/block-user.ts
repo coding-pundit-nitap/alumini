@@ -13,8 +13,8 @@ import type {
 import { cannotConnectSelf, refuse } from "./refusal";
 
 /**
- * Works with or without a prior request and replaces the pair's current state. Lift it with
- * `removeConnection` on the blocked row.
+ * Works with or without a prior request and replaces the pair's current state.
+ * Lift it with `removeConnection` on the blocked row.
  */
 export function createBlockUser(deps: {
   store: ConnectionStore;

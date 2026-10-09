@@ -9,8 +9,8 @@ import type { ProfileAudit } from "./profile-audit";
 import type { ProfileStore } from "./profile-store";
 
 /**
- * Returns 404 when nothing is visible, so existence isn't leaked. Privileged reads are audited before
- * anything is returned.
+ * Returns 404 when nothing is visible, so existence isn't leaked. Privileged
+ * reads are audited before anything is returned.
  */
 export function createGetProfileForViewer(deps: {
   store: ProfileStore;

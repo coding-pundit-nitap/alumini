@@ -6,7 +6,10 @@ import type { Actor } from "@/modules/auth";
 
 import type { Authorize } from "./authz";
 
-/** Which roles the member holds and which tick they chose (null = automatic). Null when there is no profile. */
+/**
+ * Which roles the member holds and which tick they chose (null = automatic).
+ * Null when there is no profile.
+ */
 export type BadgeStore = {
   readChoice(
     userId: string
@@ -19,7 +22,10 @@ export type BadgeStore = {
 export type BadgeChoice = string;
 export const AUTO_TICK = "AUTO";
 
-/** The member's tick settings: the ticks they can pick, what they picked, and the tick that shows now. */
+/**
+ * The member's tick settings: the ticks they can pick, what they picked, and
+ * the tick that shows now.
+ */
 export function createGetBadgeSettings(deps: {
   badges: BadgeStore;
   authorize: Authorize;
@@ -54,7 +60,10 @@ export function createGetBadgeSettings(deps: {
   };
 }
 
-/** A member picks the tick on their photo: automatic, one of the roles they hold, or none. */
+/**
+ * A member picks the tick on their photo: automatic, one of the roles they
+ * hold, or none.
+ */
 export function createSetBadgeRole(deps: {
   badges: BadgeStore;
   authorize: Authorize;

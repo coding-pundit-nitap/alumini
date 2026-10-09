@@ -8,7 +8,10 @@ import type { Authorize } from "./authz";
 import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { cannotConnectSelf, refuse } from "./refusal";
 
-/** `connections.create`: 20 requests an hour per member, the brake on mass invitations. */
+/**
+ * `connections.create`: 20 requests an hour per member, the brake on mass
+ * invitations.
+ */
 export const REQUEST_RATE = { max: 20, window: 60 * 60 } as const;
 
 export type RateLimiter = {
@@ -21,8 +24,8 @@ export type RateLimiter = {
 export type RequestConnectionResult = { connectionId: string };
 
 /**
- * Two members requesting each other at once end with one row: the loser's insert is a no-op and the
- * re-read refuses it as CONNECTION_EXISTS.
+ * Two members requesting each other at once end with one row: the loser's
+ * insert is a no-op and the re-read refuses it as CONNECTION_EXISTS.
  */
 export function createRequestConnection(deps: {
   store: ConnectionStore;

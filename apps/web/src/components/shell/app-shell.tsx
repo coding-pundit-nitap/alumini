@@ -7,7 +7,10 @@ import { loadShell } from "./load-shell";
 import { MobileBar } from "./mobile-bar";
 import { Rail } from "./rail";
 
-/** The bell is rendered here and passed down because client components cannot import its server code. */
+/**
+ * The bell is rendered here and passed down because client components cannot
+ * import its server code.
+ */
 export async function AppShell({ children }: { children: ReactNode }) {
   const data = await loadShell();
   if (!data) return <main>{children}</main>;

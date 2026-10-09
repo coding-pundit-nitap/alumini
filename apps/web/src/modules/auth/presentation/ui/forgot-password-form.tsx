@@ -9,7 +9,10 @@ import { authErrorMessage } from "./auth-errors";
 import { RESET_PASSWORD_REDIRECT } from "./callbacks";
 import { FormField, FormMessage } from "./form-field";
 
-/** The confirmation is the same for every address; only a rate limit is reported differently. */
+/**
+ * The confirmation is the same for every address; only a rate limit is reported
+ * differently.
+ */
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [fieldError, setFieldError] = useState<string | undefined>();

@@ -1,6 +1,9 @@
 import type { EmailSendPayload } from "@nitap/jobs";
 
-/** Better Auth's verification and reset links both live 60 minutes; the templates say so. */
+/**
+ * Better Auth's verification and reset links both live 60 minutes; the
+ * templates say so.
+ */
 export const AUTH_LINK_TTL_MINUTES = 60;
 
 /** Where an email request is recorded durably. The adapter writes an outbox row. */
@@ -9,8 +12,8 @@ export type EmailOutbox = {
 };
 
 /**
- * Emails go through the outbox so a provider outage doesn't fail registration. Never log the
- * recipient or the link.
+ * Emails go through the outbox so a provider outage doesn't fail registration.
+ * Never log the recipient or the link.
  */
 export function createAuthEmailSender(deps: { outbox: EmailOutbox }) {
   return {

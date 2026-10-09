@@ -13,8 +13,9 @@ import type {
 import { refuse } from "./refusal";
 
 /**
- * Organizer or `event.manage`, only while SCHEDULED. The guarded update decides; `decideCancelEvent`
- * only explains a miss. Observers run after the transaction settles.
+ * Organizer or `event.manage`, only while SCHEDULED. The guarded update
+ * decides; `decideCancelEvent` only explains a miss. Observers run after the
+ * transaction settles.
  */
 export function createCancelEvent(deps: {
   store: EventStore;

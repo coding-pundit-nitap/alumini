@@ -16,8 +16,9 @@ const POLL_MS = 30_000;
 const RECENT_LIMIT = 5;
 
 /**
- * Unread count and recent notifications for the bell. Refreshes on a 30 s poll, tab focus and SSE
- * hints, and falls back to polling if the stream is unavailable.
+ * Unread count and recent notifications for the bell. Refreshes on a 30 s poll,
+ * tab focus and SSE hints, and falls back to polling if the stream is
+ * unavailable.
  */
 export function useNotifications() {
   const [count, setCount] = useState(0);

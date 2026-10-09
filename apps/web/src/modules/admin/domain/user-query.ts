@@ -9,7 +9,10 @@ import { dropEmpty } from "./audit-query";
 import { SUSPENSION_REASONS, TARGET_STATES } from "./lifecycle";
 
 const uuid = z.uuid();
-/** The same strict check the API routes apply to path ids (z.uuid); anything else is simply not found. */
+/**
+ * The same strict check the API routes apply to path ids (z.uuid); anything
+ * else is simply not found.
+ */
 export const isUuid = (value: unknown): value is string =>
   uuid.safeParse(value).success;
 

@@ -28,8 +28,8 @@ export const requestInput = z
   .strict();
 
 /**
- * A partial unique index turns a duplicate concurrent request into MENTORSHIP_REQUEST_EXISTS.
- * Capacity is advisory here; accept enforces it.
+ * A partial unique index turns a duplicate concurrent request into
+ * MENTORSHIP_REQUEST_EXISTS. Capacity is advisory here; accept enforces it.
  */
 export function createRequestMentorship(deps: {
   store: MentorshipStore;

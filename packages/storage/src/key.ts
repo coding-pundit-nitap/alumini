@@ -1,6 +1,9 @@
 const PENDING_PREFIX = "uploads/pending/";
 
-/** The only way to build a pending-upload key: the client's filename never becomes a storage key. */
+/**
+ * The only way to build a pending-upload key: the client's filename never
+ * becomes a storage key.
+ */
 export const pendingKey = (uploadId: string): string =>
   `${PENDING_PREFIX}${uploadId}`;
 

@@ -1,9 +1,15 @@
 import type { TransactionRunner } from "@/infrastructure/database/transaction-runner";
 
-/** Negative control: read, decide in JS, then write. Oversells under concurrency. Never use in the app. */
+/**
+ * Negative control: read, decide in JS, then write. Oversells under
+ * concurrency. Never use in the app.
+ */
 export function createNaiveEventStore(runner: Pick<TransactionRunner, "run">) {
   return {
-    /** Resolves true when admitted, false when the (stale) read said the event was full. */
+    /**
+     * Resolves true when admitted, false when the (stale) read said the event
+     * was full.
+     */
     register(eventId: string, userId: string): Promise<boolean> {
       return runner.run(async (db) => {
         const [event] = await db.$queryRaw<

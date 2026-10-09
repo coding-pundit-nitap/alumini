@@ -1,6 +1,6 @@
 /**
- * Pure rules. `NOT_FOUND` means "not yours to know about". Checks run in order: participant, block,
- * role, state, capacity.
+ * Pure rules. `NOT_FOUND` means "not yours to know about". Checks run in order:
+ * participant, block, role, state, capacity.
  */
 export const MENTORSHIP_STATES = [
   "REQUESTED",
@@ -16,7 +16,10 @@ export const OPEN_STATES = [
   "ACCEPTED",
   "ACTIVE",
 ] as const satisfies readonly MentorshipState[];
-/** States that hold one of the mentor's slots: a request does not, an acceptance does. */
+/**
+ * States that hold one of the mentor's slots: a request does not, an acceptance
+ * does.
+ */
 export const SLOT_STATES = [
   "ACCEPTED",
   "ACTIVE",
@@ -48,13 +51,19 @@ export type MentorshipRow = {
   endedAt: Date | null;
 };
 
-/** Written whole, so no transition leaves a stale field behind (the DB's pairing CHECKs depend on it). */
+/**
+ * Written whole, so no transition leaves a stale field behind (the DB's pairing
+ * CHECKs depend on it).
+ */
 export type MentorshipPatch = Pick<
   MentorshipRow,
   "state" | "responseNote" | "respondedAt" | "startedAt" | "endedAt"
 >;
 
-/** What the store knows about a prospective mentor, from the requesting student's point of view. */
+/**
+ * What the store knows about a prospective mentor, from the requesting
+ * student's point of view.
+ */
 export type MentorContext = {
   accepting: boolean;
   maxMentees: number;

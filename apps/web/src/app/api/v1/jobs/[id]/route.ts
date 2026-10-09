@@ -21,7 +21,10 @@ export const GET = routeHandler(async (_request, ctx: Params) => {
   );
 });
 
-/** PATCH /api/v1/jobs/:id — edit. Ownership/job.manage is checked by editJob, not here. */
+/**
+ * PATCH /api/v1/jobs/:id — edit. Ownership/job.manage is checked by editJob,
+ * not here.
+ */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const body = await readJson(request);

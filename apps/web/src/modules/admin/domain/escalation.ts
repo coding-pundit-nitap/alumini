@@ -4,7 +4,10 @@ import {
   type Permission,
 } from "@nitap/database/permissions";
 
-/** Structurally the auth module's `Grant` (the domain may not import another module). */
+/**
+ * Structurally the auth module's `Grant` (the domain may not import another
+ * module).
+ */
 export type HeldGrant =
   | { permission: string; scope: "GLOBAL"; expiresAt: Date | null }
   | {
@@ -54,7 +57,10 @@ const ACCESS_ADMIN_PERMISSIONS: ReadonlySet<string> = new Set([
   PERMISSIONS.SYSTEM_CONFIGURE,
 ]);
 
-/** E1: a role that can itself assign roles needs system.configure to assign or remove. */
+/**
+ * E1: a role that can itself assign roles needs system.configure to assign or
+ * remove.
+ */
 export function checkRoleChange(
   actor: readonly HeldGrant[],
   rolePermissions: readonly Permission[],
@@ -66,7 +72,10 @@ export function checkRoleChange(
     : undefined;
 }
 
-/** E2: grant only what you hold, in a scope you hold; a non-role-manager only in a chapter. */
+/**
+ * E2: grant only what you hold, in a scope you hold; a non-role-manager only in
+ * a chapter.
+ */
 export function checkGrantChange(
   actor: readonly HeldGrant[],
   request: GrantRequest,
@@ -86,7 +95,10 @@ export function checkGrantChange(
   return undefined;
 }
 
-/** E3: a target who can assign roles is changed only by a system.configure holder. */
+/**
+ * E3: a target who can assign roles is changed only by a system.configure
+ * holder.
+ */
 export function checkTarget(
   actor: readonly HeldGrant[],
   target: readonly HeldGrant[],
@@ -107,12 +119,18 @@ export type AccessOptions = {
   permissions: {
     permission: Permission;
     global: EscalationReason | undefined;
-    /** Checked against "some chapter the actor holds it in"; the server re-checks the exact chapter. */
+    /**
+     * Checked against "some chapter the actor holds it in"; the server
+     * re-checks the exact chapter.
+     */
     chapter: EscalationReason | "NOT_SCOPABLE" | undefined;
   }[];
 };
 
-/** What the detail page may offer, computed by the same rules the server enforces. */
+/**
+ * What the detail page may offer, computed by the same rules the server
+ * enforces.
+ */
 export function accessOptions(args: {
   actor: readonly HeldGrant[];
   target: readonly HeldGrant[];

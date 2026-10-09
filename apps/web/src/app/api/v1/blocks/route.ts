@@ -9,7 +9,10 @@ import { readJson } from "../_lib/request";
 
 const body = z.object({ userId: z.uuid() }).strict();
 
-/** Blocking needs no prior connection. Unblock with `DELETE /api/v1/connections/:id`. */
+/**
+ * Blocking needs no prior connection. Unblock with `DELETE
+ * /api/v1/connections/:id`.
+ */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const raw = await readJson(request);

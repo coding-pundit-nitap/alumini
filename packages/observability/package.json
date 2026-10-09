@@ -9,22 +9,21 @@
     "./testing": "./src/testing.ts"
   },
   "scripts": {
-    "lint": "eslint --max-warnings=0",
-    "typecheck": "tsc --noEmit",
     "check-types": "tsc --noEmit --skipLibCheck",
+    "lint": "oxlint --type-aware --max-warnings=0",
+    "lint:fix": "oxlint --type-aware --fix",
     "test": "vitest run",
-    "lint:fix": "eslint --fix"
-  },
-  "devDependencies": {
-    "@nitap/eslint-config": "workspace:*",
-    "@nitap/typescript-config": "workspace:*",
-    "@types/node": "^26.6.2",
-    "eslint": "^10.11.0",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.1"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@prometheus-io/client": "^0.16.1",
     "@sentry/node": "11.1.0"
+  },
+  "devDependencies": {
+    "@nitap/typescript-config": "workspace:*",
+    "@types/node": "^26.6.2",
+    "oxlint": "^1.87.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
   }
 }

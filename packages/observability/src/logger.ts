@@ -2,8 +2,8 @@ import { redact } from "./redact.ts";
 import { getRequestContext } from "./request-context.ts";
 
 /**
- * JSON lines to stdout/stderr. `event` is `domain.subject.outcome`, e.g. `auth.login.failed`. Secrets
- * are masked in redact.ts.
+ * JSON lines to stdout/stderr. `event` is `domain.subject.outcome`, e.g.
+ * `auth.login.failed`. Secrets are masked in redact.ts.
  */
 export type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
 export type LogThreshold = LogLevel | "silent";

@@ -18,9 +18,10 @@ import { isPublicPath, safeNextPath } from "@/lib/route-access";
 
 /**
  * 1. Sets the request id, reusing a well-formed incoming one.
- * 2. Redirects anonymous requests for gated pages to /login. Checks only that a session cookie
- *    exists; pages and use cases still authorize.
- * 3. Sets the CSP with a fresh nonce for pages and a load-nothing policy for data paths.
+ * 2. Redirects anonymous requests for gated pages to /login. Checks only that a
+ *    session cookie exists; pages and use cases still authorize.
+ * 3. Sets the CSP with a fresh nonce for pages and a load-nothing policy for data
+ *    paths.
  */
 export function proxy(request: NextRequest) {
   const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));

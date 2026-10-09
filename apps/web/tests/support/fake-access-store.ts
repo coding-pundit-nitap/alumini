@@ -7,7 +7,10 @@ import type {
   TargetUser,
 } from "@/modules/admin/application/access-store";
 
-/** In-memory AccessStore. `calls` records every tx method in order, so tests can assert what ran. */
+/**
+ * In-memory AccessStore. `calls` records every tx method in order, so tests can
+ * assert what ran.
+ */
 export function fakeAccessStore(seed: {
   users?: TargetUser[];
   grants?: GrantRow[];

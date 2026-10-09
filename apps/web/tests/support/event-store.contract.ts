@@ -30,7 +30,10 @@ export type EventStoreHarness = {
 
 const HOUR = 60 * 60 * 1000;
 
-/** Run against the fake and Prisma stores. Uses the real clock so past deadlines agree. */
+/**
+ * Run against the fake and Prisma stores. Uses the real clock so past deadlines
+ * agree.
+ */
 export function describeEventStoreContract(
   name: string,
   factory: () => Promise<EventStoreHarness>

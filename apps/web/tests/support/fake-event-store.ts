@@ -20,7 +20,10 @@ type RegistrationRow = {
 };
 
 export type FakeEventStoreOptions = {
-  /** The clock the guarded statements compare against; real time by default so it agrees with Prisma's `now()`. */
+  /**
+   * The clock the guarded statements compare against; real time by default so
+   * it agrees with Prisma's `now()`.
+   */
   now?: () => Date;
   failEnqueue?: boolean;
 };
@@ -209,7 +212,10 @@ export function createFakeEventStore(options: FakeEventStoreOptions = {}) {
     seedEvent,
     seedRegistration,
     events: () => state.outbox,
-    /** Adapts this fake to the shape `describeEventStoreContract` factories return. */
+    /**
+     * Adapts this fake to the shape `describeEventStoreContract` factories
+     * return.
+     */
     harness: () => ({
       store,
       seedUser: async () => seedUser(),

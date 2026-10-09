@@ -8,7 +8,10 @@ import { ConversationAvatar, conversationLabel } from "./conversation-avatar";
 const ROUND =
   "hover:bg-muted focus-visible:ring-ring flex size-9 shrink-0 items-center justify-center rounded-full transition-colors duration-150 outline-none focus-visible:ring-2";
 
-/** The open pane's top bar: back to the inbox (phones), who this is with, and a slot for actions. */
+/**
+ * The open pane's top bar: back to the inbox (phones), who this is with, and a
+ * slot for actions.
+ */
 export function PaneHeader({
   title,
   subtitle,
@@ -41,7 +44,10 @@ export function PaneHeader({
   );
 }
 
-/** PaneHeader for a conversation: its avatar and name, "Direct message" or the group's size. */
+/**
+ * PaneHeader for a conversation: its avatar and name, "Direct message" or the
+ * group's size.
+ */
 export function ThreadHeader({
   conversation,
   viewerId,

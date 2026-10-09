@@ -16,7 +16,10 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
   return body?.error?.message ?? fallback;
 }
 
-/** Owns mark-read and load-more state. Mutations are optimistic and roll back on failure. */
+/**
+ * Owns mark-read and load-more state. Mutations are optimistic and roll back on
+ * failure.
+ */
 export function NotificationInbox({
   initialItems,
   initialNextCursor,

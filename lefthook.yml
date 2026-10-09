@@ -3,17 +3,17 @@ glob_matcher: doublestar
 rc: packages/scripts/hooks/path.sh
 
 pre-commit:
-  piped: true # eslint --fix before prettier on the same files
+  piped: true # oxlint --fix before prettier on the same files
   jobs:
-    - name: eslint web
+    - name: oxlint web
       root: apps/web/
       glob: "apps/web/**/*.{ts,tsx,mts}"
-      run: pnpm exec eslint --fix {staged_files}
+      run: pnpm exec oxlint --fix {staged_files}
       stage_fixed: true
-    - name: eslint ui
+    - name: oxlint ui
       root: packages/ui/
       glob: "packages/ui/**/*.{ts,tsx,mts}"
-      run: pnpm exec eslint --fix {staged_files}
+      run: pnpm exec oxlint --fix {staged_files}
       stage_fixed: true
     - name: prettier
       glob:

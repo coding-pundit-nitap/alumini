@@ -3,8 +3,9 @@ import net from "node:net";
 import type { ScannerPort } from "./scanner.ts";
 
 /**
- * ClamAV over clamd's INSTREAM protocol: length-prefixed chunks, then a zero length. FOUND rejects the
- * file; anything else throws so the job retries and the upload stays PENDING_SCAN.
+ * ClamAV over clamd's INSTREAM protocol: length-prefixed chunks, then a zero
+ * length. FOUND rejects the file; anything else throws so the job retries and
+ * the upload stays PENDING_SCAN.
  */
 export function createClamdScanner(options: {
   host: string;

@@ -8,7 +8,10 @@ type RateLimitStorage = NonNullable<
 >;
 type Rule = { window: number; max: number };
 
-/** Fixed window, atomic in one Lua script. A rejected request does not extend the window. */
+/**
+ * Fixed window, atomic in one Lua script. A rejected request does not extend
+ * the window.
+ */
 const CONSUME_SCRIPT = `
 local count = tonumber(redis.call('GET', KEYS[1]) or '0')
 if count >= tonumber(ARGV[1]) then

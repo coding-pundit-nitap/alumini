@@ -23,7 +23,10 @@ const actor = (userId: string): Actor => ({
   grants: [],
 });
 
-/** Enforces `ACHIEVEMENT_REVIEW` against `reviewers`, refusing with `NOT_REVIEWER` like the domain would. */
+/**
+ * Enforces `ACHIEVEMENT_REVIEW` against `reviewers`, refusing with
+ * `NOT_REVIEWER` like the domain would.
+ */
 const authorizeWith =
   (reviewers: ReadonlySet<string>) => (a: Actor | null, permission: string) => {
     if (!a) throw new AuthenticationError();

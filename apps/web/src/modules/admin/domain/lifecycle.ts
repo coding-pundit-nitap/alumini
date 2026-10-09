@@ -1,4 +1,7 @@
-/** The same five states as the auth module's ACCOUNT_STATES; kept local so domain/ stays Prisma-free. */
+/**
+ * The same five states as the auth module's ACCOUNT_STATES; kept local so
+ * domain/ stays Prisma-free.
+ */
 export type AccountStateValue =
   "PENDING" | "VERIFIED" | "REJECTED" | "SUSPENDED" | "DEACTIVATED";
 

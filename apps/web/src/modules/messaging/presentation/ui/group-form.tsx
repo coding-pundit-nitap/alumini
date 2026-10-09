@@ -12,7 +12,10 @@ import { MAX_GROUP_SIZE } from "../../domain/messaging";
 import type { Person } from "../../application/messaging-store";
 import { photoOf } from "./conversation-avatar";
 
-/** Start a group from the caller's connections. The server re-validates everything (2–19 members, verified, no blocks). */
+/**
+ * Start a group from the caller's connections. The server re-validates
+ * everything (2–19 members, verified, no blocks).
+ */
 export function GroupForm({
   candidates,
   createAction,

@@ -47,7 +47,10 @@ export const GET = routeHandler(async (request, ctx: Params) => {
   });
 });
 
-/** POST /api/v1/events/:id/registrations — register for an event. Honours `Idempotency-Key`. */
+/**
+ * POST /api/v1/events/:id/registrations — register for an event. Honours
+ * `Idempotency-Key`.
+ */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const eventId = id.safeParse((await ctx.params).id);

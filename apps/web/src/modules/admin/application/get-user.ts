@@ -16,7 +16,10 @@ export type UserView = {
 
 const GRANTABLE: readonly Permission[] = Object.values(PERMISSIONS);
 
-/** The detail page's data, plus which actions the viewer may offer (same rules as the writes). */
+/**
+ * The detail page's data, plus which actions the viewer may offer (same rules
+ * as the writes).
+ */
 export function createGetUser(deps: {
   store: AdminStore;
   authorize: Authorize;

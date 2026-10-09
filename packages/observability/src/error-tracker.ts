@@ -12,7 +12,10 @@ import type { ErrorEvent, NodeOptions } from "@sentry/node";
 import { redact } from "./redact.ts";
 import { getRequestContext } from "./request-context.ts";
 
-/** Sentry-protocol SDK, so it works with Sentry or GlitchTip. A no-op without a DSN. */
+/**
+ * Sentry-protocol SDK, so it works with Sentry or GlitchTip. A no-op without a
+ * DSN.
+ */
 export type ErrorTrackerOptions = {
   dsn?: string;
   environment: string;
@@ -51,7 +54,10 @@ export function initErrorTracker(options: ErrorTrackerOptions): boolean {
   return true;
 }
 
-/** Reports a server error with the current request id and user id. Never throws into the caller. */
+/**
+ * Reports a server error with the current request id and user id. Never throws
+ * into the caller.
+ */
 export function captureError(
   error: unknown,
   context: CaptureContext = {}
@@ -85,7 +91,10 @@ export async function closeErrorTracker(): Promise<void> {
   await close(0);
 }
 
-/** Applies log redaction to request data. Keep personal data out of error messages. */
+/**
+ * Applies log redaction to request data. Keep personal data out of error
+ * messages.
+ */
 export function scrubEvent(event: ErrorEvent): ErrorEvent {
   const scrubbed: ErrorEvent = { ...event };
   if (event.request) {

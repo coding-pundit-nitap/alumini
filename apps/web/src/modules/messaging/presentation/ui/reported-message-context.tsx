@@ -2,7 +2,10 @@ import { Badge } from "@nitap/ui/components/badge";
 
 import type { ReportedMessageView } from "../../application/messaging-store";
 
-/** The moderator's bounded view of a reported message. Rendering it is the audited access. */
+/**
+ * The moderator's bounded view of a reported message. Rendering it is the
+ * audited access.
+ */
 export function ReportedMessageContext({
   view,
 }: {

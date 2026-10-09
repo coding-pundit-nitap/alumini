@@ -13,7 +13,10 @@ const listQuery = z.object({
   cursor: z.string().max(200).optional(),
 });
 
-/** GET /api/v1/posts/:id/comments — newest first, keyset-paged; 404 for a missing/deleted post. */
+/**
+ * GET /api/v1/posts/:id/comments — newest first, keyset-paged; 404 for a
+ * missing/deleted post.
+ */
 export const GET = routeHandler(async (request, ctx: Params) => {
   const parsed = listQuery.safeParse(
     Object.fromEntries(new URL(request.url).searchParams)

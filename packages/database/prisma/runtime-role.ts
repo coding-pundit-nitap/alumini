@@ -3,8 +3,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client.ts";
 
 /**
- * The role web and worker connect as: read/write rows and use sequences, no DDL, and insert-only on the
- * audit log. Migrations keep the owner role and re-run these grants after every migration.
+ * The role web and worker connect as: read/write rows and use sequences, no
+ * DDL, and insert-only on the audit log. Migrations keep the owner role and
+ * re-run these grants after every migration.
  */
 export const RUNTIME_ROLE = "alumini_app";
 

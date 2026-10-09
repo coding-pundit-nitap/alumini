@@ -19,7 +19,10 @@ export function signInOutcome(status: number): SignInOutcome {
   return "error";
 }
 
-/** Wraps the whole handler because Better Auth's rate limiter answers 429 before endpoint hooks run. */
+/**
+ * Wraps the whole handler because Better Auth's rate limiter answers 429 before
+ * endpoint hooks run.
+ */
 export function withSignInMetrics(
   handler: (request: Request) => Promise<Response>
 ) {

@@ -3,7 +3,10 @@ import type { OutboxEvent } from "@nitap/jobs";
 
 import type { Prisma } from "../generated/prisma/client.ts";
 
-/** A use case built an event that does not match its contract. A bug, caught before the commit. */
+/**
+ * A use case built an event that does not match its contract. A bug, caught
+ * before the commit.
+ */
 export class InvalidOutboxEventError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -11,16 +14,25 @@ export class InvalidOutboxEventError extends Error {
   }
 }
 
-/** Only the outbox delegate is needed, so the writer works with any transaction client. */
+/**
+ * Only the outbox delegate is needed, so the writer works with any transaction
+ * client.
+ */
 export type OutboxTransaction = Pick<Prisma.TransactionClient, "outboxEvent">;
 
 export type OutboxWriter = {
-  /** Writes in the caller's transaction. A malformed payload throws, rolling back the business change. */
+  /**
+   * Writes in the caller's transaction. A malformed payload throws, rolling
+   * back the business change.
+   */
   add(tx: OutboxTransaction, event: OutboxEvent): Promise<{ id: string }>;
 };
 
 export type OutboxWriterOptions = {
-  /** Correlation id of the originating request, stored so worker logs join its trace. */
+  /**
+   * Correlation id of the originating request, stored so worker logs join its
+   * trace.
+   */
   requestId?: () => string | undefined;
 };
 

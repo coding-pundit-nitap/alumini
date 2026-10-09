@@ -120,7 +120,10 @@ export type WorkerConfig = {
   emailRatePerSecond: number;
   /** BullMQ key prefix; tests use a unique one. */
   queuePrefix?: string;
-  /** Upload malware scanner; the pass-through one when unset (never in production). */
+  /**
+   * Upload malware scanner; the pass-through one when unset (never in
+   * production).
+   */
   scanner?: ScannerPort;
 };
 
@@ -146,7 +149,10 @@ export type ComposeOverrides = {
 
 export type ComposedWorker = {
   start(): Promise<void>;
-  /** Stops the relay first (no new work), then drains in-flight jobs, then closes connections. */
+  /**
+   * Stops the relay first (no new work), then drains in-flight jobs, then
+   * closes connections.
+   */
   stop(): Promise<void>;
   ready(): Promise<Readiness>;
   relay: Relay;
@@ -155,7 +161,10 @@ export type ComposedWorker = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** The only place concrete adapters are built. The caller owns the Prisma client. */
+/**
+ * The only place concrete adapters are built. The caller owns the Prisma
+ * client.
+ */
 export function composeWorker(
   deps: {
     prisma: PrismaClient;
@@ -228,7 +237,10 @@ export function composeWorker(
       : { increment: async () => {} },
     logger,
   });
-  /** Current email of an account in `accountState` (default VERIFIED); null otherwise (no mail to suspended/deactivated users unless asked). */
+  /**
+   * Current email of an account in `accountState` (default VERIFIED); null
+   * otherwise (no mail to suspended/deactivated users unless asked).
+   */
   const findEmail = async (
     userId: string,
     accountState: "VERIFIED" | "SUSPENDED" = "VERIFIED"
@@ -239,7 +251,10 @@ export function composeWorker(
         select: { email: true },
       })
     )?.email ?? null;
-  /** Symmetric block check (either party may have blocked); pairs are stored ordered, userAId < userBId. */
+  /**
+   * Symmetric block check (either party may have blocked); pairs are stored
+   * ordered, userAId < userBId.
+   */
   const blocked = async (a: string, b: string) =>
     (await prisma.connection.count({
       where: {

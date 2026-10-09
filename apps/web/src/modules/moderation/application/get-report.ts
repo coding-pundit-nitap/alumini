@@ -7,7 +7,10 @@ import { isSelf } from "../domain/moderation";
 import type { Authorize } from "./authz";
 import type { ModerationStore, ReportView } from "./moderation-store";
 
-/** One report for its page. `selfReview` mirrors decideClaim/decideResolve's guard, for the UI. */
+/**
+ * One report for its page. `selfReview` mirrors decideClaim/decideResolve's
+ * guard, for the UI.
+ */
 export function createGetReport(deps: {
   store: ModerationStore;
   authorize: Authorize;

@@ -15,7 +15,10 @@ export type MentorshipPage = {
   page: { limit: number; nextCursor: string | null; hasMore: boolean };
 };
 
-/** The caller's own mentorships as a mentee ("my requests") or as a mentor (requests and mentees). */
+/**
+ * The caller's own mentorships as a mentee ("my requests") or as a mentor
+ * (requests and mentees).
+ */
 export function createListMentorships(deps: {
   queries: MentorshipQueries;
   authorize: Authorize;

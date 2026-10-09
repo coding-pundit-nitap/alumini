@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-/** A keyset position over (created_at DESC, id DESC). Shared by the audit and user lists. */
+/**
+ * A keyset position over (created_at DESC, id DESC). Shared by the audit and
+ * user lists.
+ */
 export type KeysetCursor = { createdAt: Date; id: string };
 
 const toBase64Url = (text: string) =>

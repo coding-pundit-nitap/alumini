@@ -41,8 +41,8 @@ function createRedis() {
 }
 
 /**
- * Concurrent first callers share one connection attempt, so a cold start under load doesn't fall
- * back unnecessarily.
+ * Concurrent first callers share one connection attempt, so a cold start under
+ * load doesn't fall back unnecessarily.
  */
 export async function getRedis(): Promise<Redis> {
   const client = (globalForRedis.redis ??= createRedis());

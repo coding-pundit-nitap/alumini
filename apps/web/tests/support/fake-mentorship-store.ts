@@ -19,16 +19,22 @@ type MentorConfig = {
 };
 
 export type FakeMentorshipStoreOptions = {
-  /** Plays a competing insert (the winner of a race) right before this insert checks for an open pair. */
+  /**
+   * Plays a competing insert (the winner of a race) right before this insert
+   * checks for an open pair.
+   */
   beforeInsert?: (rows: Map<string, MentorshipRow>) => void;
-  /** Plays a competing update (e.g. a concurrent cancel) right before this update's guard check. */
+  /**
+   * Plays a competing update (e.g. a concurrent cancel) right before this
+   * update's guard check.
+   */
   beforeUpdate?: (rows: Map<string, MentorshipRow>) => void;
   failEnqueue?: boolean;
 };
 
 /**
- * A throwing transaction restores the previous state. `beforeInsert` and `beforeUpdate` simulate
- * competing requests.
+ * A throwing transaction restores the previous state. `beforeInsert` and
+ * `beforeUpdate` simulate competing requests.
  */
 export function createFakeMentorshipStore(
   seed: MentorshipRow[] = [],
@@ -154,7 +160,10 @@ export function createFakeMentorshipStore(
     blocks.add(blockKey(a, b));
   }
 
-  /** Occupies `n` slots for `mentorId` with synthetic ACCEPTED rows, for capacity tests. */
+  /**
+   * Occupies `n` slots for `mentorId` with synthetic ACCEPTED rows, for
+   * capacity tests.
+   */
   function openSlotsTaker(mentorId: string, n: number) {
     for (let i = 0; i < n; i += 1) {
       sequence += 1;
@@ -181,7 +190,10 @@ export function createFakeMentorshipStore(
     seedBlock,
     rows: () => [...state.rows.values()],
     events: () => state.events,
-    /** Adapts this fake to the shape `describeMentorshipStoreContract` factories return. */
+    /**
+     * Adapts this fake to the shape `describeMentorshipStoreContract` factories
+     * return.
+     */
     harness: () => ({
       store,
       seedMentor,

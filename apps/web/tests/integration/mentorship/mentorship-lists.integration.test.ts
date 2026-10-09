@@ -46,7 +46,10 @@ describe("own mentorship lists against real PostgreSQL", () => {
     return created.id;
   }
 
-  /** `at` seconds after a fixed base, so the order is explicit. Each row needs a distinct (mentor, mentee) pair or a closed state. */
+  /**
+   * `at` seconds after a fixed base, so the order is explicit. Each row needs a
+   * distinct (mentor, mentee) pair or a closed state.
+   */
   async function row(
     mentorId: string,
     menteeId: string,

@@ -34,7 +34,10 @@ const QUERY = {
   blocked: { state: "BLOCKED" },
 } as const;
 
-/** The incoming badge reads at most this many; beyond it the exact number is unknown ("50+"). */
+/**
+ * The incoming badge reads at most this many; beyond it the exact number is
+ * unknown ("50+").
+ */
 const BADGE_CAP = 50;
 
 export default async function ConnectionsPage({

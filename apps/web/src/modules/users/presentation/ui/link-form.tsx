@@ -25,7 +25,10 @@ const TYPE_LABEL: Record<LinkType, string> = {
   OTHER: "Other",
 };
 
-/** Adds a social or web link (https only, checked server-side), or (with `id`/`defaults`) edits one. */
+/**
+ * Adds a social or web link (https only, checked server-side), or (with
+ * `id`/`defaults`) edits one.
+ */
 export function LinkForm({
   action,
   id,

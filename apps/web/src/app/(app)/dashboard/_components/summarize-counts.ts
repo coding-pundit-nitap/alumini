@@ -9,7 +9,10 @@ export type CountResults = {
   unreadNotifications: Loaded<number>;
 };
 
-/** A failed count is reported through `failed` instead of reading as zero; an absent one is zero. */
+/**
+ * A failed count is reported through `failed` instead of reading as zero; an
+ * absent one is zero.
+ */
 export function summarizeCounts(results: CountResults): {
   counts: AttentionCounts;
   failed: boolean;

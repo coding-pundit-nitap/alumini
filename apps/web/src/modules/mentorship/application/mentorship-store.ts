@@ -7,7 +7,10 @@ import type {
   MentorshipState,
 } from "../domain/mentorship";
 
-/** The `mentorship.*` events the outbox carries (contracts in `@nitap/jobs`). Ids only. */
+/**
+ * The `mentorship.*` events the outbox carries (contracts in `@nitap/jobs`).
+ * Ids only.
+ */
 export type MentorshipEvent = {
   type: MentorshipEventType;
   payload: {
@@ -27,23 +30,38 @@ export type NewMentorship = {
   requestedAt: Date;
 };
 
-/** All writes go through one transaction, so a row and its outbox event commit together. */
+/**
+ * All writes go through one transaction, so a row and its outbox event commit
+ * together.
+ */
 export type MentorshipTx = {
   findById(id: string): Promise<MentorshipRow | null>;
-  /** What the store knows about this prospective mentor, from this student's point of view. */
+  /**
+   * What the store knows about this prospective mentor, from this student's
+   * point of view.
+   */
   mentorContext(
     mentorId: string,
     menteeId: string
   ): Promise<MentorContext | null>;
-  /** Guarded slot count for a transition that needs the mentor's capacity. Null without a mentor profile. */
+  /**
+   * Guarded slot count for a transition that needs the mentor's capacity. Null
+   * without a mentor profile.
+   */
   lockMentorCapacity(
     mentorId: string
   ): Promise<{ maxMentees: number; openSlots: number } | null>;
   /** Either direction. */
   blocked(a: string, b: string): Promise<boolean>;
-  /** Inserts the request; null when an open pair already exists (a concurrent request won). Never throws for that. */
+  /**
+   * Inserts the request; null when an open pair already exists (a concurrent
+   * request won). Never throws for that.
+   */
   insert(input: NewMentorship): Promise<MentorshipRow | null>;
-  /** Guarded: only a row still in `from` moves. Null when it had already changed (or is gone). */
+  /**
+   * Guarded: only a row still in `from` moves. Null when it had already changed
+   * (or is gone).
+   */
   update(
     id: string,
     from: MentorshipState,
@@ -56,7 +74,10 @@ export type MentorshipStore = {
   transaction<T>(work: (tx: MentorshipTx) => Promise<T>): Promise<T>;
 };
 
-/** One committed outcome, for logs and metrics. Called after the transaction, never inside it. */
+/**
+ * One committed outcome, for logs and metrics. Called after the transaction,
+ * never inside it.
+ */
 export type MentorshipOutcome =
   "requested" | "accepted" | "declined" | "cancelled" | "started" | "completed";
 export type MentorshipObserver = (
@@ -64,7 +85,10 @@ export type MentorshipObserver = (
   mentorshipId: string
 ) => void;
 
-/** One row of the caller's own list. The counterparty is name and photo only; `message` is for the two participants. */
+/**
+ * One row of the caller's own list. The counterparty is name and photo only;
+ * `message` is for the two participants.
+ */
 export type ListedMentorship = {
   id: string;
   state: MentorshipState;
@@ -84,7 +108,10 @@ export type ListedMentorship = {
 };
 
 export type MentorshipQueries = {
-  /** Only rows where `userId` is the mentor (`role: "mentor"`) or the mentee (`role: "mentee"`), newest request first. */
+  /**
+   * Only rows where `userId` is the mentor (`role: "mentor"`) or the mentee
+   * (`role: "mentee"`), newest request first.
+   */
   list(
     userId: string,
     filter: {

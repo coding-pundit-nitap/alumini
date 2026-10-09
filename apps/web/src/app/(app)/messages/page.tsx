@@ -9,7 +9,10 @@ import { getActor } from "@/modules/auth";
 
 export const metadata: Metadata = { title: "Messages" };
 
-/** The open pane with nothing selected (desktop only; on a phone the inbox fills the screen). */
+/**
+ * The open pane with nothing selected (desktop only; on a phone the inbox fills
+ * the screen).
+ */
 export default async function MessagesPage() {
   const actor = await getActor();
   if (!actor) redirect("/login?next=%2Fmessages");

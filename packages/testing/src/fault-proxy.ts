@@ -20,7 +20,10 @@ export type FaultProxy = {
 
 type Pair = { client: net.Socket; server: net.Socket | null };
 
-/** Each test file owns its proxies on ephemeral ports, so faults never leak between files. */
+/**
+ * Each test file owns its proxies on ephemeral ports, so faults never leak
+ * between files.
+ */
 export async function startFaultProxy(options: {
   upstream: { host: string; port: number };
 }): Promise<FaultProxy> {
@@ -131,7 +134,10 @@ export async function startFaultProxy(options: {
   };
 }
 
-/** Runs `fn` with `fault` applied and always removes it afterwards, even when `fn` throws. */
+/**
+ * Runs `fn` with `fault` applied and always removes it afterwards, even when
+ * `fn` throws.
+ */
 export async function withFault<T>(
   proxy: FaultProxy,
   fault: Fault,
@@ -146,7 +152,10 @@ export async function withFault<T>(
   }
 }
 
-/** Resolves once the proxy accepts connections again (after `clear()` reopens a `down` listener). */
+/**
+ * Resolves once the proxy accepts connections again (after `clear()` reopens a
+ * `down` listener).
+ */
 export async function settled(proxy: FaultProxy, timeoutMs = 2_000) {
   const deadline = Date.now() + timeoutMs;
   for (;;) {

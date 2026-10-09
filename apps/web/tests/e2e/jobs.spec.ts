@@ -50,7 +50,10 @@ async function grantRole(email: string, roleName: RoleName): Promise<void> {
   );
 }
 
-/** Simulates the worker's job.expire sweep for one row, without a live worker process. */
+/**
+ * Simulates the worker's job.expire sweep for one row, without a live worker
+ * process.
+ */
 async function forceExpire(jobId: string): Promise<void> {
   await pool.query(
     `update job set status = 'EXPIRED', deadline = current_date - 1

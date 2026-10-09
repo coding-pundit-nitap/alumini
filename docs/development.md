@@ -21,7 +21,7 @@ and `pnpm docker:observability` starts Prometheus, Alertmanager and Grafana.
 
 | Command                              | What it does                                                                                 |
 | ------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `pnpm lint` / `typecheck` / `format` | ESLint (with boundary rules), `tsc`, Prettier                                                |
+| `pnpm lint` / `typecheck` / `format` | Oxlint (with boundary rules), `tsc`, Prettier                                                |
 | `pnpm arch`                          | dependency-cruiser: cycles, module graph, workspace direction                                |
 | `pnpm test`                          | Unit and component tests (no services needed)                                                |
 | `pnpm test:integration`              | Integration and contract tests against the `docker:up` services                              |
@@ -79,7 +79,7 @@ The file suffix picks the Vitest project:
 ## Conventions
 
 - Conventional Commits with the module or area as scope (`feat(messaging): …`); commitlint enforces them.
-- Pre-commit hooks run ESLint, Prettier, the migration drift check and a secret scan.
+- Pre-commit hooks run Oxlint, Prettier, the migration drift check and a secret scan.
 - `main` is always deployable; work happens on short-lived branches.
 - This Next.js version differs from older ones. Read `apps/web/node_modules/next/dist/docs/` before
   writing framework code.

@@ -53,7 +53,10 @@ function Field(props: {
   );
 }
 
-/** Create (DRAFT) or edit a campaign, including the offline payment instructions. */
+/**
+ * Create (DRAFT) or edit a campaign, including the offline payment
+ * instructions.
+ */
 export function CampaignDialog(props: {
   campaign?: Campaign;
   action: SaveCampaignAction;

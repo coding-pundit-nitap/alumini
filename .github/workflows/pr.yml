@@ -60,6 +60,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm arch
+      - run: pnpm knip
       - run: pnpm worker:prune:check
 
   secret-scan:

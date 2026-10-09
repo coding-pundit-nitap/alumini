@@ -29,8 +29,8 @@ export type PresignUploadResult = {
 } & PresignedUpload;
 
 /**
- * Validates type, size and quota, creates the PENDING_UPLOAD row and returns a presigned POST so the
- * bytes go straight to the store.
+ * Validates type, size and quota, creates the PENDING_UPLOAD row and returns a
+ * presigned POST so the bytes go straight to the store.
  */
 export function createPresignUpload(deps: {
   store: UploadStore;

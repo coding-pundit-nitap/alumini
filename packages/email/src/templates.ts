@@ -17,7 +17,10 @@ export type EmailTemplate =
 
 const SIGNATURE = "NIT Arunachal Pradesh Alumni Network";
 
-/** Pure: the same input always renders the same message. Plain text only for now. */
+/**
+ * Pure: the same input always renders the same message. Plain text only for
+ * now.
+ */
 export function renderEmail(input: EmailTemplate): {
   subject: string;
   text: string;

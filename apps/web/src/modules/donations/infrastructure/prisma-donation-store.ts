@@ -95,7 +95,10 @@ const fromLocked = (r: LockedCampaignRow): Campaign =>
     createdAt: r.created_at,
   });
 
-/** Rows, audit entries and outbox events share the transaction. Lock order: campaign, then donation. */
+/**
+ * Rows, audit entries and outbox events share the transaction. Lock order:
+ * campaign, then donation.
+ */
 export function createPrismaDonationStore(deps: {
   runner: Pick<TransactionRunner, "run">;
   audit: AuditWriter;
@@ -198,7 +201,10 @@ type ProgressRow = {
   donors: number;
 };
 
-/** Reads for the member and admin pages. Progress counts CONFIRMED only; open pledges separately. */
+/**
+ * Reads for the member and admin pages. Progress counts CONFIRMED only; open
+ * pledges separately.
+ */
 export function createPrismaDonationQueries(db: PrismaClient): DonationQueries {
   const progressOf = async (ids: string[]) => {
     if (ids.length === 0) return new Map<string, ProgressRow>();

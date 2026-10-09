@@ -19,7 +19,10 @@ export type JobContext = {
   jobId: string;
   /** 1-based attempt number. */
   attempt: number;
-  /** Correlation id of the request that wrote the event, or null for scheduled jobs. */
+  /**
+   * Correlation id of the request that wrote the event, or null for scheduled
+   * jobs.
+   */
   requestId: string | null;
   /** Aborted when the job timeout elapses; a cooperative processor should stop. */
   signal: AbortSignal;
@@ -36,7 +39,10 @@ export type RegisteredJob<TPayload = unknown> = {
   process: JobProcessor<TPayload>;
 };
 
-/** Pairs a definition with its processor so the payload type flows from one to the other. */
+/**
+ * Pairs a definition with its processor so the payload type flows from one to
+ * the other.
+ */
 export function registerJob<TPayload>(
   definition: JobDefinition<string, TPayload>,
   process: JobProcessor<TPayload>
@@ -59,7 +65,10 @@ export type ExecuteDeps = {
   registry: ReadonlyMap<string, RegisteredJob>;
   logger: Logger;
   metrics: Metrics;
-  /** Reports a dead job to the error tracker; defaults to `@nitap/observability`'s. */
+  /**
+   * Reports a dead job to the error tracker; defaults to
+   * `@nitap/observability`'s.
+   */
   captureError?: (error: unknown, context: CaptureContext) => void;
   /** How long to hold back a payload of a newer version than this worker knows. */
   unknownVersionDelayMs: number;
@@ -67,9 +76,10 @@ export type ExecuteDeps = {
 };
 
 /**
- * Runs one job independently of BullMQ's Worker so it is unit-testable: validates, restores context,
- * enforces the timeout and maps errors to retry/fail/delay. Error messages are logged, so keep personal
- * data out of them.
+ * Runs one job independently of BullMQ's Worker so it is unit-testable:
+ * validates, restores context, enforces the timeout and maps errors to
+ * retry/fail/delay. Error messages are logged, so keep personal data out of
+ * them.
  */
 export async function executeJob(
   deps: ExecuteDeps,
@@ -198,7 +208,10 @@ export async function executeJob(
 
 export type QueueOverride = {
   concurrency?: number;
-  /** BullMQ limiter: at most `max` jobs per `durationMs`, across all workers of this queue. */
+  /**
+   * BullMQ limiter: at most `max` jobs per `durationMs`, across all workers of
+   * this queue.
+   */
   rateLimit?: { max: number; durationMs: number };
 };
 
@@ -211,19 +224,28 @@ export type WorkerRuntimeOptions = {
   queueOverrides?: Partial<Record<QueueName, QueueOverride>>;
   /** Default 60 s. */
   unknownVersionDelayMs?: number;
-  /** A dead worker's job returns to the queue within about these two. Tests shorten them. */
+  /**
+   * A dead worker's job returns to the queue within about these two. Tests
+   * shorten them.
+   */
   lockDurationMs?: number;
   stalledIntervalMs?: number;
 };
 
 export type WorkerRuntime = {
   start(): Promise<void>;
-  /** Lets in-flight jobs finish for up to `timeoutMs` (default 30 s), then forces. */
+  /**
+   * Lets in-flight jobs finish for up to `timeoutMs` (default 30 s), then
+   * forces.
+   */
   close(options?: { timeoutMs?: number }): Promise<void>;
   health(): { running: boolean; draining: boolean };
 };
 
-/** How long close() lets BullMQ finish its own cleanup once no job of this runtime is running. */
+/**
+ * How long close() lets BullMQ finish its own cleanup once no job of this
+ * runtime is running.
+ */
 const CLOSE_GRACE_MS = 2_000;
 
 export function createWorkerRuntime(

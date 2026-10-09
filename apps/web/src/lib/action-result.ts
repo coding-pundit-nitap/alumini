@@ -1,4 +1,7 @@
-/** What a Server Action returns to its form: expected outcomes are returned, not thrown. */
+/**
+ * What a Server Action returns to its form: expected outcomes are returned, not
+ * thrown.
+ */
 export type ActionError = {
   code: string;
   message: string;

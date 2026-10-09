@@ -3,8 +3,8 @@ import { createOutboxWriter } from "@nitap/database/outbox";
 import { createPrismaClient } from "../src/prisma.ts";
 
 /**
- * Manual check against the local stack: writes one email event and waits for Mailpit. Needs
- * `pnpm docker:up` and `pnpm worker:dev`.
+ * Manual check against the local stack: writes one email event and waits for
+ * Mailpit. Needs `pnpm docker:up` and `pnpm worker:dev`.
  */
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is not set");

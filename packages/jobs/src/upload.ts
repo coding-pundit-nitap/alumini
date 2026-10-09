@@ -10,8 +10,10 @@ export type UploadScanPayload = z.infer<typeof uploadScanPayload>;
 /** Shared by web's upload rules and the worker's scan processor. */
 export const IMAGE_OUTPUT = { size: 512, format: "webp" } as const;
 
-/** Scans and re-encodes a pending upload. Looks the row up by id; a row already READY or
- * REJECTED is a no-op, so a re-delivered job is harmless. */
+/**
+ * Scans and re-encodes a pending upload. Looks the row up by id; a row already
+ * READY or REJECTED is a no-op, so a re-delivered job is harmless.
+ */
 export const uploadScan = defineJob({
   name: "upload.scan",
   version: 1,

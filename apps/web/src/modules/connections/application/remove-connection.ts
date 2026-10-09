@@ -13,8 +13,8 @@ import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { refuse } from "./refusal";
 
 /**
- * Cancel your own request, remove a connection, or lift your own block. The delete is guarded by the
- * state it was decided on.
+ * Cancel your own request, remove a connection, or lift your own block. The
+ * delete is guarded by the state it was decided on.
  */
 export function createRemoveConnection(deps: {
   store: ConnectionStore;

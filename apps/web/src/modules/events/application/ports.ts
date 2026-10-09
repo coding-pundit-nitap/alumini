@@ -32,7 +32,10 @@ export type NewEvent = {
   registrationDeadline: Date;
 };
 
-/** The `event.*` outbox events (contracts in `@nitap/jobs`). Names use hyphens, not underscores. */
+/**
+ * The `event.*` outbox events (contracts in `@nitap/jobs`). Names use hyphens,
+ * not underscores.
+ */
 export type EventOutboxEvent = {
   [K in keyof typeof eventJobs]: {
     type: K;
@@ -41,14 +44,21 @@ export type EventOutboxEvent = {
 }[keyof typeof eventJobs];
 
 /**
- * All writes go through one transaction. `claimSeat`, `releaseSeat` and `cancelEvent` are single
- * guarded updates that report whether their guard matched.
+ * All writes go through one transaction. `claimSeat`, `releaseSeat` and
+ * `cancelEvent` are single guarded updates that report whether their guard
+ * matched.
  */
 export type EventTx = {
   insertEvent(input: NewEvent): Promise<{ id: string }>;
-  /** Guarded increment (statement 1): scheduled, before the deadline, under capacity. */
+  /**
+   * Guarded increment (statement 1): scheduled, before the deadline, under
+   * capacity.
+   */
   claimSeat(eventId: string): Promise<boolean>;
-  /** Statement 2: inserts a new registration, or reuses a CANCELLED row. Null for an existing REGISTERED row. */
+  /**
+   * Statement 2: inserts a new registration, or reuses a CANCELLED row. Null
+   * for an existing REGISTERED row.
+   */
   upsertRegistration(
     eventId: string,
     userId: string
@@ -78,7 +88,10 @@ export type EventStore = {
   transaction<T>(work: (tx: EventTx) => Promise<T>): Promise<T>;
 };
 
-/** One committed outcome, for logs and metrics. Called after the transaction, never inside it. */
+/**
+ * One committed outcome, for logs and metrics. Called after the transaction,
+ * never inside it.
+ */
 export type EventOutcome =
   | "created"
   | "cancelled"

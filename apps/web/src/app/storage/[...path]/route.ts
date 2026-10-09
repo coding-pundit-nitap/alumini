@@ -1,6 +1,7 @@
 /**
- * Proxies presigned storage URLs when S3_PUBLIC_PATH=/storage. A route rather than a rewrite
- * because rewrites are fixed at build time; the store does the authorization.
+ * Proxies presigned storage URLs when S3_PUBLIC_PATH=/storage. A route rather
+ * than a rewrite because rewrites are fixed at build time; the store does the
+ * authorization.
  */
 const PUBLIC_PATH = "/storage";
 

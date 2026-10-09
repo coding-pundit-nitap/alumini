@@ -32,7 +32,10 @@ const ACCOUNT = [
   { label: "Forgot password", href: "/forgot-password" },
 ];
 
-/** Takes `signedIn` instead of calling getActor so client pages (error.tsx) can use it. */
+/**
+ * Takes `signedIn` instead of calling getActor so client pages (error.tsx) can
+ * use it.
+ */
 export function PublicShell({
   signedIn,
   children,
@@ -112,6 +115,8 @@ export function PublicShell({
         </div>
         <div className="border-border/60 border-t">
           <div className="text-muted-foreground mx-auto flex max-w-7xl flex-col gap-1 px-4 py-5 text-xs sm:flex-row sm:justify-between sm:px-8">
+            {/* oxlint-disable-next-line react/purity */}
+            {/* oxlint-disable-next-line react/purity -- server component */}
             <p>&copy; {new Date().getFullYear()} NIT Arunachal Pradesh</p>
             <p>Made by the NIT AP Coding Club</p>
           </div>

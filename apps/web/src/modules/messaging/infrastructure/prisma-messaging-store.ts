@@ -25,8 +25,9 @@ const toMessage = (row: {
 }): MessageRow => ({ ...row, seq: row.seq.toString() });
 
 /**
- * Writes that touch a conversation's counters lock it first, so `seq` is commit-ordered and counters
- * are never lost. Outbox events share the transaction.
+ * Writes that touch a conversation's counters lock it first, so `seq` is
+ * commit-ordered and counters are never lost. Outbox events share the
+ * transaction.
  */
 export function createPrismaMessagingStore(deps: {
   runner: Pick<TransactionRunner, "run">;

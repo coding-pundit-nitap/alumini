@@ -74,7 +74,8 @@ export function RegistrationButton({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
-  const state = deriveState(event, new Date());
+  const [now] = useState(() => new Date());
+  const state = deriveState(event, now);
 
   if (state.mode === "none") return null;
 

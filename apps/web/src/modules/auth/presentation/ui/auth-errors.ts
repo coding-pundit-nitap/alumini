@@ -15,7 +15,10 @@ const MESSAGES: Record<string, string> = {
 
 const GENERIC = "Something went wrong. Please try again.";
 
-/** Maps Better Auth codes to copy. Unknown codes get a generic message; raw codes are never shown. */
+/**
+ * Maps Better Auth codes to copy. Unknown codes get a generic message; raw
+ * codes are never shown.
+ */
 export function authErrorMessage(
   error: { code?: string; status?: number } | null | undefined
 ): string {

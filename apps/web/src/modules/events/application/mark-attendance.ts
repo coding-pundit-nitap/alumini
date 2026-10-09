@@ -13,8 +13,9 @@ import type {
 import { refuse } from "./refusal";
 
 /**
- * Organizer or `event.manage`, after the start, on a non-cancelled registration. The guarded update
- * decides; `decideAttendance` only explains a miss.
+ * Organizer or `event.manage`, after the start, on a non-cancelled
+ * registration. The guarded update decides; `decideAttendance` only explains a
+ * miss.
  */
 export function createMarkAttendance(deps: {
   store: EventStore;

@@ -8,10 +8,10 @@
     "./global-setup": "./src/global-setup.ts"
   },
   "scripts": {
-    "lint": "eslint --max-warnings=0",
-    "typecheck": "tsc --noEmit",
     "check-types": "tsc --noEmit --skipLibCheck",
-    "lint:fix": "eslint --fix"
+    "lint": "oxlint --type-aware --max-warnings=0",
+    "lint:fix": "oxlint --type-aware --fix",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@nitap/database": "workspace:*",
@@ -22,12 +22,11 @@
     "vitest": "^5.0.1"
   },
   "devDependencies": {
-    "@nitap/eslint-config": "workspace:*",
     "@nitap/typescript-config": "workspace:*",
     "@types/node": "^26.6.2",
     "@types/pg": "^8.23.1",
     "@types/smtp-server": "^3.5.13",
-    "eslint": "^10.11.0",
+    "oxlint": "^1.87.0",
     "typescript": "^7.0.2"
   }
 }

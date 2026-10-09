@@ -2,13 +2,19 @@ import type { JobProcessor } from "@nitap/queue";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** The subset of `@nitap/database/donations`'s `PledgeExpiryStore` this processor needs. */
+/**
+ * The subset of `@nitap/database/donations`'s `PledgeExpiryStore` this
+ * processor needs.
+ */
 export type PledgeExpiryStoreLike = {
   listStale(before: Date, limit: number): Promise<{ id: string }[]>;
   expireOne(id: string, before: Date, now: Date): Promise<boolean>;
 };
 
-/** Open pledges with no reference after `days` become NOT_RECEIVED, in bounded batches. */
+/**
+ * Open pledges with no reference after `days` become NOT_RECEIVED, in bounded
+ * batches.
+ */
 export function createDonationExpireProcessor(deps: {
   store: PledgeExpiryStoreLike;
   days?: number;

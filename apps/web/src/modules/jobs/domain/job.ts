@@ -1,6 +1,6 @@
 /**
- * No DRAFT: creating submits. REJECTED is not terminal, since an edit resubmits it. Self-review is
- * refused here as well as by RBAC.
+ * No DRAFT: creating submits. REJECTED is not terminal, since an edit resubmits
+ * it. Self-review is refused here as well as by RBAC.
  */
 export const JOB_STATES = [
   "PENDING_REVIEW",
@@ -61,7 +61,10 @@ export type JobContent = Pick<
   | "deadline"
 >;
 
-/** The material fields: changing any of these on a PUBLISHED job forces re-review. */
+/**
+ * The material fields: changing any of these on a PUBLISHED job forces
+ * re-review.
+ */
 export const MATERIAL_FIELDS = [
   "title",
   "company",
@@ -70,7 +73,10 @@ export const MATERIAL_FIELDS = [
   "deadline",
 ] as const satisfies readonly (keyof JobContent)[];
 
-/** Written whole, so no transition leaves a stale review field behind (ck_job_reject_note depends on it). */
+/**
+ * Written whole, so no transition leaves a stale review field behind
+ * (ck_job_reject_note depends on it).
+ */
 export type JobPatch = Pick<
   JobRow,
   "status" | "reviewedBy" | "reviewedAt" | "reviewNote"
@@ -92,7 +98,10 @@ const refuse = (code: Refusal["code"]): { ok: false } & Refusal => ({
 
 const CLOSE_ELIGIBLE: readonly JobStatus[] = ["PENDING_REVIEW", "PUBLISHED"];
 
-/** Create and submit are one action; the outcome depends only on the actor's own permission. */
+/**
+ * Create and submit are one action; the outcome depends only on the actor's own
+ * permission.
+ */
 export function decideCreate(actorHasApprove: boolean): {
   ok: true;
   status: JobStatus;
@@ -160,7 +169,10 @@ export function decideEdit(
   };
 }
 
-/** The DB's guarded UPDATE (WHERE status = 'PENDING_REVIEW') is the race backstop. */
+/**
+ * The DB's guarded UPDATE (WHERE status = 'PENDING_REVIEW') is the race
+ * backstop.
+ */
 export function decideApprove(
   row: JobRow,
   actorId: string,

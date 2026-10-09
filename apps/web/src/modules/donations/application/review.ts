@@ -35,7 +35,10 @@ type Deps = {
 const isStatus = (v: unknown): v is DonationStatus =>
   DONATION_STATUSES.includes(v as DonationStatus);
 
-/** `donation.view_all` sees every pledge; `campaign.manage` alone sees only open pledges to confirm. */
+/**
+ * `donation.view_all` sees every pledge; `campaign.manage` alone sees only open
+ * pledges to confirm.
+ */
 export function createListDonationsForAdmin(deps: Deps) {
   return async function listDonationsForAdmin(args: {
     actor: Actor | null;
@@ -62,7 +65,10 @@ export function createListDonationsForAdmin(deps: Deps) {
   };
 }
 
-/** Locks the pledge, refuses a second decision and a manager settling their own pledge. */
+/**
+ * Locks the pledge, refuses a second decision and a manager settling their own
+ * pledge.
+ */
 async function openPledgeToDecide(tx: DonationTx, actor: Actor, id: string) {
   const row = await tx.findDonationForUpdate(id);
   if (!row) throw new NotFoundError();

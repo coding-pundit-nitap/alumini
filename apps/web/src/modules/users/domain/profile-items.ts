@@ -2,7 +2,10 @@ import { z } from "zod";
 
 import { optionalText, sanitiseSingleLine } from "./profile-input";
 
-/** A problem with one field, found by a rule that needs the clock (so it cannot be a static schema rule). */
+/**
+ * A problem with one field, found by a rule that needs the clock (so it cannot
+ * be a static schema rule).
+ */
 export type FieldProblem = { field: string; message: string };
 
 const requiredText = (message: string, max: number) =>
@@ -56,7 +59,10 @@ export const EXPERIENCE_FIELDS = [
   "isCurrent",
 ] as const;
 
-/** A role is current exactly when it has no end date. Strict, so a forged `userId` fails. */
+/**
+ * A role is current exactly when it has no end date. Strict, so a forged
+ * `userId` fails.
+ */
 export const experienceSchema = z
   .object({
     company: requiredText("Enter the company.", 100),
@@ -89,7 +95,10 @@ export const experienceSchema = z
 export type ExperienceInput = z.output<typeof experienceSchema>;
 export type ExperienceItem = ExperienceInput & { id: string };
 
-/** Dates in the future are refused; they need the clock, so the database CHECK cannot say it. */
+/**
+ * Dates in the future are refused; they need the clock, so the database CHECK
+ * cannot say it.
+ */
 export function experienceClockProblems(
   input: ExperienceInput,
   now: Date
@@ -140,7 +149,10 @@ export const EDUCATION_FIELDS = [
   "endYear",
 ] as const;
 
-/** Additional education (prior or later study). The institutional record is not editable here. */
+/**
+ * Additional education (prior or later study). The institutional record is not
+ * editable here.
+ */
 export const educationSchema = z
   .object({
     institution: requiredText("Enter the institution.", 150),
@@ -200,7 +212,10 @@ export function educationClockProblems(
 
 export const SKILL_FIELDS = ["skill"] as const;
 
-/** NFKC first, so compatibility forms (full-width letters) collapse; casing is kept for display. */
+/**
+ * NFKC first, so compatibility forms (full-width letters) collapse; casing is
+ * kept for display.
+ */
 export const skillSchema = z
   .object({
     skill: z
@@ -246,8 +261,8 @@ export type LinkUrlResult =
   { ok: true; url: string } | { ok: false; message: string };
 
 /**
- * Public `https` links only. Normalized (lowercase host, no fragment or default port) so the same page
- * cannot be added twice.
+ * Public `https` links only. Normalized (lowercase host, no fragment or default
+ * port) so the same page cannot be added twice.
  */
 export function normaliseLinkUrl(raw: string, type: LinkType): LinkUrlResult {
   const bad = (message: string): LinkUrlResult => ({ ok: false, message });

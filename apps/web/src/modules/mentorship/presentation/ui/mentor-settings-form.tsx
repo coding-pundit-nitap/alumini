@@ -54,7 +54,10 @@ const CONTACT_LABEL: Record<(typeof CONTACT_METHODS)[number], string> = {
   PHONE: "Phone",
 };
 
-/** Submitted as an object, not FormData, because topics are split into a list first. */
+/**
+ * Submitted as an object, not FormData, because topics are split into a list
+ * first.
+ */
 export function MentorSettingsForm({
   defaults,
   listedNote,

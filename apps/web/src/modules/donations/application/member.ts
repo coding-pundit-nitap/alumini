@@ -25,7 +25,10 @@ type Deps = {
   now?: () => Date;
 };
 
-/** `/donate`: campaigns a member can give to now, plus closed ones for their record. */
+/**
+ * `/donate`: campaigns a member can give to now, plus closed ones for their
+ * record.
+ */
 export function createListOpenCampaigns(deps: Deps) {
   const now = deps.now ?? (() => new Date());
   return async function listOpenCampaigns(args: {
@@ -94,7 +97,10 @@ export function createPledgeDonation(deps: Deps) {
   };
 }
 
-/** The donor's own open pledge, locked; anyone else's is not found (it is not theirs to see). */
+/**
+ * The donor's own open pledge, locked; anyone else's is not found (it is not
+ * theirs to see).
+ */
 async function ownOpenPledge(tx: DonationTx, actor: Actor, id: string) {
   const row = await tx.findDonationForUpdate(id);
   if (!row || row.donorId !== actor.userId) throw new NotFoundError();
@@ -103,7 +109,10 @@ async function ownOpenPledge(tx: DonationTx, actor: Actor, id: string) {
   return row;
 }
 
-/** The donor adds or corrects their UTR / cheque number while the pledge is open. */
+/**
+ * The donor adds or corrects their UTR / cheque number while the pledge is
+ * open.
+ */
 export function createSetPledgeReference(deps: Deps) {
   return async function setPledgeReference(args: {
     actor: Actor | null;
@@ -137,7 +146,10 @@ export function createCancelPledge(deps: Deps) {
   };
 }
 
-/** `/donations`: the member's own pledges. A suspended account cannot reach this (403 from authorize). */
+/**
+ * `/donations`: the member's own pledges. A suspended account cannot reach this
+ * (403 from authorize).
+ */
 export function createListMyDonations(deps: Deps) {
   return async function listMyDonations(args: {
     actor: Actor | null;

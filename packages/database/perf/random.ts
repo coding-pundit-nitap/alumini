@@ -1,4 +1,7 @@
-/** Mulberry32: a small, fast PRNG with a 32-bit state. Same seed, same sequence, on every platform. */
+/**
+ * Mulberry32: a small, fast PRNG with a 32-bit state. Same seed, same sequence,
+ * on every platform.
+ */
 export type Random = {
   /** Uniform in [0, 1). */
   next(): number;

@@ -8,7 +8,10 @@ export const BASE = __ENV.BASE_URL || "http://localhost:3100";
 
 const FIXTURE = "/perf/.data/fixture.json";
 
-/** `perf/.data/fixture.json`, as written by `apps/web/scripts/perf-seed.ts` (shape: `PerfFixture` in packages/database/perf/generate.ts). */
+/**
+ * `perf/.data/fixture.json`, as written by `apps/web/scripts/perf-seed.ts`
+ * (shape: `PerfFixture` in packages/database/perf/generate.ts).
+ */
 export type LoadUser = { userId: string; email: string; cookie: string };
 export type Fixture = {
   password: string;
@@ -46,7 +49,10 @@ export const pick = <T>(items: readonly T[]): T =>
 export const randomIndex = (n: number): number => Math.floor(Math.random() * n);
 
 /** A random load user, with its index (to look up its conversations). */
-/** Strict-index helpers: `loadUsers[i]` is `LoadUser | undefined` under noUncheckedIndexedAccess. */
+/**
+ * Strict-index helpers: `loadUsers[i]` is `LoadUser | undefined` under
+ * noUncheckedIndexedAccess.
+ */
 export const loadUserAt = (index: number): LoadUser =>
   loadUsers[index] as LoadUser;
 export const conversationsOf = (index: number): string[] =>
@@ -58,7 +64,10 @@ export function anyUser(): IndexedUser {
   return { index, ...loadUserAt(index) };
 }
 
-/** Request params for a signed-in member. Origin is what `assertSameOrigin` checks on writes. */
+/**
+ * Request params for a signed-in member. Origin is what `assertSameOrigin`
+ * checks on writes.
+ */
 export function as(
   user: LoadUser,
   extra: {
@@ -89,13 +98,19 @@ export function uuid(): string {
   return out;
 }
 
-/** p50 < 200 ms, p95 < 500 ms, p99 < 1 s, errors < 0.1%. A breach exits non-zero. */
+/**
+ * P50 < 200 ms, p95 < 500 ms, p99 < 1 s, errors < 0.1%. A breach exits
+ * non-zero.
+ */
 export const SRS_THRESHOLDS: NonNullable<Options["thresholds"]> = {
   http_req_duration: ["p(50)<200", "p(95)<500", "p(99)<1000"],
   http_req_failed: ["rate<0.001"],
 };
 
-/** Open model: requests arrive at RATE regardless of server speed, so slowness shows as latency. */
+/**
+ * Open model: requests arrive at RATE regardless of server speed, so slowness
+ * shows as latency.
+ */
 export function arrival(defaults: {
   rate: number;
   ramp?: string;

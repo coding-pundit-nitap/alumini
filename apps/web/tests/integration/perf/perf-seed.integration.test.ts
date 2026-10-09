@@ -19,7 +19,10 @@ import { createTestDatabase } from "../../support/test-database";
 
 const SECRET = "perf-secret-perf-secret-perf-secret-0000";
 
-/** A small run of the perf seed: every row satisfies the schema and the cookies are accepted. */
+/**
+ * A small run of the perf seed: every row satisfies the schema and the cookies
+ * are accepted.
+ */
 describe("performance seed (small variant, real PostgreSQL)", () => {
   let db: TestDatabase;
   let data: PerfData;

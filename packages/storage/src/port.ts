@@ -15,7 +15,10 @@ export type HeadResult = { size: number; contentType: string | null };
 export interface StoragePort {
   /** A presigned POST: the browser sends the file straight to the store. */
   presignUpload(input: PresignUploadInput): Promise<PresignedUpload>;
-  /** Confirms an object exists and reports its real size/type, without downloading it. */
+  /**
+   * Confirms an object exists and reports its real size/type, without
+   * downloading it.
+   */
   head(key: string): Promise<HeadResult>;
   get(key: string): Promise<Buffer>;
   put(key: string, body: Buffer, contentType: string): Promise<void>;
@@ -26,7 +29,10 @@ export interface StoragePort {
   }): Promise<string>;
 }
 
-/** `unavailable`: the store could not be reached (network, timeout, 5xx) — retry later. `not_found`: no such key. */
+/**
+ * `unavailable`: the store could not be reached (network, timeout, 5xx) — retry
+ * later. `not_found`: no such key.
+ */
 export class StorageError extends Error {
   readonly kind: "unavailable" | "not_found";
 

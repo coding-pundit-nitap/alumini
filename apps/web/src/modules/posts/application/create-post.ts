@@ -10,8 +10,8 @@ import type { PostsStore } from "./posts-store";
 import { parse } from "./validation";
 
 /**
- * Every image id must be a READY upload owned by the caller. ACHIEVEMENT posts are created only by
- * the achievements module.
+ * Every image id must be a READY upload owned by the caller. ACHIEVEMENT posts
+ * are created only by the achievements module.
  */
 export function createCreatePost(deps: {
   store: PostsStore;

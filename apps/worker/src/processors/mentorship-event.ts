@@ -7,7 +7,10 @@ export type MentorshipEventDeps = {
   deliver: DeliverNotification;
   /** Re-reads the current email; null skips email (account may be deactivated). */
   findEmail: (userId: string) => Promise<string | null>;
-  /** Symmetric, checked at delivery time: a block since the event fired suppresses the notification. */
+  /**
+   * Symmetric, checked at delivery time: a block since the event fired
+   * suppresses the notification.
+   */
   blocked: (a: string, b: string) => Promise<boolean>;
 };
 

@@ -8,7 +8,10 @@ import {
   type CampaignStatusAction,
 } from "./campaign-status-button";
 
-/** `/admin/campaigns`: every campaign, its progress and the actions its state allows. */
+/**
+ * `/admin/campaigns`: every campaign, its progress and the actions its state
+ * allows.
+ */
 export function CampaignsTable(props: {
   campaigns: readonly CampaignWithProgress[];
   save: SaveCampaignAction;

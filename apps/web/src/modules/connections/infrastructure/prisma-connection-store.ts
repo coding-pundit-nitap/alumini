@@ -22,8 +22,9 @@ const toRow = (row: {
 }): ConnectionRow => ({ ...row });
 
 /**
- * Pair uniqueness is enforced by the database (`uq_connection_pair`), never read-then-write. State
- * changes are guarded updates, and outbox events share the transaction.
+ * Pair uniqueness is enforced by the database (`uq_connection_pair`), never
+ * read-then-write. State changes are guarded updates, and outbox events share
+ * the transaction.
  */
 export function createPrismaConnectionStore(deps: {
   runner: Pick<TransactionRunner, "run">;

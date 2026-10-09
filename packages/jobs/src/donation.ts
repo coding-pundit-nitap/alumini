@@ -40,7 +40,10 @@ export const donationNotReceived = defineJob({
   name: "donation.not-received",
 });
 
-/** Daily: open pledges with no reference after 30 days become NOT_RECEIVED. Scheduled only. */
+/**
+ * Daily: open pledges with no reference after 30 days become NOT_RECEIVED.
+ * Scheduled only.
+ */
 export const donationExpirePledges = defineJob({
   name: "donation.expire-pledges",
   version: 1,

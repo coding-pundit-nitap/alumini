@@ -4,7 +4,10 @@ import { useState, useTransition } from "react";
 
 import type { ActionResult } from "@/lib/action-result";
 
-/** One Server Action at a time; shows the first field message, else the safe message (as admin dialogs do). */
+/**
+ * One Server Action at a time; shows the first field message, else the safe
+ * message (as admin dialogs do).
+ */
 export function useDonationAction() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);

@@ -64,7 +64,10 @@ const EMPTY: Record<ListTab, { text: string; icon: LucideIcon }> = {
 
 const PILL = "rounded-full";
 
-/** Opens (or starts) the 1:1 with the other person. Its own component: only it needs the router. */
+/**
+ * Opens (or starts) the 1:1 with the other person. Its own component: only it
+ * needs the router.
+ */
 function MessageControl({
   userId,
   action,
@@ -332,7 +335,10 @@ function Row({
   );
 }
 
-/** `messageAction` is passed in because this module does not depend on messaging. */
+/**
+ * `messageAction` is passed in because this module does not depend on
+ * messaging.
+ */
 export function MentorshipList({
   items,
   tab,

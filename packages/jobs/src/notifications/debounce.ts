@@ -8,7 +8,10 @@ export function debounceKeyFor(
   return `notif:debounce:${recipientId}:${conversationId}`;
 }
 
-/** Whether a pending debounce window that started at `windowStartedAt` should flush by `now`. */
+/**
+ * Whether a pending debounce window that started at `windowStartedAt` should
+ * flush by `now`.
+ */
 export function shouldFlush(
   windowStartedAt: Date,
   now: Date,

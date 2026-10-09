@@ -8,7 +8,10 @@ export type OutboxPruneOptions = {
   now?: () => Date;
 };
 
-/** Deletes published rows older than the retention window in bounded batches, until a short batch. */
+/**
+ * Deletes published rows older than the retention window in bounded batches,
+ * until a short batch.
+ */
 export function createOutboxPruneProcessor(
   store: OutboxStore,
   options: OutboxPruneOptions = {}

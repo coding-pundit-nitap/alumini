@@ -56,7 +56,10 @@ describe("authentication security (real PostgreSQL and Redis)", () => {
     });
   }
 
-  /** A confirmed account in the given state, created through the real sign-up path. */
+  /**
+   * A confirmed account in the given state, created through the real sign-up
+   * path.
+   */
   async function member(
     auth: ReturnType<typeof makeAuth>,
     email: string,

@@ -7,14 +7,15 @@ import { parseArgs } from "node:util";
 import pg from "pg";
 
 /**
- * Fails when a new migration blocks writes to a populated table for longer than --max-hold-ms.
- * Builds the database at the merge base with --base, seeds it, then applies the new migrations while
- * sampling pg_locks every 20 ms.
+ * Fails when a new migration blocks writes to a populated table for longer than
+ * --max-hold-ms. Builds the database at the merge base with --base, seeds it,
+ * then applies the new migrations while sampling pg_locks every 20 ms.
  *
- *   node packages/scripts/check-migration-locks.ts [--base origin/main] [--users 10000] [--max-hold-ms 1000]
- *                                                  [--summary f] [--keep]
+ * Node packages/scripts/check-migration-locks.ts [--base origin/main] [--users
+ * 10000] [--max-hold-ms 1000] [--summary f] [--keep]
  *
- * Creates and drops `alumini_locks_perf` on DATABASE_URL's server, so it must be local.
+ * Creates and drops `alumini_locks_perf` on DATABASE_URL's server, so it must
+ * be local.
  */
 const root = path.resolve(import.meta.dirname, "../..");
 const worktree = path.join(root, ".migration-locks");

@@ -20,7 +20,10 @@ const validPayload = {
   params: {},
 };
 
-/** An in-memory outbox that behaves like the real transaction: nothing is applied if the publisher throws. */
+/**
+ * An in-memory outbox that behaves like the real transaction: nothing is
+ * applied if the publisher throws.
+ */
 function fakeStore(initial: OutboxEventRow[]) {
   const rows = new Map(initial.map((r) => [r.id, { ...r }]));
   const published = new Set<string>();

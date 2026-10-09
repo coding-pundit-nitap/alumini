@@ -4,7 +4,10 @@ import { cn } from "@nitap/ui/lib/utils";
 
 import { dateBlock, spotsLabel } from "../format";
 
-/** A calendar-page date: ember month band over the day, both in the event's own zone. */
+/**
+ * A calendar-page date: ember month band over the day, both in the event's own
+ * zone.
+ */
 export function DateBlock({
   startsAt,
   timezone,
@@ -49,7 +52,10 @@ export function DateBlock({
   );
 }
 
-/** "N of M spots left" over a thin fill bar; the bar is decorative, the text carries the numbers. */
+/**
+ * "N of M spots left" over a thin fill bar; the bar is decorative, the text
+ * carries the numbers.
+ */
 export function SpotsMeter({
   remaining,
   capacity,
@@ -80,7 +86,10 @@ export function SpotsMeter({
   );
 }
 
-/** "Online" with a video icon, or the venue ("In person" when none is set) with a pin. */
+/**
+ * "Online" with a video icon, or the venue ("In person" when none is set) with
+ * a pin.
+ */
 export function EventPlace({
   isOnline,
   location,

@@ -7,7 +7,10 @@ type Storage = {
   ): Promise<{ allowed: boolean; retryAfter: number | null }>;
 };
 
-/** Its own key namespace, so verification limits never collide with sign-in limits. */
+/**
+ * Its own key namespace, so verification limits never collide with sign-in
+ * limits.
+ */
 export function createRedisRateLimiter(storage: Storage): RateLimiter {
   return {
     async consume(key, rule) {

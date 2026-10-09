@@ -1,6 +1,9 @@
 import type { Prisma } from "../generated/prisma/client.ts";
 
-/** A response as stored: enough to replay it byte-for-byte in meaning (status, JSON body, a few headers). */
+/**
+ * A response as stored: enough to replay it byte-for-byte in meaning (status,
+ * JSON body, a few headers).
+ */
 export type StoredResponse = {
   status: number;
   body: unknown;
@@ -14,15 +17,24 @@ export type IdempotencyRow = {
   createdAt: Date;
 };
 
-/** Only the delegate (and raw SQL for the bounded sweep) is needed, so this works with any client. */
+/**
+ * Only the delegate (and raw SQL for the bounded sweep) is needed, so this
+ * works with any client.
+ */
 export type IdempotencyClient = Pick<
   Prisma.TransactionClient,
   "idempotencyKey" | "$executeRaw"
 >;
 
-/** A claim must commit on its own, outside the business transaction, or concurrent duplicates can't see it. */
+/**
+ * A claim must commit on its own, outside the business transaction, or
+ * concurrent duplicates can't see it.
+ */
 export type IdempotencyStore = {
-  /** True when this call created the claim (the caller runs the request); false when one already exists. */
+  /**
+   * True when this call created the claim (the caller runs the request); false
+   * when one already exists.
+   */
   claim(
     db: IdempotencyClient,
     input: { userId: string; key: string; requestHash: string }
@@ -38,9 +50,15 @@ export type IdempotencyStore = {
     key: string,
     response: StoredResponse
   ): Promise<void>;
-  /** Drops the claim so a retry can run the request again (used when the request did not succeed). */
+  /**
+   * Drops the claim so a retry can run the request again (used when the request
+   * did not succeed).
+   */
   release(db: IdempotencyClient, userId: string, key: string): Promise<void>;
-  /** Deletes the row only if it is older than `before` (an expired reply or an abandoned claim). */
+  /**
+   * Deletes the row only if it is older than `before` (an expired reply or an
+   * abandoned claim).
+   */
   reclaim(
     db: IdempotencyClient,
     userId: string,

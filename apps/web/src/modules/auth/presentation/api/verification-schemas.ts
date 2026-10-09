@@ -9,7 +9,10 @@ export const EVIDENCE_FIELDS = [
   "supportingInfo",
 ] as const;
 
-/** Strict: a field outside this list, such as a forged `userId`, fails validation. */
+/**
+ * Strict: a field outside this list, such as a forged `userId`, fails
+ * validation.
+ */
 export const evidenceSchema = z
   .object({
     rollNumber: z

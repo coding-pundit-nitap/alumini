@@ -27,14 +27,17 @@ export type EmailSendProcessorDeps = {
   /** Present only when this worker also tracks notification delivery status. */
   deliveries?: EmailDeliveryUpdater;
   metrics?: Metrics;
-  /** The job definition's `retry.attempts`, so a transient failure on the last try is treated as final. */
+  /**
+   * The job definition's `retry.attempts`, so a transient failure on the last
+   * try is treated as final.
+   */
   maxAttempts?: number;
 };
 
 /**
- * The job id is the Message-ID key. Never logs the recipient or parameters. For notification emails,
- * the delivery row is marked SENT or FAILED; a failed status write is logged, never thrown, so a sent
- * email isn't re-sent.
+ * The job id is the Message-ID key. Never logs the recipient or parameters. For
+ * notification emails, the delivery row is marked SENT or FAILED; a failed
+ * status write is logged, never thrown, so a sent email isn't re-sent.
  */
 export function createEmailSendProcessor(
   email: Pick<EmailPort, "send">,

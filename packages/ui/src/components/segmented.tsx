@@ -3,7 +3,10 @@ import { cva } from "class-variance-authority";
 
 import { cn } from "../lib/utils";
 
-/** Pill track for a small set of mutually exclusive links or buttons; style each with `segmentedItemVariants`. */
+/**
+ * Pill track for a small set of mutually exclusive links or buttons; style each
+ * with `segmentedItemVariants`.
+ */
 function Segmented({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div

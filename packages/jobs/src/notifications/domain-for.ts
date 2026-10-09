@@ -37,7 +37,10 @@ const EVENT_TYPE_TO_DOMAIN: Record<string, NotificationDomain> = {
   "announcement.published": "ANNOUNCEMENT",
 };
 
-/** Which preferences toggle governs an event type. TRANSACTIONAL types have no domain. */
+/**
+ * Which preferences toggle governs an event type. TRANSACTIONAL types have no
+ * domain.
+ */
 export function domainFor(type: string): NotificationDomain {
   const domain = EVENT_TYPE_TO_DOMAIN[type];
   if (!domain)

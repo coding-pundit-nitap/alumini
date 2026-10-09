@@ -10,7 +10,10 @@ const id = z.uuid();
 
 type Params = { params: Promise<{ id: string }> };
 
-/** POST /api/v1/events/:id/cancel — the organizer or a manager cancels the event. */
+/**
+ * POST /api/v1/events/:id/cancel — the organizer or a manager cancels the
+ * event.
+ */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const eventId = id.safeParse((await ctx.params).id);

@@ -1,0 +1,676 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["unicorn", "typescript", "nextjs", "react"],
+  "jsPlugins": ["eslint-plugin-turbo"],
+  "categories": {
+    "correctness": "off"
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "serviceworker": true,
+    "worker": true
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "coverage/**",
+    ".next/**",
+    "out/**",
+    "build/**",
+    "playwright-report/**",
+    "test-results/**",
+    "next-env.d.ts"
+  ],
+  "rules": {
+    "constructor-super": "error",
+    "for-direction": "error",
+    "getter-return": "error",
+    "no-async-promise-executor": "error",
+    "no-case-declarations": "error",
+    "no-class-assign": "error",
+    "no-compare-neg-zero": "error",
+    "no-cond-assign": "error",
+    "no-const-assign": "error",
+    "no-constant-binary-expression": "error",
+    "no-constant-condition": "error",
+    "no-control-regex": "error",
+    "no-debugger": "error",
+    "no-delete-var": "error",
+    "no-dupe-class-members": "error",
+    "no-dupe-else-if": "error",
+    "no-dupe-keys": "error",
+    "no-duplicate-case": "error",
+    "no-empty": "error",
+    "no-empty-character-class": "error",
+    "no-empty-pattern": "error",
+    "no-empty-static-block": "error",
+    "no-ex-assign": "error",
+    "no-extra-boolean-cast": "error",
+    "no-fallthrough": "error",
+    "no-func-assign": "error",
+    "no-global-assign": "error",
+    "no-import-assign": "error",
+    "no-invalid-regexp": "error",
+    "no-irregular-whitespace": "error",
+    "no-loss-of-precision": "error",
+    "no-misleading-character-class": "error",
+    "no-new-native-nonconstructor": "error",
+    "no-nonoctal-decimal-escape": "error",
+    "no-obj-calls": "error",
+    "no-prototype-builtins": "error",
+    "no-redeclare": "error",
+    "no-regex-spaces": "error",
+    "no-self-assign": "error",
+    "no-setter-return": "error",
+    "no-shadow-restricted-names": "error",
+    "no-sparse-arrays": "error",
+    "no-this-before-super": "error",
+    "no-unassigned-vars": "error",
+    "no-unreachable": "error",
+    "no-unsafe-finally": "error",
+    "no-unsafe-negation": "error",
+    "no-unsafe-optional-chaining": "error",
+    "no-unused-labels": "error",
+    "no-unused-private-class-members": "error",
+    "no-unused-vars": "error",
+    "no-useless-backreference": "error",
+    "no-useless-catch": "error",
+    "no-useless-escape": "error",
+    "no-with": "error",
+    "preserve-caught-error": "error",
+    "require-yield": "error",
+    "use-isnan": "error",
+    "valid-typeof": "error",
+    "no-array-constructor": "error",
+    "no-unused-expressions": "error",
+    "turbo/no-undeclared-env-vars": "warn",
+    "nextjs/google-font-display": "warn",
+    "nextjs/google-font-preconnect": "warn",
+    "nextjs/next-script-for-ga": "warn",
+    "nextjs/no-async-client-component": "warn",
+    "nextjs/no-before-interactive-script-outside-document": "warn",
+    "nextjs/no-css-tags": "warn",
+    "nextjs/no-head-element": "warn",
+    "nextjs/no-html-link-for-pages": "error",
+    "nextjs/no-img-element": "warn",
+    "nextjs/no-page-custom-font": "warn",
+    "nextjs/no-styled-jsx-in-document": "warn",
+    "nextjs/no-sync-scripts": "error",
+    "nextjs/no-title-in-document-head": "warn",
+    "nextjs/no-typos": "warn",
+    "nextjs/no-unwanted-polyfillio": "warn",
+    "nextjs/inline-script-id": "error",
+    "nextjs/no-assign-module-variable": "error",
+    "nextjs/no-document-import-in-page": "error",
+    "nextjs/no-duplicate-head": "error",
+    "nextjs/no-head-import-in-document": "error",
+    "nextjs/no-script-component-in-head": "error",
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/static-components": "error",
+    "react/use-memo": "error",
+    "react/preserve-manual-memoization": "error",
+    "react/incompatible-library": "warn",
+    "react/immutability": "error",
+    "react/globals": "error",
+    "react/refs": "error",
+    "react/set-state-in-effect": "error",
+    "react/error-boundaries": "error",
+    "react/purity": "error",
+    "react/set-state-in-render": "error",
+    "react/unsupported-syntax": "warn",
+    "typescript/ban-ts-comment": "error",
+    "typescript/no-duplicate-enum-values": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-extra-non-null-assertion": "error",
+    "typescript/no-misused-new": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-non-null-asserted-optional-chain": "error",
+    "typescript/no-require-imports": "error",
+    "typescript/no-this-alias": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unsafe-declaration-merging": "error",
+    "typescript/no-unsafe-function-type": "error",
+    "typescript/no-wrapper-object-types": "error",
+    "typescript/prefer-as-const": "error",
+    "typescript/prefer-namespace-keyword": "error",
+    "typescript/triple-slash-reference": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": {
+          "attributes": false
+        }
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
+      "rules": {
+        "constructor-super": "off",
+        "getter-return": "off",
+        "no-class-assign": "off",
+        "no-const-assign": "off",
+        "no-dupe-class-members": "off",
+        "no-dupe-keys": "off",
+        "no-func-assign": "off",
+        "no-import-assign": "off",
+        "no-new-native-nonconstructor": "off",
+        "no-obj-calls": "off",
+        "no-redeclare": "off",
+        "no-setter-return": "off",
+        "no-this-before-super": "off",
+        "no-unreachable": "off",
+        "no-unsafe-negation": "off",
+        "no-var": "error",
+        "no-with": "off",
+        "prefer-const": "error",
+        "prefer-rest-params": "error",
+        "prefer-spread": "error"
+      }
+    },
+    {
+      "files": ["src/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/modules/*/**",
+                  "!@/modules/*/server",
+                  "!@/modules/*/client"
+                ],
+                "message": "Import another module only through its index (`@/modules/<name>`) or its server-only or client-safe entry point (`@/modules/<name>/server`, `/client`); use relative paths inside a module."
+              }
+            ],
+            "paths": []
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/app/**",
+        "src/components/**",
+        "src/hooks/**",
+        "src/providers/**",
+        "src/lib/**",
+        "src/composition/**",
+        "src/worker/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/modules/*/**",
+                  "!@/modules/*/server",
+                  "!@/modules/*/client"
+                ],
+                "message": "Import another module only through its index (`@/modules/<name>`) or its server-only or client-safe entry point (`@/modules/<name>/server`, `/client`); use relative paths inside a module."
+              },
+              {
+                "group": [
+                  "@nitap/database/**",
+                  "!@nitap/database/permissions",
+                  "!@nitap/database/role-ticks",
+                  "!@nitap/database/enums",
+                  "@prisma/**",
+                  "ioredis",
+                  "bullmq",
+                  "@aws-sdk/**",
+                  "fastify",
+                  "express"
+                ],
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              }
+            ],
+            "paths": [
+              {
+                "name": "@nitap/database",
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/lib/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@/modules/*/**",
+                  "!@/modules/*/server",
+                  "!@/modules/*/client"
+                ],
+                "message": "Import another module only through its index (`@/modules/<name>`) or its server-only or client-safe entry point (`@/modules/<name>/server`, `/client`); use relative paths inside a module."
+              },
+              {
+                "group": [
+                  "@nitap/database/**",
+                  "!@nitap/database/permissions",
+                  "!@nitap/database/role-ticks",
+                  "!@nitap/database/enums",
+                  "@prisma/**",
+                  "ioredis",
+                  "bullmq",
+                  "@aws-sdk/**",
+                  "fastify",
+                  "express"
+                ],
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              },
+              {
+                "group": ["@/infrastructure/**", "@/modules/**"],
+                "message": "lib/ is pure: no I/O and no imports from modules/ or infrastructure/."
+              }
+            ],
+            "paths": [
+              {
+                "name": "@nitap/database",
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/modules/*/domain/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@nitap/database/**",
+                  "!@nitap/database/permissions",
+                  "!@nitap/database/role-ticks",
+                  "!@nitap/database/enums",
+                  "@prisma/**",
+                  "ioredis",
+                  "bullmq",
+                  "@aws-sdk/**",
+                  "fastify",
+                  "express"
+                ],
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              },
+              {
+                "group": ["better-auth", "better-auth/**"],
+                "message": "Better Auth is wired only in infrastructure/ (the createAuth factory) and app/ (its route handler); the domain and use cases stay library-free."
+              },
+              {
+                "group": ["react", "react/**", "react-dom", "react-dom/**"],
+                "message": "React is a presentation/ui concern."
+              },
+              {
+                "group": ["next", "next/**"],
+                "message": "Next.js belongs to app/, presentation/ui and proxy.ts."
+              },
+              {
+                "group": ["@nitap/ui", "@nitap/ui/**"],
+                "message": "@nitap/ui is for app/ and presentation/ui only."
+              },
+              {
+                "group": ["@/components/**"],
+                "message": "App-level UI is not visible to the layers below it."
+              },
+              {
+                "group": ["@/modules/**", "@/modules/*/**"],
+                "message": "This layer may not import another module. Coordinate through the application layer or events."
+              },
+              {
+                "group": ["**/infrastructure", "**/infrastructure/**"],
+                "message": "Nothing inward imports infrastructure; depend on an interface the layer declares."
+              },
+              {
+                "group": ["**/application/**"],
+                "message": "domain and infrastructure may not depend on use cases."
+              },
+              {
+                "group": ["**/presentation/**"],
+                "message": "Dependencies point inward: nothing imports presentation."
+              }
+            ],
+            "paths": [
+              {
+                "name": "@nitap/database",
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              }
+            ]
+          }
+        ],
+        "no-restricted-globals": [
+          "error",
+          {
+            "name": "window",
+            "message": "The domain is pure: no browser APIs."
+          },
+          {
+            "name": "document",
+            "message": "The domain is pure: no browser APIs."
+          },
+          {
+            "name": "localStorage",
+            "message": "The domain is pure: no browser APIs."
+          },
+          {
+            "name": "sessionStorage",
+            "message": "The domain is pure: no browser APIs."
+          },
+          {
+            "name": "navigator",
+            "message": "The domain is pure: no browser APIs."
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/modules/*/application/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@nitap/database/**",
+                  "!@nitap/database/permissions",
+                  "!@nitap/database/role-ticks",
+                  "!@nitap/database/enums",
+                  "@prisma/**",
+                  "ioredis",
+                  "bullmq",
+                  "@aws-sdk/**",
+                  "fastify",
+                  "express"
+                ],
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              },
+              {
+                "group": ["better-auth", "better-auth/**"],
+                "message": "Better Auth is wired only in infrastructure/ (the createAuth factory) and app/ (its route handler); the domain and use cases stay library-free."
+              },
+              {
+                "group": ["react", "react/**", "react-dom", "react-dom/**"],
+                "message": "React is a presentation/ui concern."
+              },
+              {
+                "group": ["next", "next/**"],
+                "message": "Next.js belongs to app/, presentation/ui and proxy.ts."
+              },
+              {
+                "group": ["@nitap/ui", "@nitap/ui/**"],
+                "message": "@nitap/ui is for app/ and presentation/ui only."
+              },
+              {
+                "group": ["@/components/**"],
+                "message": "App-level UI is not visible to the layers below it."
+              },
+              {
+                "group": [
+                  "@/modules/*/**",
+                  "!@/modules/*/server",
+                  "!@/modules/*/client"
+                ],
+                "message": "Import another module only through its index (`@/modules/<name>`) or its server-only or client-safe entry point (`@/modules/<name>/server`, `/client`); use relative paths inside a module."
+              },
+              {
+                "group": ["**/infrastructure", "**/infrastructure/**"],
+                "message": "Nothing inward imports infrastructure; depend on an interface the layer declares."
+              },
+              {
+                "group": ["**/presentation/**"],
+                "message": "Dependencies point inward: nothing imports presentation."
+              }
+            ],
+            "paths": [
+              {
+                "name": "@nitap/database",
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/modules/*/infrastructure/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["react", "react/**", "react-dom", "react-dom/**"],
+                "message": "React is a presentation/ui concern."
+              },
+              {
+                "group": ["next", "next/**"],
+                "message": "Next.js belongs to app/, presentation/ui and proxy.ts."
+              },
+              {
+                "group": ["@nitap/ui", "@nitap/ui/**"],
+                "message": "@nitap/ui is for app/ and presentation/ui only."
+              },
+              {
+                "group": ["@/components/**"],
+                "message": "App-level UI is not visible to the layers below it."
+              },
+              {
+                "group": ["@/modules/**", "@/modules/*/**"],
+                "message": "This layer may not import another module. Coordinate through the application layer or events."
+              },
+              {
+                "group": ["**/presentation/**"],
+                "message": "Dependencies point inward: nothing imports presentation."
+              }
+            ],
+            "paths": []
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/modules/auth/infrastructure/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@nitap/ui", "@nitap/ui/**"],
+                "message": "@nitap/ui is for app/ and presentation/ui only."
+              },
+              {
+                "group": ["@/components/**"],
+                "message": "App-level UI is not visible to the layers below it."
+              },
+              {
+                "group": ["@/modules/**", "@/modules/*/**"],
+                "message": "This layer may not import another module. Coordinate through the application layer or events."
+              },
+              {
+                "group": ["**/presentation/**"],
+                "message": "Dependencies point inward: nothing imports presentation."
+              }
+            ],
+            "paths": []
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/modules/*/presentation/api/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@nitap/database/**",
+                  "!@nitap/database/permissions",
+                  "!@nitap/database/role-ticks",
+                  "!@nitap/database/enums",
+                  "@prisma/**",
+                  "ioredis",
+                  "bullmq",
+                  "@aws-sdk/**",
+                  "fastify",
+                  "express"
+                ],
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              },
+              {
+                "group": ["react", "react/**", "react-dom", "react-dom/**"],
+                "message": "React is a presentation/ui concern."
+              },
+              {
+                "group": ["next", "next/**"],
+                "message": "Next.js belongs to app/, presentation/ui and proxy.ts."
+              },
+              {
+                "group": ["@nitap/ui", "@nitap/ui/**"],
+                "message": "@nitap/ui is for app/ and presentation/ui only."
+              },
+              {
+                "group": ["@/components/**"],
+                "message": "App-level UI is not visible to the layers below it."
+              },
+              {
+                "group": [
+                  "@/modules/*/**",
+                  "!@/modules/*/server",
+                  "!@/modules/*/client"
+                ],
+                "message": "Import another module only through its index (`@/modules/<name>`) or its server-only or client-safe entry point (`@/modules/<name>/server`, `/client`); use relative paths inside a module."
+              },
+              {
+                "group": ["**/infrastructure", "**/infrastructure/**"],
+                "message": "Nothing inward imports infrastructure; depend on an interface the layer declares."
+              }
+            ],
+            "paths": [
+              {
+                "name": "@nitap/database",
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/modules/*/presentation/ui/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@nitap/database/**",
+                  "!@nitap/database/permissions",
+                  "!@nitap/database/role-ticks",
+                  "!@nitap/database/enums",
+                  "@prisma/**",
+                  "ioredis",
+                  "bullmq",
+                  "@aws-sdk/**",
+                  "fastify",
+                  "express"
+                ],
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              },
+              {
+                "group": ["@/components/**"],
+                "message": "App-level UI is not visible to the layers below it."
+              },
+              {
+                "group": [
+                  "@/modules/*/**",
+                  "!@/modules/*/server",
+                  "!@/modules/*/client"
+                ],
+                "message": "Import another module only through its index (`@/modules/<name>`) or its server-only or client-safe entry point (`@/modules/<name>/server`, `/client`); use relative paths inside a module."
+              },
+              {
+                "group": ["**/infrastructure", "**/infrastructure/**"],
+                "message": "Nothing inward imports infrastructure; depend on an interface the layer declares."
+              }
+            ],
+            "paths": [
+              {
+                "name": "@nitap/database",
+                "message": "Prisma, Redis, queues and provider SDKs belong to infrastructure/."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/infrastructure/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["react", "react/**", "react-dom", "react-dom/**"],
+                "message": "React is a presentation/ui concern."
+              },
+              {
+                "group": ["next", "next/**"],
+                "message": "Next.js belongs to app/, presentation/ui and proxy.ts."
+              },
+              {
+                "group": ["@nitap/ui", "@nitap/ui/**"],
+                "message": "@nitap/ui is for app/ and presentation/ui only."
+              },
+              {
+                "group": ["@/components/**"],
+                "message": "App-level UI is not visible to the layers below it."
+              },
+              {
+                "group": ["@/modules/**", "@/modules/*/**"],
+                "message": "This layer may not import another module. Coordinate through the application layer or events."
+              },
+              {
+                "group": ["**/presentation/**"],
+                "message": "Dependencies point inward: nothing imports presentation."
+              }
+            ],
+            "paths": []
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "typescript/no-misused-promises": [
+          "error",
+          {
+            "checksVoidReturn": false
+          }
+        ]
+      }
+    }
+  ]
+}

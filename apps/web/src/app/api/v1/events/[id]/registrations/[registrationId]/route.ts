@@ -12,7 +12,10 @@ const body = z.object({ state: z.enum(["ATTENDED", "NO_SHOW"]) });
 
 type Params = { params: Promise<{ id: string; registrationId: string }> };
 
-/** PATCH /api/v1/events/:id/registrations/:registrationId — organizer/manager marks attendance. */
+/**
+ * PATCH /api/v1/events/:id/registrations/:registrationId — organizer/manager
+ * marks attendance.
+ */
 export const PATCH = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const { id: rawId, registrationId: rawRegistrationId } = await ctx.params;

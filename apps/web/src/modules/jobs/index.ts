@@ -1,6 +1,6 @@
 /**
- * Client-safe exports only. Server-only ones are in `./server.ts`, because anything reachable from
- * here can end up in the client bundle.
+ * Client-safe exports only. Server-only ones are in `./server.ts`, because
+ * anything reachable from here can end up in the client bundle.
  */
 export { createCreateJob, JOB_CREATE_RATE } from "./application/create-job";
 export { createEditJob } from "./application/edit-job";

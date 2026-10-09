@@ -11,8 +11,9 @@ import { authorize, can, getActor } from "@/modules/auth";
 const HEARTBEAT_MS = 25_000;
 
 /**
- * Server-Sent Events carrying id-only message and notification hints; the client refetches through
- * the authorized endpoints. Each hint kind needs its matching permission. 503 without Redis.
+ * Server-Sent Events carrying id-only message and notification hints; the
+ * client refetches through the authorized endpoints. Each hint kind needs its
+ * matching permission. 503 without Redis.
  */
 export const GET = routeHandler(async (request) => {
   const actor = await getActor();

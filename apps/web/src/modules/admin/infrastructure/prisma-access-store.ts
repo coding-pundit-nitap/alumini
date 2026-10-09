@@ -38,9 +38,10 @@ const toGrant = (g: {
 });
 
 /**
- * Each write carries its audit row and notice event in the same transaction. Locks are taken target
- * user first, then super-admin rows in id order, so admin writes cannot deadlock. `FOR NO KEY UPDATE`
- * avoids blocking unrelated inserts that reference the user.
+ * Each write carries its audit row and notice event in the same transaction.
+ * Locks are taken target user first, then super-admin rows in id order, so
+ * admin writes cannot deadlock. `FOR NO KEY UPDATE` avoids blocking unrelated
+ * inserts that reference the user.
  */
 export function createPrismaAccessStore(deps: {
   runner: Pick<TransactionRunner, "run">;

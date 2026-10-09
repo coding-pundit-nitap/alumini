@@ -10,7 +10,10 @@ import { cn } from "@/lib/utils";
 
 import type { PostAuthor } from "../../application/posts-store";
 
-/** Avatar with photo or initials fallback — reused by PostAuthorLine and the composer's collapsed row. */
+/**
+ * Avatar with photo or initials fallback — reused by PostAuthorLine and the
+ * composer's collapsed row.
+ */
 export function PostAuthorAvatar({
   author,
   size = "default",
@@ -30,7 +33,10 @@ export function PostAuthorAvatar({
   );
 }
 
-/** Author avatar, name, headline and a relative timestamp — the standard header for a post/comment. */
+/**
+ * Author avatar, name, headline and a relative timestamp — the standard header
+ * for a post/comment.
+ */
 export function PostAuthorLine({
   author,
   createdAt,

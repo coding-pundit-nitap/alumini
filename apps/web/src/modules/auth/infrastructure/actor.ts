@@ -20,14 +20,18 @@ import { createPrismaGrantSource } from "./prisma-grant-source";
 
 const grantSource = createPrismaGrantSource(prisma);
 
-/** For admin checks on a target user: role-derived ∪ live direct grants, regardless of state. */
+/**
+ * For admin checks on a target user: role-derived ∪ live direct grants,
+ * regardless of state.
+ */
 export const loadGrants = (userId: string, now: Date) =>
   grantSource.loadGrants(userId, now);
 
 /**
- * The only way server code gets the current caller. Reads the session from the database on every
- * request, so revocations apply at once; memoised per render. Also repairs a missing profile or a
- * skipped email-verification transition; a failed repair never fails the request.
+ * The only way server code gets the current caller. Reads the session from the
+ * database on every request, so revocations apply at once; memoised per render.
+ * Also repairs a missing profile or a skipped email-verification transition; a
+ * failed repair never fails the request.
  */
 export const getActor = cache(async (): Promise<Actor | null> => {
   const requestHeaders = await headers();

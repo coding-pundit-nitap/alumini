@@ -5,7 +5,10 @@ import type {
   ConnectionState,
 } from "../domain/connection";
 
-/** The `connection.*` events the outbox carries (contracts in `@nitap/jobs`). Ids only. */
+/**
+ * The `connection.*` events the outbox carries (contracts in `@nitap/jobs`).
+ * Ids only.
+ */
 export type ConnectionEvent = {
   type: "connection.requested" | "connection.accepted";
   payload: { v: 1; connectionId: string; actorId: string; recipientId: string };
@@ -16,15 +19,24 @@ export type NewConnection = ConnectionPatch & {
   userBId: string;
 };
 
-/** All writes go through one transaction, so a row and its outbox event commit together. */
+/**
+ * All writes go through one transaction, so a row and its outbox event commit
+ * together.
+ */
 export type ConnectionTx = {
   findByPair(userAId: string, userBId: string): Promise<ConnectionRow | null>;
   findById(id: string): Promise<ConnectionRow | null>;
   /** The member's account state, or null when there is no such user. */
   accountState(userId: string): Promise<string | null>;
-  /** Inserts the pair; null when the pair already exists (a concurrent request won). Never throws for that. */
+  /**
+   * Inserts the pair; null when the pair already exists (a concurrent request
+   * won). Never throws for that.
+   */
   insert(input: NewConnection): Promise<ConnectionRow | null>;
-  /** Guarded: only a row still in `from` moves. Null when it had already changed (or is gone). */
+  /**
+   * Guarded: only a row still in `from` moves. Null when it had already changed
+   * (or is gone).
+   */
   update(
     id: string,
     from: ConnectionState,
@@ -37,7 +49,10 @@ export type ConnectionTx = {
   audit(entry: ConnectionAuditEntry): Promise<void>;
 };
 
-/** Block and unblock leave a trace: a moderator may need to know who blocked whom, and when. */
+/**
+ * Block and unblock leave a trace: a moderator may need to know who blocked
+ * whom, and when.
+ */
 export type ConnectionAuditEntry = {
   action: "connection.blocked" | "connection.unblocked";
   actorId: string;
@@ -45,7 +60,10 @@ export type ConnectionAuditEntry = {
   connectionId: string;
 };
 
-/** One committed outcome, for logs and metrics. Called after the transaction, never inside it. */
+/**
+ * One committed outcome, for logs and metrics. Called after the transaction,
+ * never inside it.
+ */
 export type ConnectionOutcome =
   | "requested"
   | "accepted"
@@ -84,6 +102,9 @@ export type ListFilter = {
 /** Reads outside a transaction. */
 export type ConnectionQueries = {
   between(viewerId: string, otherId: string): Promise<ConnectionRow | null>;
-  /** Newest first, at most `limit` rows. A BLOCKED listing holds only the caller's own blocks. */
+  /**
+   * Newest first, at most `limit` rows. A BLOCKED listing holds only the
+   * caller's own blocks.
+   */
   list(userId: string, filter: ListFilter): Promise<ListedConnection[]>;
 };

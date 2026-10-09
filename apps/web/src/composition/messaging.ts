@@ -31,7 +31,10 @@ const store = createPrismaMessagingStore({
   audit,
 });
 const queries = createPrismaMessagingQueries(prisma);
-/** One log line and one counter per committed outcome (ids only: never a body or a name). */
+/**
+ * One log line and one counter per committed outcome (ids only: never a body or
+ * a name).
+ */
 const observe: MessagingObserver = (outcome, id) => {
   logger.info(`messaging.${outcome}`, { metadata: { id } });
   getMetrics().increment("messaging_total", { outcome });

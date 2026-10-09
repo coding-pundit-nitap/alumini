@@ -18,7 +18,10 @@ export type ConnectionPage = {
   page: { limit: number; nextCursor: string | null; hasMore: boolean };
 };
 
-/** The caller's own connections, incoming or outgoing requests, and their own blocks. */
+/**
+ * The caller's own connections, incoming or outgoing requests, and their own
+ * blocks.
+ */
 export function createListConnections(deps: {
   queries: ConnectionQueries;
   authorize: Authorize;

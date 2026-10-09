@@ -72,7 +72,10 @@ function serverActionFiles(dir: string): string[] {
   });
 }
 
-/** Plausible input in every shape the actions take, so a refusal is not just a parse error. */
+/**
+ * Plausible input in every shape the actions take, so a refusal is not just a
+ * parse error.
+ */
 function argumentShapes(arity: number): unknown[][] {
   const form = new FormData();
   for (const field of [

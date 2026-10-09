@@ -9,12 +9,15 @@ import {
 import type { MetricLabels, Metrics } from "./metrics.ts";
 
 /**
- * Served on `/metrics`. A later call with different label keys or a conflicting type is dropped and
- * counted, never thrown.
+ * Served on `/metrics`. A later call with different label keys or a conflicting
+ * type is dropped and counted, never thrown.
  */
 export type PrometheusMetrics = Metrics & {
   readonly registry: Registry;
-  /** A scrape-time sampler (queue depth, pool). Runs before every render with a 1 s timeout. */
+  /**
+   * A scrape-time sampler (queue depth, pool). Runs before every render with a
+   * 1 s timeout.
+   */
   onCollect(name: string, hook: () => Promise<void> | void): void;
   render(): Promise<{ contentType: string; body: string }>;
 };

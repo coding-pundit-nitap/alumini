@@ -80,7 +80,10 @@ async function as(
 const race = <T>(tasks: Array<() => Promise<T>>) =>
   Promise.all(tasks.map((task) => task()));
 
-/** Connection rows between two members, whichever of them asked (the pair is stored canonically). */
+/**
+ * Connection rows between two members, whichever of them asked (the pair is
+ * stored canonically).
+ */
 const pairWhere = (a: string, b: string) => ({
   OR: [
     { userAId: a, userBId: b },

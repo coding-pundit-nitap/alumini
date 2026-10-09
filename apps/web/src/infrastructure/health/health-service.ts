@@ -2,7 +2,8 @@ import { getMetrics } from "@nitap/observability";
 
 /**
  * - `live` checks nothing external, so an outage never restarts healthy pods.
- * - `ready` requires PostgreSQL only; Redis is reported as degraded but never fails it.
+ * - `ready` requires PostgreSQL only; Redis is reported as degraded but never
+ *   fails it.
  * - Results are cached for ~2 s and concurrent probes share one check.
  * - `startDraining()` fails readiness and notifies `onDrain` listeners.
  */
@@ -111,7 +112,10 @@ export function createHealthService(options: HealthServiceOptions) {
       return draining;
     },
 
-    /** Runs `listener` when draining starts (at once if it already has); returns an unsubscribe. */
+    /**
+     * Runs `listener` when draining starts (at once if it already has); returns
+     * an unsubscribe.
+     */
     onDrain(listener: () => void): () => void {
       if (draining) {
         listener();

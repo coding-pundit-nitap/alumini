@@ -40,7 +40,10 @@ function parseSince(value: string, now: Date): Date | null {
   return Number.isNaN(absolute.getTime()) ? null : absolute;
 }
 
-/** Returns the process exit code: 0 ok, 1 usage error, 2 refused. Every result is one JSON line. */
+/**
+ * Returns the process exit code: 0 ok, 1 usage error, 2 refused. Every result
+ * is one JSON line.
+ */
 export async function runCommand(
   argv: string[],
   deps: CliDeps

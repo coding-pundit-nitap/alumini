@@ -11,7 +11,10 @@ import { NotFoundError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-/** A malformed id would reach a `::uuid` cast and fail as a 500; it is simply not found. */
+/**
+ * A malformed id would reach a `::uuid` cast and fail as a 500; it is simply
+ * not found.
+ */
 const id = (value: unknown) => {
   if (typeof value !== "string" || !UUID.test(value)) throw new NotFoundError();
   return value;

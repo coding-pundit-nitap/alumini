@@ -8,7 +8,10 @@ import type {
 } from "@/modules/connections/application/connection-store";
 import type { ConnectionRow } from "@/modules/connections/domain/connection";
 
-/** A throwing transaction restores the previous state. `beforeInsert` simulates a competing request. */
+/**
+ * A throwing transaction restores the previous state. `beforeInsert` simulates
+ * a competing request.
+ */
 export function createFakeConnectionStore(
   seed: ConnectionRow[] = [],
   options: {

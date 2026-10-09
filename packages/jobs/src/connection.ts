@@ -2,12 +2,18 @@ import { z } from "zod";
 
 import { defineJob } from "./define-job.ts";
 
-/** Ids only: a consumer looks the rows up, so the event never carries a name or an address. */
+/**
+ * Ids only: a consumer looks the rows up, so the event never carries a name or
+ * an address.
+ */
 const connectionEventPayload = z
   .object({
     v: z.literal(1),
     connectionId: z.uuid(),
-    /** The member who acted: the requester for `requested`, the accepter for `accepted`. */
+    /**
+     * The member who acted: the requester for `requested`, the accepter for
+     * `accepted`.
+     */
     actorId: z.uuid(),
     /** The member to tell about it. */
     recipientId: z.uuid(),

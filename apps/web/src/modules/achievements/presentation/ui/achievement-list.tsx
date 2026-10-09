@@ -205,7 +205,10 @@ function Row({
   );
 }
 
-/** The caller's own achievements, or a reviewer's queue. Reviewers never see their own here. */
+/**
+ * The caller's own achievements, or a reviewer's queue. Reviewers never see
+ * their own here.
+ */
 export function AchievementList({
   achievements,
   isReviewer,

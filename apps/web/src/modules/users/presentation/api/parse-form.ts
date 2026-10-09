@@ -3,7 +3,10 @@ import type { z } from "zod";
 import { ValidationError } from "@/lib/errors";
 import { pickFields } from "@/lib/form-data";
 
-/** Reads only the named fields and validates them strictly, so forged fields never reach a use case. */
+/**
+ * Reads only the named fields and validates them strictly, so forged fields
+ * never reach a use case.
+ */
 export function parseForm<S extends z.ZodType>(
   schema: S,
   fields: readonly string[],
@@ -29,7 +32,10 @@ export function parseForm<S extends z.ZodType>(
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** The item id a Server Action's `update`/`remove` acts on. Ownership is enforced by the store, not here. */
+/**
+ * The item id a Server Action's `update`/`remove` acts on. Ownership is
+ * enforced by the store, not here.
+ */
 export function parseItemId(formData: FormData): string {
   const value = formData.get("id");
   const id = typeof value === "string" ? value : "";

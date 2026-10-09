@@ -35,7 +35,10 @@ import {
   type EventFormValues,
 } from "../../domain/validation";
 
-/** The API names two fields differently from the form; map server details back onto the form. */
+/**
+ * The API names two fields differently from the form; map server details back
+ * onto the form.
+ */
 const FORM_FIELD: Record<string, keyof EventFormValues> = {
   startsAt: "startsLocal",
   registrationDeadline: "deadlineLocal",

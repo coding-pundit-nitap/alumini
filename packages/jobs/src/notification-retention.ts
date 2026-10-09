@@ -9,7 +9,10 @@ export type NotificationRetentionSweepPayload = z.infer<
   typeof notificationRetentionSweepPayload
 >;
 
-/** Deletes READ notifications older than 90 days; unread ones are kept regardless of age. */
+/**
+ * Deletes READ notifications older than 90 days; unread ones are kept
+ * regardless of age.
+ */
 export const notificationRetentionSweep = defineJob({
   name: "notification.retention-sweep",
   version: 1,

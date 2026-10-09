@@ -3,7 +3,10 @@ import {
   type NotificationCopy,
 } from "@nitap/jobs/notification-copy";
 
-/** The shared copy, or a readable fallback for a type without copy (e.g. a row from an older release). */
+/**
+ * The shared copy, or a readable fallback for a type without copy (e.g. a row
+ * from an older release).
+ */
 export function notificationCopy(
   type: string,
   payload: Record<string, unknown> = {}

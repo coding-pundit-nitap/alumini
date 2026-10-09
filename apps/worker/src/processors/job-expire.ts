@@ -9,8 +9,8 @@ export type JobExpireStoreLike = {
 };
 
 /**
- * Bounded batches, each row's flip and `job.expired` event committed together. Checks the abort
- * signal between batches.
+ * Bounded batches, each row's flip and `job.expired` event committed together.
+ * Checks the abort signal between batches.
  */
 export function createJobExpireProcessor(deps: {
   store: JobExpireStoreLike;

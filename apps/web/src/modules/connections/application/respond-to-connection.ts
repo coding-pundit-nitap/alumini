@@ -8,7 +8,10 @@ import type { Authorize } from "./authz";
 import type { ConnectionObserver, ConnectionStore } from "./connection-store";
 import { refuse } from "./refusal";
 
-/** Recipient only. The guarded update gives a racing accept and cancel exactly one winner. */
+/**
+ * Recipient only. The guarded update gives a racing accept and cancel exactly
+ * one winner.
+ */
 export function createRespondToConnection(deps: {
   store: ConnectionStore;
   authorize: Authorize;

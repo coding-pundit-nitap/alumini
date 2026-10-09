@@ -15,7 +15,10 @@ import {
   type EventStoreHarness,
 } from "../../support/event-store.contract";
 
-/** The contract harness backed by real PostgreSQL. Seeds insert directly so tests can set any state. */
+/**
+ * The contract harness backed by real PostgreSQL. Seeds insert directly so
+ * tests can set any state.
+ */
 function buildHarness(db: TestDatabase): EventStoreHarness {
   const store = createPrismaEventStore({
     runner: createTransactionRunner(db.prisma),

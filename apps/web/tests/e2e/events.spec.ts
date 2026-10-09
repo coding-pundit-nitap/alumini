@@ -32,14 +32,20 @@ async function student(browser: Browser): Promise<Page> {
   return page;
 }
 
-/** `datetime-local` takes the machine's local wall time, which matches the browser's zone here. */
+/**
+ * `datetime-local` takes the machine's local wall time, which matches the
+ * browser's zone here.
+ */
 function localDateTime(msFromNow: number): string {
   const d = new Date(Date.now() + msFromNow);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/** Fills and submits `/events/new`, returning the created event's id from the post-submit redirect. */
+/**
+ * Fills and submits `/events/new`, returning the created event's id from the
+ * post-submit redirect.
+ */
 async function createEventViaUi(
   organizer: Page,
   opts: {

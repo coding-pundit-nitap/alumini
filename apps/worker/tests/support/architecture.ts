@@ -21,8 +21,8 @@ const rel = (root: string, full: string) =>
   path.relative(root, full).split(path.sep).join("/");
 
 /**
- * Web and worker share packages, not code. Hand-written because dependency-cruiser does not support
- * TypeScript 7.
+ * Web and worker share packages, not code. Hand-written because
+ * dependency-cruiser does not support TypeScript 7.
  */
 export function checkNoWebImports(appRoot: string): string[] {
   const violations: string[] = [];

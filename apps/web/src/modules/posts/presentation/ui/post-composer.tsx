@@ -108,7 +108,10 @@ type Slot = {
   message?: string;
 };
 
-/** Collapsed until focused; then a textarea, up to 4 images and an optional https link. */
+/**
+ * Collapsed until focused; then a textarea, up to 4 images and an optional
+ * https link.
+ */
 export function PostComposer({
   onSubmit,
   presignAction,
@@ -210,17 +213,31 @@ export function PostComposer({
         file,
         { presignAction, completeAction, statusAction },
         { intervalMs: pollIntervalMs, maxAttempts: pollMaxAttempts }
-      ).then((result) => {
-        setSlots((prev) =>
-          prev.map((slot) =>
-            slot.key !== key
-              ? slot
-              : result.ok
-                ? { ...slot, phase: "ready", uploadId: result.uploadId }
-                : { ...slot, phase: "error", message: result.message }
-          )
-        );
-      });
+      )
+        .then((result) => {
+          setSlots((prev) =>
+            prev.map((slot) =>
+              slot.key !== key
+                ? slot
+                : result.ok
+                  ? { ...slot, phase: "ready", uploadId: result.uploadId }
+                  : { ...slot, phase: "error", message: result.message }
+            )
+          );
+        })
+        .catch(() => {
+          setSlots((prev) =>
+            prev.map((slot) =>
+              slot.key === key
+                ? {
+                    ...slot,
+                    phase: "error",
+                    message: "Upload failed. Try again.",
+                  }
+                : slot
+            )
+          );
+        });
     }
   }
 

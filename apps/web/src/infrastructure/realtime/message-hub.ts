@@ -44,7 +44,10 @@ function subscriber(): Redis {
   return client;
 }
 
-/** Joins one channel's listener set, subscribing with the first listener; returns the leave function. */
+/**
+ * Joins one channel's listener set, subscribing with the first listener;
+ * returns the leave function.
+ */
 function join(client: Redis, channel: string, listener: Listener) {
   const state = hub();
   let set = state.listeners.get(channel);
@@ -70,8 +73,9 @@ function join(client: Redis, channel: string, listener: Listener) {
 }
 
 /**
- * Subscribes to `msg:user:` and `notif:user:` channels on first listener, leaves on last. Per-member
- * channels rather than a pattern subscription, so a process only receives its own members' traffic.
+ * Subscribes to `msg:user:` and `notif:user:` channels on first listener,
+ * leaves on last. Per-member channels rather than a pattern subscription, so a
+ * process only receives its own members' traffic.
  */
 export function subscribeToUser(
   userId: string,

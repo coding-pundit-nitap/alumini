@@ -1,6 +1,7 @@
 /**
- * Provisional list for development, tests and staging; confirm against the official programme list
- * before production. Extend or retire rows (`is_active = false`); never edit them destructively.
+ * Provisional list for development, tests and staging; confirm against the
+ * official programme list before production. Extend or retire rows (`is_active
+ * = false`); never edit them destructively.
  */
 export const DEPARTMENTS = [
   { code: "CSE", name: "Computer Science and Engineering", shortName: "CSE" },

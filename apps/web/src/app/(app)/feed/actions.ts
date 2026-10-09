@@ -208,7 +208,10 @@ export async function dismissReportAction(
   });
 }
 
-/** Post images reuse the PROFILE_PHOTO upload purpose; `createPost` only checks ownership and READY status. */
+/**
+ * Post images reuse the PROFILE_PHOTO upload purpose; `createPost` only checks
+ * ownership and READY status.
+ */
 export async function presignPostImageAction(input: {
   mime: string;
   size: number;

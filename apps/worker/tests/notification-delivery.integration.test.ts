@@ -29,7 +29,10 @@ const eventually = (assertion: () => unknown | Promise<unknown>) =>
   vi.waitFor(assertion, { timeout: 10_000, interval: 25 });
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** Failure-behaviour matrix, through the real composed worker (outbox → relay → queue → processor). */
+/**
+ * Failure-behaviour matrix, through the real composed worker (outbox → relay →
+ * queue → processor).
+ */
 describe("notification delivery failure behaviour (real PostgreSQL, Redis and SMTP)", () => {
   let db: TestDatabase;
   let smtp: SmtpTestServer;
@@ -98,7 +101,10 @@ describe("notification delivery failure behaviour (real PostgreSQL, Redis and SM
       },
     });
 
-  /** A `connection.requested` from `actor` to `recipient`, written in a transaction like a real use case. */
+  /**
+   * A `connection.requested` from `actor` to `recipient`, written in a
+   * transaction like a real use case.
+   */
   const requestConnection = async (actorId: string, recipientId: string) =>
     db.prisma.$transaction((tx) =>
       writer.add(tx, {

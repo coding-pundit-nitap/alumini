@@ -11,7 +11,10 @@ export type HintPublisher = {
   publish(userId: string, hint: MessageHint): Promise<void>;
 };
 
-/** Publishes a hint on the member's channel. Fire-and-forget by nature: a subscriber that is away just refetches. */
+/**
+ * Publishes a hint on the member's channel. Fire-and-forget by nature: a
+ * subscriber that is away just refetches.
+ */
 export function createRedisHintPublisher(
   redis: Pick<Redis, "publish">
 ): HintPublisher {
@@ -26,7 +29,10 @@ export type NotificationHintPublisher = {
   publish(userId: string, hint: NotificationHint): Promise<void>;
 };
 
-/** Same fire-and-forget contract as the message hints, on the notification channel. */
+/**
+ * Same fire-and-forget contract as the message hints, on the notification
+ * channel.
+ */
 export function createNotificationHintPublisher(
   redis: Pick<Redis, "publish">
 ): NotificationHintPublisher {

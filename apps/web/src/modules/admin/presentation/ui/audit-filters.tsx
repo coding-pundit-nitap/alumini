@@ -1,8 +1,13 @@
+import Link from "next/link";
+
 import { Button, buttonVariants } from "@nitap/ui/components/button";
 import { Field, FieldGroup, FieldLabel } from "@nitap/ui/components/field";
 import { Input } from "@nitap/ui/components/input";
 
-/** Human labels for every query field, so a validation error can name what to fix. */
+/**
+ * Human labels for every query field, so a validation error can name what to
+ * fix.
+ */
 export const AUDIT_FILTER_LABELS: Record<string, string> = {
   action: "Action",
   actorId: "Actor id",
@@ -22,8 +27,8 @@ const TEXT_FIELDS = [
 ] as const;
 
 /**
- * A plain GET form: works without JavaScript and gives a shareable URL. datetime-local is parsed in
- * the server's zone.
+ * A plain GET form: works without JavaScript and gives a shareable URL.
+ * datetime-local is parsed in the server's zone.
  */
 export function AuditFilters({ values }: { values: Record<string, string> }) {
   return (
@@ -66,7 +71,7 @@ export function AuditFilters({ values }: { values: Record<string, string> }) {
         <Button type="submit" className="rounded-full">
           Filter
         </Button>
-        <a
+        <Link
           href="/admin/audit"
           className={buttonVariants({
             variant: "ghost",
@@ -74,7 +79,7 @@ export function AuditFilters({ values }: { values: Record<string, string> }) {
           })}
         >
           Clear
-        </a>
+        </Link>
       </div>
     </form>
   );

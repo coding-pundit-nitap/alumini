@@ -2,7 +2,10 @@ import type { PrismaClient } from "@nitap/database";
 
 import type { BadgeStore } from "../application/badge-role";
 
-/** Reads the member's role names and `profile.badge_role`; writes only that one column. */
+/**
+ * Reads the member's role names and `profile.badge_role`; writes only that one
+ * column.
+ */
 export function createPrismaBadgeStore(prisma: PrismaClient): BadgeStore {
   return {
     async readChoice(userId) {

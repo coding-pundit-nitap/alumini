@@ -1,26 +1,26 @@
 {
   "name": "@nitap/web",
   "version": "0.1.0",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --port 3000",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint --max-warnings=0",
-    "check-types": "next typegen && tsc --noEmit",
-    "lint:fix": "eslint --fix",
-    "typecheck": "tsc --noEmit",
+    "admin:bootstrap": "node --env-file-if-exists=../../.env scripts/bootstrap-admin.ts",
     "arch": "depcruise src tests --config ../../.dependency-cruiser.cjs --ts-config tsconfig.json",
+    "build": "next build",
+    "check-types": "next typegen && tsc --noEmit",
+    "db:seed:admin": "node --env-file-if-exists=../../.env scripts/seed-dev-admin.ts",
+    "dev": "next dev --port 3000",
+    "lint": "oxlint --type-aware --max-warnings=0",
+    "lint:fix": "oxlint --type-aware --fix",
+    "perf:seed": "node --env-file-if-exists=../../.env scripts/perf-seed.ts",
+    "start": "next start",
     "test": "vitest run --project unit --project dom",
-    "test:integration": "vitest run --project integration --project contract",
-    "test:watch": "vitest --project unit --project dom",
     "test:coverage": "node --env-file-if-exists=../../.env node_modules/vitest/vitest.mjs run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "db:seed:admin": "node --env-file-if-exists=../../.env scripts/seed-dev-admin.ts",
-    "admin:bootstrap": "node --env-file-if-exists=../../.env scripts/bootstrap-admin.ts",
-    "perf:seed": "node --env-file-if-exists=../../.env scripts/perf-seed.ts"
+    "test:integration": "vitest run --project integration --project contract",
+    "test:watch": "vitest --project unit --project dom",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "1.7.5",
@@ -52,7 +52,6 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@nitap/eslint-config": "workspace:*",
     "@nitap/testing": "workspace:*",
     "@nitap/typescript-config": "workspace:*",
     "@playwright/test": "^1.63.0",
@@ -65,14 +64,13 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "eslint": "^10.11.0",
     "fast-check": "^4.10.2",
     "happy-dom": "^20.14.5",
     "jsdom": "^30.1.0",
+    "oxlint": "^1.87.0",
     "pg": "^8.23.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^5.0.1"
   }
 }

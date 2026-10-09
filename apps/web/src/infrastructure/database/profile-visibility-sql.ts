@@ -1,8 +1,8 @@
 import { Prisma } from "@nitap/database";
 
 /**
- * Profile visibility rules as SQL fragments. Visibility levels compare in enum order, and a block hides
- * both members from each other.
+ * Profile visibility rules as SQL fragments. Visibility levels compare in enum
+ * order, and a block hides both members from each other.
  */
 export function profileVisibilitySql(viewerId: string) {
   const reach = Prisma.sql`'MEMBERS_ONLY'::"ProfileVisibility"`;

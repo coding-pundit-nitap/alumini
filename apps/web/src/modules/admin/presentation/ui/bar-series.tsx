@@ -7,7 +7,10 @@ const weekLabel = (week: string) =>
     timeZone: "UTC",
   });
 
-/** The total, a tooltip per column and a screen-reader table, so nothing depends on colour alone. */
+/**
+ * The total, a tooltip per column and a screen-reader table, so nothing depends
+ * on colour alone.
+ */
 export function BarSeries({
   label,
   points,

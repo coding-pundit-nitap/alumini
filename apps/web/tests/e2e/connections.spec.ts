@@ -10,7 +10,10 @@ const BASE_URL =
 const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 
-/** A verified member in their own browser session (institutional email: verified on confirmation). */
+/**
+ * A verified member in their own browser session (institutional email: verified
+ * on confirmation).
+ */
 async function member(browser: Browser): Promise<Page> {
   const context = await browser.newContext({
     baseURL: BASE_URL,

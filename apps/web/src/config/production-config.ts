@@ -1,4 +1,7 @@
-/** Checked at startup so a release missing a required secret fails to start. Names problems, never values. */
+/**
+ * Checked at startup so a release missing a required secret fails to start.
+ * Names problems, never values.
+ */
 const REQUIRED = [
   "DATABASE_URL",
   "BETTER_AUTH_SECRET",
@@ -37,7 +40,10 @@ export function assertProductionConfig(
   }
 }
 
-/** Next.js swallows errors thrown from `register()`, so exit instead and let the release fail. */
+/**
+ * Next.js swallows errors thrown from `register()`, so exit instead and let the
+ * release fail.
+ */
 export function exitIfMisconfigured(
   source: Record<string, string | undefined> = process.env
 ): void {

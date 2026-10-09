@@ -9,7 +9,10 @@ import { getActor } from "@/modules/auth";
 const id = z.uuid();
 type Params = { params: Promise<{ id: string }> };
 
-/** POST /api/v1/jobs/:id/approve. Self-review and races are handled by the use case. */
+/**
+ * POST /api/v1/jobs/:id/approve. Self-review and races are handled by the use
+ * case.
+ */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const jobId = id.safeParse((await ctx.params).id);

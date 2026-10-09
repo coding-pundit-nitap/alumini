@@ -6,7 +6,10 @@ import { statusFor, type ConnectionStatus } from "../domain/connection";
 import type { Authorize } from "./authz";
 import type { ConnectionQueries } from "./connection-store";
 
-/** What the profile page's connect button shows: the viewer's side of the pair with one other member. */
+/**
+ * What the profile page's connect button shows: the viewer's side of the pair
+ * with one other member.
+ */
 export function createGetConnectionStatus(deps: {
   queries: ConnectionQueries;
   authorize: Authorize;

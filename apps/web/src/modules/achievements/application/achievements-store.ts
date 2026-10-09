@@ -15,7 +15,10 @@ export type AchievementRow = {
   publishedPostId: string | null;
   createdAt: Date;
 };
-/** Reviewer-queue row: the owner (submitter) identity, joined from the `AchievementOwner` relation. */
+/**
+ * Reviewer-queue row: the owner (submitter) identity, joined from the
+ * `AchievementOwner` relation.
+ */
 export type PendingAchievementRow = AchievementRow & {
   owner: { id: string; name: string };
 };
@@ -34,12 +37,18 @@ export type AchievementsTx = {
     category: string;
   }): Promise<AchievementRow>;
   findAchievement(id: string): Promise<AchievementRow | null>;
-  /** Whole-row-patch: writes status (and reviewedById/publishedPostId when the caller sets them). */
+  /**
+   * Whole-row-patch: writes status (and reviewedById/publishedPostId when the
+   * caller sets them).
+   */
   patchAchievement(
     id: string,
     patch: { status: string; reviewedById?: string; publishedPostId?: string }
   ): Promise<void>;
-  /** Creates the ACHIEVEMENT post and links it in the same transaction as the status change. */
+  /**
+   * Creates the ACHIEVEMENT post and links it in the same transaction as the
+   * status change.
+   */
   publishAsPost(
     achievementId: string,
     input: { authorId: string; title: string; description: string }

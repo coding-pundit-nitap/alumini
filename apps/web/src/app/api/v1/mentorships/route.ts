@@ -56,7 +56,10 @@ const listQuery = z.object({
   cursor: z.string().max(200).optional(),
 });
 
-/** GET /api/v1/mentorships?role=&state=&limit=&cursor= — the caller's own list; `state` repeats. */
+/**
+ * GET /api/v1/mentorships?role=&state=&limit=&cursor= — the caller's own list;
+ * `state` repeats.
+ */
 export const GET = routeHandler(async (request) => {
   const params = new URL(request.url).searchParams;
   const parsed = listQuery.safeParse({

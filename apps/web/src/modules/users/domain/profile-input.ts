@@ -11,7 +11,10 @@ import {
 const FORMAT = /\p{Cf}/gu;
 const CONTROL = /\p{Cc}/gu;
 
-/** Plain text on one line: whitespace collapsed, control and zero-width characters removed. */
+/**
+ * Plain text on one line: whitespace collapsed, control and zero-width
+ * characters removed.
+ */
 export function sanitiseSingleLine(value: string): string {
   return value
     .replace(FORMAT, "")
@@ -21,7 +24,10 @@ export function sanitiseSingleLine(value: string): string {
     .trim();
 }
 
-/** Plain text with line breaks: at most one blank line in a row, no other control characters. */
+/**
+ * Plain text with line breaks: at most one blank line in a row, no other
+ * control characters.
+ */
 export function sanitiseMultiLine(value: string): string {
   return value
     .replace(FORMAT, "")

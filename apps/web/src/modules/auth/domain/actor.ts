@@ -37,10 +37,16 @@ export type Actor = {
 
 /** What `decide()` needs to know about the record being acted on. */
 export type Resource = {
-  /** The chapter the record belongs to, or none. A resource without a chapter matches only GLOBAL grants. */
+  /**
+   * The chapter the record belongs to, or none. A resource without a chapter
+   * matches only GLOBAL grants.
+   */
   chapterId?: string | null;
   /** The user the action is about, for separation of duties. */
   subjectUserId?: string;
-  /** Set when the record's existence is itself sensitive: a denial then answers 404, not 403. */
+  /**
+   * Set when the record's existence is itself sensitive: a denial then answers
+   * 404, not 403.
+   */
   concealed?: boolean;
 };

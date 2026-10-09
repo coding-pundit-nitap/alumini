@@ -4,7 +4,10 @@ import { routeHandler } from "@/infrastructure/http/route-handler";
 import { getActor } from "@/modules/auth";
 import { readJson } from "../../_lib/request";
 
-/** GET /api/v1/mentors/me — the caller's own offer, or `null` if they have not opted in. */
+/**
+ * GET /api/v1/mentors/me — the caller's own offer, or `null` if they have not
+ * opted in.
+ */
 export const GET = routeHandler(async () => {
   const data = await getMentorProfile({ actor: await getActor() });
   return Response.json(

@@ -1,6 +1,9 @@
 import { Skeleton } from "@nitap/ui/components/skeleton";
 
-/** Renders inside the member shell, so navigating between member pages never flashes public chrome. */
+/**
+ * Renders inside the member shell, so navigating between member pages never
+ * flashes public chrome.
+ */
 export default function MemberLoading() {
   return (
     <div

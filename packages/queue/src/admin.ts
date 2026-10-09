@@ -3,7 +3,10 @@ import { Redis } from "ioredis";
 
 import type { QueueName } from "@nitap/jobs";
 
-/** A failed job as an operator sees it. The payload is deliberately absent: it can hold an address and a token. */
+/**
+ * A failed job as an operator sees it. The payload is deliberately absent: it
+ * can hold an address and a token.
+ */
 export type FailedJobSummary = {
   queue: QueueName;
   id: string;
@@ -21,7 +24,10 @@ export type JobCounts = Record<
 
 export interface QueueAdmin {
   listFailed(queue: QueueName, limit: number): Promise<FailedJobSummary[]>;
-  /** Re-queues these failed jobs; returns how many were failed and are now retried. */
+  /**
+   * Re-queues these failed jobs; returns how many were failed and are now
+   * retried.
+   */
   retry(queue: QueueName, ids: readonly string[]): Promise<number>;
   retryAll(queue: QueueName): Promise<number>;
   jobCounts(queue: QueueName): Promise<JobCounts>;

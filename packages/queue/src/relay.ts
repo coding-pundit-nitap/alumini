@@ -7,7 +7,10 @@ import { withTimeout } from "./timeout.ts";
 export type RelayOptions = {
   store: OutboxStore;
   queue: QueuePort;
-  /** Event type → job definition. Only these types are claimed (others wait for a newer worker). */
+  /**
+   * Event type → job definition. Only these types are claimed (others wait for
+   * a newer worker).
+   */
   events: Readonly<Record<string, JobDefinition>>;
   logger: Logger;
   metrics: Metrics;
@@ -28,7 +31,10 @@ export type RelayRunResult = {
 };
 
 export type Relay = {
-  /** One claim → enqueue → commit cycle. Rejects if the queue or the database failed (nothing is committed). */
+  /**
+   * One claim → enqueue → commit cycle. Rejects if the queue or the database
+   * failed (nothing is committed).
+   */
   runOnce(): Promise<RelayRunResult>;
   start(): void;
   /** Stops polling after the current batch finishes. */

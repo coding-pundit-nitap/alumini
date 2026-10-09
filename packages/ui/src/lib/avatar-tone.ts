@@ -7,7 +7,10 @@ const TONES = [
   "bg-chart-5/20 text-chart-5",
 ] as const;
 
-/** A stable tint for an initials avatar, picked from the chart palette by hashing `seed` (usually a user id). */
+/**
+ * A stable tint for an initials avatar, picked from the chart palette by
+ * hashing `seed` (usually a user id).
+ */
 export function avatarTone(seed: string): string {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {

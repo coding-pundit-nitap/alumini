@@ -8,11 +8,17 @@ const CHART_COLOURS = [
   "bg-chart-5",
 ];
 
-/** Small buckets are suppressed upstream; they render as "< 5", never as a number. */
+/**
+ * Small buckets are suppressed upstream; they render as "< 5", never as a
+ * number.
+ */
 export const formatCount = (count: Count) =>
   typeof count === "number" ? count.toLocaleString("en-IN") : "< 5";
 
-/** A breakdown as labelled horizontal bars; the value is always printed beside its bar. */
+/**
+ * A breakdown as labelled horizontal bars; the value is always printed beside
+ * its bar.
+ */
 export function BarBreakdown({
   label,
   buckets,

@@ -7,8 +7,8 @@ import type { Authorize } from "./authz";
 import type { UploadStore } from "./upload-store";
 
 /**
- * Checks ownership, purpose and READY status, then writes through the users module's `setPhoto`
- * (uploads depends on users, never the reverse).
+ * Checks ownership, purpose and READY status, then writes through the users
+ * module's `setPhoto` (uploads depends on users, never the reverse).
  */
 export function createSetProfilePhoto(deps: {
   store: UploadStore;

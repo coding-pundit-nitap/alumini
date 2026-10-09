@@ -37,8 +37,8 @@ function parseUploadId(uploadId: string): string {
 }
 
 /**
- * Called from client code with plain values. File bytes go straight to object storage through the
- * presigned URL, never through this process.
+ * Called from client code with plain values. File bytes go straight to object
+ * storage through the presigned URL, never through this process.
  */
 export async function presignPhotoUploadAction(input: {
   mime: string;

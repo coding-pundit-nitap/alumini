@@ -1,6 +1,6 @@
 /**
- * Single source of truth for permission strings. PostgreSQL can't validate them, so
- * role-permissions.test.ts catches drift. Never define a second copy.
+ * Single source of truth for permission strings. PostgreSQL can't validate
+ * them, so role-permissions.test.ts catches drift. Never define a second copy.
  */
 export const PERMISSIONS = {
   // Profile & identity
@@ -65,7 +65,10 @@ export const PERMISSIONS = {
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
-/** Permissions that make someone an operator of the platform. A denial of one is audited. */
+/**
+ * Permissions that make someone an operator of the platform. A denial of one is
+ * audited.
+ */
 export const ADMIN_TIER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.ALUMNI_VERIFY,
   PERMISSIONS.USER_READ_ADMIN,
@@ -86,7 +89,10 @@ export const ADMIN_TIER_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.DONATION_VIEW_ALL,
 ];
 
-/** The only permissions a CHAPTER-scoped grant may carry: the chapter-admin bundle. */
+/**
+ * The only permissions a CHAPTER-scoped grant may carry: the chapter-admin
+ * bundle.
+ */
 export const CHAPTER_SCOPABLE_PERMISSIONS: readonly Permission[] = [
   PERMISSIONS.EVENT_CREATE,
   PERMISSIONS.EVENT_MANAGE,

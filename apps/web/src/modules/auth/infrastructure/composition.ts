@@ -21,7 +21,10 @@ import { createPrismaVerificationStore } from "./prisma-verification-store";
 import { createRedisRateLimiter } from "./redis-rate-limiter";
 import { unavailableInstituteRecords } from "./unavailable-institute-records";
 
-/** The module's real wiring. Tests build the same pieces around a test database instead. */
+/**
+ * The module's real wiring. Tests build the same pieces around a test database
+ * instead.
+ */
 const memberStore = createPrismaMemberStore(transactionRunner);
 
 export const provisionMember = createProvisionMember({ store: memberStore });

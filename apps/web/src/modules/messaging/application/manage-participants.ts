@@ -16,7 +16,10 @@ type Deps = {
 };
 type Args = { actor: Actor | null; conversationId: string; userId: string };
 
-/** Creator only. The conversation lock keeps the 20-member cap under concurrent adds. */
+/**
+ * Creator only. The conversation lock keeps the 20-member cap under concurrent
+ * adds.
+ */
 export function createAddParticipant(deps: Deps) {
   return async function addParticipant(
     args: Args
@@ -57,7 +60,10 @@ export function createAddParticipant(deps: Deps) {
   };
 }
 
-/** The creator removes anyone; any member removes themselves (leaves). The creator cannot leave: a group always has its admin. */
+/**
+ * The creator removes anyone; any member removes themselves (leaves). The
+ * creator cannot leave: a group always has its admin.
+ */
 export function createRemoveParticipant(deps: Deps) {
   return async function removeParticipant(args: Args): Promise<void> {
     const caller = deps.authorize(args.actor, PERMISSIONS.MESSAGE_SEND);

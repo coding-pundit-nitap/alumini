@@ -14,11 +14,17 @@ const otherUser = {
   },
 } as const;
 
-/** Reads for the connection lists and the profile button. Writes live in `prisma-connection-store.ts`. */
+/**
+ * Reads for the connection lists and the profile button. Writes live in
+ * `prisma-connection-store.ts`.
+ */
 export function createPrismaConnectionQueries(
   prisma: PrismaClient
 ): ConnectionQueries & {
-  /** The users module's `ConnectionLookup`: blocked in either direction, connected, or neither. */
+  /**
+   * The users module's `ConnectionLookup`: blocked in either direction,
+   * connected, or neither.
+   */
   relation(viewerId: string, ownerId: string): Promise<Relation>;
 } {
   async function between(viewerId: string, otherId: string) {

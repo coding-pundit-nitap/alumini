@@ -52,7 +52,10 @@ const MARKABLE = new Set<Registrant["state"]>([
   "NO_SHOW",
 ]);
 
-/** Cancel and attendance controls. Confirmed and non-optimistic; the server is authoritative. */
+/**
+ * Cancel and attendance controls. Confirmed and non-optimistic; the server is
+ * authoritative.
+ */
 export function OrganizerPanel({
   event,
   registrants,
@@ -73,7 +76,8 @@ export function OrganizerPanel({
     message: string;
   } | null>(null);
 
-  const started = new Date() >= event.startsAt;
+  const [now] = useState(() => new Date());
+  const started = now >= event.startsAt;
   const cancelled = event.status === "CANCELLED";
 
   const runCancel = () => {

@@ -23,7 +23,10 @@ const store = createPrismaConnectionStore({
   outbox,
   audit,
 });
-/** One log line and one counter per committed outcome (ids only: never a name or address). */
+/**
+ * One log line and one counter per committed outcome (ids only: never a name or
+ * address).
+ */
 const observe: ConnectionObserver = (outcome, connectionId) => {
   logger.info(`connection.${outcome}`, { metadata: { connectionId } });
   getMetrics().increment("connections_total", { outcome });

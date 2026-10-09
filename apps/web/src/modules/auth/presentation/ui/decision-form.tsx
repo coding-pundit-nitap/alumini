@@ -40,7 +40,10 @@ const CONFIRM_COPY: Record<
   },
 };
 
-/** Rejecting requires a note. The reviewer comes from the session, never the form. */
+/**
+ * Rejecting requires a note. The reviewer comes from the session, never the
+ * form.
+ */
 export function DecisionForm({
   requestId,
   action,

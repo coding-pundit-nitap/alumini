@@ -11,8 +11,9 @@ import {
 } from "@nitap/database/seed";
 
 /**
- * Development accounts: a super admin, an alumni coordinator and, with DEV_ROLES_PASSWORD set,
- * one `dev-<role>@example.test` account per role. Run through `pnpm db:seed`.
+ * Development accounts: a super admin, an alumni coordinator and, with
+ * DEV_ROLES_PASSWORD set, one `dev-<role>@example.test` account per role. Run
+ * through `pnpm db:seed`.
  */
 async function main() {
   if (process.env.NODE_ENV === "production") {

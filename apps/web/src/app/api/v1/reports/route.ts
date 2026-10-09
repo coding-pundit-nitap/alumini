@@ -17,7 +17,10 @@ const body = z
   })
   .strict();
 
-/** POST /api/v1/reports — report a message you can see. Filing twice returns the first report (200). */
+/**
+ * POST /api/v1/reports — report a message you can see. Filing twice returns the
+ * first report (200).
+ */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const parsed = body.safeParse(await readJson(request));
@@ -33,7 +36,10 @@ export const POST = routeHandler(async (request) => {
   );
 });
 
-/** GET /api/v1/reports — the reports queue (report.review; 404 to non-holders). Message text never appears here. */
+/**
+ * GET /api/v1/reports — the reports queue (report.review; 404 to non-holders).
+ * Message text never appears here.
+ */
 export const GET = routeHandler(async (request) => {
   const query = Object.fromEntries(new URL(request.url).searchParams);
   return Response.json(await listReports({ actor: await getActor(), query }), {

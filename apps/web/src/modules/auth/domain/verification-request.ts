@@ -5,8 +5,8 @@ export type CrossCheck = "NOT_CHECKED" | "MATCH" | "MISMATCH";
 export type VerificationDecision = "APPROVED" | "REJECTED";
 
 /**
- * Institutional domains that need confirmation (faculty, staff) wait for admin tooling and must never
- * receive the ALUMNI role through an alumni approval.
+ * Institutional domains that need confirmation (faculty, staff) wait for admin
+ * tooling and must never receive the ALUMNI role through an alumni approval.
  */
 export type VerificationTrack = "EVIDENCE" | "AWAITING_STAFF_CONFIRMATION";
 
@@ -31,7 +31,10 @@ export function verificationTrack(
 export type SubmissionBlock =
   "NOT_ELIGIBLE_STATE" | "STAFF_TRACK" | "REQUEST_OPEN" | "LOCKED";
 
-/** Why a submission is refused, or null when it may proceed. Checked in this order. */
+/**
+ * Why a submission is refused, or null when it may proceed. Checked in this
+ * order.
+ */
 export function submissionBlock(input: {
   accountState: string;
   track: VerificationTrack;
@@ -57,7 +60,10 @@ export function normaliseNote(note: string | null | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
-/** A message for the reviewer when the note is unacceptable for the decision, else null. */
+/**
+ * A message for the reviewer when the note is unacceptable for the decision,
+ * else null.
+ */
 export function noteProblem(
   decision: VerificationDecision,
   note: string | null
@@ -80,7 +86,10 @@ export type HistoryEntry = {
 /** Earlier requests shown per applicant in the review queue. */
 export const HISTORY_LIMIT = 5;
 
-/** Earlier requests per applicant for the review queue. Input newest first per user. */
+/**
+ * Earlier requests per applicant for the review queue. Input newest first per
+ * user.
+ */
 export function groupHistory(
   rows: readonly (HistoryEntry & { userId: string })[],
   limit = HISTORY_LIMIT

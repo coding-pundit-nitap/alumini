@@ -44,7 +44,10 @@ const splitSkills = (raw: string) =>
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
 
-/** The label sits alone in its <label> so tests and screen readers get the exact name; hints and errors are described-by. */
+/**
+ * The label sits alone in its <label> so tests and screen readers get the exact
+ * name; hints and errors are described-by.
+ */
 function Field({
   label,
   hint,
@@ -111,7 +114,10 @@ export function JobForm({
   defaults?: JobFormDefaults;
   submitAction: (input: unknown) => Promise<ActionResult<unknown>>;
   submitLabel: string;
-  /** Set when editing: success then says "saved" rather than "posted", and keeps the values. */
+  /**
+   * Set when editing: success then says "saved" rather than "posted", and keeps
+   * the values.
+   */
   jobId?: string;
 }) {
   const editing = jobId !== undefined;
@@ -138,7 +144,7 @@ export function JobForm({
   const [saved, setSaved] = useState<Saved | null>(null);
 
   const skillList = [...new Set(splitSkills(skills))];
-  const today = new Date().toISOString().slice(0, 10);
+  const [today] = useState(() => new Date().toISOString().slice(0, 10));
 
   function reset() {
     setTitle("");

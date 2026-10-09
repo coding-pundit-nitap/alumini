@@ -6,10 +6,16 @@ import type {
   WorkMode,
 } from "../domain/job";
 
-/** One row of "my jobs" or the moderation queue: every field the poster/moderator needs, own statuses too. */
+/**
+ * One row of "my jobs" or the moderation queue: every field the
+ * poster/moderator needs, own statuses too.
+ */
 export type ListedJob = Omit<JobRow, never>;
 
-/** One row of the public listing: PUBLISHED only, so review fields are never sent to the client. */
+/**
+ * One row of the public listing: PUBLISHED only, so review fields are never
+ * sent to the client.
+ */
 export type PublishedJobCard = Pick<
   JobRow,
   | "id"
@@ -40,7 +46,10 @@ export type JobQueries = {
     userId: string,
     filter: { limit: number; after?: ListCursor }
   ): Promise<ListedJob[]>;
-  /** PENDING_REVIEW only, oldest first (FIFO moderation queue). job.approve callers only (checked by the use case). */
+  /**
+   * PENDING_REVIEW only, oldest first (FIFO moderation queue). job.approve
+   * callers only (checked by the use case).
+   */
   listPending(filter: {
     limit: number;
     after?: ListCursor;

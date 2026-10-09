@@ -16,7 +16,10 @@ test.afterAll(async () => {
   await pool.end();
 });
 
-/** Registers, confirms and signs in; an institutional domain lands VERIFIED on /dashboard. */
+/**
+ * Registers, confirms and signs in; an institutional domain lands VERIFIED on
+ * /dashboard.
+ */
 async function account(
   browser: Browser,
   domain = DOMAIN

@@ -10,13 +10,17 @@ export function createNonce(): string {
 }
 
 /**
- * Scripts run only with this response's nonce or via 'strict-dynamic'. `unsafe-eval` is dev-only.
- * Inline styles are allowed because server-rendered `style` attributes cannot carry a nonce.
+ * Scripts run only with this response's nonce or via 'strict-dynamic'.
+ * `unsafe-eval` is dev-only. Inline styles are allowed because server-rendered
+ * `style` attributes cannot carry a nonce.
  */
 export function buildPageCsp(options: {
   nonce: string;
   dev: boolean;
-  /** The object store's origin when the browser talks to it directly (presigned uploads and photos). */
+  /**
+   * The object store's origin when the browser talks to it directly (presigned
+   * uploads and photos).
+   */
   storageOrigin?: string | null;
 }): string {
   const storage = options.storageOrigin ? [options.storageOrigin] : [];
@@ -41,7 +45,10 @@ export function buildPageCsp(options: {
   ].join("; ");
 }
 
-/** None when S3_PUBLIC_PATH proxies storage through this origin; otherwise S3_ENDPOINT's origin. */
+/**
+ * None when S3_PUBLIC_PATH proxies storage through this origin; otherwise
+ * S3_ENDPOINT's origin.
+ */
 export function storageOriginFor(
   source: Record<string, string | undefined>
 ): string | null {
@@ -57,7 +64,10 @@ export function storageOriginFor(
   }
 }
 
-/** API, health and metrics responses never render HTML, so nothing may load from them. */
+/**
+ * API, health and metrics responses never render HTML, so nothing may load from
+ * them.
+ */
 export const NON_PAGE_CSP = "default-src 'none'; frame-ancestors 'none'";
 
 /** Paths whose responses are data, not pages. */

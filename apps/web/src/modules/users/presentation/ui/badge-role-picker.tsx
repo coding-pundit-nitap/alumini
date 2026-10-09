@@ -10,7 +10,10 @@ import { NO_TICK, type Tick } from "@/lib/role-tick";
 
 import { AUTO_TICK } from "../../application/badge-role";
 
-/** Saves on choice and reverts on failure. Automatic follows the highest role held. */
+/**
+ * Saves on choice and reverts on failure. Automatic follows the highest role
+ * held.
+ */
 export function BadgeRolePicker({
   options,
   choice: initial,

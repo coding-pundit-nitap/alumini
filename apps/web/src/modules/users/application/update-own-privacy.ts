@@ -8,7 +8,10 @@ import { overridesNotLooser } from "../domain/visibility";
 import type { Authorize } from "./authz";
 import type { ProfileStore } from "./profile-store";
 
-/** All five settings are replaced together. An override looser than the level is a field error. */
+/**
+ * All five settings are replaced together. An override looser than the level is
+ * a field error.
+ */
 export function createUpdateOwnPrivacy(deps: {
   store: ProfileStore;
   authorize: Authorize;

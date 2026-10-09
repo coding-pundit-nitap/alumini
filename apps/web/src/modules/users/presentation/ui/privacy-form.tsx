@@ -54,7 +54,10 @@ const toOverrides = (
     ])
   ) as Overrides;
 
-/** Overrides can only be as strict or stricter than the level. The server enforces the same rule. */
+/**
+ * Overrides can only be as strict or stricter than the level. The server
+ * enforces the same rule.
+ */
 export function PrivacyForm({
   action,
   defaults,

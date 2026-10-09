@@ -2,7 +2,10 @@ import { z } from "zod";
 
 import { defineJob } from "./define-job.ts";
 
-/** Ids only: a consumer looks the rows up, so the event never carries a name, message or note. */
+/**
+ * Ids only: a consumer looks the rows up, so the event never carries a name,
+ * message or note.
+ */
 const mentorshipEventPayload = z
   .object({
     v: z.literal(1),

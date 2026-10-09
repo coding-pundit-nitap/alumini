@@ -13,7 +13,10 @@ const counterparty = {
   },
 } as const;
 
-/** Reads for the caller's own lists. Writes live in `prisma-mentorship-store.ts`. */
+/**
+ * Reads for the caller's own lists. Writes live in
+ * `prisma-mentorship-store.ts`.
+ */
 export function createPrismaMentorshipQueries(
   prisma: PrismaClient
 ): MentorshipQueries {

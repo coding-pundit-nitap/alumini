@@ -4,8 +4,9 @@ import { canSeeHealthDetails } from "./access";
 import { createHealthService } from "./health-service";
 
 /**
- * Clients load lazily so the liveness route never touches them. Kept on `globalThis` because Next.js
- * can bundle instrumentation and routes separately, and both must share one instance.
+ * Clients load lazily so the liveness route never touches them. Kept on
+ * `globalThis` because Next.js can bundle instrumentation and routes
+ * separately, and both must share one instance.
  */
 const HEALTH = Symbol.for("nitap.web.health");
 const slot = globalThis as unknown as {

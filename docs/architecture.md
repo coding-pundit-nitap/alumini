@@ -20,22 +20,22 @@ Browser ─► Nginx (TLS, size limits) ─► apps/web (Next.js)
 
 ## Workspace
 
-| Path                                          | Package                | What it is                                                         |
-| --------------------------------------------- | ---------------------- | ------------------------------------------------------------------ |
-| `apps/web`                                    | `@nitap/web`           | Next.js app: UI, Server Actions, `/api/v1`, all business modules   |
-| `apps/worker`                                 | `@nitap/worker`        | Outbox relay and job processors; no HTTP besides health/metrics    |
-| `packages/database`                           | `@nitap/database`      | Prisma schema, migrations, seed, generated client, shared stores   |
-| `packages/jobs`                               | `@nitap/jobs`          | Job and outbox event contracts (Zod payloads), notification rules  |
-| `packages/queue`                              | `@nitap/queue`         | BullMQ port, outbox relay, job runtime                             |
-| `packages/email`                              | `@nitap/email`         | Email port, templates, SMTP adapter                                |
-| `packages/storage`                            | `@nitap/storage`       | `StoragePort` over any S3-compatible store                         |
-| `packages/search`                             | `@nitap/search`        | Directory `SearchPort`, query schema, cursor codec                 |
-| `packages/observability`                      | `@nitap/observability` | Logger, redaction, metrics port, Prometheus adapter, error tracker |
-| `packages/ui`                                 | `@nitap/ui`            | Design-system primitives (shadcn / Base UI), no business logic     |
-| `packages/testing`                            | `@nitap/testing`       | Test databases, fault proxy, SMTP test server                      |
-| `packages/scripts`                            | `@nitap/scripts`       | Drills, perf runner, repo checks; run, never imported              |
-| `packages/eslint-config`, `typescript-config` |                        | Shared lint (including boundary rules) and tsconfig presets        |
-| `deploy/`, `docker/`, `ops/`                  |                        | Production compose stack, images, monitoring config and runbooks   |
+| Path                         | Package                    | What it is                                                         |
+| ---------------------------- | -------------------------- | ------------------------------------------------------------------ |
+| `apps/web`                   | `@nitap/web`               | Next.js app: UI, Server Actions, `/api/v1`, all business modules   |
+| `apps/worker`                | `@nitap/worker`            | Outbox relay and job processors; no HTTP besides health/metrics    |
+| `packages/database`          | `@nitap/database`          | Prisma schema, migrations, seed, generated client, shared stores   |
+| `packages/jobs`              | `@nitap/jobs`              | Job and outbox event contracts (Zod payloads), notification rules  |
+| `packages/queue`             | `@nitap/queue`             | BullMQ port, outbox relay, job runtime                             |
+| `packages/email`             | `@nitap/email`             | Email port, templates, SMTP adapter                                |
+| `packages/storage`           | `@nitap/storage`           | `StoragePort` over any S3-compatible store                         |
+| `packages/search`            | `@nitap/search`            | Directory `SearchPort`, query schema, cursor codec                 |
+| `packages/observability`     | `@nitap/observability`     | Logger, redaction, metrics port, Prometheus adapter, error tracker |
+| `packages/ui`                | `@nitap/ui`                | Design-system primitives (shadcn / Base UI), no business logic     |
+| `packages/testing`           | `@nitap/testing`           | Test databases, fault proxy, SMTP test server                      |
+| `packages/scripts`           | `@nitap/scripts`           | Drills, perf runner, repo checks; run, never imported              |
+| `packages/typescript-config` | `@nitap/typescript-config` | Shared tsconfig presets                                            |
+| `deploy/`, `docker/`, `ops/` |                            | Production compose stack, images, monitoring config and runbooks   |
 
 Packages are consumed as TypeScript source. `packages/*` never import `apps/*`, and web and worker never
 import each other.

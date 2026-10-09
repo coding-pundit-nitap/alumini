@@ -4,8 +4,8 @@ import path from "node:path";
 import type { TestProject } from "vitest/node";
 
 /**
- * Fails fast if PostgreSQL or Redis is unreachable. Migrates one template database that each test
- * file clones (see test-database.ts).
+ * Fails fast if PostgreSQL or Redis is unreachable. Migrates one template
+ * database that each test file clones (see test-database.ts).
  */
 
 // Safety rail: this setup creates and force-drops databases, so it only ever runs
@@ -49,7 +49,10 @@ function toTemplateUrl(
 export type TemplateDatabaseOptions = {
   /** Per-suite template name so parallel suites never drop each other's. */
   name: string;
-  /** Environment variables the suite cannot run without (fail fast with an actionable message). */
+  /**
+   * Environment variables the suite cannot run without (fail fast with an
+   * actionable message).
+   */
   requiredEnv: readonly string[];
 };
 

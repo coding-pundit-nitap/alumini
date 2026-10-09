@@ -15,7 +15,10 @@ const SORT_LABEL: Record<(typeof SORTS)[number], string> = {
   "-graduationYear": "Batch (newest first)",
 };
 
-/** Filters that get a removable chip, in display order; `q` lives in the search box and `sort` is not a filter. */
+/**
+ * Filters that get a removable chip, in display order; `q` lives in the search
+ * box and `sort` is not a filter.
+ */
 const CHIP_LABEL: Record<string, string> = {
   department: "",
   graduationYear: "Batch",
@@ -31,7 +34,10 @@ const CHIP_LABEL: Record<string, string> = {
 const values = (value: string | string[] | undefined) =>
   (Array.isArray(value) ? value : value ? [value] : []).filter(Boolean);
 
-/** Each chip links to the same search without that value, starting from the first page. */
+/**
+ * Each chip links to the same search without that value, starting from the
+ * first page.
+ */
 export function chipsFor(params: Params, departments: Department[]) {
   const chips: { key: string; label: string; href: string }[] = [];
   for (const [key, prefix] of Object.entries(CHIP_LABEL)) {
@@ -58,7 +64,10 @@ export function chipsFor(params: Params, departments: Department[]) {
   return chips;
 }
 
-/** The same search with every filter cleared (the search text stays), or null when no filter is set. */
+/**
+ * The same search with every filter cleared (the search text stays), or null
+ * when no filter is set.
+ */
 export function clearFiltersHref(params: Params) {
   if (!Object.keys(CHIP_LABEL).some((key) => values(params[key]).length))
     return null;
@@ -69,13 +78,19 @@ export function clearFiltersHref(params: Params) {
 const SELECT =
   "border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border px-2 text-sm outline-none focus-visible:ring-[3px]";
 
-/** A plain GET form: the URL is the state, so it works without JavaScript. Submitting drops `cursor`. */
+/**
+ * A plain GET form: the URL is the state, so it works without JavaScript.
+ * Submitting drops `cursor`.
+ */
 export function DirectoryFilters({
   params,
   departments,
   open = false,
 }: {
-  /** The raw URL params: the form shows what was asked for, even when it didn't parse. */
+  /**
+   * The raw URL params: the form shows what was asked for, even when it didn't
+   * parse.
+   */
   params: Params;
   departments: Department[];
   /** Unfold the filters, e.g. when one of them has a problem. */

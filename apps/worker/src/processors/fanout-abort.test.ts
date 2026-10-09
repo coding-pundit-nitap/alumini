@@ -9,7 +9,10 @@ import {
 import { createEventActivityProcessor } from "./event-activity.ts";
 import { createJobEventProcessor } from "./job-event.ts";
 
-/** The runtime can't kill a timed-out processor, so fan-out loops must stop on the abort signal. */
+/**
+ * The runtime can't kill a timed-out processor, so fan-out loops must stop on
+ * the abort signal.
+ */
 describe("fan-out loops stop when the job's signal aborts", () => {
   const recipients = ["r1", "r2", "r3"];
   const run = async (

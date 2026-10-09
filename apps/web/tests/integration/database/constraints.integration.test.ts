@@ -8,8 +8,8 @@ import type { TestDatabase } from "../../support/test-database";
 import { createTestDatabase } from "../../support/test-database";
 
 /**
- * For each constraint: a violation is rejected naming that constraint, and with it dropped the same
- * write succeeds, so the check is not vacuous.
+ * For each constraint: a violation is rejected naming that constraint, and with
+ * it dropped the same write succeeds, so the check is not vacuous.
  */
 const CONSTRAINT_NAMES = [
   "uq_user_email_ci",
@@ -29,8 +29,9 @@ const CONSTRAINT_NAMES = [
 ] as const;
 
 /**
- * Unique indexes are dropped with DROP INDEX. `alsoDrop` lists overlapping constraints, e.g. a
- * duplicate email violates both user_email_key and uq_user_email_ci.
+ * Unique indexes are dropped with DROP INDEX. `alsoDrop` lists overlapping
+ * constraints, e.g. a duplicate email violates both user_email_key and
+ * uq_user_email_ci.
  */
 const DROP: Record<
   (typeof CONSTRAINT_NAMES)[number],

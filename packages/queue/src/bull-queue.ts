@@ -11,9 +11,15 @@ export type BullQueuePortOptions = {
   url: string;
   /** BullMQ key prefix; tests use a unique one per test. */
   prefix?: string;
-  /** Upper bound on one `add`, so an unreachable Redis fails fast instead of hanging the relay. */
+  /**
+   * Upper bound on one `add`, so an unreachable Redis fails fast instead of
+   * hanging the relay.
+   */
   addTimeoutMs?: number;
-  /** Called for connection errors (ioredis would otherwise throw on an unhandled 'error' event). */
+  /**
+   * Called for connection errors (ioredis would otherwise throw on an unhandled
+   * 'error' event).
+   */
   onError?: (error: Error) => void;
 };
 

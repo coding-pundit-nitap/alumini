@@ -10,7 +10,10 @@ import { invalid, readJson, uuidParam } from "../../../_lib/request";
 type Params = { params: Promise<{ id: string }> };
 const body = z.object({ userId: z.uuid() }).strict();
 
-/** POST /api/v1/conversations/:id/participants — the group's creator adds a member. */
+/**
+ * POST /api/v1/conversations/:id/participants — the group's creator adds a
+ * member.
+ */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const parsed = body.safeParse(await readJson(request));

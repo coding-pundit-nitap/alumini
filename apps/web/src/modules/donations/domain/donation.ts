@@ -86,7 +86,10 @@ export function formatPaise(paise: number): string {
   })}`;
 }
 
-/** Rupees as typed ("1,500", "1500.5", 1500) → integer paise, or null when it is not an amount. */
+/**
+ * Rupees as typed ("1,500", "1500.5", 1500) → integer paise, or null when it is
+ * not an amount.
+ */
 export function rupeesToPaise(value: unknown): number | null {
   const text =
     typeof value === "number" ? String(value) : String(value ?? "").trim();
@@ -114,7 +117,10 @@ const amount = (min: number, max: number) =>
         .max(max, `At most ${formatPaise(max)}.`)
     );
 
-/** UTR / cheque number: letters, digits, `/` and `-`, upper-cased so a match ignores case. */
+/**
+ * UTR / cheque number: letters, digits, `/` and `-`, upper-cased so a match
+ * ignores case.
+ */
 export const paymentReference = z
   .string()
   .trim()

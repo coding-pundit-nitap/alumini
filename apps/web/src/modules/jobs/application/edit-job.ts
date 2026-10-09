@@ -23,7 +23,10 @@ const materialChanged = (row: JobContent, next: JobContent): boolean =>
     return row[field] !== next[field];
   });
 
-/** Ownership is only known after loading the row, so it is passed to `decideEdit` as a flag. */
+/**
+ * Ownership is only known after loading the row, so it is passed to
+ * `decideEdit` as a flag.
+ */
 export function createEditJob(deps: {
   store: JobStore;
   authorize: Authorize;

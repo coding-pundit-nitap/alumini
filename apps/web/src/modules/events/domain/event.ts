@@ -1,4 +1,7 @@
-/** Pure rules. Admission and seat release are decided by guarded SQL; these functions only explain a miss. */
+/**
+ * Pure rules. Admission and seat release are decided by guarded SQL; these
+ * functions only explain a miss.
+ */
 export const EVENT_STATUSES = ["SCHEDULED", "CANCELLED"] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 
@@ -37,8 +40,8 @@ const canManage = (event: EventFacts, actor: EventActor) =>
   actor.userId === event.organizerId || actor.canManageAny;
 
 /**
- * Explains why the registration update missed, in order: not found, cancelled, already registered,
- * deadline, capacity.
+ * Explains why the registration update missed, in order: not found, cancelled,
+ * already registered, deadline, capacity.
  */
 export function classifyRegistrationRefusal(
   event: EventFacts | null,
@@ -54,7 +57,10 @@ export function classifyRegistrationRefusal(
   return refuse("EVENT_FULL");
 }
 
-/** May this actor cancel this event? The organizer or an `event.manage` holder, while scheduled. */
+/**
+ * May this actor cancel this event? The organizer or an `event.manage` holder,
+ * while scheduled.
+ */
 export function decideCancelEvent(
   event: EventFacts | null,
   actor: EventActor
@@ -77,7 +83,10 @@ export function decideCancelRegistration(
   return refuse("INVALID_STATE_TRANSITION");
 }
 
-/** May this actor mark attendance on this registration? Organizer or `event.manage`, after start. */
+/**
+ * May this actor mark attendance on this registration? Organizer or
+ * `event.manage`, after start.
+ */
 export function decideAttendance(
   event: EventFacts | null,
   current: RegistrationState | null,

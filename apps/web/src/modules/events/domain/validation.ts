@@ -2,7 +2,10 @@ import { z } from "zod";
 
 import { isValidTimeZone } from "./zoned-time";
 
-/** Pure zod with no server imports, so client forms can use it. Clock-dependent checks are in `superRefine`. */
+/**
+ * Pure zod with no server imports, so client forms can use it. Clock-dependent
+ * checks are in `superRefine`.
+ */
 export const EVENT_TITLE_MIN = 3;
 export const EVENT_TITLE_MAX = 150;
 export const EVENT_DESCRIPTION_MIN = 10;
@@ -81,7 +84,10 @@ export function makeCreateEventInput(now: () => Date) {
 export const createEventInput = makeCreateEventInput(() => new Date());
 export type CreateEventInput = z.infer<typeof createEventInput>;
 
-/** Presence and bounds only; `createEventInput` stays authoritative for date rules. */
+/**
+ * Presence and bounds only; `createEventInput` stays authoritative for date
+ * rules.
+ */
 export const eventFormSchema = z
   .object({
     title: z

@@ -2,7 +2,10 @@ import { BadgeCheck } from "lucide-react";
 
 import { cn } from "../lib/utils";
 
-/** What kind of account a tick marks; the colour follows the kind, the label names the role. */
+/**
+ * What kind of account a tick marks; the colour follows the kind, the label
+ * names the role.
+ */
 export type TickKind =
   "student" | "alumni" | "faculty" | "staff" | "team" | "institute";
 
@@ -22,7 +25,10 @@ const FILL: Record<TickKind, string> = {
 const SIZE = { sm: "size-3.5", md: "size-[18px]", lg: "size-7" } as const;
 type Size = keyof typeof SIZE;
 
-/** The seal alone, e.g. next to a name. Hover shows the role; screen readers hear "Verified {role}". */
+/**
+ * The seal alone, e.g. next to a name. Hover shows the role; screen readers
+ * hear "Verified {role}".
+ */
 export function RoleTick({
   tick,
   size = "md",
@@ -48,7 +54,10 @@ export function RoleTick({
   );
 }
 
-/** An avatar with the member's tick on its bottom-right corner (nothing extra when they have none). */
+/**
+ * An avatar with the member's tick on its bottom-right corner (nothing extra
+ * when they have none).
+ */
 export function TickedAvatar({
   tick,
   size = "md",

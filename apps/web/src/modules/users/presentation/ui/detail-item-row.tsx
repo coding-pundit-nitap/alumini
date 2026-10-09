@@ -11,8 +11,11 @@ import { formError } from "./detail-form-support";
 const ACTION =
   "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition-colors duration-150 outline-none focus-visible:ring-2 disabled:opacity-50";
 
-/** One read-only row for the owner's editing page: an optional leading tile, a summary, an Edit link and a
- * Remove form. The action labels hide on small screens but stay as the accessible names. */
+/**
+ * One read-only row for the owner's editing page: an optional leading tile, a
+ * summary, an Edit link and a Remove form. The action labels hide on small
+ * screens but stay as the accessible names.
+ */
 export function DetailItemRow({
   summary,
   detail,

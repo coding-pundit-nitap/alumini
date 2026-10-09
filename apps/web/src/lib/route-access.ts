@@ -1,6 +1,7 @@
 /**
- * Paths anonymous users may load. proxy.ts only uses this to skip rendering gated pages; it never
- * authorizes. `/api` handlers answer 401 themselves, and `/health` must stay reachable for probes.
+ * Paths anonymous users may load. proxy.ts only uses this to skip rendering
+ * gated pages; it never authorizes. `/api` handlers answer 401 themselves, and
+ * `/health` must stay reachable for probes.
  */
 const PUBLIC_PREFIXES = [
   "/login",
@@ -37,7 +38,10 @@ export function isPublicPath(pathname: string): boolean {
 /** Where a signed-in person goes when `next` is absent or unsafe. */
 const FALLBACK = "/dashboard";
 
-/** Keeps only same-origin absolute paths; anything a browser could read as another origin becomes `FALLBACK`. */
+/**
+ * Keeps only same-origin absolute paths; anything a browser could read as
+ * another origin becomes `FALLBACK`.
+ */
 export function safeNextPath(candidate: string | null | undefined): string {
   if (!candidate) return FALLBACK;
   if (!candidate.startsWith("/")) return FALLBACK;

@@ -14,7 +14,10 @@ import { createPrismaEventStore } from "@/modules/events/infrastructure/prisma-e
 
 const KEY = "22222222-2222-4222-8222-222222222222";
 
-/** Route-level shape POST /api/v1/events/:id/registrations returns (see that route.ts). */
+/**
+ * Route-level shape POST /api/v1/events/:id/registrations returns (see that
+ * route.ts).
+ */
 type Response = {
   status: number;
   body: { data: { registrationId: string } };

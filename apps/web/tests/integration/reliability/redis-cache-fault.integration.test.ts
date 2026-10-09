@@ -49,7 +49,10 @@ const ORIGIN = "http://localhost:3000";
 const get = (path: string) => new Request(`${ORIGIN}${path}`);
 const pastReadinessCache = () => new Promise((r) => setTimeout(r, 2_100));
 
-/** ioredis reconnects by itself after an outage; resolves with the first PONG (null if none in 10 s). */
+/**
+ * Ioredis reconnects by itself after an outage; resolves with the first PONG
+ * (null if none in 10 s).
+ */
 async function reconnected(): Promise<string | null> {
   const deadline = Date.now() + 10_000;
   while (Date.now() < deadline) {

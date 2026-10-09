@@ -58,7 +58,10 @@ export type MaskedBucket = { key: string; count: Count };
 export const maskBuckets = (rows: readonly Bucket[]): MaskedBucket[] =>
   rows.map((r) => ({ key: r.key, count: mask(r.value) }));
 
-/** A week is named by its Monday in IST, `YYYY-MM-DD` (what `date_trunc('week', … AT TIME ZONE 'Asia/Kolkata')` gives). */
+/**
+ * A week is named by its Monday in IST, `YYYY-MM-DD` (what `date_trunc('week',
+ * … AT TIME ZONE 'Asia/Kolkata')` gives).
+ */
 export type WeekPoint = { week: string; value: number };
 
 const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
@@ -70,7 +73,10 @@ export function istWeekOf(at: Date): string {
   return monday.toISOString().slice(0, 10);
 }
 
-/** One point per IST week touching `[from, to]`, oldest first; weeks with no rows are 0. */
+/**
+ * One point per IST week touching `[from, to]`, oldest first; weeks with no
+ * rows are 0.
+ */
 export function fillWeeks(
   rows: readonly WeekPoint[],
   window: AnalyticsWindow
@@ -118,7 +124,10 @@ export type CommunityRaw = {
   reportsByStatus: Bucket[];
 };
 
-/** Confirmed money only. Weekly values are whole rupees; the per-campaign bucket counts donors. */
+/**
+ * Confirmed money only. Weekly values are whole rupees; the per-campaign bucket
+ * counts donors.
+ */
 export type DonationsRaw = {
   receivedRupees: WeekPoint[];
   raisedPaise: number;

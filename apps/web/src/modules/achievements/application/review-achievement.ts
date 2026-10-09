@@ -12,7 +12,10 @@ import type { Authorize } from "./authz";
 import type { AchievementsStore } from "./achievements-store";
 import { refuse } from "./refusal";
 
-/** Publishing and the status change share one transaction, so neither happens without the other. */
+/**
+ * Publishing and the status change share one transaction, so neither happens
+ * without the other.
+ */
 export function createReviewAchievement(deps: {
   store: AchievementsStore;
   authorize: Authorize;

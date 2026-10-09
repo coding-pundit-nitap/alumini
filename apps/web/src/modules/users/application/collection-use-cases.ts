@@ -17,14 +17,20 @@ function fail(details: FieldProblem[]): never {
   });
 }
 
-/** Operations only ever take the caller's own id, and input types have no institutional fields. */
+/**
+ * Operations only ever take the caller's own id, and input types have no
+ * institutional fields.
+ */
 export function createCollectionUseCases<
   Input,
   Item extends { id: string },
 >(deps: {
   collection: ItemCollection<Input, Item>;
   authorize: Authorize;
-  /** A clock-dependent rule (e.g. "no future dates") that a static schema cannot express. Optional: skills and links have none. */
+  /**
+   * A clock-dependent rule (e.g. "no future dates") that a static schema cannot
+   * express. Optional: skills and links have none.
+   */
   clockProblems?: (input: Input, now: Date) => FieldProblem[];
   now: () => Date;
 }) {

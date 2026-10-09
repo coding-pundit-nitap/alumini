@@ -7,7 +7,10 @@ import {
 
 import type { Refusal } from "../domain/connection";
 
-/** Turns a domain refusal into the one AppError the boundary maps. Never returns. */
+/**
+ * Turns a domain refusal into the one AppError the boundary maps. Never
+ * returns.
+ */
 export function refuse(refusal: Refusal): never {
   switch (refusal.code) {
     case "NOT_FOUND":

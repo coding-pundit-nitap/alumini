@@ -31,15 +31,18 @@ export type AuthDeps = {
   applyEmailVerification: ApplyEmailVerification;
   /** Omitted: Better Auth's defaults (enforced only in production, in memory). */
   rateLimit?: { enabled?: boolean; storage: RateLimitStorage };
-  /** Default true. Tests call `auth.api` outside a Next.js request, where cookies() is unavailable. */
+  /**
+   * Default true. Tests call `auth.api` outside a Next.js request, where
+   * cookies() is unavailable.
+   */
   nextCookies?: boolean;
 };
 
 const LINK_TTL_SECONDS = AUTH_LINK_TTL_MINUTES * 60;
 
 /**
- * Every /api/auth path is public, so endpoints without a feature are disabled. A test fails when
- * Better Auth adds an unclassified path.
+ * Every /api/auth path is public, so endpoints without a feature are disabled.
+ * A test fails when Better Auth adds an unclassified path.
  */
 export const ENABLED_AUTH_PATHS = [
   "/sign-up/email",
@@ -78,8 +81,9 @@ export const DISABLED_AUTH_PATHS = [
 ];
 
 /**
- * Authentication only; authorization is our own model. Hooks delegate to use cases. `create.after`
- * hooks run after the user transaction commits, so provisioning is idempotent and getActor() repairs it.
+ * Authentication only; authorization is our own model. Hooks delegate to use
+ * cases. `create.after` hooks run after the user transaction commits, so
+ * provisioning is idempotent and getActor() repairs it.
  */
 export function createAuth(deps: AuthDeps) {
   const plugins = deps.nextCookies === false ? [] : [nextCookies()];

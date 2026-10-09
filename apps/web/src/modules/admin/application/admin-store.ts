@@ -64,7 +64,10 @@ export type UserDetail = {
     expiresAt: Date | null;
     grantedBy: PersonRef;
   }[];
-  /** True when this user is the only VERIFIED super admin (drives the disabled state). */
+  /**
+   * True when this user is the only VERIFIED super admin (drives the disabled
+   * state).
+   */
   isLastSuperAdmin: boolean;
 };
 
@@ -103,7 +106,10 @@ export type RetentionRow = {
   updatedBy: { id: string; name: string } | null;
 };
 
-/** Settings writes, each with its `config.changed` audit row in the same transaction. */
+/**
+ * Settings writes, each with its `config.changed` audit row in the same
+ * transaction.
+ */
 export type SettingsTx = {
   findForUpdate(
     category: string

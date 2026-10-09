@@ -4,10 +4,16 @@ import {
   type Permission,
 } from "@nitap/database/permissions";
 
-/** "Does the actor hold this permission globally?" — `can(actor, p)` with no resource. */
+/**
+ * "Does the actor hold this permission globally?" — `can(actor, p)` with no
+ * resource.
+ */
 export type Can = (permission: Permission) => boolean;
 
-/** Permissions that make someone an operator of the platform; the list lives in the shared registry. */
+/**
+ * Permissions that make someone an operator of the platform; the list lives in
+ * the shared registry.
+ */
 export const ADMIN_PERMISSIONS: readonly Permission[] = ADMIN_TIER_PERMISSIONS;
 
 export const hasAdminAccess = (can: Can): boolean =>
@@ -169,7 +175,10 @@ const GROUP_ORDER: NavGroup["label"][] = [
   "System",
 ];
 
-/** The rail's sections, in a fixed order; only entries the actor was given, so empty groups vanish. */
+/**
+ * The rail's sections, in a fixed order; only entries the actor was given, so
+ * empty groups vanish.
+ */
 export function groupAdminNav(items: NavItem[]): NavGroup[] {
   return GROUP_ORDER.map((label) => ({
     label,

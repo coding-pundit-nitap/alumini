@@ -12,7 +12,10 @@ async function search(to: string): Promise<Summary[]> {
   return ((await response.json()) as { messages: Summary[] }).messages;
 }
 
-/** Polls Mailpit until a message to `to` (optionally matching `subject`) arrives; returns its text. */
+/**
+ * Polls Mailpit until a message to `to` (optionally matching `subject`)
+ * arrives; returns its text.
+ */
 export async function waitForEmail(
   to: string,
   options: { subject?: RegExp; timeoutMs?: number } = {}

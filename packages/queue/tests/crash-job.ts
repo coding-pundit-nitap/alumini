@@ -2,7 +2,10 @@ import { z } from "zod";
 
 import { defineJob } from "@nitap/jobs";
 
-/** The job both sides of the crash test agree on (shared by the test and its child worker process). */
+/**
+ * The job both sides of the crash test agree on (shared by the test and its
+ * child worker process).
+ */
 export const crashJob = defineJob({
   name: "test.crash",
   version: 1,
@@ -13,5 +16,8 @@ export const crashJob = defineJob({
   idempotency: "test job: a second run only records a second call",
 });
 
-/** Short locks so a dead worker's job is recovered in about two seconds, not a minute. */
+/**
+ * Short locks so a dead worker's job is recovered in about two seconds, not a
+ * minute.
+ */
 export const FAST_STALL = { lockDurationMs: 1_000, stalledIntervalMs: 500 };

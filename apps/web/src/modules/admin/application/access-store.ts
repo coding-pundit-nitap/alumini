@@ -38,9 +38,15 @@ export type AccessAuditEntry = {
   metadata: Record<string, string | number | null | readonly string[]>;
 };
 
-/** Every write happens through one of these, inside ONE transaction, with its audit row. */
+/**
+ * Every write happens through one of these, inside ONE transaction, with its
+ * audit row.
+ */
 export type AccessTx = {
-  /** Locks the user row (FOR UPDATE) and returns its state and role names; null when absent. */
+  /**
+   * Locks the user row (FOR UPDATE) and returns its state and role names; null
+   * when absent.
+   */
   findUserForUpdate(id: string): Promise<TargetUser | null>;
   /** Guarded on `from`; false when the row had already moved. */
   setAccountState(
@@ -51,7 +57,10 @@ export type AccessTx = {
   ): Promise<boolean>;
   /** Returns how many sessions were deleted. */
   deleteSessions(userId: string): Promise<number>;
-  /** Locks every super-admin user_role row, then returns the ids of VERIFIED super admins. */
+  /**
+   * Locks every super-admin user_role row, then returns the ids of VERIFIED
+   * super admins.
+   */
   lockSuperAdmins(): Promise<readonly string[]>;
   /** Throws ConflictError("ROLE_ALREADY_HELD") on a duplicate. */
   insertUserRole(

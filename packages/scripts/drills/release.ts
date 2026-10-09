@@ -219,7 +219,10 @@ const runningImage = (env: Env, service: string) =>
     { cwd: env.deploy }
   );
 
-/** Runs deploy.sh while polling /health/live every 100 ms; returns the longest unanswered stretch. */
+/**
+ * Runs deploy.sh while polling /health/live every 100 ms; returns the longest
+ * unanswered stretch.
+ */
 async function measured(env: Env, ...a: string[]) {
   const url = `http://127.0.0.1:${env.port}/health/live`;
   let polling = true;
@@ -297,7 +300,10 @@ function buildImages() {
   );
 }
 
-/** N+1: the same app with a distinct digest, and a migrate image carrying two expand migrations. */
+/**
+ * N+1: the same app with a distinct digest, and a migrate image carrying two
+ * expand migrations.
+ */
 function deriveNext(): string[] {
   const newest = readdirSync(
     path.join(root, "packages/database/prisma/migrations")
@@ -391,7 +397,10 @@ function teardown() {
   rmSync(work, { recursive: true, force: true });
 }
 
-/** Before the first release: schema and the smoke account, as README steps 6–7 do on a new server. */
+/**
+ * Before the first release: schema and the smoke account, as README steps 6–7
+ * do on a new server.
+ */
 function bootstrap(env: Env, sha: string) {
   const refs = images.map((name) => `${registry}/alumini-${name}:${sha}`);
   const envFile = path.join(env.deploy, ".env");

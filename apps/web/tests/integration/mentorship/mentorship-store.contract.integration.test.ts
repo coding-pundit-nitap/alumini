@@ -22,8 +22,8 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * The contract harness backed by real PostgreSQL. Contract ids are mapped to real uuids, and seeds
- * are queued and flushed before each transaction.
+ * The contract harness backed by real PostgreSQL. Contract ids are mapped to
+ * real uuids, and seeds are queued and flushed before each transaction.
  */
 function buildHarness(db: TestDatabase): MentorshipStoreHarness {
   const alias = new Map<string, string>();

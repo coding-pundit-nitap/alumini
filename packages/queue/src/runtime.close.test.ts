@@ -16,7 +16,10 @@ const fakes = vi.hoisted(() => {
       quit: ReturnType<typeof vi.fn>;
       disconnect: ReturnType<typeof vi.fn>;
     }>,
-    /** What every Worker.close() returns; a never-settling promise reproduces the BullMQ bug. */
+    /**
+     * What every Worker.close() returns; a never-settling promise reproduces
+     * the BullMQ bug.
+     */
     closeResult: () => Promise.resolve() as Promise<void>,
   };
   class Worker {
@@ -86,7 +89,10 @@ async function startRuntime(process: () => Promise<void>) {
   return { runtime, logger, connection: connection!, runJob };
 }
 
-/** Resolves to how long (fake) `promise` took, stepping the clock in 100 ms ticks up to `limitMs`. */
+/**
+ * Resolves to how long (fake) `promise` took, stepping the clock in 100 ms
+ * ticks up to `limitMs`.
+ */
 async function elapsed(promise: Promise<unknown>, limitMs: number) {
   let done = false;
   void promise.then(() => (done = true));

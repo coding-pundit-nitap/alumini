@@ -14,14 +14,23 @@ import {
 
 /** Deterministic: the same options always produce the same rows. */
 export type PerfOptions = {
-  /** Member accounts (staff accounts come on top: 1 super admin, 3 coordinators, 5 moderators). */
+  /**
+   * Member accounts (staff accounts come on top: 1 super admin, 3 coordinators,
+   * 5 moderators).
+   */
   users: number;
   seed: number;
-  /** Anchor for every relative date: upcoming events, live jobs and recent posts stay current. */
+  /**
+   * Anchor for every relative date: upcoming events, live jobs and recent posts
+   * stay current.
+   */
   now: Date;
   /** Load users that get a pre-minted session. */
   sessions: number;
-  /** Capacity of the event the registration spike targets; it starts with no registrations. */
+  /**
+   * Capacity of the event the registration spike targets; it starts with no
+   * registrations.
+   */
   spikeCapacity: number;
 };
 
@@ -34,7 +43,10 @@ export type PerfReference = {
 
 export type Value = string | number | boolean | null;
 
-/** One table's rows. `columns` pairs a column with the SQL type its text value is cast to on insert. */
+/**
+ * One table's rows. `columns` pairs a column with the SQL type its text value
+ * is cast to on insert.
+ */
 export type TableRows = {
   table: string;
   columns: readonly (readonly [name: string, type: string])[];
@@ -43,16 +55,25 @@ export type TableRows = {
 
 export type PerfFixture = {
   options: { users: number; seed: number; now: string; sessions: number };
-  /** Members with a session row; the cookie is signed by the caller, who holds the secret. */
+  /**
+   * Members with a session row; the cookie is signed by the caller, who holds
+   * the secret.
+   */
   loadUsers: { userId: string; email: string; token: string }[];
   /** Direct and group conversations each load user takes part in. */
   conversationsByUser: Record<string, string[]>;
   spikeEvent: { id: string; capacity: number };
   upcomingEventIds: string[];
   publishedJobIds: string[];
-  /** Members whose profile any verified member may open (PUBLIC or MEMBERS_ONLY). */
+  /**
+   * Members whose profile any verified member may open (PUBLIC or
+   * MEMBERS_ONLY).
+   */
   profileUserIds: string[];
-  /** Verified members for the sign-in scenario; every seeded account shares one password. */
+  /**
+   * Verified members for the sign-in scenario; every seeded account shares one
+   * password.
+   */
   signInEmails: string[];
   searchTerms: string[];
   departmentCodes: string[];
@@ -81,7 +102,10 @@ type Member = {
 };
 
 const DAY = 86_400_000;
-/** Placeholder the generator puts in `account.password`; the writer swaps in the real hash. */
+/**
+ * Placeholder the generator puts in `account.password`; the writer swaps in the
+ * real hash.
+ */
 export const PASSWORD_PLACEHOLDER = "$PASSWORD_HASH";
 
 function table(

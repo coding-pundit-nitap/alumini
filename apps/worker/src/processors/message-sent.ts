@@ -7,8 +7,9 @@ import type { DeliverNotification } from "../notifications/deliver.ts";
 import type { MessageDebounce } from "../notifications/message-debounce.ts";
 
 /**
- * Publishes a real-time hint to every participant, then one in-app row and one email per recipient
- * per debounce window. Hint failures are logged, never fatal.
+ * Publishes a real-time hint to every participant, then one in-app row and one
+ * email per recipient per debounce window. Hint failures are logged, never
+ * fatal.
  */
 export function createMessageSentProcessor(deps: {
   participants(conversationId: string): Promise<string[]>;

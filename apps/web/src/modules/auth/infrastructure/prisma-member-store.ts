@@ -49,7 +49,10 @@ function createMemberTx(tx: Prisma.TransactionClient): MemberTx {
   };
 }
 
-/** Every method of one `transaction` callback runs in a single Prisma interactive transaction. */
+/**
+ * Every method of one `transaction` callback runs in a single Prisma
+ * interactive transaction.
+ */
 export function createPrismaMemberStore(
   runner: Pick<TransactionRunner, "run">
 ): MemberStore {

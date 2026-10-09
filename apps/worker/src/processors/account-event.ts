@@ -28,7 +28,10 @@ export function createVerificationDecidedProcessor(deps: {
   };
 }
 
-/** Email only while the account is still in the announced state, so an undone suspension sends nothing. */
+/**
+ * Email only while the account is still in the announced state, so an undone
+ * suspension sends nothing.
+ */
 export function createAccountStateProcessor(
   type: "user.suspended" | "user.reactivated",
   deps: {

@@ -22,7 +22,10 @@ const topic = z
   .max(MENTOR_LIMITS.topic)
   .transform((value) => value.toLowerCase());
 
-/** `accepting: false` pauses the offer. The contact method is a preference, not a contact detail. */
+/**
+ * `accepting: false` pauses the offer. The contact method is a preference, not
+ * a contact detail.
+ */
 export const mentorProfileInput = z
   .object({
     expertise: z.string().trim().min(1).max(MENTOR_LIMITS.expertise),

@@ -19,7 +19,10 @@ export const jobExpired = defineJob({
     "Delivers notifications keyed by a dedupeKey of (event id, recipient, type): a rerun finds the existing rows and enqueues no second email, so running twice has the same effect as once.",
 });
 
-/** Flips overdue PUBLISHED jobs to EXPIRED. Scheduled only — no use case ever writes this. */
+/**
+ * Flips overdue PUBLISHED jobs to EXPIRED. Scheduled only — no use case ever
+ * writes this.
+ */
 export const jobExpire = defineJob({
   name: "job.expire",
   version: 1,

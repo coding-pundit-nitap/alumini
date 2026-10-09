@@ -14,7 +14,10 @@ export type UploadSweepStore = {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Deletes stale PENDING_UPLOAD rows and, best effort, their objects, in bounded batches. */
+/**
+ * Deletes stale PENDING_UPLOAD rows and, best effort, their objects, in bounded
+ * batches.
+ */
 export function createUploadSweepProcessor(deps: {
   store: UploadSweepStore;
   storage: StoragePort;

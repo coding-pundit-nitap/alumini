@@ -70,7 +70,10 @@ describe("reviewAchievement", () => {
     expect(tx.patchAchievement).not.toHaveBeenCalled();
   });
 
-  /** `reviewAchievement` always passes `isReviewer: true`, so this checks the refusal path directly. */
+  /**
+   * `reviewAchievement` always passes `isReviewer: true`, so this checks the
+   * refusal path directly.
+   */
   it("propagates the domain's NOT_REVIEWER refusal as AuthorizationError when isReviewer is false", () => {
     const decision = decideTransition(
       row(),

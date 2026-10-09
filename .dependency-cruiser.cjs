@@ -1,10 +1,11 @@
 /**
- * Architecture rules that lint cannot see well: cycles, the module DAG,
- * deep cross-module imports, and workspace direction. Layer import bans live in
- * packages/eslint-config/boundaries.mjs.
+ * Architecture rules that lint cannot see well: cycles, the module DAG, deep
+ * cross-module imports, and workspace direction. Layer import bans live in
+ * apps/web/.oxlintrc.json.
  *
- * Run from apps/web (`pnpm arch`, which passes --ts-config so `@/` resolves) and from the repo root
- * (`pnpm arch:workspace`, for packages/). Patterns accept both path prefixes.
+ * Run from apps/web (`pnpm arch`, which passes --ts-config so `@/` resolves)
+ * and from the repo root (`pnpm arch:workspace`, for packages/). Patterns
+ * accept both path prefixes.
  */
 
 // Module DAG: each module may import only the public API of the modules listed here.
@@ -40,7 +41,7 @@ const moduleDagRules = Object.entries(MODULE_DEPENDENCIES).map(
 // the one place allowed to use the queue and email packages, so web-only rules are skipped there.
 const runningInWorker = /[\\/]apps[\\/]worker$/.test(process.cwd());
 
-/** @type {import('dependency-cruiser').IConfiguration} */
+/** @type {import("dependency-cruiser").IConfiguration} */
 module.exports = {
   forbidden: [
     {

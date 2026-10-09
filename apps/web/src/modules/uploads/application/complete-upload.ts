@@ -10,8 +10,8 @@ import type { UploadStatus, UploadStore } from "./upload-store";
 export type CompleteUploadResult = { status: UploadStatus };
 
 /**
- * Idempotent: a row already past PENDING_UPLOAD is a no-op. `storage.head` runs outside the
- * transaction, which may retry.
+ * Idempotent: a row already past PENDING_UPLOAD is a no-op. `storage.head` runs
+ * outside the transaction, which may retry.
  */
 export function createCompleteUpload(deps: {
   store: UploadStore;

@@ -17,7 +17,10 @@ const listQuery = z.object({
   cursor: z.string().max(200).optional(),
 });
 
-/** POST /api/v1/conversations — start a 1:1 (`{ recipientId }`) or a group (`{ title?, memberIds }`). */
+/**
+ * POST /api/v1/conversations — start a 1:1 (`{ recipientId }`) or a group (`{
+ * title?, memberIds }`).
+ */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const body = await readJson(request);

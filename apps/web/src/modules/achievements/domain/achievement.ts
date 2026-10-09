@@ -56,8 +56,8 @@ const REVIEWABLE_FROM: readonly AchievementState[] = [
 ];
 
 /**
- * The caller has already checked `achievement.review`; this enforces no self-review, SUBMITTED-only
- * withdrawal and the transition table.
+ * The caller has already checked `achievement.review`; this enforces no
+ * self-review, SUBMITTED-only withdrawal and the transition table.
  */
 export function decideTransition(
   row: AchievementRow,

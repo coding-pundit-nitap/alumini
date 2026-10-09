@@ -9,7 +9,10 @@ import type {
 import type { SettingsStore } from "./admin-store";
 import type { Authorize } from "./authorize-port";
 
-/** Rows in catalogue order; unknown categories are left out. 404 for non-holders. */
+/**
+ * Rows in catalogue order; unknown categories are left out. 404 for
+ * non-holders.
+ */
 export function createListRetentionSettings(deps: {
   store: SettingsStore;
   authorize: Authorize;

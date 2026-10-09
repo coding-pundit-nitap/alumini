@@ -7,8 +7,9 @@ import type { EventStore, EventTx, NewEvent } from "../application/ports";
 import type { EventFacts, RegistrationState } from "../domain/event";
 
 /**
- * Admission, seat release and cancellation are each one guarded update. Timestamps come from SQL
- * `now()` so they match the guard. Outbox events share the transaction.
+ * Admission, seat release and cancellation are each one guarded update.
+ * Timestamps come from SQL `now()` so they match the guard. Outbox events share
+ * the transaction.
  */
 export function createPrismaEventStore(deps: {
   runner: Pick<TransactionRunner, "run">;

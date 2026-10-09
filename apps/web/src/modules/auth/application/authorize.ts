@@ -29,7 +29,10 @@ export interface AuthzObserver {
 }
 
 export type Authorization = {
-  /** Throws 401 (no actor), 403 (denied) or 404 (denied on a concealed resource); returns the actor when allowed. */
+  /**
+   * Throws 401 (no actor), 403 (denied) or 404 (denied on a concealed
+   * resource); returns the actor when allowed.
+   */
   authorize(
     actor: Actor | null,
     permission: Permission,

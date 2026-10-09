@@ -29,7 +29,10 @@ export const GET = routeHandler(async (request, ctx: Params) => {
   });
 });
 
-/** POST /api/v1/conversations/:id/messages — send. `clientMessageId` makes a retry return the first result (200). */
+/**
+ * POST /api/v1/conversations/:id/messages — send. `clientMessageId` makes a
+ * retry return the first result (200).
+ */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const input = await readJson(request);

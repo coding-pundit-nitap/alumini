@@ -15,7 +15,10 @@ import { createPrismaEventStore } from "@/modules/events/infrastructure/prisma-e
 
 import { createNaiveEventStore } from "./naive-event-store";
 
-/** The guarded updates never oversell or lose an increment; the naive store does. */
+/**
+ * The guarded updates never oversell or lose an increment; the naive store
+ * does.
+ */
 const ITER = Number(process.env.EVENT_RACE_ITERATIONS ?? 3);
 const RACE_TIMEOUT = 180_000;
 
@@ -30,7 +33,10 @@ const authorize = (a: Actor | null) => {
   return a;
 };
 
-/** "ok" for a fulfilled call, the AppError code for a refusal, otherwise the raw error (a test failure). */
+/**
+ * "ok" for a fulfilled call, the AppError code for a refusal, otherwise the raw
+ * error (a test failure).
+ */
 const outcome = (r: PromiseSettledResult<unknown>) =>
   r.status === "fulfilled"
     ? "ok"

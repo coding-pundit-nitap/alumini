@@ -46,7 +46,10 @@ export function createPrismaPostsStore(deps: {
   audit: AuditWriter;
 }): PostsStore {
   const forClient = (db: Prisma.TransactionClient): PostsTx => {
-    /** Adds reaction counts, comment counts, the viewer's reaction and any open report, one query per facet. */
+    /**
+     * Adds reaction counts, comment counts, the viewer's reaction and any open
+     * report, one query per facet.
+     */
     async function enrich(
       posts: (Post & { author: AuthorJoin })[],
       viewerId: string

@@ -1,4 +1,7 @@
-/** Draft copy for the terms and contact pages until the institute approves it and sets `approved`. */
+/**
+ * Draft copy for the terms and contact pages until the institute approves it
+ * and sets `approved`.
+ */
 export const legalConfig = {
   approved: false,
   lastUpdated: "2026-10-09",

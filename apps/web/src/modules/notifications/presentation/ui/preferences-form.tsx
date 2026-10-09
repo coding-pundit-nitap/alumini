@@ -6,7 +6,10 @@ import { Lock } from "lucide-react";
 
 export type PreferenceRow = { domain: string; email: boolean };
 
-/** A friendly title and one line per domain; an unknown domain falls back to its lowercased name. */
+/**
+ * A friendly title and one line per domain; an unknown domain falls back to its
+ * lowercased name.
+ */
 const DOMAIN_COPY: Record<string, { title: string; description: string }> = {
   CONNECTION: {
     title: "Connections",
@@ -43,8 +46,8 @@ const DOMAIN_COPY: Record<string, { title: string; description: string }> = {
 const ROW = "flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5";
 
 /**
- * Email toggle per ENGAGEMENT domain. Switches are named via `aria-labelledby` because Base UI puts
- * `id` on a hidden input.
+ * Email toggle per ENGAGEMENT domain. Switches are named via `aria-labelledby`
+ * because Base UI puts `id` on a hidden input.
  */
 export function PreferencesForm({
   preferences,
@@ -53,7 +56,10 @@ export function PreferencesForm({
 }: {
   preferences: PreferenceRow[];
   onChange: (domain: string, enabled: boolean) => void;
-  /** Disabled while a PATCH is in flight so a second toggle can't race the first. */
+  /**
+   * Disabled while a PATCH is in flight so a second toggle can't race the
+   * first.
+   */
   pendingDomains?: ReadonlySet<string>;
 }) {
   return (

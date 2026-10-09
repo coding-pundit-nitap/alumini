@@ -8,12 +8,18 @@ import type { Authorize } from "./authz";
 import type { MessagingObserver, MessagingStore } from "./messaging-store";
 import { parse } from "./validation";
 
-/** Never moves backwards. Marking only what the client displayed keeps newer messages unread. */
+/**
+ * Never moves backwards. Marking only what the client displayed keeps newer
+ * messages unread.
+ */
 export function createMarkRead(deps: {
   store: MessagingStore;
   authorize: Authorize;
   observe?: MessagingObserver;
-  /** Best-effort, after commit and outside the transaction (e.g. clears the notification debounce window). */
+  /**
+   * Best-effort, after commit and outside the transaction (e.g. clears the
+   * notification debounce window).
+   */
   onRead?: (userId: string, conversationId: string) => Promise<void>;
 }) {
   return async function markRead(args: {

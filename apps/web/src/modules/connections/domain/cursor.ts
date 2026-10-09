@@ -10,7 +10,10 @@ const fromBase64Url = (value: string) => {
   return atob(padded + "=".repeat((4 - (padded.length % 4)) % 4));
 };
 
-/** Opaque keyset cursor over (requested_at DESC, id ASC). Not signed: it only narrows the caller's own list. */
+/**
+ * Opaque keyset cursor over (requested_at DESC, id ASC). Not signed: it only
+ * narrows the caller's own list.
+ */
 export function encodeCursor(cursor: ListCursor): string {
   return toBase64Url(
     JSON.stringify({ t: cursor.requestedAt.toISOString(), i: cursor.id })

@@ -10,7 +10,10 @@ export function lockProfileRow(
   return tx.$queryRaw`SELECT user_id FROM profile WHERE user_id = ${userId}::uuid FOR UPDATE`;
 }
 
-/** A `date`/`timestamptz` column arrives as a UTC-midnight Date; the domain speaks YYYY-MM-DD. */
+/**
+ * A `date`/`timestamptz` column arrives as a UTC-midnight Date; the domain
+ * speaks YYYY-MM-DD.
+ */
 export const isoDate = (date: Date): string => date.toISOString().slice(0, 10);
 
 export const isDuplicate = (error: unknown): boolean =>

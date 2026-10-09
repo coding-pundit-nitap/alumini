@@ -4,7 +4,10 @@ import type { MentorProfileInput } from "../domain/mentor-profile";
 
 export type MentorProfileRecord = MentorProfileInput & { userId: string };
 
-/** A mentor as a student sees them: profile fields the viewer may already see, plus the mentor's own offer. */
+/**
+ * A mentor as a student sees them: profile fields the viewer may already see,
+ * plus the mentor's own offer.
+ */
 export type MentorCard = {
   userId: string;
   fullName: string;

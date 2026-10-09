@@ -1,7 +1,10 @@
 import type { ListCursor } from "../domain/cursor";
 import type { EventStatus, RegistrationState } from "../domain/event";
 
-/** API shape. `spotsRemaining` and `canManage` are computed by the use cases, never stored. */
+/**
+ * API shape. `spotsRemaining` and `canManage` are computed by the use cases,
+ * never stored.
+ */
 export type EventSummary = {
   id: string;
   title: string;
@@ -23,7 +26,10 @@ export type EventDetail = EventSummary & {
   canManage: boolean;
 };
 
-/** What the read port returns: everything above minus the fields the use cases derive. */
+/**
+ * What the read port returns: everything above minus the fields the use cases
+ * derive.
+ */
 export type EventSummaryRow = Omit<EventSummary, "spotsRemaining">;
 export type EventDetailRow = EventSummaryRow & { description: string };
 

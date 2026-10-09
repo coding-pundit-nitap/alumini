@@ -84,7 +84,10 @@ export function createEditCampaign(deps: Deps) {
   };
 }
 
-/** DRAFT → ACTIVE (not after its end date) → CLOSED. Closing leaves open pledges confirmable. */
+/**
+ * DRAFT → ACTIVE (not after its end date) → CLOSED. Closing leaves open pledges
+ * confirmable.
+ */
 export function createChangeCampaignStatus(deps: Deps) {
   const now = deps.now ?? (() => new Date());
   return async function changeCampaignStatus(args: {

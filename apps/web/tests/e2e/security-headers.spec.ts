@@ -10,7 +10,10 @@ const DOMAIN = process.env.E2E_INSTITUTIONAL_DOMAIN ?? "nitap.ac.in";
 const BASE_URL =
   process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000";
 
-/** Records every CSP violation the page reports, from before its first script runs. */
+/**
+ * Records every CSP violation the page reports, from before its first script
+ * runs.
+ */
 async function watchViolations(page: Page): Promise<() => Promise<string[]>> {
   await page.addInitScript(() => {
     const seen: string[] = [];

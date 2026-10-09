@@ -4,15 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=../../.env src/index.ts",
-    "start": "node --env-file-if-exists=../../.env src/index.ts",
-    "cli": "node --env-file-if-exists=../../.env src/cli.ts",
-    "smoke": "node --env-file-if-exists=../../.env scripts/smoke-email.ts",
-    "lint": "eslint --max-warnings=0",
-    "typecheck": "tsc --noEmit",
     "arch": "depcruise src tests --config ../../.dependency-cruiser.cjs --ts-config tsconfig.json",
+    "cli": "node --env-file-if-exists=../../.env src/cli.ts",
+    "dev": "node --watch --env-file-if-exists=../../.env src/index.ts",
+    "lint": "oxlint --type-aware --max-warnings=0",
+    "smoke": "node --env-file-if-exists=../../.env scripts/smoke-email.ts",
+    "start": "node --env-file-if-exists=../../.env src/index.ts",
     "test": "vitest run --project unit",
-    "test:integration": "vitest run --project integration"
+    "test:integration": "vitest run --project integration",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@nitap/database": "workspace:*",
@@ -28,12 +28,11 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@nitap/eslint-config": "workspace:*",
     "@nitap/testing": "workspace:*",
     "@nitap/typescript-config": "workspace:*",
     "@types/node": "^26.6.2",
     "@types/pg": "^8.23.1",
-    "eslint": "^10.11.0",
+    "oxlint": "^1.87.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
   }

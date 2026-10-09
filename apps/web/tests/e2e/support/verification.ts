@@ -7,7 +7,10 @@ const COORDINATOR_PASSWORD = process.env.DEV_COORDINATOR_PASSWORD;
 const BASE_URL =
   process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000";
 
-/** A distinct client address per test, so the per-IP submission limit never spans runs. */
+/**
+ * A distinct client address per test, so the per-IP submission limit never
+ * spans runs.
+ */
 export const clientIp = () =>
   `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
 

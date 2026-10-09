@@ -14,7 +14,10 @@ import { NotFoundError } from "@/lib/errors";
 import { isUuid } from "@/modules/admin";
 import { getActor } from "@/modules/auth";
 
-/** Only the named, non-empty fields: the use case's schema is strict, and the actor is never a field. */
+/**
+ * Only the named, non-empty fields: the use case's schema is strict, and the
+ * actor is never a field.
+ */
 const pick = (form: FormData, keys: readonly string[]) =>
   Object.fromEntries(
     keys.flatMap((k) => {
@@ -23,7 +26,10 @@ const pick = (form: FormData, keys: readonly string[]) =>
     })
   );
 
-/** A malformed id would reach a `::uuid` cast and fail as a 500; it is simply not found. */
+/**
+ * A malformed id would reach a `::uuid` cast and fail as a 500; it is simply
+ * not found.
+ */
 const id = (form: FormData, key: string) => {
   const v = form.get(key);
   if (!isUuid(v)) throw new NotFoundError();

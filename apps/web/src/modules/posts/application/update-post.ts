@@ -10,8 +10,8 @@ import { refuse } from "./refusal";
 import { parse } from "./validation";
 
 /**
- * Authors edit the text of their own TEXT posts. Edits are refused while a report is open, since the
- * report keeps no copy of the content.
+ * Authors edit the text of their own TEXT posts. Edits are refused while a
+ * report is open, since the report keeps no copy of the content.
  */
 export function createUpdatePost(deps: {
   store: PostsStore;

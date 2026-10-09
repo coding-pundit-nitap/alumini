@@ -9,7 +9,10 @@ import type { NotificationStore } from "./notification-store";
 
 type Authorize = (actor: Actor | null, permission: Permission) => Actor;
 
-/** Redis-backed unread counter. Never throws: `null`/no-op means "Redis unavailable, Postgres is truth". */
+/**
+ * Redis-backed unread counter. Never throws: `null`/no-op means "Redis
+ * unavailable, Postgres is truth".
+ */
 export type UnreadCounter = {
   get(userId: string): Promise<number | null>;
   seed(userId: string, count: number): Promise<void>;

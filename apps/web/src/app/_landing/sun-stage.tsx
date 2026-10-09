@@ -1,6 +1,9 @@
 const SUN_Y = [58, 48, 26] as const;
 
-/** A sun at three heights over the horizon: 0 a sliver, 1 half risen, 2 fully up with rays. */
+/**
+ * A sun at three heights over the horizon: 0 a sliver, 1 half risen, 2 fully up
+ * with rays.
+ */
 export function SunStage({ stage }: { stage: 0 | 1 | 2 }) {
   const cy = SUN_Y[stage];
   return (

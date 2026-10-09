@@ -7,7 +7,10 @@ export type OutboxEventRow = {
   createdAt: Date;
 };
 
-/** What the relay decided for a claimed batch. Rows in neither list stay unpublished. */
+/**
+ * What the relay decided for a claimed batch. Rows in neither list stay
+ * unpublished.
+ */
 export type PublishResult = {
   published: readonly string[];
   quarantined: readonly { id: string; reason: string }[];
@@ -20,12 +23,15 @@ export type OutboxQuarantinedRow = {
   failureReason: string;
 };
 
-/** Implemented with Prisma in `packages/database/outbox`. Safe to run from several relays at once. */
+/**
+ * Implemented with Prisma in `packages/database/outbox`. Safe to run from
+ * several relays at once.
+ */
 export interface OutboxStore {
   /**
-   * In one transaction: claims up to `limit` rows (`FOR UPDATE SKIP LOCKED`), publishes them, then marks
-   * them published or quarantined. Nothing commits if `publish` throws. Unknown types are left for a
-   * newer worker.
+   * In one transaction: claims up to `limit` rows (`FOR UPDATE SKIP LOCKED`),
+   * publishes them, then marks them published or quarantined. Nothing commits
+   * if `publish` throws. Unknown types are left for a newer worker.
    */
   publishBatch(
     limit: number,
@@ -33,7 +39,10 @@ export interface OutboxStore {
     publish: (rows: readonly OutboxEventRow[]) => Promise<PublishResult>
   ): Promise<number>;
 
-  /** Age in seconds of the oldest unpublished, unquarantined row, or null when there is none. */
+  /**
+   * Age in seconds of the oldest unpublished, unquarantined row, or null when
+   * there is none.
+   */
   oldestUnpublishedAgeSeconds(): Promise<number | null>;
 
   /** Deletes up to `limit` rows published before `cutoff`; returns how many. */
@@ -41,7 +50,10 @@ export interface OutboxStore {
 
   listQuarantined(limit: number): Promise<OutboxQuarantinedRow[]>;
 
-  /** Returns quarantined rows (all, or only these ids) to the queue of unpublished rows. */
+  /**
+   * Returns quarantined rows (all, or only these ids) to the queue of
+   * unpublished rows.
+   */
   releaseQuarantined(ids?: readonly string[]): Promise<number>;
 
   /** How many published rows since `since` a replay would re-publish. */
@@ -50,12 +62,15 @@ export interface OutboxStore {
   /** Marks published rows since `since` as unpublished again; returns how many. */
   replay(since: Date, type?: string): Promise<number>;
 
-  /** How many unpublished, unquarantined rows created before `before` a settle would mark published. */
+  /**
+   * How many unpublished, unquarantined rows created before `before` a settle
+   * would mark published.
+   */
   countSettleable(before: Date, type?: string): Promise<number>;
 
   /**
-   * After a restore: marks unpublished rows created before `before` as published, since their effects
-   * may already have happened.
+   * After a restore: marks unpublished rows created before `before` as
+   * published, since their effects may already have happened.
    */
   settle(before: Date, type?: string): Promise<number>;
 }

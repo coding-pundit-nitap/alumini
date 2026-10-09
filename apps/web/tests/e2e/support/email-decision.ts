@@ -5,11 +5,12 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@nitap/database";
 
 /**
- * Waits for the latest `connection.accepted` job for this member to complete, then prints how many
- * EMAIL delivery rows its notification has. 0 means no email was queued.
+ * Waits for the latest `connection.accepted` job for this member to complete,
+ * then prints how many EMAIL delivery rows its notification has. 0 means no
+ * email was queued.
  *
- * Standalone because the Prisma client needs ESM. Reads DATABASE_URL and QUEUE_REDIS_URL; the
- * recipient's email is argv[2].
+ * Standalone because the Prisma client needs ESM. Reads DATABASE_URL and
+ * QUEUE_REDIS_URL; the recipient's email is argv[2].
  */
 type JobQueue = {
   getJobState(id: string): Promise<string>;

@@ -57,7 +57,10 @@ const idOf = async (email: string) =>
     ])
   ).rows[0]!.id;
 
-/** A direct conversation with messages, straight in the database (the journey under test is moderation). */
+/**
+ * A direct conversation with messages, straight in the database (the journey
+ * under test is moderation).
+ */
 async function conversationWith(
   senderEmail: string,
   readerEmail: string,

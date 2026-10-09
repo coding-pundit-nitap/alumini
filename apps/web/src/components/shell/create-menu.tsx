@@ -18,7 +18,10 @@ import type { CreateAction } from "./nav-model";
 
 const COMPOSE = "/dashboard#compose";
 
-/** Post lives on Home: when already there, jump focus to the composer (adds `#compose`). */
+/**
+ * Post lives on Home: when already there, jump focus to the composer (adds
+ * `#compose`).
+ */
 export function useCreateClick() {
   const pathname = usePathname();
   return (href: string) => {
@@ -32,7 +35,10 @@ const TRIGGER = cn(
   "w-full md:size-9 md:px-0 lg:h-9 lg:w-full lg:px-2.5"
 );
 
-/** The rail's primary action: nothing, one plain button, or a menu when there are several. */
+/**
+ * The rail's primary action: nothing, one plain button, or a menu when there
+ * are several.
+ */
 export function CreateMenu({ actions }: { actions: CreateAction[] }) {
   const onCreate = useCreateClick();
   if (actions.length === 0) return null;

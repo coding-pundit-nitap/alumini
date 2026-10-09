@@ -1,6 +1,9 @@
 import type { Prisma } from "../generated/prisma/client.ts";
 
-/** A use case built an audit entry that breaks the contract. A bug, caught before the commit. */
+/**
+ * A use case built an audit entry that breaks the contract. A bug, caught
+ * before the commit.
+ */
 export class InvalidAuditEntryError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -14,11 +17,17 @@ export type AuditEntry = {
   action: string;
   targetType: string;
   targetId: string;
-  /** Identifiers and outcomes only: never free text, an email address or a token. */
+  /**
+   * Identifiers and outcomes only: never free text, an email address or a
+   * token.
+   */
   metadata?: Readonly<Record<string, unknown>>;
 };
 
-/** Only the audit delegate is needed, so the writer works with any transaction client. */
+/**
+ * Only the audit delegate is needed, so the writer works with any transaction
+ * client.
+ */
 export type AuditTransaction = Pick<Prisma.TransactionClient, "auditLog">;
 
 export type AuditWriter = {
@@ -27,7 +36,10 @@ export type AuditWriter = {
 };
 
 export type AuditWriterOptions = {
-  /** Correlation id of the originating request, stored so an audit row joins its trace. */
+  /**
+   * Correlation id of the originating request, stored so an audit row joins its
+   * trace.
+   */
   requestId?: () => string | undefined;
 };
 

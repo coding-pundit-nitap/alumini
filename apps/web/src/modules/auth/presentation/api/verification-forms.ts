@@ -11,7 +11,10 @@ import {
   evidenceSchema,
 } from "./verification-schemas";
 
-/** Reads only the named fields and validates them strictly, so forged fields never reach a use case. */
+/**
+ * Reads only the named fields and validates them strictly, so forged fields
+ * never reach a use case.
+ */
 function parseForm<S extends z.ZodType>(
   schema: S,
   fields: readonly string[],

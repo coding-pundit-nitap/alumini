@@ -12,8 +12,9 @@ import {
 
 export type TransactionRunner = {
   /**
-   * Runs the callback in an interactive transaction, retrying the whole callback on serialization
-   * failures and deadlocks. It may run more than once, so do no I/O outside `tx`; use the outbox.
+   * Runs the callback in an interactive transaction, retrying the whole
+   * callback on serialization failures and deadlocks. It may run more than
+   * once, so do no I/O outside `tx`; use the outbox.
    */
   run: <T>(fn: (tx: Prisma.TransactionClient) => Promise<T>) => Promise<T>;
 };
@@ -25,7 +26,10 @@ export type TransactionRunnerOptions = {
   timeoutMs?: number;
   /** Prisma's cap on waiting for a pooled connection. */
   maxWaitMs?: number;
-  /** Backoff before attempt n+1 is `baseBackoffMs * 2^(n-1)` plus up to `baseBackoffMs` of jitter. */
+  /**
+   * Backoff before attempt n+1 is `baseBackoffMs * 2^(n-1)` plus up to
+   * `baseBackoffMs` of jitter.
+   */
   baseBackoffMs?: number;
 };
 

@@ -16,7 +16,10 @@ type RedisLike = {
   del(key: string): Promise<unknown>;
 };
 
-/** If Redis is down, reads return null (recompute from Postgres) and writes are dropped, never a 503. */
+/**
+ * If Redis is down, reads return null (recompute from Postgres) and writes are
+ * dropped, never a 503.
+ */
 export function createRedisUnreadCounter(
   getClient: () => Promise<RedisLike>
 ): UnreadCounter {

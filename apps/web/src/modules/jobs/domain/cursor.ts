@@ -14,7 +14,10 @@ const fromBase64Url = (value: string) => {
   );
 };
 
-/** Opaque keyset cursor: a sort key (lower-cased name, or an ISO time) and the row id. Not signed: it only narrows a list already filtered by visibility. */
+/**
+ * Opaque keyset cursor: a sort key (lower-cased name, or an ISO time) and the
+ * row id. Not signed: it only narrows a list already filtered by visibility.
+ */
 export function encodeCursor(cursor: ListCursor): string {
   return toBase64Url(JSON.stringify({ k: cursor.key, i: cursor.id }));
 }

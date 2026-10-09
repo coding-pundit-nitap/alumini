@@ -4,8 +4,9 @@ import { debounceKeyFor, MESSAGE_DEBOUNCE_MS } from "@nitap/jobs";
 
 export type MessageDebounce = {
   /**
-   * The first message's event opens and owns the window and is the only one to email; it is re-granted
-   * on retry. The window ends by TTL or when the conversation is read.
+   * The first message's event opens and owns the window and is the only one to
+   * email; it is re-granted on retry. The window ends by TTL or when the
+   * conversation is read.
    */
   claim(
     recipientId: string,

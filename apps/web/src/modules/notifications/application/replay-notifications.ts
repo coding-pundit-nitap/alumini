@@ -3,7 +3,10 @@ import { PERMISSIONS } from "@nitap/database/permissions";
 import { ConflictError, NotFoundError } from "@/lib/errors";
 import type { Actor, Permission } from "@/modules/auth";
 
-/** The one QueueAdmin method replay needs (structurally `QueueAdmin.retry`); the module never imports the queue package. */
+/**
+ * The one QueueAdmin method replay needs (structurally `QueueAdmin.retry`); the
+ * module never imports the queue package.
+ */
 export type ReplayQueue = {
   retry(queue: "email", ids: readonly string[]): Promise<number>;
 };
@@ -11,16 +14,23 @@ export type ReplayQueue = {
 type Authorize = (actor: Actor | null, permission: Permission) => Actor;
 
 /**
- * Re-queues the failed email job of one notification; only FAILED deliveries qualify. The retry
- * happens before the audit write. If the audit then fails, it is reported through `onAuditFailed` and
- * the call still succeeds, since a 500 would invite a second replay. Returns counts only.
+ * Re-queues the failed email job of one notification; only FAILED deliveries
+ * qualify. The retry happens before the audit write. If the audit then fails,
+ * it is reported through `onAuditFailed` and the call still succeeds, since a
+ * 500 would invite a second replay. Returns counts only.
  */
 export function createReplayNotifications(deps: {
   authorize: Authorize;
   queueAdmin: () => ReplayQueue;
-  /** The dedupe key (= email job id) of the notification's EMAIL delivery if that delivery FAILED, else null. */
+  /**
+   * The dedupe key (= email job id) of the notification's EMAIL delivery if
+   * that delivery FAILED, else null.
+   */
   failedEmailJobId: (notificationId: string) => Promise<string | null>;
-  /** Writes the entry in its own transaction (audit.record inside transactionRunner.run). */
+  /**
+   * Writes the entry in its own transaction (audit.record inside
+   * transactionRunner.run).
+   */
   audit: (entry: {
     actorId: string;
     action: string;

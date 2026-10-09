@@ -91,7 +91,7 @@ describe("object storage unavailable (real S3 adapter through a fault proxy)", (
     mocks.getActor.mockResolvedValue(actor);
   });
 
-  /** presign, then the browser's direct POST of the bytes to the store. */
+  /** Presign, then the browser's direct POST of the bytes to the store. */
   async function uploaded(): Promise<string> {
     const presigned = await presignPhotoUploadAction({
       mime: "image/png",

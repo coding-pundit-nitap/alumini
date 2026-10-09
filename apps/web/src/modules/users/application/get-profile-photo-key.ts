@@ -8,8 +8,8 @@ import type { ConnectionLookup } from "./connection-lookup";
 import type { ProfileStore } from "./profile-store";
 
 /**
- * The real storage key, used only by `/api/photos/[userId]`. Same visibility check as
- * `getProfileForViewer`.
+ * The real storage key, used only by `/api/photos/[userId]`. Same visibility
+ * check as `getProfileForViewer`.
  */
 export function createGetProfilePhotoKey(deps: {
   store: ProfileStore;

@@ -11,8 +11,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 /**
- * Validates the monitoring config under ops/ in the same images the stacks run: Prometheus configs and
- * rules, promtool tests, Alertmanager and blackbox configs, runbook links and dashboards. Needs Docker.
+ * Validates the monitoring config under ops/ in the same images the stacks run:
+ * Prometheus configs and rules, promtool tests, Alertmanager and blackbox
+ * configs, runbook links and dashboards. Needs Docker.
  */
 const root = path.resolve(import.meta.dirname, "../..");
 const ops = path.join(root, "ops");

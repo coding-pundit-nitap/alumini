@@ -8,7 +8,10 @@ import { ValidationError } from "@/lib/errors";
 import { getActor } from "@/modules/auth";
 import { parseJson, readBodyText } from "../_lib/request";
 
-/** POST /api/v1/events — create an event. Honours `Idempotency-Key`. The use case validates the body. */
+/**
+ * POST /api/v1/events — create an event. Honours `Idempotency-Key`. The use
+ * case validates the body.
+ */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const rawBody = await readBodyText(request);

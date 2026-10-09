@@ -120,7 +120,10 @@ describe("mentorship lifecycle against real PostgreSQL", () => {
     return userId;
   }
 
-  /** A member who may request a mentorship (holds `mentorship.request` via STUDENT). */
+  /**
+   * A member who may request a mentorship (holds `mentorship.request` via
+   * STUDENT).
+   */
   async function student(name: string) {
     const userId = await member(name);
     await grantRole(userId, "STUDENT");

@@ -104,7 +104,10 @@ function Section({
   );
 }
 
-/** The row being edited: its form in a highlighted card, with a way back to the list. */
+/**
+ * The row being edited: its form in a highlighted card, with a way back to the
+ * list.
+ */
 function EditCard({
   section,
   children,

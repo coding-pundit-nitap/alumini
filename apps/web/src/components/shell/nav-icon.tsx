@@ -62,7 +62,10 @@ export function NavIcon({
   return <Icon aria-hidden="true" className={className} />;
 }
 
-/** Longest matching href wins, so `/jobs/mine` lights "My job posts". `/dashboard` matches exactly. */
+/**
+ * Longest matching href wins, so `/jobs/mine` lights "My job posts".
+ * `/dashboard` matches exactly.
+ */
 export function activeHref(
   pathname: string,
   entries: readonly NavEntry[]

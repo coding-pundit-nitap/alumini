@@ -10,7 +10,10 @@ type Consume = (
   rule: { window: number; max: number }
 ) => Promise<{ allowed: boolean; retryAfter: number | null }>;
 
-/** Charged once per request when `getActor` resolves the caller. Nothing is charged outside a scope. */
+/**
+ * Charged once per request when `getActor` resolves the caller. Nothing is
+ * charged outside a scope.
+ */
 export function createApiBudget(deps: { consume: Consume }) {
   const scopes = new AsyncLocalStorage<{ charged: boolean }>();
   return {

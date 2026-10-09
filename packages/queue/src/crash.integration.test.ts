@@ -58,7 +58,10 @@ function runtimeFor(
   return runtime;
 }
 
-/** Starts the child worker process and resolves once it reports that it holds `jobId`. */
+/**
+ * Starts the child worker process and resolves once it reports that it holds
+ * `jobId`.
+ */
 function childWorker(ns: RedisNamespace) {
   const child: ChildProcess = spawn(
     process.execPath,

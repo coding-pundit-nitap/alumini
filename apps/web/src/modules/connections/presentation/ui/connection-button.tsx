@@ -10,7 +10,10 @@ import { useConnectionAction } from "./use-connection-action";
 
 type Act = Promise<ActionResult<unknown>>;
 
-/** The server computes `status` from the viewer's side; every action is re-checked on the server. */
+/**
+ * The server computes `status` from the viewer's side; every action is
+ * re-checked on the server.
+ */
 export function ConnectionButton({
   targetUserId,
   status,

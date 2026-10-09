@@ -10,8 +10,8 @@ import type { MessagingObserver, MessagingStore } from "./messaging-store";
 import { parse } from "./validation";
 
 /**
- * Only members who can see the conversation may report; anyone else gets NOT_FOUND. Idempotent per
- * reporter and message.
+ * Only members who can see the conversation may report; anyone else gets
+ * NOT_FOUND. Idempotent per reporter and message.
  */
 export function createReportMessage(deps: {
   store: MessagingStore;

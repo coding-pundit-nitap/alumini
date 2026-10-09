@@ -71,7 +71,10 @@ const FEATURES: Feature[] = [
   },
 ];
 
-/** Editorial index of what members can do; every row leads to sign-up (or the app when signed in). */
+/**
+ * Editorial index of what members can do; every row leads to sign-up (or the
+ * app when signed in).
+ */
 export function Features({ signedIn }: { signedIn: boolean }) {
   const href = signedIn ? "/dashboard" : "/register";
   return (

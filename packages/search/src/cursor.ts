@@ -1,6 +1,9 @@
 import type { Sort } from "./query.ts";
 
-/** A tampered, foreign or stale cursor. The web layer maps it to `400 INVALID_CURSOR`. */
+/**
+ * A tampered, foreign or stale cursor. The web layer maps it to `400
+ * INVALID_CURSOR`.
+ */
 export class InvalidCursorError extends Error {
   constructor() {
     super("Invalid pagination cursor");
@@ -8,7 +11,10 @@ export class InvalidCursorError extends Error {
   }
 }
 
-/** The position after the last row of a page: its sort key (always text on the wire) and its id. */
+/**
+ * The position after the last row of a page: its sort key (always text on the
+ * wire) and its id.
+ */
 export type CursorPosition = { value: string; id: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -19,7 +25,10 @@ const VALUE_SHAPE: Record<Sort, RegExp> = {
   "-graduationYear": /^-?\d{1,5}$/,
 };
 
-/** Not signed: visibility is already applied, so a forged cursor can only skip rows, never reveal them. */
+/**
+ * Not signed: visibility is already applied, so a forged cursor can only skip
+ * rows, never reveal them.
+ */
 export function encodeCursor(sort: Sort, position: CursorPosition): string {
   return Buffer.from(
     JSON.stringify({ s: sort, v: position.value, i: position.id })

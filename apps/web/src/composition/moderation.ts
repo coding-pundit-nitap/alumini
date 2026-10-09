@@ -28,6 +28,9 @@ export const dismissReport = createDismissReport(deps);
 export const listReports = createListReports(deps);
 export const getReport = createGetReport(deps);
 
-/** Lets PATCH /reports/:id refuse a non-holder (404) before it validates the body. */
+/**
+ * Lets PATCH /reports/:id refuse a non-holder (404) before it validates the
+ * body.
+ */
 export const authorizeReportReview = (actor: Actor | null) =>
   authorize(actor, PERMISSIONS.REPORT_REVIEW, { concealed: true });

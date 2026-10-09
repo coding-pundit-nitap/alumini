@@ -2,9 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 /**
- * Filesystem architecture rules. Returns human-readable violations
- * relative to `srcRoot`; an empty list means the layout is sound.
- * Import direction is enforced by ESLint (packages/eslint-config/boundaries.mjs) and cycles/DAG by
+ * Filesystem architecture rules. Returns human-readable violations relative to
+ * `srcRoot`; an empty list means the layout is sound. Import direction is
+ * enforced by oxlint (apps/web/.oxlintrc.json) and cycles/DAG by
  * dependency-cruiser; this covers what neither can see.
  */
 
@@ -130,8 +130,8 @@ const QUEUE_IMPORT =
 const QUEUE_ADMIN_COMPOSITION = "composition/notifications.ts";
 
 /**
- * Web only produces outbox events; the queue and providers live in the worker. Hand-written because
- * dependency-cruiser does not support TypeScript 7.
+ * Web only produces outbox events; the queue and providers live in the worker.
+ * Hand-written because dependency-cruiser does not support TypeScript 7.
  */
 export function checkNoQueueImports(srcRoot: string): string[] {
   const violations: string[] = [];
@@ -169,7 +169,10 @@ export function checkNoWorkerImports(srcRoot: string): string[] {
 const UNBOUNDED_BODY_READ =
   /\b(?:request|req)\.(json|text|arrayBuffer|formData|blob)\(\)/;
 
-/** Bodies must be read through `readJson` / `readBodyText`, which check type and size. */
+/**
+ * Bodies must be read through `readJson` / `readBodyText`, which check type and
+ * size.
+ */
 export function checkBoundedBodyReads(srcRoot: string): string[] {
   const violations: string[] = [];
   for (const file of walk(path.join(srcRoot, "app")).files) {
@@ -186,8 +189,9 @@ export function checkBoundedBodyReads(srcRoot: string): string[] {
 }
 
 /**
- * Client `onSubmit` forms need `method="post"`: submitted before hydration, a GET would put passwords
- * in the URL. Forms with a Server Action `action` are exempt.
+ * Client `onSubmit` forms need `method="post"`: submitted before hydration, a
+ * GET would put passwords in the URL. Forms with a Server Action `action` are
+ * exempt.
  */
 export function checkClientFormsPost(srcRoot: string): string[] {
   const violations: string[] = [];

@@ -2,7 +2,10 @@ import type { ReactNode } from "react";
 
 import { legalConfig } from "@/config/legal";
 
-/** Shared body for the supporting pages (Terms, Contact): title, last-updated line, draft notice, sections. */
+/**
+ * Shared body for the supporting pages (Terms, Contact): title, last-updated
+ * line, draft notice, sections.
+ */
 export function LegalPage({
   title,
   intro,

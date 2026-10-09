@@ -7,7 +7,10 @@ import { useState, useTransition } from "react";
 
 import type { ActionResult } from "@/lib/action-result";
 
-/** The "Message" control on a member's profile: starts (or reopens) the 1:1 and goes to it. Every rule is re-checked on the server. */
+/**
+ * The "Message" control on a member's profile: starts (or reopens) the 1:1 and
+ * goes to it. Every rule is re-checked on the server.
+ */
 export function MessageButton({
   recipientId,
   startAction,

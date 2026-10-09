@@ -16,7 +16,10 @@ export function spotsLabel(remaining: number, capacity: number): string {
   return `${remaining} of ${capacity} spots left`;
 }
 
-/** Month ("Oct") and day ("1") of an instant in the event's own zone, for the calendar-page date block. */
+/**
+ * Month ("Oct") and day ("1") of an instant in the event's own zone, for the
+ * calendar-page date block.
+ */
 export function dateBlock(
   instant: Date,
   timeZone: string

@@ -61,7 +61,10 @@ const rejected = (n: number): VerificationRequestRecord => ({
   createdAt: new Date(1_700_000_000_000 + n * 1000),
 });
 
-/** A rate limiter that allows `max` calls per key, then denies with a retry hint. */
+/**
+ * A rate limiter that allows `max` calls per key, then denies with a retry
+ * hint.
+ */
 function countingLimiter(): RateLimiter & { calls: string[] } {
   const seen = new Map<string, number>();
   const calls: string[] = [];

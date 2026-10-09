@@ -4,7 +4,10 @@ import type { NotificationDomain } from "@nitap/jobs";
 import type { EmailDeliveryUpdater } from "../processors/email-send.ts";
 import type { DeliveryStore } from "./deliver.ts";
 
-/** The worker's copy of web's notification store. A missing EMAIL row on update is a no-op. */
+/**
+ * The worker's copy of web's notification store. A missing EMAIL row on update
+ * is a no-op.
+ */
 export function createPrismaDeliveryStore(
   prisma: PrismaClient
 ): DeliveryStore & EmailDeliveryUpdater {

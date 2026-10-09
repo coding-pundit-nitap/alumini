@@ -23,11 +23,17 @@ export type StorageEnv = {
   accessKeyId: string;
   secretAccessKey: string;
   forcePathStyle: boolean;
-  /** Same-origin path the app proxies to `endpoint` (apps/web app/storage/[...path] route); browser URLs use it. */
+  /**
+   * Same-origin path the app proxies to `endpoint` (apps/web
+   * app/storage/[...path] route); browser URLs use it.
+   */
   publicPath?: string;
 };
 
-/** Names the offending variables, never their values (the access key and secret are credentials). */
+/**
+ * Names the offending variables, never their values (the access key and secret
+ * are credentials).
+ */
 export function loadStorageEnv(
   source: Record<string, string | undefined>
 ): StorageEnv {

@@ -19,8 +19,9 @@ type ErrorContext = {
 };
 
 /**
- * Reports errors Next.js catches itself (renders, Server Actions, unwrapped Route Handlers). The
- * `digest` is logged with `request_id` so the id a user sees leads to the failing request.
+ * Reports errors Next.js catches itself (renders, Server Actions, unwrapped
+ * Route Handlers). The `digest` is logged with `request_id` so the id a user
+ * sees leads to the failing request.
  */
 export async function reportRequestError(
   error: unknown,

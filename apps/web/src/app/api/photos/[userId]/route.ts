@@ -7,7 +7,10 @@ import { getActor } from "@/modules/auth";
 
 const PHOTO_URL_TTL_SECONDS = 60;
 
-/** Re-checks visibility on every request and redirects to a short-lived presigned URL. */
+/**
+ * Re-checks visibility on every request and redirects to a short-lived
+ * presigned URL.
+ */
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ userId: string }> }

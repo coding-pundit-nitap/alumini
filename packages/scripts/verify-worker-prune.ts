@@ -3,7 +3,10 @@ import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-/** Checks that `turbo prune @nitap/worker` includes the worker's packages and excludes web and ui. */
+/**
+ * Checks that `turbo prune @nitap/worker` includes the worker's packages and
+ * excludes web and ui.
+ */
 const out = mkdtempSync(path.join(tmpdir(), "worker-prune-"));
 const mustContain = [
   "apps/worker",

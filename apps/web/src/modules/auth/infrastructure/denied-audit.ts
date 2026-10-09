@@ -7,8 +7,8 @@ type DeniedEvent = Extract<AuthzEvent, { outcome: "denied" }>;
 const ADMIN_TIER: ReadonlySet<string> = new Set(ADMIN_TIER_PERMISSIONS);
 
 /**
- * The one non-transactional audit: `authorize()` is synchronous, so writes are fire-and-forget,
- * bounded by `maxInFlight`, and never throw into the request.
+ * The one non-transactional audit: `authorize()` is synchronous, so writes are
+ * fire-and-forget, bounded by `maxInFlight`, and never throw into the request.
  */
 export function createDeniedAudit(deps: {
   write: (entry: AuditEntry) => Promise<void>;

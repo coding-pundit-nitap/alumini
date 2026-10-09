@@ -108,9 +108,8 @@ async function stopAll() {
   }
   await sleep(500);
 }
-process.on("SIGINT", async () => {
-  await stopAll();
-  process.exit(130);
+process.on("SIGINT", () => {
+  void stopAll().finally(() => process.exit(130));
 });
 
 function redisDb1(value: string | undefined) {

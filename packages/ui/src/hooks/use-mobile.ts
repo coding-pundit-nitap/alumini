@@ -9,7 +9,10 @@ function subscribe(onChange: () => void) {
   return () => mql.removeEventListener("change", onChange);
 }
 
-/** True below the mobile breakpoint; false during SSR. A store subscription, not state set in an effect. */
+/**
+ * True below the mobile breakpoint; false during SSR. A store subscription, not
+ * state set in an effect.
+ */
 export function useIsMobile() {
   return React.useSyncExternalStore(
     subscribe,

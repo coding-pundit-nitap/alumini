@@ -60,7 +60,10 @@ export function FormField({
   );
 }
 
-/** A form-level message: an error under the fields, or a confirmation replacing them. */
+/**
+ * A form-level message: an error under the fields, or a confirmation replacing
+ * them.
+ */
 export function FormMessage({
   tone,
   children,

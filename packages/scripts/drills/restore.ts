@@ -62,7 +62,10 @@ const env = {
   BACKUP_METRICS_DIR: path.join(work, "metrics"),
 };
 
-/** Runs a command in the drill directory, output to the console. Throws on a non-zero exit. */
+/**
+ * Runs a command in the drill directory, output to the console. Throws on a
+ * non-zero exit.
+ */
 function run(
   cmd: string,
   cmdArgs: string[],

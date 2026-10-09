@@ -9,8 +9,8 @@ import type { ModerationStore } from "./moderation-store";
 import { refuse } from "./refusal";
 
 /**
- * OPEN -> UNDER_REVIEW only; `resolvedById` is reserved for resolve/dismiss. No claiming your own
- * report or content.
+ * OPEN -> UNDER_REVIEW only; `resolvedById` is reserved for resolve/dismiss. No
+ * claiming your own report or content.
  */
 export function createClaimReport(deps: {
   store: ModerationStore;

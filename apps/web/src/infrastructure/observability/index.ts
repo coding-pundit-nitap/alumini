@@ -18,7 +18,10 @@ export type { Logger, Metrics, MetricLabels } from "@nitap/observability";
 // `env` is typed as possibly partial (validation failure throws on the server), so default NODE_ENV here.
 const nodeEnv = env.NODE_ENV ?? "development";
 
-/** The process-wide logger for the web process. The worker builds its own with `service: "worker"`. */
+/**
+ * The process-wide logger for the web process. The worker builds its own with
+ * `service: "worker"`.
+ */
 export const logger = createLogger({
   level: env.LOG_LEVEL ?? (nodeEnv === "test" ? "silent" : "info"),
   service: "web",

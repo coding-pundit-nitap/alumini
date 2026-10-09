@@ -47,8 +47,8 @@ function errorFor(block: SubmissionBlock): Error {
 }
 
 /**
- * The applicant is always the caller. Eligibility is checked before rate limits so a blocked account
- * spends none; a unique index catches concurrent submits.
+ * The applicant is always the caller. Eligibility is checked before rate limits
+ * so a blocked account spends none; a unique index catches concurrent submits.
  */
 export function createSubmitVerificationRequest(deps: {
   store: VerificationStore;

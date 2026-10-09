@@ -13,7 +13,10 @@ function initials(name: string) {
     .join("");
 }
 
-/** A person's photo, or their initials on a stable tint when there is no photo (or it fails to load). */
+/**
+ * A person's photo, or their initials on a stable tint when there is no photo
+ * (or it fails to load).
+ */
 function InitialsAvatar({
   name,
   seed,

@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-/** Every connection use case against the real authorizer: 401, 403, account states and IDOR. */
+/**
+ * Every connection use case against the real authorizer: 401, 403, account
+ * states and IDOR.
+ */
 import { AuthorizationError } from "@/lib/errors";
 import { createAuthorization } from "@/modules/auth/application/authorize";
 import type { Actor } from "@/modules/auth";

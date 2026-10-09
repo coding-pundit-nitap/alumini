@@ -41,7 +41,10 @@ export const SECTION_COPY: Record<
   },
 };
 
-/** "FULL_TIME" → "Full time": enum keys and role names come from the database, not from code. */
+/**
+ * "FULL_TIME" → "Full time": enum keys and role names come from the database,
+ * not from code.
+ */
 const humanize = (key: string) =>
   key.charAt(0) + key.slice(1).toLowerCase().replaceAll("_", " ");
 

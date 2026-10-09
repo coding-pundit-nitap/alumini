@@ -13,7 +13,10 @@ const eventLifecyclePayload = z
   .strict();
 export type EventLifecyclePayload = z.infer<typeof eventLifecyclePayload>;
 
-/** A registration changed: the consumer looks the row up for its state, the event never carries it. */
+/**
+ * A registration changed: the consumer looks the row up for its state, the
+ * event never carries it.
+ */
 const eventRegistrationPayload = z
   .object({
     v: z.literal(1),

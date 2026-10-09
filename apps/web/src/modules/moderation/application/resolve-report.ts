@@ -14,7 +14,10 @@ import type {
 import { refuse } from "./refusal";
 import { parse } from "./validation";
 
-/** What resolving does to the reported thing. Exhaustive: a new target type fails to compile. */
+/**
+ * What resolving does to the reported thing. Exhaustive: a new target type
+ * fails to compile.
+ */
 async function applyResolution(
   tx: ModerationTx,
   report: ReportRow,
@@ -61,8 +64,9 @@ async function applyResolution(
 }
 
 /**
- * The status change and its side effect share one transaction. Resolving soft-deletes a post or
- * comment, hides a message, or changes nothing else for a user report.
+ * The status change and its side effect share one transaction. Resolving
+ * soft-deletes a post or comment, hides a message, or changes nothing else for
+ * a user report.
  */
 export function createResolveReport(deps: {
   store: ModerationStore;

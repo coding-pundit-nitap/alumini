@@ -4,11 +4,13 @@ import path from "node:path";
 import pg from "pg";
 
 /**
- * Fails when the migrations and schema.prisma describe different databases: replays every migration
- * into a shadow database and diffs it against the schema.
+ * Fails when the migrations and schema.prisma describe different databases:
+ * replays every migration into a shadow database and diffs it against the
+ * schema.
  *
- * The shadow database is SHADOW_DATABASE_URL, or `<db>_shadow` on a local DATABASE_URL host.
- * `--skip-unreachable` passes with a warning when Postgres isn't running.
+ * The shadow database is SHADOW_DATABASE_URL, or `<db>_shadow` on a local
+ * DATABASE_URL host. `--skip-unreachable` passes with a warning when Postgres
+ * isn't running.
  */
 const root = path.resolve(import.meta.dirname, "../..");
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);

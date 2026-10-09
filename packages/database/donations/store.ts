@@ -3,11 +3,17 @@ import type { PrismaClient } from "../generated/prisma/client.ts";
 
 export type StalePledge = { id: string };
 
-/** Each flip and its `donation.not-received` event commit together; a row that already moved is a no-op. */
+/**
+ * Each flip and its `donation.not-received` event commit together; a row that
+ * already moved is a no-op.
+ */
 export type PledgeExpiryStore = {
   /** PLEDGED rows with no reference created before `before`, oldest first. */
   listStale(before: Date, limit: number): Promise<StalePledge[]>;
-  /** True if this row was still a stale open pledge and is now NOT_RECEIVED (note "expired"). */
+  /**
+   * True if this row was still a stale open pledge and is now NOT_RECEIVED
+   * (note "expired").
+   */
   expireOne(id: string, before: Date, now: Date): Promise<boolean>;
 };
 

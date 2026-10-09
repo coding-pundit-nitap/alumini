@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-/** One catalogue entry, injected from `@nitap/database/retention` by composition. */
+/**
+ * One catalogue entry, injected from `@nitap/database/retention` by
+ * composition.
+ */
 export type RetentionRule = {
   defaultDays: number;
   minDays: number;
@@ -20,7 +23,10 @@ export type RetentionSettingView = RetentionRule & {
   updatedBy: { id: string; name: string } | null;
 };
 
-/** Bounds come from the category's rule; a blank sign-off means "still a placeholder". */
+/**
+ * Bounds come from the category's rule; a blank sign-off means "still a
+ * placeholder".
+ */
 export const retentionInputSchema = (rule: RetentionRule) =>
   z
     .object({

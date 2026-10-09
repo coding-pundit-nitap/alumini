@@ -29,8 +29,8 @@ const OUTCOME: Record<MentorshipAction, MentorshipOutcome> = {
 };
 
 /**
- * The domain table decides and a guarded update makes it stick. Accept locks the mentor's profile so
- * concurrent accepts cannot exceed `max_mentees`.
+ * The domain table decides and a guarded update makes it stick. Accept locks
+ * the mentor's profile so concurrent accepts cannot exceed `max_mentees`.
  */
 export function createTransitionMentorship(deps: {
   store: MentorshipStore;

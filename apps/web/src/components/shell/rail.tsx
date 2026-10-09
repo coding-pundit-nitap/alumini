@@ -24,7 +24,10 @@ import { UserMenu } from "./user-menu";
 
 const FOCUS = "focus-visible:ring-ring outline-none focus-visible:ring-2";
 
-/** Desktop/tablet rail: 248px with labels at lg, 72px icons with tooltips at md, hidden below. */
+/**
+ * Desktop/tablet rail: 248px with labels at lg, 72px icons with tooltips at md,
+ * hidden below.
+ */
 export function Rail({
   nav,
   user,

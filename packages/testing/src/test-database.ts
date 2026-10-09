@@ -24,10 +24,16 @@ export function testDatabaseName(): string {
   return `test_${randomUUID().replace(/-/g, "")}`;
 }
 
-/** Clones the migrated template. Safe concurrently, since nothing connects to the template after setup. */
+/**
+ * Clones the migrated template. Safe concurrently, since nothing connects to
+ * the template after setup.
+ */
 export async function createTestDatabase(
   options: {
-    /** A name chosen in advance, for code that reads the database URL at import time (see `testDatabaseName`). */
+    /**
+     * A name chosen in advance, for code that reads the database URL at import
+     * time (see `testDatabaseName`).
+     */
     name?: string;
   } = {}
 ): Promise<TestDatabase> {

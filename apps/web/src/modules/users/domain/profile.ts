@@ -30,7 +30,10 @@ export type ProfileRecord = {
   department: string | null;
   degree: string | null;
   graduationYear: number | null;
-  /** Set once a READY upload is attached; the domain never sees a storage key, only presence. */
+  /**
+   * Set once a READY upload is attached; the domain never sees a storage key,
+   * only presence.
+   */
   photoUploadId: string | null;
   experience: ExperienceItem[];
   education: EducationItem[];
@@ -39,13 +42,19 @@ export type ProfileRecord = {
   settings: VisibilitySettings;
 };
 
-/** What a viewer may see. Hidden sections are omitted keys, never nulls, so a page cannot render "empty" for a hidden field. */
+/**
+ * What a viewer may see. Hidden sections are omitted keys, never nulls, so a
+ * page cannot render "empty" for a hidden field.
+ */
 export type ProfileView = {
   userId: string;
   fullName: string;
   headline: string | null;
-  /** Always the stable app path `/api/photos/<userId>`, never a raw storage URL: the route
-   * re-checks visibility and issues a fresh presigned GET on every read. */
+  /**
+   * Always the stable app path `/api/photos/<userId>`, never a raw storage URL:
+   * the route re-checks visibility and issues a fresh presigned GET on every
+   * read.
+   */
   photoUrl?: string;
   location?: string | null;
   bio?: string | null;
@@ -60,7 +69,10 @@ export type ProfileView = {
   links?: Shown<LinkItem>[];
 };
 
-/** Null means not found. Guests and unverified accounts get name, headline and possibly location. */
+/**
+ * Null means not found. Guests and unverified accounts get name, headline and
+ * possibly location.
+ */
 export function projectProfile(
   profile: ProfileRecord,
   viewer: Viewer

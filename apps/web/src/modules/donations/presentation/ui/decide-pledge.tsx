@@ -26,7 +26,10 @@ export type NotReceivedAction = (
 const SELECT_CLASS =
   "border-input bg-background h-9 w-full rounded-lg border px-2.5 text-sm";
 
-/** Confirm against the statement's reference (prefilled with the donor's), or mark not received. */
+/**
+ * Confirm against the statement's reference (prefilled with the donor's), or
+ * mark not received.
+ */
 export function DecidePledge(props: {
   donation: DonationWithDonor;
   confirm: ConfirmAction;

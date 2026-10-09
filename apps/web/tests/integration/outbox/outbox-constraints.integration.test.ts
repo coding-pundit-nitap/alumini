@@ -8,8 +8,8 @@ import {
 } from "@nitap/testing";
 
 /**
- * For each constraint: a violation is rejected naming that constraint, and with it dropped the same
- * write succeeds.
+ * For each constraint: a violation is rejected naming that constraint, and with
+ * it dropped the same write succeeds.
  */
 type Case = {
   name: string;

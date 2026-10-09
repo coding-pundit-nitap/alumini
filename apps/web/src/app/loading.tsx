@@ -1,6 +1,9 @@
 import { DawnMark } from "@/components/brand/dawn-mark";
 
-/** Root fallback: covers public, (app) and admin routes, so it carries no site chrome. */
+/**
+ * Root fallback: covers public, (app) and admin routes, so it carries no site
+ * chrome.
+ */
 export default function Loading() {
   return (
     <div

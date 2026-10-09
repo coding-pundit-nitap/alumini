@@ -20,7 +20,10 @@ export function monthYear(isoDate: string): string {
   return label ? `${label} ${year}` : isoDate;
 }
 
-/** Whole months from one ISO date to another (or to `now`), counting both end months, LinkedIn-style. */
+/**
+ * Whole months from one ISO date to another (or to `now`), counting both end
+ * months, LinkedIn-style.
+ */
 export function duration(
   startIso: string,
   endIso: string | null,
@@ -42,7 +45,10 @@ export function duration(
     .join(" ");
 }
 
-/** "https://www.github.com/asha/" → "github.com/asha", for showing a link compactly. */
+/**
+ * "https://www.github.com/asha/" → "github.com/asha", for showing a link
+ * compactly.
+ */
 export function hostPath(url: string): string {
   try {
     const u = new URL(url);

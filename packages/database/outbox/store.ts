@@ -7,11 +7,17 @@ import type {
 import type { PrismaClient } from "../generated/prisma/client.ts";
 
 export type OutboxStoreOptions = {
-  /** Upper bound for one relay transaction (it holds row locks while it enqueues). */
+  /**
+   * Upper bound for one relay transaction (it holds row locks while it
+   * enqueues).
+   */
   transactionTimeoutMs?: number;
 };
 
-/** Quarantined rows are left alone: they were never processed, and the operator releases them explicitly. */
+/**
+ * Quarantined rows are left alone: they were never processed, and the operator
+ * releases them explicitly.
+ */
 const settleable = (before: Date, type?: string) => ({
   publishedAt: null,
   failedAt: null,

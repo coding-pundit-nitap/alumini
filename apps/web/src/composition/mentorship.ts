@@ -37,7 +37,10 @@ const store = createPrismaMentorshipStore({
   runner: transactionRunner,
   outbox,
 });
-/** One log line and one counter per committed outcome (ids only: never a name or a message). */
+/**
+ * One log line and one counter per committed outcome (ids only: never a name or
+ * a message).
+ */
 const observe: MentorshipObserver = (outcome, mentorshipId) => {
   logger.info(`mentorship.${outcome}`, { metadata: { mentorshipId } });
   getMetrics().increment("mentorship_total", { outcome });

@@ -14,7 +14,10 @@ export type RetryPolicy = {
 
 export type JobDefinition<TName extends string = string, TPayload = unknown> = {
   readonly name: TName;
-  /** Payload version this definition validates. A new payload shape is a new version, never an edit. */
+  /**
+   * Payload version this definition validates. A new payload shape is a new
+   * version, never an edit.
+   */
   readonly version: number;
   readonly queue: QueueName;
   readonly schema: ZodType<TPayload>;
@@ -25,14 +28,18 @@ export type JobDefinition<TName extends string = string, TPayload = unknown> = {
 };
 
 /**
- * ~10-12 round trips per recipient at ~5 ms each, so 120 s covers ~2,000 recipients. Larger sets time
- * out and the retry skips already-delivered recipients.
+ * ~10-12 round trips per recipient at ~5 ms each, so 120 s covers ~2,000
+ * recipients. Larger sets time out and the retry skips already-delivered
+ * recipients.
  */
 export const FANOUT_TIMEOUT_MS = 120_000;
 
 export type PayloadOf<D> = D extends JobDefinition<string, infer P> ? P : never;
 
-/** Validates the definition at load time so a bad job fails on startup, not on the first message. */
+/**
+ * Validates the definition at load time so a bad job fails on startup, not on
+ * the first message.
+ */
 export function defineJob<TName extends string, TPayload>(
   definition: JobDefinition<TName, TPayload>
 ): JobDefinition<TName, TPayload> {

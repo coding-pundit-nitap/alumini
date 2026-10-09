@@ -20,7 +20,10 @@ type State = {
   events: { type: string; payload: unknown }[];
 };
 
-/** A throwing transaction restores the previous state. `failOn` makes one operation throw. */
+/**
+ * A throwing transaction restores the previous state. `failOn` makes one
+ * operation throw.
+ */
 export function createFakeVerificationStore(
   seed: { accounts: AccountRecord[]; requests?: VerificationRequestRecord[] },
   options: { failOn?: keyof VerificationTx } = {}

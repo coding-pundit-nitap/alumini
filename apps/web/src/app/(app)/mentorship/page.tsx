@@ -45,7 +45,10 @@ const LABELS: Record<MentorshipTab, string> = {
   settings: "Your mentor settings",
 };
 
-/** The Requests badge reads at most this many; beyond it the exact number is unknown ("50+"). */
+/**
+ * The Requests badge reads at most this many; beyond it the exact number is
+ * unknown ("50+").
+ */
 const BADGE_CAP = 50;
 
 const NEXT_LINK = buttonVariants({

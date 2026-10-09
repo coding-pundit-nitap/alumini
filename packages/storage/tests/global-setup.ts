@@ -1,4 +1,7 @@
-/** The storage integration tests need a real S3-compatible endpoint (MinIO in dev/CI). Fail fast. */
+/**
+ * The storage integration tests need a real S3-compatible endpoint (MinIO in
+ * dev/CI). Fail fast.
+ */
 export default function setup() {
   const missing = [
     "S3_ENDPOINT",

@@ -12,7 +12,10 @@ import { invalid, readJson } from "../../../_lib/request";
 
 const bodySchema = z.object({ notificationId: z.uuid() }).strict();
 
-/** POST /api/v1/admin/notifications/replay — re-queues one notification's failed email (notification.replay, audited). Counts only. */
+/**
+ * POST /api/v1/admin/notifications/replay — re-queues one notification's failed
+ * email (notification.replay, audited). Counts only.
+ */
 export const POST = routeHandler(async (request) => {
   assertSameOrigin(request);
   const actor = await getActor();

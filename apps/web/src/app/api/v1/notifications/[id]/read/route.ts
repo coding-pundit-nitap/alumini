@@ -10,7 +10,10 @@ import { uuidParam } from "../../../_lib/request";
 
 type Params = { params: Promise<{ id: string }> };
 
-/** POST /api/v1/notifications/:id/read — idempotent; someone else's or an unknown id is a 404. */
+/**
+ * POST /api/v1/notifications/:id/read — idempotent; someone else's or an
+ * unknown id is a 404.
+ */
 export const POST = routeHandler(async (request, ctx: Params) => {
   assertSameOrigin(request);
   const actor = await getActor();

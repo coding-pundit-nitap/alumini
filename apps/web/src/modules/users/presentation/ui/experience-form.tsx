@@ -17,7 +17,10 @@ export type ExperienceDefaults = Omit<ExperienceInput, "isCurrent"> & {
   isCurrent: boolean;
 };
 
-/** The end date is disabled while "current role" is checked, matching the server rule. */
+/**
+ * The end date is disabled while "current role" is checked, matching the server
+ * rule.
+ */
 export function ExperienceForm({
   action,
   id,

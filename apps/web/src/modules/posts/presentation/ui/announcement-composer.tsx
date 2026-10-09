@@ -33,7 +33,10 @@ type Publish = (input: {
   content: string;
 }) => Promise<ActionResult<{ postId: string }>>;
 
-/** Title + Markdown body with a preview; publishing asks for confirmation because it emails everyone. */
+/**
+ * Title + Markdown body with a preview; publishing asks for confirmation
+ * because it emails everyone.
+ */
 export function AnnouncementComposer({ onPublish }: { onPublish: Publish }) {
   const router = useRouter();
   const [title, setTitle] = useState("");

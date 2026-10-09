@@ -23,14 +23,20 @@ type ConversationRaw = {
   lastHidden: boolean | null;
 };
 
-/** A 1:1 is hidden from the viewer when the OTHER member blocked them (the blocked party learns nothing). */
+/**
+ * A 1:1 is hidden from the viewer when the OTHER member blocked them (the
+ * blocked party learns nothing).
+ */
 const hiddenFrom = (viewer: string) => Prisma.sql`(NOT c.is_group AND EXISTS (
   SELECT 1 FROM "conversation_participant" o
   WHERE o.conversation_id = c.id AND o.user_id <> ${uuid(viewer)}
     AND EXISTS (SELECT 1 FROM "connection" bc WHERE bc.state = 'BLOCKED' AND bc.blocked_by_id = o.user_id
       AND bc.user_a_id = LEAST(o.user_id, ${uuid(viewer)}) AND bc.user_b_id = GREATEST(o.user_id, ${uuid(viewer)}))))`;
 
-/** Previews use the same block filter as `listMessages`, so they never show what the thread hides. */
+/**
+ * Previews use the same block filter as `listMessages`, so they never show what
+ * the thread hides.
+ */
 const select = (
   viewer: string
 ) => Prisma.sql`SELECT c.id, c.is_group AS "isGroup", c.title,
@@ -49,7 +55,10 @@ const lastMessageOf = (r: ConversationRaw) =>
     ? { senderId: r.lastSenderId, body: r.lastHidden ? null : r.lastBody }
     : null;
 
-/** Reads for the inbox and the thread. Writes live in `prisma-messaging-store.ts`. */
+/**
+ * Reads for the inbox and the thread. Writes live in
+ * `prisma-messaging-store.ts`.
+ */
 export function createPrismaMessagingQueries(
   prisma: PrismaClient
 ): MessagingQueries {

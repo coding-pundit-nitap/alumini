@@ -5,7 +5,10 @@ import type { DeliverNotification } from "../notifications/deliver.ts";
 
 type Deps = {
   deliver: DeliverNotification;
-  /** False when the announcement is gone or removed: nobody is notified about removed content. */
+  /**
+   * False when the announcement is gone or removed: nobody is notified about
+   * removed content.
+   */
   postIsLive: (postId: string) => Promise<boolean>;
   /** VERIFIED members ordered by id, strictly after `afterId`, at most `limit`. */
   listRecipients: (
@@ -16,8 +19,9 @@ type Deps = {
 };
 
 /**
- * Every verified member except the author. One job walks all members; deliver() dedupes on retry.
- * Split into per-batch jobs if a walk regularly exceeds FANOUT_TIMEOUT_MS.
+ * Every verified member except the author. One job walks all members; deliver()
+ * dedupes on retry. Split into per-batch jobs if a walk regularly exceeds
+ * FANOUT_TIMEOUT_MS.
  */
 export function createAnnouncementPublishedProcessor(
   deps: Deps

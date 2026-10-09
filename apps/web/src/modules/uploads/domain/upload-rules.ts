@@ -15,7 +15,10 @@ export type UploadPurpose = "PROFILE_PHOTO";
 export type UploadRuleCode =
   "UPLOAD_TYPE_NOT_ALLOWED" | "UPLOAD_TOO_LARGE" | "UPLOAD_INVALID_SIZE";
 
-/** Carries a `code` so the application layer maps to the exact error catalogue entry, never by sniffing the message. */
+/**
+ * Carries a `code` so the application layer maps to the exact error catalogue
+ * entry, never by sniffing the message.
+ */
 export class UploadNotAllowedError extends Error {
   readonly code: UploadRuleCode;
 
@@ -26,7 +29,10 @@ export class UploadNotAllowedError extends Error {
   }
 }
 
-/** Rejects anything the client-declared type/size make already invalid, before a row is ever created. */
+/**
+ * Rejects anything the client-declared type/size make already invalid, before a
+ * row is ever created.
+ */
 export function assertUploadable(input: {
   purpose: UploadPurpose;
   mime: string;

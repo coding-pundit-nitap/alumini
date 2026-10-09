@@ -30,8 +30,8 @@ export type DirectoryPage = {
 };
 
 /**
- * Visibility is enforced in the search adapter's query. No totals or counts are returned, so private
- * profiles cannot leak through them.
+ * Visibility is enforced in the search adapter's query. No totals or counts are
+ * returned, so private profiles cannot leak through them.
  */
 export function createSearchDirectory(deps: {
   authorize: Authorize;

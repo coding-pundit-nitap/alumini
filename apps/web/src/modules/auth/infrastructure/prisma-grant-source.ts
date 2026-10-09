@@ -7,8 +7,8 @@ import type { Grant } from "../domain/actor";
 import { isPermission } from "../domain/permission";
 
 /**
- * Role permissions plus unexpired direct grants. Names are checked against the registry; unknown ones
- * are logged and dropped.
+ * Role permissions plus unexpired direct grants. Names are checked against the
+ * registry; unknown ones are logged and dropped.
  */
 export function createPrismaGrantSource(prisma: PrismaClient): GrantSource {
   return {

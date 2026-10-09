@@ -8,7 +8,10 @@ import {
   bootstrapSuperAdmin,
 } from "@nitap/database/seed";
 
-/** Creates the first super admin (`pnpm admin:bootstrap`). Refuses if one already exists. */
+/**
+ * Creates the first super admin (`pnpm admin:bootstrap`). Refuses if one
+ * already exists.
+ */
 async function main() {
   const email = process.env.BOOTSTRAP_ADMIN_EMAIL;
   const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;

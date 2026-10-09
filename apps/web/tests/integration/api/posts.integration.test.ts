@@ -102,7 +102,10 @@ describe("GET /api/v1/posts and /api/v1/posts/:id/comments", () => {
     await db.prisma.post.deleteMany();
   });
 
-  /** A real VERIFIED member holding STUDENT's baseline grants (POST_CREATE/POST_INTERACT), off seeded rows. */
+  /**
+   * A real VERIFIED member holding STUDENT's baseline grants
+   * (POST_CREATE/POST_INTERACT), off seeded rows.
+   */
   async function member(role: RoleName = "STUDENT"): Promise<Actor> {
     n += 1;
     const user = await db.prisma.user.create({
@@ -306,7 +309,10 @@ describe("GET /api/v1/posts and /api/v1/posts/:id/comments", () => {
   });
 
   describe("GET /api/uploads/:id", () => {
-    /** A READY upload row (ck_upload_object_key_prefix requires avatars/ for READY). */
+    /**
+     * A READY upload row (ck_upload_object_key_prefix requires avatars/ for
+     * READY).
+     */
     function readyUpload(ownerId: string) {
       return db.prisma.upload.create({
         data: {

@@ -8,7 +8,10 @@ import { NotFoundError } from "@/lib/errors";
 import { isUuid } from "@/modules/admin";
 import { getActor } from "@/modules/auth";
 
-/** Claim from the report page (ConfirmButton posts FormData and refreshes on success). */
+/**
+ * Claim from the report page (ConfirmButton posts FormData and refreshes on
+ * success).
+ */
 export async function claimReportFormAction(
   form: FormData
 ): Promise<ActionResult<unknown>> {

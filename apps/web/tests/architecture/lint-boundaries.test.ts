@@ -1,31 +1,69 @@
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import { describe, it, expect, beforeAll } from "vitest";
-import { ESLint } from "eslint";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 
 /**
- * The layer rules (`packages/eslint-config/boundaries.mjs`), proven by linting snippets
- * placed at layer paths. A rule that cannot fail is not a rule: each ban has a case that must be reported.
+ * The layer rules (the `no-restricted-imports` overrides in `.oxlintrc.json`),
+ * proven by linting snippets placed at layer paths. A rule that cannot fail is
+ * not a rule: each ban has a case that must be reported.
  */
-const cwd = path.resolve(import.meta.dirname, "../..");
-let eslint: ESLint;
+const appRoot = path.resolve(import.meta.dirname, "../..");
+const oxlint = path.join(appRoot, "node_modules/.bin/oxlint");
+let sandbox: string;
 
 beforeAll(() => {
-  eslint = new ESLint({ cwd });
+  // Override globs resolve against the config's folder, so a copy in a temp folder lints snippets at the
+  // same relative paths without writing into src/. JS plugins are dropped: only the boundary rules matter.
+  sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "lint-boundaries-"));
+  const config = JSON.parse(
+    fs.readFileSync(path.join(appRoot, ".oxlintrc.json"), "utf8")
+  ) as {
+    jsPlugins?: unknown;
+    rules?: Record<string, unknown>;
+    $schema?: unknown;
+  };
+  delete config.jsPlugins;
+  delete config.$schema;
+  for (const rule of Object.keys(config.rules ?? {}))
+    if (rule.startsWith("turbo/")) delete config.rules?.[rule];
+  fs.writeFileSync(
+    path.join(sandbox, ".oxlintrc.json"),
+    JSON.stringify(config)
+  );
 });
 
+afterAll(() => {
+  fs.rmSync(sandbox, { recursive: true, force: true });
+});
+
+type Diagnostic = { code: string; message: string };
+
 async function violations(filePath: string, code: string) {
-  const [result] = await eslint.lintText(code, {
-    filePath: path.join(cwd, filePath),
-  });
-  // Fail loudly: a missing result would make every "no violations" assertion pass for the wrong reason.
-  if (!result) throw new Error(`ESLint returned no result for ${filePath}`);
-  return result.messages
+  const file = path.join(sandbox, filePath);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, code);
+  let output: string;
+  try {
+    output = execFileSync(
+      oxlint,
+      ["-c", ".oxlintrc.json", "-f", "json", filePath],
+      { cwd: sandbox, encoding: "utf8" }
+    );
+  } catch (error) {
+    output = (error as { stdout?: string }).stdout ?? "";
+  } finally {
+    fs.rmSync(file);
+  }
+  const { diagnostics } = JSON.parse(output) as { diagnostics: Diagnostic[] };
+  return diagnostics
     .filter(
-      (m) =>
-        m.ruleId === "no-restricted-imports" ||
-        m.ruleId === "no-restricted-globals"
+      (d) =>
+        d.code === "eslint(no-restricted-imports)" ||
+        d.code === "eslint(no-restricted-globals)"
     )
-    .map((m) => m.message);
+    .map((d) => d.message);
 }
 
 const DOMAIN = "src/modules/mentorship/domain/entities/mentorship.ts";

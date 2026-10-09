@@ -18,7 +18,10 @@ export type JobFilterValues = {
   location?: string;
 };
 
-/** `/jobs` with these filters (empty ones dropped). Never carries a cursor, so it starts from the first page. */
+/**
+ * `/jobs` with these filters (empty ones dropped). Never carries a cursor, so
+ * it starts from the first page.
+ */
 export function jobsHref(filters: JobFilterValues) {
   const qs = new URLSearchParams(
     Object.entries(filters).filter((e): e is [string, string] => !!e[1])
@@ -29,7 +32,10 @@ export function jobsHref(filters: JobFilterValues) {
 const PILL =
   "bg-muted/60 focus-within:ring-ring/60 flex h-10 items-center gap-2 rounded-full px-4 focus-within:ring-2";
 
-/** A plain GET form: the URL is the state, so it works without JavaScript. Submitting drops `cursor`. */
+/**
+ * A plain GET form: the URL is the state, so it works without JavaScript.
+ * Submitting drops `cursor`.
+ */
 export function JobFilters({ filters }: { filters: JobFilterValues }) {
   const types: (EmploymentType | undefined)[] = [
     undefined,

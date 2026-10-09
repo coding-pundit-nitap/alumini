@@ -14,7 +14,10 @@ export type PendingPage = {
   nextCursor: string | null;
 };
 
-/** Pending requests, oldest first. 404 without `alumni.verify`, so the queue isn't revealed. */
+/**
+ * Pending requests, oldest first. 404 without `alumni.verify`, so the queue
+ * isn't revealed.
+ */
 export function createListPendingVerificationRequests(deps: {
   store: VerificationStore;
   authorize: Authorization["authorize"];

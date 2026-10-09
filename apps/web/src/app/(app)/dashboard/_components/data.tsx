@@ -40,8 +40,9 @@ const loadMentorProfile = cache((actor: Actor) =>
 );
 
 /**
- * Each count reads at most 50 rows and shows "50+" at the cap. A failed read is left out of its
- * tile and reported through `failed` rather than shown as zero.
+ * Each count reads at most 50 rows and shows "50+" at the cap. A failed read is
+ * left out of its tile and reported through `failed` rather than shown as
+ * zero.
  */
 const loadCounts = cache(async (actor: Actor) => {
   const [
@@ -172,7 +173,10 @@ export async function Events({ actor }: { actor: Actor }) {
   return <EventList events={result.value.data} />;
 }
 
-/** Mentors see their mentees; members who can request mentorship see suggested mentors. */
+/**
+ * Mentors see their mentees; members who can request mentorship see suggested
+ * mentors.
+ */
 export async function RoleBlock({ actor }: { actor: Actor }) {
   const mentor = await loadMentorProfile(actor);
   if (mentor.status === "ok" && mentor.value) {
@@ -242,7 +246,10 @@ export async function RoleBlock({ actor }: { actor: Actor }) {
   return null;
 }
 
-/** Only when the profile is incomplete and the attention, jobs and events blocks are all empty. */
+/**
+ * Only when the profile is incomplete and the attention, jobs and events blocks
+ * are all empty.
+ */
 export async function FirstRun({ actor }: { actor: Actor }) {
   const [profile, jobs, events, attention] = await Promise.all([
     loadProfile(actor),

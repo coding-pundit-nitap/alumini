@@ -3,11 +3,20 @@ import type { PrismaClient } from "../generated/prisma/client.ts";
 
 export type JobExpireCandidate = { id: string; postedBy: string };
 
-/** `expireOne` flips the row and writes `job.expired` in one transaction; a row no longer PUBLISHED is a no-op. */
+/**
+ * `expireOne` flips the row and writes `job.expired` in one transaction; a row
+ * no longer PUBLISHED is a no-op.
+ */
 export type JobExpireStore = {
-  /** PUBLISHED rows whose deadline is before `before` (a UTC-midnight cutoff), oldest deadline first. */
+  /**
+   * PUBLISHED rows whose deadline is before `before` (a UTC-midnight cutoff),
+   * oldest deadline first.
+   */
   listExpirable(before: Date, limit: number): Promise<JobExpireCandidate[]>;
-  /** True if this row was still PUBLISHED and is now EXPIRED; false if it had already moved. */
+  /**
+   * True if this row was still PUBLISHED and is now EXPIRED; false if it had
+   * already moved.
+   */
   expireOne(id: string, before: Date): Promise<boolean>;
 };
 

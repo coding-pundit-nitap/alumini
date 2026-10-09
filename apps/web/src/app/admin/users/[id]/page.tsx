@@ -54,7 +54,10 @@ const STATE_BADGE: Record<string, "success" | "brand" | "destructive"> = {
 const date = (d: Date) =>
   d.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
 
-/** One user's state, roles, grants and history, with the actions the viewer may take. */
+/**
+ * One user's state, roles, grants and history, with the actions the viewer may
+ * take.
+ */
 export default async function UserPage({
   params,
 }: {
@@ -219,6 +222,8 @@ export default async function UserPage({
                   user={user}
                   options={options}
                   blocked={blocked}
+                  // oxlint-disable-next-line react/purity
+                  // oxlint-disable-next-line react/purity -- server component
                   now={new Date()}
                   {...(canGrants ? { revokeGrant: revokeGrantAction } : {})}
                 />

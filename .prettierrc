@@ -4,5 +4,25 @@
   "singleQuote": false,
   "tabWidth": 2,
   "useTabs": false,
-  "plugins": ["prettier-plugin-tailwindcss"]
+  "plugins": [
+    "@ianvs/prettier-plugin-sort-imports",
+    "prettier-plugin-packagejson",
+    "prettier-plugin-tailwindcss",
+    "prettier-plugin-jsdoc"
+  ],
+  "importOrder": [
+    "<BUILTIN_MODULES>",
+    "",
+    "^react$",
+    "^next(/.*)?$",
+    "",
+    "<THIRD_PARTY_MODULES>",
+    "",
+    "^@nitap/(.*)$",
+    "",
+    "^[.]"
+  ],
+  "importOrderTypeScriptVersion": "7.0.0",
+  "importOrderCaseSensitive": false,
+  "tailwindStylesheet": "./apps/web/src/app/globals.css"
 }

@@ -16,7 +16,10 @@ export type UploadRow = {
   updatedAt: Date;
 };
 
-/** Only the upload delegate is needed, so this works with any transaction client. */
+/**
+ * Only the upload delegate is needed, so this works with any transaction
+ * client.
+ */
 export type UploadTransaction = Pick<Prisma.TransactionClient, "upload">;
 
 export type NewUpload = {
@@ -27,15 +30,24 @@ export type NewUpload = {
   size: number;
 };
 
-/** Every method takes the caller's transaction; atomicity with outbox or audit writes is the caller's call. */
+/**
+ * Every method takes the caller's transaction; atomicity with outbox or audit
+ * writes is the caller's call.
+ */
 export type UploadStore = {
   create(tx: UploadTransaction, input: NewUpload): Promise<UploadRow>;
   find(tx: UploadTransaction, id: string): Promise<UploadRow | null>;
   /** PENDING_UPLOAD or PENDING_SCAN rows: the caller's open-upload quota. */
   countOpen(tx: UploadTransaction, ownerId: string): Promise<number>;
-  /** Guarded: only a PENDING_UPLOAD row moves. False if the row was not in that state (or missing). */
+  /**
+   * Guarded: only a PENDING_UPLOAD row moves. False if the row was not in that
+   * state (or missing).
+   */
   markPendingScan(tx: UploadTransaction, id: string): Promise<boolean>;
-  /** Rewrites the key to the scanned derivative and marks READY, in one write (the CHECK ties them together). */
+  /**
+   * Rewrites the key to the scanned derivative and marks READY, in one write
+   * (the CHECK ties them together).
+   */
   markReady(
     tx: UploadTransaction,
     id: string,

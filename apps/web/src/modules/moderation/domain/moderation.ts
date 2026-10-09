@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 /**
- * Pure rules. Claiming is optional before resolve/dismiss, and a reviewer may never act on their own
- * report or content.
+ * Pure rules. Claiming is optional before resolve/dismiss, and a reviewer may
+ * never act on their own report or content.
  */
 export type ReportState = "OPEN" | "UNDER_REVIEW" | "RESOLVED" | "DISMISSED";
 
@@ -13,7 +13,10 @@ export const REPORT_TARGET_TYPES = [
   "USER",
 ] as const;
 export type ReportTargetType = (typeof REPORT_TARGET_TYPES)[number];
-/** What `fileContentReport` accepts. Messages are filed by `messaging`; nothing files USER reports yet. */
+/**
+ * What `fileContentReport` accepts. Messages are filed by `messaging`; nothing
+ * files USER reports yet.
+ */
 export type ModerationTarget = Extract<ReportTargetType, "POST" | "COMMENT">;
 
 export const reportContentInput = z
@@ -99,7 +102,10 @@ const dropEmpty = (input: unknown) =>
 export const REPORT_STATUS_FILTERS = ["open", "RESOLVED", "DISMISSED"] as const;
 export type ReportStatusFilter = (typeof REPORT_STATUS_FILTERS)[number];
 
-/** Filters for the reports queue. Shared by `GET /api/v1/reports` and `/admin/reports`. */
+/**
+ * Filters for the reports queue. Shared by `GET /api/v1/reports` and
+ * `/admin/reports`.
+ */
 export const reportListQuerySchema = z.preprocess(
   dropEmpty,
   z

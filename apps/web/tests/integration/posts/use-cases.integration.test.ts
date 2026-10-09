@@ -54,7 +54,10 @@ async function member(db: TestDatabase, name: string) {
   return user.id;
 }
 
-/** `blocker` blocked `blocked` (the connection row stores the pair in canonical order). */
+/**
+ * `blocker` blocked `blocked` (the connection row stores the pair in canonical
+ * order).
+ */
 async function block(db: TestDatabase, blocker: string, blocked: string) {
   const [lo, hi] = [blocker, blocked].sort() as [string, string];
   await db.prisma.connection.create({

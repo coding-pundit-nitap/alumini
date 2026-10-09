@@ -4,8 +4,8 @@ import path from "node:path";
 import { PERMISSIONS, type Permission } from "@nitap/database/permissions";
 
 /**
- * Every Route Handler × method, classified. `api-inventory.test.ts` fails when this and the file
- * system differ, so a new endpoint can't ship unclassified.
+ * Every Route Handler × method, classified. `api-inventory.test.ts` fails when
+ * this and the file system differ, so a new endpoint can't ship unclassified.
  */
 
 export const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
@@ -14,16 +14,25 @@ export type Method = (typeof METHODS)[number];
 export type Access =
   /** No session needed (liveness, readiness). */
   | { kind: "public" }
-  /** Open outside production; the monitoring bearer token in production, else a bare 404. */
+  /**
+   * Open outside production; the monitoring bearer token in production, else a
+   * bare 404.
+   */
   | { kind: "monitoring" }
   /** Better Auth's own handler, with its own origin, CSRF and rate-limit checks. */
   | { kind: "better-auth" }
-  /** No session needed: visibility decides, and anything not visible is the same 404. */
+  /**
+   * No session needed: visibility decides, and anything not visible is the same
+   * 404.
+   */
   | { kind: "visibility" }
   /** Holding one of `anyOf` is necessary, not sufficient. */
   | { kind: "session"; anyOf: readonly Permission[] };
 
-/** A valid request for routes that validate before authorizing; otherwise the matrix would only see 400s. */
+/**
+ * A valid request for routes that validate before authorizing; otherwise the
+ * matrix would only see 400s.
+ */
 export type Sample = { body?: unknown; query?: string };
 
 export type Entry = { access: Access; mutates: boolean; sample?: Sample };
@@ -204,7 +213,10 @@ export const API_INVENTORY: Record<string, Partial<Record<Method, Entry>>> = {
 const EXPORT =
   /export\s+(?:const|async\s+function|function)\s+(GET|POST|PUT|PATCH|DELETE)\b|export\s+const\s+\{([^}]*)\}/g;
 
-/** Every `route.ts` under `appRoot` as "/url/path" → its exported HTTP methods. Route groups `(x)` are dropped. */
+/**
+ * Every `route.ts` under `appRoot` as "/url/path" → its exported HTTP methods.
+ * Route groups `(x)` are dropped.
+ */
 export function routesOnDisk(appRoot: string): Record<string, Method[]> {
   const found: Record<string, Method[]> = {};
   const visit = (dir: string) => {

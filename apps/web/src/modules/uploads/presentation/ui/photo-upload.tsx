@@ -41,8 +41,8 @@ const POLL_MAX_ATTEMPTS = 15;
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Not a `<form>`: the file goes straight to the store, then this polls while the worker scans it.
- * `setProfilePhotoAction` refreshes the page itself.
+ * Not a `<form>`: the file goes straight to the store, then this polls while
+ * the worker scans it. `setProfilePhotoAction` refreshes the page itself.
  */
 export function PhotoUpload({
   photoUrl,

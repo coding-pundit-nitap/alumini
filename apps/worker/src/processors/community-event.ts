@@ -20,8 +20,8 @@ type Deps = {
 };
 
 /**
- * post.created and reaction.added notify no one. Processors re-read state at delivery time and return
- * quietly if the row is gone.
+ * Post.created and reaction.added notify no one. Processors re-read state at
+ * delivery time and return quietly if the row is gone.
  */
 export function createPostCreatedProcessor(): JobProcessor<PostCreatedPayload> {
   return async (payload, { logger }) => {
@@ -33,9 +33,12 @@ export function createPostCreatedProcessor(): JobProcessor<PostCreatedPayload> {
 
 export function createCommentCreatedProcessor(
   deps: Deps & {
-    /** null when the post is gone or soft-deleted. */
+    /** Null when the post is gone or soft-deleted. */
     findPostAuthor: (postId: string) => Promise<string | null>;
-    /** Distinct authors of live comments on the post, excluding `excludeUserId`; the caller caps the size. */
+    /**
+     * Distinct authors of live comments on the post, excluding `excludeUserId`;
+     * the caller caps the size.
+     */
     findPriorCommenters: (
       postId: string,
       excludeUserId: string
@@ -178,7 +181,7 @@ export function createReportFiledProcessor(
 
 export function createReportResolvedProcessor(
   deps: Deps & {
-    /** null when the report is gone. */
+    /** Null when the report is gone. */
     findReporter: (reportId: string) => Promise<string | null>;
   }
 ): JobProcessor<ReportResolvedPayload> {
@@ -201,7 +204,10 @@ export function createReportResolvedProcessor(
 
 export function createContentRemovedProcessor(
   deps: Deps & {
-    /** Author of the (soft-deleted) post/comment; null only when the row is truly gone. Must not filter on `deleted`. */
+    /**
+     * Author of the (soft-deleted) post/comment; null only when the row is
+     * truly gone. Must not filter on `deleted`.
+     */
     findContentAuthor: (
       targetType: "POST" | "COMMENT",
       targetId: string

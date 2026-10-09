@@ -7,7 +7,10 @@ export type RequestContext = {
 
 const storage = new AsyncLocalStorage<RequestContext>();
 
-/** Runs `fn` with `context` visible to every log line and error response produced inside it. */
+/**
+ * Runs `fn` with `context` visible to every log line and error response
+ * produced inside it.
+ */
 export function runWithRequestContext<T>(
   context: RequestContext,
   fn: () => T

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { EMPLOYMENT_TYPES, WORK_MODES } from "./job";
 
-/** https-only, belt-and-braces with the DB's ck_job_application_url. */
+/** Https-only, belt-and-braces with the DB's ck_job_application_url. */
 const applicationUrl = z
   .string()
   .trim()

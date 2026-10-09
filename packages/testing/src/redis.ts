@@ -20,7 +20,10 @@ export type RedisNamespace = {
   cleanup(): Promise<void>;
 };
 
-/** Isolates one test's queue keys so concurrent test files never see each other's jobs. */
+/**
+ * Isolates one test's queue keys so concurrent test files never see each
+ * other's jobs.
+ */
 export async function createRedisNamespace(): Promise<RedisNamespace> {
   const url = queueRedisUrl();
   const prefix = `test-${randomUUID()}`;

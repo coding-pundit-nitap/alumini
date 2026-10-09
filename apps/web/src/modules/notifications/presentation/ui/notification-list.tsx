@@ -45,7 +45,10 @@ const ICONS: Record<string, LucideIcon> = {
   user: UserCog,
 };
 
-/** The icon for a notification type, from its prefix (`job.published` → job); a bell for anything else. */
+/**
+ * The icon for a notification type, from its prefix (`job.published` → job); a
+ * bell for anything else.
+ */
 export function iconFor(type: string): LucideIcon {
   return ICONS[type.split(".")[0]!] ?? Bell;
 }
@@ -141,8 +144,8 @@ function Row({
 }
 
 /**
- * Renders from the notification alone, so deleted target content still renders; its link just lands
- * on a not-found page.
+ * Renders from the notification alone, so deleted target content still renders;
+ * its link just lands on a not-found page.
  */
 export function NotificationList({
   items,

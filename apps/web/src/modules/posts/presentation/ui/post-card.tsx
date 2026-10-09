@@ -210,7 +210,10 @@ function PostBody({
   );
 }
 
-/** The author's in-place edit of a TEXT post's text (images and link stay as posted). */
+/**
+ * The author's in-place edit of a TEXT post's text (images and link stay as
+ * posted).
+ */
 function PostEditor({
   initial,
   onSave,
@@ -275,8 +278,8 @@ function PostEditor({
 }
 
 /**
- * Content is always rendered as Markdown, never raw. Moderators get Report, which becomes
- * Resolve/Dismiss while a report is open.
+ * Content is always rendered as Markdown, never raw. Moderators get Report,
+ * which becomes Resolve/Dismiss while a report is open.
  */
 export function PostCard({
   post,

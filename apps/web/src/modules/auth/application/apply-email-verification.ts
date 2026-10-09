@@ -9,8 +9,9 @@ export type ApplyResult =
   | { outcome: "unchanged" };
 
 /**
- * A confirmed institutional address with `autoVerify` becomes VERIFIED with its mapped role. Acts
- * only on PENDING accounts, so it is idempotent and cannot revive any other state.
+ * A confirmed institutional address with `autoVerify` becomes VERIFIED with its
+ * mapped role. Acts only on PENDING accounts, so it is idempotent and cannot
+ * revive any other state.
  */
 export function createApplyEmailVerification(deps: {
   store: MemberStore;

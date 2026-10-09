@@ -15,14 +15,17 @@ export type ShellUser = {
   photoUrl: string | null;
   tick: Tick | null;
 };
-/** null = signed out. */
+/** Null = signed out. */
 export type ShellData = {
   nav: NavModel;
   user: ShellUser;
   verified: boolean;
 } | null;
 
-/** Everything the member shell needs, once per render. Never includes email, phone or roll number. */
+/**
+ * Everything the member shell needs, once per render. Never includes email,
+ * phone or roll number.
+ */
 export const loadShell = cache(async (): Promise<ShellData> => {
   const actor = await getActor();
   if (!actor) return null;

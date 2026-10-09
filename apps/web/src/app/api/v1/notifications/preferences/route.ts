@@ -17,7 +17,10 @@ const patchBody = z
   .object({ domain: z.enum(NOTIFICATION_DOMAINS), enabled: z.boolean() })
   .strict();
 
-/** GET /api/v1/notifications/preferences — email toggle per domain; a missing row means enabled. */
+/**
+ * GET /api/v1/notifications/preferences — email toggle per domain; a missing
+ * row means enabled.
+ */
 export const GET = routeHandler(async () => {
   const data = await getNotificationPreferences({ actor: await getActor() });
   return Response.json(

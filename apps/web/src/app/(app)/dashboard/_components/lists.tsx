@@ -1,7 +1,10 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-/** The shared highlights-rail shell: a hairline card in the mobile strip, an open section in the xl rail. */
+/**
+ * The shared highlights-rail shell: a hairline card in the mobile strip, an
+ * open section in the xl rail.
+ */
 export function Block({
   title,
   href,

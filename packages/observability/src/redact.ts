@@ -53,7 +53,10 @@ function redactValue(
   return result;
 }
 
-/** Returns a JSON-safe copy of `value` with secret-bearing keys masked. Never mutates the input. */
+/**
+ * Returns a JSON-safe copy of `value` with secret-bearing keys masked. Never
+ * mutates the input.
+ */
 export function redact(value: unknown): unknown {
   return redactValue(value, 0, new WeakSet());
 }

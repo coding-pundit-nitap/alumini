@@ -10,7 +10,10 @@ import type { JobObserver, JobStore } from "./job-store";
 import { refuse } from "./refusal";
 import { parse } from "./validation-parse";
 
-/** A rejection note is required (REVIEW_NOTE_REQUIRED), belt-and-braces with ck_job_reject_note. */
+/**
+ * A rejection note is required (REVIEW_NOTE_REQUIRED), belt-and-braces with
+ * ck_job_reject_note.
+ */
 export function createRejectJob(deps: {
   store: JobStore;
   authorize: Authorize;

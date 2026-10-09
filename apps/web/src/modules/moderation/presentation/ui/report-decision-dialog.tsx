@@ -35,7 +35,10 @@ const COPY = {
   },
 } as const;
 
-/** Resolve or dismiss with a required reason code. Shared by the feed and /admin/reports/[id]. */
+/**
+ * Resolve or dismiss with a required reason code. Shared by the feed and
+ * /admin/reports/[id].
+ */
 export function ReportDecisionDialog(props: {
   outcome: "resolve" | "dismiss";
   reportId: string;

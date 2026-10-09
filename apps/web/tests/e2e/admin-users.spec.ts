@@ -46,7 +46,10 @@ async function grantRole(email: string, roleName: RoleName): Promise<void> {
   );
 }
 
-/** Every registered name is "E2E Person", so the row is found by email and its name link opened. */
+/**
+ * Every registered name is "E2E Person", so the row is found by email and its
+ * name link opened.
+ */
 async function openUser(page: Page, email: string): Promise<void> {
   await page.goto(`/admin/users?q=${encodeURIComponent(email)}`);
   await page

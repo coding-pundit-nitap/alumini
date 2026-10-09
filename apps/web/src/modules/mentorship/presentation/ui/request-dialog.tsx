@@ -10,7 +10,10 @@ const MESSAGE_MAX = 500;
 const FIELD_CLASS =
   "border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-lg border px-3 py-2 text-sm outline-none focus-visible:ring-[3px]";
 
-/** Ask a mentor for a mentorship. showModal() on a native <dialog> gives focus trapping and Escape. */
+/**
+ * Ask a mentor for a mentorship. showModal() on a native <dialog> gives focus
+ * trapping and Escape.
+ */
 export function RequestDialog({
   mentor,
   requestAction,

@@ -1,4 +1,7 @@
-/** No Node imports: `proxy.ts` uses this. Client ids are accepted only if they can't inject into logs. */
+/**
+ * No Node imports: `proxy.ts` uses this. Client ids are accepted only if they
+ * can't inject into logs.
+ */
 export const REQUEST_ID_HEADER = "x-request-id";
 
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9-]{8,64}$/;

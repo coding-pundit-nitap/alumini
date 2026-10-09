@@ -5,10 +5,16 @@ import { ConflictError } from "@/lib/errors";
 export type { StoredResponse };
 
 export const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
-/** A claim this old with no reply belongs to a request that died; a retry may take it over. */
+/**
+ * A claim this old with no reply belongs to a request that died; a retry may
+ * take it over.
+ */
 export const IN_PROGRESS_STALE_MS = 60 * 1000;
 
-/** The persistence port; `@nitap/database/idempotency` implements it with Prisma. */
+/**
+ * The persistence port; `@nitap/database/idempotency` implements it with
+ * Prisma.
+ */
 export type IdempotencyPort = {
   claim(input: {
     userId: string;
@@ -34,9 +40,10 @@ export type IdempotencyPort = {
 };
 
 /**
- * `Idempotency-Key` handling per user and key: a repeat of the same request replays the stored
- * response, a different request is IDEMPOTENCY_KEY_REUSED, and an in-flight one is REQUEST_IN_PROGRESS.
- * Only 2xx responses are stored. Database constraints remain the real guarantee.
+ * `Idempotency-Key` handling per user and key: a repeat of the same request
+ * replays the stored response, a different request is IDEMPOTENCY_KEY_REUSED,
+ * and an in-flight one is REQUEST_IN_PROGRESS. Only 2xx responses are stored.
+ * Database constraints remain the real guarantee.
  */
 export function createIdempotency(deps: {
   port: IdempotencyPort;

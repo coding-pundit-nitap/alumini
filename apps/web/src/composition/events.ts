@@ -21,13 +21,19 @@ import {
 const store = createPrismaEventStore({ runner: transactionRunner, outbox });
 const queries = createPrismaEventQueries(prisma);
 
-/** One log line and one counter per committed outcome (ids only: never a title or a name). */
+/**
+ * One log line and one counter per committed outcome (ids only: never a title
+ * or a name).
+ */
 const observe: EventObserver = (outcome, eventId) => {
   logger.info(`event.${outcome}`, { metadata: { eventId } });
   getMetrics().increment("event_total", { outcome });
 };
 
-/** One counter per refusal code: a refusal never commits, so there's no event id to log. */
+/**
+ * One counter per refusal code: a refusal never commits, so there's no event id
+ * to log.
+ */
 const observeRefusal: RefusalObserver = (code) => {
   getMetrics().increment("event_total", { outcome: `refused_${code}` });
 };
