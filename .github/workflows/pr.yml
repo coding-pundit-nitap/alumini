@@ -38,6 +38,66 @@ env:
   S3_FORCE_PATH_STYLE: "true"
 
 jobs:
+  # Decides what the rest of the run needs. A pull request is compared with its base as a whole, so a later
+  # docs-only push still runs everything the earlier pushes touched. main always runs every job; its base is
+  # the last commit whose run passed, so a red commit stays in scope until a later run is green.
+  changes:
+    name: Changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read # gh run list
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+      base: ${{ steps.base.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Base commit
+        id: base
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$PR_BASE" ]; then
+            base="$PR_BASE"
+          else
+            base=$(gh run list -R "$GITHUB_REPOSITORY" --workflow pr.yml --branch main --event push \
+              --status success --limit 1 --json headSha -q '.[0].headSha' || true)
+            base="${base:-$BEFORE}"
+          fi
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then base=""; fi
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+          echo "Base: ${base:-none (full run)}"
+      # Anything not listed as documentation counts as code, so an unknown path runs everything.
+      # Markdown under apps/ and packages/ is code: tests read some of it.
+      - name: Code changed?
+        id: diff
+        env:
+          BASE: ${{ steps.base.outputs.sha }}
+        run: |
+          code=true
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ] && [ -n "$BASE" ]; then
+            code=false
+            while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              case "$f" in
+                docs/* | deploy/docs/* | deploy/README.md | ops/* | perf/* | .zap/* | .semgrep/* \
+                  | .gitleaksignore | renovate.json | .github/dependabot.yml \
+                  | .github/workflows/nightly.yml | .github/workflows/*-drill.yml) continue ;;
+              esac
+              [[ "$f" == *.md && "$f" != */* ]] && continue
+              echo "Code change: $f"
+              code=true
+              break
+            done <<< "$(git diff --name-only "$BASE" HEAD)"
+          fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "Code changed: $code"
+
   static:
     name: Static (format, types, lint, architecture)
     runs-on: ubuntu-24.04
@@ -93,6 +153,7 @@ jobs:
 
   dependency-audit:
     name: Dependency audit (high and critical)
+    needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -104,7 +165,7 @@ jobs:
       - name: Did dependencies change?
         id: deps
         env:
-          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE: ${{ needs.changes.outputs.base }}
         run: |
           if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] \
             || ! git cat-file -e "$BASE^{commit}" 2>/dev/null \
@@ -147,6 +208,8 @@ jobs:
   # Container images: Dockerfile lint and CRITICAL vulnerabilities block; HIGH ones are logged for triage.
   images:
     name: Image ${{ matrix.image }} (hadolint, build, Trivy)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
@@ -201,6 +264,8 @@ jobs:
 
   unit:
     name: Unit and component tests
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -224,6 +289,8 @@ jobs:
 
   integration:
     name: Integration and contract tests (${{ matrix.suite }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     # Web's suite is sharded (~15 min on one runner); other packages run together. Shards leave blob reports
@@ -327,6 +394,7 @@ jobs:
   # 1 s on an existing table fails. Runs only when migrations are added.
   migration-locks:
     name: Migration locks on volume
+    needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
@@ -347,7 +415,7 @@ jobs:
       - name: Were migrations added?
         id: migrations
         env:
-          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE: ${{ needs.changes.outputs.base }}
         run: |
           if [ -n "$BASE" ] && [ "$BASE" != "0000000000000000000000000000000000000000" ] \
             && git cat-file -e "$BASE^{commit}" 2>/dev/null \
@@ -374,6 +442,8 @@ jobs:
 
   build:
     name: Build
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -401,6 +471,8 @@ jobs:
 
   e2e:
     name: E2E smoke (${{ matrix.shard }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     # The journeys run against the production build (`next start`), split into shards like the integration
@@ -489,13 +561,14 @@ jobs:
           path: apps/web/playwright-report
           retention-days: 7
 
-  # Release images: only main commits that passed every gate are published, tagged with the full SHA;
-  # `main` points at the newest. ghcr.io needs a lowercase owner.
-  publish:
-    name: Publish images
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  # The one required check in branch protection. Passes when every job passed or was skipped as not needed,
+  # so jobs can be added or filtered without touching the branch rules.
+  ci-ok:
+    name: CI OK
+    if: always()
     needs:
       [
+        changes,
         static,
         secret-scan,
         observability,
@@ -509,6 +582,23 @@ jobs:
         build,
         e2e,
       ]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$NEEDS"
+          exit 1
+      - run: echo "Every job passed or was not needed."
+
+  # Release images: only main commits that passed every gate are published, tagged with the full SHA;
+  # `main` points at the newest. ghcr.io needs a lowercase owner.
+  publish:
+    name: Publish images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: ci-ok
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
